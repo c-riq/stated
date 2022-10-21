@@ -1,0 +1,34 @@
+version: '3.5'
+# launch docker app
+# docker-compose -f docker-compose-dev.yml up
+
+# to delete volumes and re run init.sql:
+# docker-compose down --volumes
+
+# postgres container IP might differ, such as 172.20.0.3
+# psql --host localhost -U sdf dev
+
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sdf}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sdf}
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_1:/data/postgres
+       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    postgres_1:

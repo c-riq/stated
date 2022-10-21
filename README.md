@@ -1,70 +1,47 @@
-# Getting Started with Create React App
+### Stated
+Stated is an open source tool set for decentral realtime decision making.<br/>
+In the initial focus is to enable organisations to issue joint statements.<br/>
+The core challenge is to make sure any internet user can independantly verify the authenticity of a joint statement.<br/>
+This requires all participating organisations to have an independantly verifiable online identity and that their statements can also be linked to their online identity.<br/>
+We will use the primary website domain of organisations as an online identity. <br/>
+Existing links to the organisations website from ofther sites such as wikipedia, linkedin, twitter, news websites and government websites already provide a hard to manipulate online identity for larger organisations. <br/>
+To further solidify the online identities, organisations can verify the links between other organisations and their primary domain, creating a web of trust.
+For publishing statements organisations make them accessible on their domain under the standardized URL stated.example.com/statements.txt in a standardized human readable format.<br/>
+Verifications made by one organisation to associate another organisation with their domain are also included in the list of statements.
+To allow for fast aggregation of joint statements, they are propagated though the peer to peer network of participating organisations.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Publishing statements of other organisations
+The current implementation includes another aproach to make initial adoption and experimentation easier.<br/>
+Organisations can create statements via the stated web app of another organisation which runs an instance of stated.<br/>
+The organisation has to prove domain ownership by creating a TXT entry with the base64 encoded hash of their statement in their DNS Zone file.<br/>
+Usually this can be done by logging into the account at the respective domain registrar such as godaddy.com .
+This approach is faster and cheaper than installing a stated server instance. 
+However installing new stated instances will make the P2P network more resillient and it will also make the verification of statements easier.
 
-## Available Scripts
+## Statement format
+# Example
+domain: mit.edu<br/>
+time: Sun, 04 Sep 2022 14:48:50 GMT<br/>
+statement: hello world<br/>
 
-In the project directory, you can run:
+# Verification example
+domain: walmart.com<br/>
+time: Wed, 07 Sep 2022 16:50:10 GMT<br/>
+type: domain_verification<br/>
+statement: We confirm that the organisations main domain is in accordance with the listed source, which we regard as trustworthy and authentic.<br/>
+verify organisation domain: mit.edu<br/>
+verify organisation name: Massachusetts Institute of Technology<br/>
+verify organisation country: United States of America<br/>
+verify organisation source: https://www.neche.org/institution/massachusetts-institute-of-technology/<br/>
 
-### `npm start`
+### Front end 
+#### React.js Application for publishing and aggregating statements
+check frontend/README.md
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Back end
+#### Node.js express PostreSQL 
+check backend/README.md
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Analysis 
+#### Python scripts extracting organisations official website domains from wikidata and twitter
+check analysis/README.md
