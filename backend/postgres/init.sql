@@ -5,6 +5,7 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'dev')\gexec
 
 -- DROP TABLE IF EXISTS p2p_nodes;
 
+DROP TABLE IF EXISTS statements;
 CREATE TABLE IF NOT EXISTS statements (
     id SERIAL PRIMARY KEY,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -21,7 +22,7 @@ CREATE TABLE IF NOT EXISTS statements (
     latest_verification_ts TIMESTAMP,
     verification_method VARCHAR(4) -- dns, api
 );
-
+DROP TABLE IF EXISTS verifications;
 CREATE TABLE IF NOT EXISTS verifications (
     id SERIAL PRIMARY KEY,
     statement_id INT NOT NULL,

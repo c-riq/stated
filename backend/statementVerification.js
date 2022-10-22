@@ -12,7 +12,8 @@ var v1Regex= new RegExp(''
 const axios = require('axios').default;
 const db = require('./db');
 const hash = require('./hash');
-const cp = require('child_process')
+const cp = require('child_process');
+const { copy } = require('fs-extra');
 
 const validateStatementMetadata = ({type, version, domain, statement, time, hash_b64, content, content_hash }) => {
     if (type !== "statement" || version !== 1){
@@ -68,41 +69,29 @@ const getTXTEntries = (d) => new Promise((resolve, reject) => {
     if (! /^[a-zA-Z\.-]+$/.test(d)) {
         reject({error: 'invalid characters'})
     }
-    cp.exec(`dig -t txt ${d} +dnssec +short`, (error, stdout, stderr) => {
+    const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
+    dig.stdout.on('data', (data) => {
+        //console.log(`stdout: ${data}`);
         try {
-            const TXTEntries = (''+stdout).split('\n').map(s=>s.replace(/\"/g,''))
-            console.log(TXTEntries)
+            const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
+            //console.log('TXTEntries', d, TXTEntries)
             resolve(TXTEntries)
         }
         catch(e) {
             reject(e)
         }
-        console.log((''+stdout).split('\n').map(s=>s.replace(/\"/g,'')))
-    })
-    let url = 'https://dns.google/resolve?name=' + d + '&type=TXT&do=true&rand=' + Math.random()
-    console.log('checkDomain', url)
-    axios.get(url)
-        .then(function (json) {
-            try {
-                const TXTEntries = json.data['Answer'].map(v => v['data'])
-                console.log(TXTEntries)
-                resolve(TXTEntries)
-            }
-            catch {
-                reject()
-            }
-        })
-        .catch(function (error) {
-            console.log(error);
-            reject()
-        })
+      })
+      dig.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+        reject(data)
+      })
 })
 
 const verifyTXTRecord = async (domain, record) => {
     console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
-        console.log(domain, TXTEntries, record)
+        //console.log(domain, TXTEntries, record)
         return TXTEntries.includes(record)
     }
     catch (e) {

@@ -17,13 +17,27 @@ const createStatement = ({type, version, domain, statement, time, hash_b64, cont
       resolve({error: "forbidden characters"})
     }
     try {
+      [
+        'statement',
+        1,
+        'rixdata.net',
+        'domain: rixdata.net\n' +
+          'time: Sun, 02 Oct 2022 17:47:03 GMT\n' +
+          'statement: test 19:47',
+        'Sun, 02 Oct 2022 17:47:03 GMT',
+        '9JDwgxZ5D749w+Gp2RvMp7D+GVJHDEGtn2RpAafomvk=',
+        'test 19:47',
+        'Rvg94MOylRxShG2cjTQPwzb8K73KtJaK9ktwXc00lrQ=',
+        'dns'
+      ]
+      console.log([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method])
         pool.query(`INSERT INTO statements (type, version, domain, statement, time,
-                            'hash_b64, content, content_hash, verification_method, latest_verification_ts) 
+                            hash_b64, content, content_hash, verification_method, latest_verification_ts) 
                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
                     ON CONFLICT (hash_b64)  DO UPDATE
                       SET latest_verification_ts = CURRENT_TIMESTAMP
                     RETURNING *`,
-     [type, version, domain, statement, time, hash_b64,content, content_hash, verification_method], (error, results) => {
+     [type, version, domain, statement, time, hash_b64, content, content_hash, verification_method], (error, results) => {
         if (error) {
             console.log(error)
             resolve({error})

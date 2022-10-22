@@ -17,6 +17,7 @@ import { Route, Routes, Link, useParams, useNavigate } from 'react-router-dom';
 import { Buffer } from 'buffer';
 
 import { getStatements } from './api.js'
+import gh from './img/github.png'
 
 
 // profile form
@@ -110,7 +111,7 @@ function App() {
         <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
           <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
             <div>
-              <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>stated.{window.location.hostname}</a>
+              <Link style={{color: "rgba(255,255,255,1)"}} to="/">stated.{window.location.hostname}</Link>
             </div>
             <div style={{ flexGrow: 1 }}></div>
             <div>
@@ -124,12 +125,12 @@ function App() {
           height: '40 px'
         },}}/>
             </div>
-            <div>
+            {/* <div>
               <Link style={{color: "rgba(255,255,255,1)"}} to="/">home</Link>
             </div>
             <div>
               <Link style={{color: "rgba(255,255,255,1)"}} to="/contact">contact</Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </header>
@@ -153,7 +154,16 @@ function App() {
             </CenterModal>} 
           />
       </Routes>
-      <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}></div>
+      <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}>
+
+      <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
+        <div style={{display: "flex", flexDirection: "column", justifyContent:"center", alignItems:"center", height: '100%'}}>
+          <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>
+            <img src={gh} style={{height: "30px", width: '30px', flexGroq: 0}}></img>
+            </a>
+        </div>
+        </div>
+      </div>
     </div>
     </div>
   );
