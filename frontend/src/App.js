@@ -106,16 +106,23 @@ function App() {
     <div className="App">
     <CssBaseline />
     <div className='App-main'>
-      <header style={{width: "100%", height: "50px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
-        <div style={{ width: "100%", height: "50px", display: "flex", alignItems: "center", justifyContent: "center"}}>
-          <div style={{ maxWidth: "900px", flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
+      <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
+        <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
+          <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
             <div>
-              <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>stated</a>
+              <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>stated.{window.location.hostname}</a>
             </div>
             <div style={{ flexGrow: 1 }}></div>
             <div>
-              <TextField id="standard-size-normal" variant="standard" label="search"
-              style={{height: "30px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)"}}/>
+              <TextField id="standard-size-normal" label="" variant="outlined" size='small'
+              sx={{height: "40px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
+              '& label': { paddingLeft: (theme) => theme.spacing(2) },
+        '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
+        '& fieldset': {
+          paddingLeft: (theme) => theme.spacing(2.5),
+          borderRadius: '15px',
+          height: '40 px'
+        },}}/>
             </div>
             <div>
               <Link style={{color: "rgba(255,255,255,1)"}} to="/">home</Link>
