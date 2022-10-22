@@ -63,9 +63,13 @@ const CreateStatement = props => {
             if ("records" in res) {
                 setDnsResponse(res.records)
             } else {
+                setisError(true)
                 setAlertMessage("no DNS record found")
             }
-        }, (e) => setAlertMessage("Could not check domain"))
+        }, (e) => {
+            setisError(true)
+            setAlertMessage("Could not check domain")
+        })
     }
 
     const submitStatementAPI = () => {

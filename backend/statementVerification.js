@@ -11,11 +11,11 @@ var v1Regex= new RegExp(''
 
 const axios = require('axios').default;
 const db = require('./db');
-const hash = require('./hash');
+const _hash = require('./hash');
 const cp = require('child_process');
 const { copy } = require('fs-extra');
 
-const validateStatementMetadata = ({type, version, domain, statement, time, hash_b64, content, content_hash }) => {
+const validateStatementMetadata = async ({type, version, domain, statement, time, hash_b64, content, content_hash }) => {
     if (type !== "statement" || version !== 1){
         return({error: "invalid verification"})
     }
@@ -35,10 +35,10 @@ const validateStatementMetadata = ({type, version, domain, statement, time, hash
     if (groups.domain.length < 1 || groups.time.length < 1 || groups.statement.length < 1 ) {
         return({error: "Missing required fields"})
     }
-    if (!hash.verify(statement, hash_b64)){
+    if (!await _hash.verify(statement, hash_b64)){
         return({error: "invalid hash: "+statement+hash_b64})
     }
-    if (!hash.verify(groups.statement, content_hash)){
+    if (!await _hash.verify(groups.statement, content_hash)){
         return({error: "invalid content hash: "+group.statement+content_hash})
     }
     return {}
@@ -99,9 +99,8 @@ const verifyTXTRecord = async (domain, record) => {
     }
 }
 
-
-const validateAndAddStatementIfMissing = (s) => new Promise((resolve, reject) => {
-    const validationResult = validateStatementMetadata({type: 'statement', version: 1, domain: s.domain, statement: s.statement, 
+const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
+    const validationResult = await validateStatementMetadata({type: 'statement', version: 1, domain: s.domain, statement: s.statement, 
         hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash})
     if (validationResult.error) {
         resolve(validationResult)
@@ -147,5 +146,6 @@ const validateAndAddStatementIfMissing = (s) => new Promise((resolve, reject) =>
 
 module.exports = {
     validateAndAddStatementIfMissing,
-    verifyTXTRecord
+    verifyTXTRecord,
+    getTXTEntries
 }

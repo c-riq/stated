@@ -10,8 +10,9 @@ const fse = require('fs-extra')
 
 const db = require('./db');
 const p2p = require('./p2p');
-const hash = require('./hash');
+const _hash = require('./hash');
 const domainVerification = require('./domainVerification');
+const statementVerification = require('./statementVerification');
 
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN
@@ -54,7 +55,7 @@ app.post("/api/get_txt_records", (req, res, next) => {
         if ('domain' in req.body) {
             fs.writeFile(directories.log + "/" + (new Date()).getTime() + '-' + Math.random() + '.json', JSON.stringify(req.body, null, 4), () => {
                 console.log(req.body)
-                checkDomain(req.body.domain)
+                statementVerification.getTXTEntries(req.body.domain)
                     .then(records => {
                         res.setHeader('Content-Type', 'application/json');
                         res.end(JSON.stringify({ records: records }));
@@ -73,8 +74,8 @@ app.post("/api/submit_statement", async (req, res, next) => {
     try {
         const { content, hash, domain, time, statement, type, content_hash } = req.body
         console.log("req.body",req.body)
-        if (hash.verify(req.body.statement, req.body.hash)) {
-            txtCorrect = await verifyTXTRecord("stated." + req.body.domain, req.body.hash)
+        if (await _hash.verify(req.body.statement, req.body.hash)) {
+            txtCorrect = await statementVerification.verifyTXTRecord("stated." + req.body.domain, req.body.hash)
             console.log("txtCorrect", txtCorrect)
             if (txtCorrect) {
                 try {

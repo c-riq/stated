@@ -111,7 +111,7 @@ function App() {
         <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
           <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
             <div>
-              <Link style={{color: "rgba(255,255,255,1)"}} to="/">stated.{window.location.hostname}</Link>
+              <Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>
             </div>
             <div style={{ flexGrow: 1 }}></div>
             <div>

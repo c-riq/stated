@@ -25,13 +25,10 @@ var v1Regex= new RegExp(''
 );
 
 let groups = example.match(v1Regex).groups;
-console.log(groups)
 
 const db = require('./db');
-console.log(db.forbiddenChars(example))
 
 const {verificationMethods} = require('./verification_methods.js');
-console.log(verificationMethods)
 
 
 const createVerificationAndStatement = ({type,version, domain, statement, time, hash_b64, content, content_hash }) => (new Promise((resolve, reject)=>{

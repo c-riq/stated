@@ -158,7 +158,7 @@ const fetchMissingStatementsFromNodes = async () => {
         // await addSeedNodes()
         // await addNodesOfPeers()
         // await joinNetwork()
-        await fetchMissingStatementsFromNodes()
+        // await fetchMissingStatementsFromNodes()
     } catch (e) {
         console.log(e)
     }
