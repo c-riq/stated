@@ -1,14 +1,16 @@
 ### Stated
 Stated is an open source tool set for decentral realtime decision making.<br/>
 In the initial focus is to enable organisations to issue joint statements.<br/>
-The core challenge is to make sure any internet user can independantly verify the authenticity of a joint statement.<br/>
-This requires all participating organisations to have an independantly verifiable online identity and that their statements can also be linked to their online identity.<br/>
+The core challenge is to make sure any internet user can independently verify the authenticity of a joint statement.<br/>
+This requires all participating organisations to have an independently verifiable online identity and that their statements can also be linked to their online identity.<br/>
 We will use the primary website domain of organisations as an online identity. <br/>
 Existing links to the organisations website from ofther sites such as wikipedia, linkedin, twitter, news websites and government websites already provide a hard to manipulate online identity for larger organisations. <br/>
 To further solidify the online identities, organisations can verify the links between other organisations and their primary domain, creating a web of trust.
 For publishing statements organisations make them accessible on their domain under the standardized URL stated.example.com/statements.txt in a standardized human readable format.<br/>
 Verifications made by one organisation to associate another organisation with their domain are also included in the list of statements.
 To allow for fast aggregation of joint statements, they are propagated though the peer to peer network of participating organisations.
+
+![visualisatiuon](https://github.com/c-riq/stated/blob/master/diagram.png?raw=true)
 
 ## Publishing statements of other organisations
 The current implementation includes another aproach to make initial adoption and experimentation easier.<br/>
