@@ -274,7 +274,10 @@ app.use((err, req, res, next) => {
     res.send("Server Error." + err)
 });
 
-const httpServer = http.createServer(app);
+http.createServer(function (req, res) {
+    res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+    res.end();
+}).listen(80);
 
 if (prod) {
 
