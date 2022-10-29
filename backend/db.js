@@ -7,37 +7,34 @@ const pool = new Pool({
   port: 5432,
 })
 
-const forbiddenChars = s => /;|>|<|"|'|’|\\--/.test(s) // what about = in b64?
+const forbiddenChars = s => /;|>|<|"|'|’|\/|\\|=[\s\S]/.test(s) // string ending in "=" for b64
 const forbiddenStrings = a => a.map(i => forbiddenChars(''+i)).reduce((i,j) => i||j, false)
 
-const createStatement = ({type, version, domain, statement, time, hash_b64, content, content_hash, verification_method}) => (new Promise((resolve, reject)=>{
-    if(
-      forbiddenStrings([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method])
-    ){
-      resolve({error: "forbidden characters"})
+const s = (f) => { 
+  // sql&xss satitize all input to exported functions, checking all string values of a single input object
+  return (o) => {
+    if (typeof o == 'undefined') {
+      return f()
     }
+    if (forbiddenStrings(Object.values(o))) {
+      return {error: 'invalid characters'}
+    } else {
+      return f(o)
+    }
+  }
+}
+
+const createStatement = ({type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id}) => (new Promise((resolve, reject)=>{
     try {
-      [
-        'statement',
-        1,
-        'rixdata.net',
-        'domain: rixdata.net\n' +
-          'time: Sun, 02 Oct 2022 17:47:03 GMT\n' +
-          'statement: test 19:47',
-        'Sun, 02 Oct 2022 17:47:03 GMT',
-        '9JDwgxZ5D749w+Gp2RvMp7D+GVJHDEGtn2RpAafomvk=',
-        'test 19:47',
-        'Rvg94MOylRxShG2cjTQPwzb8K73KtJaK9ktwXc00lrQ=',
-        'dns'
-      ]
-      console.log([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method])
+      console.log([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id])
+      //TODO add source_node_id if not null
         pool.query(`INSERT INTO statements (type, version, domain, statement, time,
-                            hash_b64, content, content_hash, verification_method, latest_verification_ts) 
-                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
-                    ON CONFLICT (hash_b64)  DO UPDATE
+                            hash_b64, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
+                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+                    ON CONFLICT (hash_b64) DO UPDATE
                       SET latest_verification_ts = CURRENT_TIMESTAMP
                     RETURNING *`,
-     [type, version, domain, statement, time, hash_b64, content, content_hash, verification_method], (error, results) => {
+     [type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id], (error, results) => {
         if (error) {
             console.log(error)
             resolve({error})
@@ -99,11 +96,6 @@ const createStatement = ({type, version, domain, statement, time, hash_b64, cont
     }))
 
 const createVerification = ({statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source}) => (new Promise((resolve, reject)=>{
-      if(
-        forbiddenStrings([statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source])
-      ){
-        resolve({error: "forbidden characters"})
-      }
       try {
           pool.query('INSERT INTO verifications (statement_id, version, verifer_domain, verified_domain, '+
       'name, country, number, authority, method, source) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
@@ -173,8 +165,10 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
       try {
           pool.query(`
             SELECT 
-                domain
-            FROM p2p_nodes v
+                domain,
+                id,
+                last_received_statement_id
+            FROM p2p_nodes;
             `, (error, results) => {
           if (error) {
               console.log(error)
@@ -261,6 +255,48 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
           resolve({error})
       }
     }))
+    const setLastReceivedStatementId = (domain, id) => (new Promise((resolve, reject) =>{
+        console.log('setLastReceivedStatementId', domain, id)
+        try {
+          pool.query(`
+            UPDATE p2p_nodes
+            SET last_received_statement_id = ${id}
+            WHERE domain = '${domain}'
+              AND (last_received_statement_id IS NULL
+                OR
+                last_received_statement_id < ${id}
+              );
+            `, (error, results) => {
+          if (error) {
+              console.log(error)
+              resolve({error})
+          } else {
+              resolve(results)
+          }
+        })
+      } catch (error){
+          resolve({error})
+      }
+    }))
+    const statementExists = (hash_b64) => (new Promise((resolve, reject) =>{
+        try {
+          pool.query(`
+            SELECT 1 FROM statements WHERE hash_b64 = '${hash_b64}' LIMIT 1;
+            `, (error, results) => {
+          
+          //console.log('statementExists', hash_b64, results, error)
+          if (error) {
+              console.log(error)
+              resolve({error})
+          } else {
+              resolve(results)
+          }
+        })
+      } catch (error){
+          resolve({error})
+      }
+    }))
+
     const getOwnStatement = (hash,domain) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
@@ -284,16 +320,18 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
     }))
 
   module.exports = {
-    createStatement,
-    getStatements,
-    getStatement,
-    getOwnStatement,
-    createVerification,
-    forbiddenChars,
-    forbiddenStrings,
-    getVerifications,
-    getAllVerifications,
-    getAllNodes,
-    addNode,
-    getJoiningStatements
+    createStatement: s(createStatement),
+    getStatements: s(getStatements),
+    getStatement: s(getStatement),
+    getOwnStatement: s(getOwnStatement),
+    createVerification: s(createVerification),
+    forbiddenChars: s(forbiddenChars),
+    forbiddenStrings: s(forbiddenStrings),
+    getVerifications: s(getVerifications),
+    getAllVerifications: s(getAllVerifications),
+    getAllNodes: s(getAllNodes),
+    addNode: s(addNode),
+    getJoiningStatements: s(getJoiningStatements),
+    setLastReceivedStatementId: s(setLastReceivedStatementId),
+    statementExists: s(statementExists)
   }

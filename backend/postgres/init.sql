@@ -38,12 +38,14 @@ CREATE TABLE IF NOT EXISTS verifications (
     method VARCHAR(100) NOT NULL, -- twitter_reference_blue_badge | linkedin_reference_100_employees | wikipedia_reference_100_days_unchanged | personal_contact_to_employee
     source VARCHAR(100) NOT NULL
 );
+DROP TABLE IF EXISTS admin_users;
 CREATE TABLE IF NOT EXISTS admin_users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(150) UNIQUE NOT NULL,
   name VARCHAR(150) NOT NULL,
   password VARCHAR(150) NOT NULL
 );
+DROP TABLE IF EXISTS p2p_nodes;
 CREATE TABLE IF NOT EXISTS p2p_nodes (
   id SERIAL PRIMARY KEY,
   domain VARCHAR(150) UNIQUE NOT NULL,

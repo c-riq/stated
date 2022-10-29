@@ -15,7 +15,7 @@ const _hash = require('./hash');
 const cp = require('child_process');
 const { copy } = require('fs-extra');
 
-const validateStatementMetadata = async ({type, version, domain, statement, time, hash_b64, content, content_hash }) => {
+const validateStatementMetadata = async ({type, version, domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
     if (type !== "statement" || version !== 1){
         return({error: "invalid verification"})
     }
@@ -40,6 +40,14 @@ const validateStatementMetadata = async ({type, version, domain, statement, time
     }
     if (!await _hash.verify(groups.statement, content_hash)){
         return({error: "invalid content hash: "+group.statement+content_hash})
+    }
+    if (! (
+        (typeof source_node_id == 'number')
+            ||
+        (typeof source_node_id == 'undefined')
+        ) 
+    ){
+        return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
     return {}
 }
@@ -101,9 +109,13 @@ const verifyTXTRecord = async (domain, record) => {
 
 const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
     const validationResult = await validateStatementMetadata({type: 'statement', version: 1, domain: s.domain, statement: s.statement, 
-        hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash})
+        hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash, source_node_id: s.source_node_id})
     if (validationResult.error) {
         resolve(validationResult)
+    }
+    if ((await db.statementExists(s.hash_b64)).length > 0){
+        resolve({error: 'statement exists already in db'})
+        return
     }
     if (s.verification_method && s.verification_method === 'api'){
         // api verification method
@@ -117,7 +129,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
                 try {
                     console.log(json.data.statements[0].hash_b64, 'result from ', s.domain)
                     const dbResult = await db.createStatement({type: 'statement', version: 1, domain, statement, time, 
-                        hash_b64: hash, content, content_hash, verification_method: 'api'})
+                        hash_b64: hash, content, content_hash, verification_method: 'api', source_node_id: s.source_node_id})
                     resolve(dbResult)
                 }
                 catch(error) {
@@ -136,7 +148,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
                 resolve({error: 'could not verify TXT record ' + s.hash + ' in DNS of '+ s.domain})
             } else {
                 const dbResult = await db.createStatement({type: 'statement', version: 1, domain: s.domain, statement: s.statement, time: s.time, 
-                    hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash, verification_method: 'dns'})
+                    hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash, verification_method: 'dns', source_node_id: s.source_node_id})
                 resolve(dbResult)
             }
         })()

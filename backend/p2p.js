@@ -7,7 +7,6 @@ const hash = require('./hash');
 const statementVerification = require('./statementVerification');
 
 const ownDomain = process.env.DOMAIN
-console.log(process.env)
 
 const validateAndAddNode = (d) => new Promise((resolve, reject) => {
     // sql injection; running stated?
@@ -22,10 +21,13 @@ const validateAndAddNode = (d) => new Promise((resolve, reject) => {
     let url = 'https://' + d + '/api/health'
     console.log('checkNode', url)
     axios.get(url)
-        .then((json) => {
+        .then((res) => {
             try {
-                console.log(json.data)
-                if(json.data.application == 'stated'){
+                // console.log(res.request.res.socket.getPeerCertificate(false).infoAccess['OCSP - URI'])
+                // console.log(res.request.res.socket.getPeerCertificate(false).fingerprint)
+                // console.log(res.request.socket.remoteAddress)
+                console.log(res.data)
+                if(res.data.application == 'stated'){
                     db.addNode(d)
                         .then(r => resolve(r))
                         .catch(error => resolve({error}))
@@ -125,8 +127,18 @@ const fetchMissingStatementsFromNode = (n) => new Promise((resolve, reject) => {
             try {
                 console.log(json.data)
                 console.log(json.data.statements)
-                Promise.all(json.data.statements.map(s => statementVerification.validateAndAddStatementIfMissing(s)))
-                    .then(r=>resolve(r)).catch(error=>reject({error}))
+                Promise.all(json.data.statements.map(s => {
+                    statementVerification.validateAndAddStatementIfMissing({...s, source_node_id: n.id})
+                }))
+                    .then(
+                        async r=>{
+                            let lastReceivedStatementId = Math.max(...json.data.statements.map(s => s.id))
+                            if (lastReceivedStatementId >= 0) {
+                                await db.setLastReceivedStatementId(n.domain, lastReceivedStatementId)
+                            }
+                            resolve(r)
+                        }
+                    ).catch(error=>reject({error}))
             }
             catch(error) {
                 resolve({error})
@@ -155,14 +167,22 @@ const fetchMissingStatementsFromNodes = async () => {
 
 (async () => {
     try {
-        // await addSeedNodes()
-        // await addNodesOfPeers()
-        // await joinNetwork()
+        await addSeedNodes()
+        await addNodesOfPeers()
+        await joinNetwork()
         await fetchMissingStatementsFromNodes()
     } catch (e) {
         console.log(e)
     }
 })()
+
+setInterval(async () => {
+    try {
+        await fetchMissingStatementsFromNodes()
+    } catch (e) {
+        console.log(e)
+    }
+}, 20 * 1000)
 
 module.exports = {
     validateAndAddNode
