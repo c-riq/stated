@@ -31,36 +31,37 @@ import gh from './img/github.png'
 // publish results / news feed with upload
 
 const CenterModal = (props) => {
+  const { lt850px } = props
   return(
   <Modal sx={{backgroundColor:'rgba(0,0,0,0.1)'}} open={props.modalOpen} onClose={props.onClose}>
+    <div>
   <Box sx={{
       position: 'absolute',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '70vw',
-      height: '70vh',
+      width: lt850px ? '100vw' : '70vw',
+      height:  lt850px ? '100vh' :'70vh',
       bgcolor: '#ffffff',
       borderRadius: '12px',
       borderWidth: '0px',
       boxShadow: 24,
-      overflow: 'scroll',
+      overflowY: 'scroll',
       p: 0
     }}>
-<div style={{
-    height: 50,
-    padding: '16px 16px 16px 16px'
-}}>
-  <a onClick={props.onClose} style={{cursor: 'pointer'}}>
-    <CloseIcon sx={{fontSize: "30px"}} />
-  </a>
-</div>
-    <div style={{padding: '20px', yOverflow: 'scroll'}}>
+    {!lt850px&&(<div style={{height: 50, padding: '16px 16px 16px 16px'}}>
+      <a onClick={props.onClose} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
+    </div>)}
+    <div style={{padding: '20px', overflowY: 'scroll'}}>
       {
         props.children
       }
     </div>
   </Box>
+  {lt850px && (<div style={{position: 'fixed', top: "16px", left: "16px", height: "50px", width: "50px"}}>
+    <a onClick={props.onClose} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
+  </div>)}
+</div>
 </Modal>)
 }
 
@@ -72,7 +73,10 @@ function App() {
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
+  const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const navigate = useNavigate();
+
+  React.useEffect(() => {window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));}, []);
 
   const getStatementsAPI = () => {
     console.log("getPosts")
@@ -115,7 +119,7 @@ function App() {
             </div>
             <div style={{ flexGrow: 1 }}></div>
             <div>
-              <TextField id="standard-size-normal" label="" variant="outlined" size='small'
+              <TextField id="serach-field" label="" variant="outlined" size='small'
               sx={{height: "40px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
               '& label': { paddingLeft: (theme) => theme.spacing(2) },
         '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
@@ -134,7 +138,7 @@ function App() {
           </div>
         </div>
       </header>
-      <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} posts={posts} >
+      <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} posts={posts} lt850px={lt850px}>
         <Link to="/create-statement">
           <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
           sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
@@ -144,12 +148,12 @@ function App() {
       <Routes>
           <Route path='/' exact />
           <Route path='/statement/:statementId' element={(
-            <CenterModal modalOpen={true} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(""); setPostToView(false)}}>
+            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(""); setPostToView(false)}}>
               <Statement hash_b16={useParams()} hash_b64={Buffer.from(useParams().statementId || '', 'hex').toString('base64')} />
             </CenterModal>)} 
           />
           <Route path='/create-statement' element={
-            <CenterModal modalOpen={true}  onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(""); setPostToView(false)}}>
+            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(""); setPostToView(false)}}>
               <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} />
             </CenterModal>} 
           />

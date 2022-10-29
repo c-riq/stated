@@ -12,10 +12,11 @@ const b64ToHex = (b64) => {
 
 
 const Statements = props => {
+    const { lt850px } = props
     return (
-        <div style={{ padding: "7%",margin: "2%", borderRadius: 8 }}>
-            <div style={{ width: "70vw", maxWidth: "900px" }}>
-            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}><h3>Statements</h3> {props.children}</div>
+        <div style={lt850px ? {marginBottom : "10%" } : { padding: "7%",margin: "2%", borderRadius: 8 }}>
+            <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
+            <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}><h3>Statements</h3> {props.children}</div>
                 {props.posts && props.posts.length > 0 && props.posts.map((p,i) => (
                     <div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                         <div style={{display: "flex", flexDirection: "column", justifyContent:"center"}}>

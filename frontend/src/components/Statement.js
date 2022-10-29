@@ -35,25 +35,25 @@ const Statement = props => {
     })
 
     return (
-        <div style={{ padding: "7%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
-         flexDirection:'row', justifyContent: 'center' }}>
+        <div style={{ maxWidth: "90vw", padding: "7%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
+         flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
-            <TableContainer component={Paper}>
-            <Table sx={{ width: 40, border: 0.5 }} aria-label="simple table">
+            <TableContainer component={Paper} sx={{ maxWidth: "90vw"}}>
+            <Table sx={{ maxWidth: "100vw", border: 0.5 }} aria-label="simple table">
                 <TableHead>
                 <TableRow>
                     <TableCell>Key</TableCell>
                     <TableCell align="right">Value</TableCell>
                 </TableRow>
                 </TableHead>
-                <TableBody>
+                <TableBody sx={{ maxWidth: "100vw"}}>
                 {Object.keys(post).map((row,i) => (
                     <TableRow
                     key={i}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, maxWidth: "90vw" }}
                     >
-                    <TableCell component="th" scope="row">
+                    <TableCell component="th" scope="row" sx={{ maxWidth: "90vw" }}>
                         {row}
                     </TableCell>
                     <TableCell align="right">{row == "statement" ? 
