@@ -10,7 +10,7 @@ const fse = require('fs-extra')
 
 const db = require('./db');
 const p2p = require('./p2p');
-const _hash = require('./hash');
+const hash = require('./hash');
 const domainVerification = require('./domainVerification');
 const statementVerification = require('./statementVerification');
 
@@ -74,7 +74,7 @@ app.post("/api/submit_statement", async (req, res, next) => {
     try {
         const { content, hash, domain, time, statement, type, content_hash } = req.body
         console.log("req.body",req.body)
-        if (await _hash.verify(req.body.statement, req.body.hash)) {
+        if (await hash.verify(req.body.statement, req.body.hash)) {
             txtCorrect = await statementVerification.verifyTXTRecord("stated." + req.body.domain, req.body.hash)
             console.log("txtCorrect", txtCorrect)
             if (txtCorrect) {
@@ -138,7 +138,7 @@ app.get("/api/statements", async (req, res, next) => {
 });
 app.post("/api/statement", async (req, res, next) => {
     try {
-        const dbResult = await db.getStatement(req.body.hash_b64)
+        const dbResult = await db.getStatement({hash_b64: req.body.hash_b64})
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -150,7 +150,7 @@ app.post("/api/statement", async (req, res, next) => {
 app.post("/api/verifications", async (req, res, next) => {
     try {
         console.log(req.body.domain, req.body)
-        const dbResult = await db.getVerifications(req.body.hash_b64)
+        const dbResult = await db.getVerifications({hash_b64: req.body.hash_b64})
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -162,7 +162,7 @@ app.post("/api/verifications", async (req, res, next) => {
 app.post("/api/joining_statements", async (req, res, next) => {
     try {
         console.log(req.body.content_hash, req.body)
-        const dbResult = await db.getJoiningStatements(req.body.hash_b64)
+        const dbResult = await db.getJoiningStatements({hash_b64: req.body.hash_b64})
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -189,7 +189,7 @@ app.get("/statement/:hex", async (req, res, next) => {
         const hex = req.params.hex
         const b64 = hash.hexToB64(hex)
         console.log(b64, ownDomain)
-        const dbResult = await db.getOwnStatement(b64, ownDomain)
+        const dbResult = await db.getOwnStatement({b64, ownDomain})
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -238,7 +238,7 @@ app.get("/api/nodes", async (req, res, next) => {
 app.post("/api/join_network", async (req, res, next) => {
     try {
         console.log(req.body)
-        const r = await p2p.validateAndAddNode(req.body.domain)
+        const r = await p2p.validateAndAddNode({domain: req.body.domain})
         if (r.error) {
             next(r.error)
         } else {

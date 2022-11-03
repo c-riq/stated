@@ -1,30 +1,25 @@
 
-const example = `domain: rixdata.net
-time: Sun, 04 Sep 2022 15:00:47 GMT
-type: domain_verification
-statement: We personally confirmed with a direct employee of the company that this is the companies main domain.
-verify organisation domain: siemens-energy.com
-verify organisation name: Rix Data UG (haftungsbeschränkt)
-verify organisation country: Germany
-verify organisation registration number: HRB 10832
-verify organisation registration authority: Amtsgericht Bamberg
-verify organisation source: Christopher Rieckmann` // 486 chars
+const example = 
+`	organisation name: Walmart Inc.
+	legal form: U.S. corporation
+	domain of primary website: walmart.com
+	headquarter city: Bentonville
+	headquarter province/state: Arkansas
+	headquarter country: United States of America
+`
 
-
-var v1Regex= new RegExp(''
-  + /^domain: (?<verifer_domain>[^\n]+?)\n/.source
-  + /time: (?<time>[^\n]+?)\n/.source
-  + /type: (?<type>[^\n]+?)\n/.source 
-  + /statement: (?<statement>[^\n]+?)\n/.source
-  + /verify organisation domain: (?<domain>[^\n]+?)\n/.source
-  + /verify organisation name: (?<name>[^\n]+?)\n/.source 
-  + /verify organisation country: (?<country>[^\n]+?)\n/.source
-  + /verify organisation registration number: (?<number>[^\n]+?)\n/.source 
-  + /verify organisation registration authority: (?<authority>[^\n]+?)\n/.source 
-  + /verify organisation source: (?<source>[^\n]+?)$/.source
+var domainVerificationRegex= new RegExp(''
+  + /^\torganisation name: (?<name>[^\n]+?)\n/.source 
+  + /\tlegal form: (?<legalForm>[^\n]+?)\n/.source 
+  + /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
+  + /\theadquarter city: (?<city>[^\n]+?)\n/.source
+  + /\theadquarter province\/state: (?<province>[^\n]+?)\n/.source
+  + /\theadquarter country: (?<country>[^\n]+?)\n$/.source
 );
 
-let groups = example.match(v1Regex).groups;
+console.log(example.match(domainVerificationRegex))
+let groups = example.match(domainVerificationRegex).groups;
+console.log(groups)
 
 const db = require('./db');
 

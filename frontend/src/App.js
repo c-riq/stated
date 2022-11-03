@@ -122,12 +122,12 @@ function App() {
               <TextField id="serach-field" label="" variant="outlined" size='small'
               sx={{height: "40px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
               '& label': { paddingLeft: (theme) => theme.spacing(2) },
-        '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
-        '& fieldset': {
-          paddingLeft: (theme) => theme.spacing(2.5),
-          borderRadius: '15px',
-          height: '40 px'
-        },}}/>
+              '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
+              '& fieldset': {
+                paddingLeft: (theme) => theme.spacing(2.5),
+                borderRadius: '15px',
+                height: '40 px'
+              },}}/>
             </div>
             {/* <div>
               <Link style={{color: "rgba(255,255,255,1)"}} to="/">home</Link>

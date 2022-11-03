@@ -1,25 +1,59 @@
 
 const example = `domain: rixdata.net
 time: Sun, 04 Sep 2022 14:48:50 GMT
-statement: hello world`
+tags: hashtag1, hashtag2
+content: hello world
+`
 
-var v1Regex= new RegExp(''
-  + /^domain: (?<domain>[^\n]+?)\n/.source
-  + /time: (?<time>[^\n]+?)\n/.source
-  + /statement: (?<statement>[^\n]+?)$/.source
+const example2 = `domain: rixdata.net
+time: Sun, 04 Sep 2022 14:48:50 GMT
+tags: sdf
+content: 
+	type: domain verification
+	organisation name: Walmart Inc.
+	legal form: U.S. corporation
+	domain of primary website: walmart.com
+	headquarter city: Bentonville
+	headquarter province/state: Arkansas
+	headquarter country: United States of America
+`
+
+var statementRegex= new RegExp(''
+    + /^domain: (?<domain>[^\n]+?)\n/.source
+    + /time: (?<time>[^\n]+?)\n/.source
+    + /tags: (?<tags>[^\n]*?)\n/.source
+    + /content: (?<content>[\s\S]+?)$/.source
 );
+
+
+var contentRegex= new RegExp(''
+// with content type
+    + /^\n\ttype: (?<type>[^\n]+?)\n/.source
+    + /(?<typedContent>[\s\S]+?)$/.source
+// without content type
+    + /|^(?<content>[^\n][\s\S]+?)$/.source
+);
+
+console.log(example2.match(statementRegex))
+console.log('content__', String(example2.match(statementRegex).groups.content),  String(example2.match(statementRegex).groups.content).match(contentRegex))
+
+console.log('content__', String(example.match(statementRegex).groups.content),  String(example.match(statementRegex).groups.content).match(contentRegex))
+
 
 const axios = require('axios').default;
 const db = require('./db');
-const _hash = require('./hash');
+const hash = require('./hash');
 const cp = require('child_process');
-const { copy } = require('fs-extra');
 
 const validateStatementMetadata = async ({type, version, domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
     if (type !== "statement" || version !== 1){
         return({error: "invalid verification"})
     }
-    const groups = statement.match(v1Regex).groups
+    const regexResults = statement.match(statementRegex)
+    if (!regexResults) {
+        return({error: "invalid verification"})
+    }
+    const groups = regexResults.groups
     if (groups.domain !== domain) {
         return({error: "domain in verification statement not matching author domain"})
     }
@@ -29,16 +63,16 @@ const validateStatementMetadata = async ({type, version, domain, statement, time
     if (groups.statement !== content){
         return {error: 'invalid content' + groups.statement + ' vs '+ content}
     }
-    if (Object.values(groups).length != 3) {
+    if (Object.values(groups).length != 4) {
         return({error: "invalid verification format"})
     }
     if (groups.domain.length < 1 || groups.time.length < 1 || groups.statement.length < 1 ) {
         return({error: "Missing required fields"})
     }
-    if (!await _hash.verify(statement, hash_b64)){
+    if (!await hash.verify(statement, hash_b64)){
         return({error: "invalid hash: "+statement+hash_b64})
     }
-    if (!await _hash.verify(groups.statement, content_hash)){
+    if (!await hash.verify(groups.content, content_hash)){
         return({error: "invalid content hash: "+group.statement+content_hash})
     }
     if (! (
@@ -49,6 +83,9 @@ const validateStatementMetadata = async ({type, version, domain, statement, time
     ){
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
+    const parsedContent = groups.content
+    const contentRegexResults = content.match(parsedContent)
+    console.log(contentRegexResults)
     return {}
 }
 
@@ -113,7 +150,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
     if (validationResult.error) {
         resolve(validationResult)
     }
-    if ((await db.statementExists(s.hash_b64)).length > 0){
+    if ((await db.statementExists({hash_b64: s.hash_b64})).length > 0){
         resolve({error: 'statement exists already in db'})
         return
     }

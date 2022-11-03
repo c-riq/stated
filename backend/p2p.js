@@ -134,7 +134,7 @@ const fetchMissingStatementsFromNode = (n) => new Promise((resolve, reject) => {
                         async r=>{
                             let lastReceivedStatementId = Math.max(...json.data.statements.map(s => s.id))
                             if (lastReceivedStatementId >= 0) {
-                                await db.setLastReceivedStatementId(n.domain, lastReceivedStatementId)
+                                await db.setLastReceivedStatementId({domain: n.domain, lastReceivedStatementId})
                             }
                             resolve(r)
                         }

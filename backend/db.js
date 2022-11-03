@@ -113,7 +113,7 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
     }))
 
 
-    const getVerifications = (hash_b64) => (new Promise((resolve, reject)=>{
+    const getVerifications = ({hash_b64}) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
             WITH domains AS (
@@ -182,11 +182,11 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
       }
     }));
     
-    const addNode = (d) => (new Promise((resolve, reject)=>{
+    const addNode = ({domain}) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
             INSERT INTO p2p_nodes (domain, last_seen) VALUES
-                ('${d}', CURRENT_TIMESTAMP)
+                ('${domain}', CURRENT_TIMESTAMP)
             ON CONFLICT (domain) DO UPDATE
               SET last_seen = CURRENT_TIMESTAMP
             RETURNING *
@@ -203,7 +203,7 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
       }
     }));
 
-    const getJoiningStatements = (hash_b64) => (new Promise((resolve, reject)=>{
+    const getJoiningStatements = ({hash_b64}) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
             WITH content_hashes AS(
@@ -232,7 +232,7 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
           resolve({error})
       }
     }))
-    const getStatement = (hash) => (new Promise((resolve, reject)=>{
+    const getStatement = ({hash}) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
             SELECT 
@@ -255,7 +255,7 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
           resolve({error})
       }
     }))
-    const setLastReceivedStatementId = (domain, id) => (new Promise((resolve, reject) =>{
+    const setLastReceivedStatementId = ({domain, id}) => (new Promise((resolve, reject) =>{
         console.log('setLastReceivedStatementId', domain, id)
         try {
           pool.query(`
@@ -278,7 +278,7 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
           resolve({error})
       }
     }))
-    const statementExists = (hash_b64) => (new Promise((resolve, reject) =>{
+    const statementExists = ({hash_b64}) => (new Promise((resolve, reject) =>{
         try {
           pool.query(`
             SELECT 1 FROM statements WHERE hash_b64 = '${hash_b64}' LIMIT 1;
@@ -297,7 +297,7 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
       }
     }))
 
-    const getOwnStatement = (hash,domain) => (new Promise((resolve, reject)=>{
+    const getOwnStatement = ({hash,domain}) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
             SELECT 
