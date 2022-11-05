@@ -28,7 +28,6 @@ const s = (f) => {
 const createStatement = ({ type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
     console.log([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id])
-    //TODO add source_node_id if not null
     pool.query(`INSERT INTO statements (type, version, domain, statement, time,
                             hash_b64, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
@@ -237,6 +236,7 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
     resolve({ error })
   }
 }))
+
 const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   console.log('getStatement', hash_b64)
   try {
@@ -261,6 +261,7 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
     resolve({ error })
   }
 }))
+
 const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, reject) => {
   console.log('setLastReceivedStatementId', domain, id)
   try {
@@ -284,6 +285,7 @@ const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, re
     resolve({ error })
   }
 }))
+
 const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`

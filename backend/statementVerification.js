@@ -24,13 +24,10 @@ var statementRegex= new RegExp(''
     + /content: (?<content>[\s\S]+?)$/.source
 );
 
-
 var contentRegex= new RegExp(''
-// with content type
     + /^\n\ttype: (?<type>[^\n]+?)\n/.source
     + /(?<typedContent>[\s\S]+?)$/.source
-// without content type
-    + /|^(?<content>[^\n][\s\S]+?)$/.source
+    + /|^(?<content>[\s\S]+?)$/.source
 );
 
 const domainVerificationType = 'domain verification'

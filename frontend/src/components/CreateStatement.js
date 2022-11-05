@@ -5,7 +5,6 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
 import {Buffer} from 'buffer';
-import { textAlign } from '@mui/system';
 
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
@@ -14,22 +13,30 @@ import Portal from '@mui/material/Portal';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 
 import {countries} from '../constants/country_names_iso3166'
 import {verificationMethods} from '../constants/verification_methods'
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 
+const top100Films = [
+    { title: 'The Shawshank Redemption', year: 1994 },
+    { title: 'The Godfather', year: 1972 },
+    { title: 'The Godfather: Part II', year: 1974 },
+    { title: 'The Dark Knight', year: 2008 },
+    { title: '12 Angry Men', year: 1957 },
+    { title: "Schindler's List", year: 1993 }]
+
 const CreateStatement = props => {
-    const { handleSubmit } = props
     const [content, setContent] = React.useState(props.statementToJoin || "");
     const [type, setType] = React.useState("statement");
     const [country, setCountry] = React.useState("");
-    const [registrationAuthority, setRegistrationAuthority] = React.useState("");
-    const [registrationNumber, setRegistrationNumber] = React.useState("");
+    const [province, setProvince] = React.useState("");
+    const [city, setCity] = React.useState("");
+    const [legalForm, setLegalForm] = React.useState("");
     const [verificationMethod, setVerificationMethod] = React.useState("");
     const [contentHash, setContentHash] = React.useState(""); // for joining statement
     const [statement, setStatement] = React.useState("");
@@ -37,10 +44,8 @@ const CreateStatement = props => {
     const [domain, setDomain] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
-    const [verifySource, setVerifySource] = React.useState("");
     const [dnsResponse, setDnsResponse] = React.useState([]);
     const [statementHash, setStatementHash] = React.useState("");
-    const [addedStatementToJoin, setAddedStatementToJoin] = React.useState("");
 
 
 
@@ -103,16 +108,16 @@ const CreateStatement = props => {
             const statement = 
             "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
-            "tags: " + "\n" + 
+            (tags.length > 0 ? "tags: " + "\n" + tags.join(',') : '') +
             "content: " + "\n" + 
             "\t" + "type: domain verification" + "\n" +
             "\t" + "description: We verified the following information about an organisation." + "\n" +
             "\t" + "organisation name: " + verifyName + "\n" +
-            "\t" + "legal form: " + verifyName + "\n" +
-            "\t" + "domain of primary website: " + verifyName + "\n" +
-            "\t" + "headquarter city: " + verifyName + "\n" +
-            "\t" + "headquarter province/state: " + verifyName + "\n" +
-            "\t" + "headquarter country: " + verifyName + "\n" +
+            "\t" + "legal form: " + legalForm + "\n" +
+            "\t" + "domain of primary website: " + verifyDomain + "\n" +
+            "\t" + "headquarter city: " + city + "\n" +
+            "\t" + "headquarter province/state: " + province + "\n" +
+            "\t" + "headquarter country: " + country + "\n" +
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
@@ -138,7 +143,8 @@ const CreateStatement = props => {
                         <MenuItem value={"statement"}>Statement</MenuItem>
                         <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
                 </Select>
-                {type == "statement" &&(
+            {type == "statement" &&(
+                <div>
                 <TextField
                     id="content"
                     variant="outlined"
@@ -148,15 +154,25 @@ const CreateStatement = props => {
                     label="Statement"
                     onChange={e => { setContent(e.target.value) }}
                     margin="normal"
-                    // value={() => {
-                    //     if (props.statementToJoin == addedStatementToJoin) {
-                    //         return false
-                    //     } 
-                    //     setAddedStatementToJoin(props.statementToJoin) 
-                    //     return statement}}
                     value={content}
                 />
-                )}
+                <Autocomplete
+                    multiple
+                    id="tags"
+                    options={top100Films}
+                    getOptionLabel={(option) => option.title}
+                    defaultValue={[top100Films[3]]}
+                    filterSelectedOptions
+                    renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label="filterSelectedOptions"
+                        placeholder="tags"
+                    />
+                    )}
+                />
+                </div>
+            )}
                 <TextField
                     id="your domain"
                     variant="outlined"
@@ -165,21 +181,53 @@ const CreateStatement = props => {
                     onChange={e => { setDomain(e.target.value) }}
                     margin="normal"
                 />
-                {type == "domain_verification" &&(
-                    <FormControl sx={{width: "100%"}}>
+            {type == "domain_verification" &&(
+                <FormControl sx={{width: "100%"}}>
                 <TextField
                     id="domain to be verified"
                     variant="outlined"
                     placeholder='google.com'
-                    label="Domain to be verified"
+                    label="Primary website domain of organisation to be verified"
                     onChange={e => { setVerifyDomain(e.target.value) }}
                     margin="normal"
                     sx={{marginBottom: "24px"}}
                 />
-
-
+                <TextField
+                    id="organisation name"
+                    variant="outlined"
+                    placeholder='google.com'
+                    label="Official name of organisation"
+                    onChange={e => { setVerifyName(e.target.value) }}
+                    margin="normal"
+                    sx={{marginTop: "24px"}}
+                />
+                <TextField
+                    id="legalform"
+                    variant="outlined"
+                    placeholder='U.S. corporation'
+                    label="Legal form"
+                    onChange={e => { setLegalForm(e.target.value) }}
+                    margin="normal"
+                    sx={{marginBottom: "24px"}}
+                />
+                <TextField
+                    id="city"
+                    variant="outlined"
+                    placeholder='London'
+                    label="Hedquarter city"
+                    onChange={e => { setCity(e.target.value) }}
+                    margin="normal"
+                />
+                <TextField
+                    id="province"
+                    variant="outlined"
+                    placeholder='Texas'
+                    label="Headquarter province / state"
+                    onChange={e => { setProvince(e.target.value) }}
+                    margin="normal"
+                />
                 <Autocomplete
-                    id="country-select-demo"
+                    id="country"
                     options={countries.countries}
                     autoHighlight
                     getOptionLabel={(option) => option[0]}
@@ -206,62 +254,8 @@ const CreateStatement = props => {
                         }}
                         />
                     )}
-                    />
-
-
-
-                <TextField
-                    id="legal entity name"
-                    variant="outlined"
-                    placeholder='google.com'
-                    label="Full name of legal entity"
-                    onChange={e => { setVerifyName(e.target.value) }}
-                    margin="normal"
-                    sx={{marginTop: "24px"}}
                 />
-                <TextField
-                    id="registration number"
-                    variant="outlined"
-                    placeholder='1234'
-                    label="Registration Number"
-                    onChange={e => { setRegistrationNumber(e.target.value) }}
-                    margin="normal"
-                />
-                <TextField
-                    id="registration authority"
-                    variant="outlined"
-                    placeholder='Amtsgericht Berlin'
-                    label="Registration Authority"
-                    onChange={e => { setRegistrationAuthority(e.target.value) }}
-                    margin="normal"
-                    sx={{marginBottom: "24px"}}
-                />
-
-                <FormControl sx={{width: "100%"}}>
-                <InputLabel id="verification-method-label">Verification Method</InputLabel>
-                <Select
-                        labelId="verification-method-label"
-                        id="verification-method"
-                        value={verificationMethod}
-                        label="Verification Method"
-                        onChange={(e)=>setVerificationMethod(e.target.value)}
-                >
-                    {verificationMethods.map((m,i) => {
-                        return(<MenuItem key={i} sx={{wordBreak: "break-all", width: "500px", whiteSpace: 'normal'}} value={m.statement}>{m.statement}</MenuItem>)
-                    })}
-                </Select>
                 </FormControl>
-
-                <TextField
-                    id="Source: Full URL or employee name"
-                    variant="outlined"
-                    placeholder='https://wikipedia.org'
-                    label="Source: Full URL or employee name"
-                    onChange={e => { setVerifySource (e.target.value) }}
-                    margin="normal"
-                    sx={{marginTop: "24px"}}
-                />
-                    </FormControl>
                 )}
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
                 <Button variant="contained" onClick={() => generateSignature()} margin="normal"

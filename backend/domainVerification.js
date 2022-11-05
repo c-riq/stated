@@ -1,6 +1,7 @@
 
 const example = 
-`	organisation name: Walmart Inc.
+`	description: We verified the following information about an organisation.
+	organisation name: Walmart Inc.
 	legal form: U.S. corporation
 	domain of primary website: walmart.com
 	headquarter city: Bentonville
@@ -9,7 +10,8 @@ const example =
 `
 
 var domainVerificationRegex= new RegExp(''
-  + /^\torganisation name: (?<name>[^\n]+?)\n/.source 
+  + /^\todescription: We verified the following information about an organisation.\n/.source 
+  + /\torganisation name: (?<name>[^\n]+?)\n/.source 
   + /(?:\tlegal form: (?<legalForm>[^\n]+?)\n)?/.source 
   + /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
   + /(?:\theadquarter city: (?<city>[^\n]+?)\n)?/.source
