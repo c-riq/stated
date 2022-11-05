@@ -10,10 +10,10 @@ const example =
 
 var domainVerificationRegex= new RegExp(''
   + /^\torganisation name: (?<name>[^\n]+?)\n/.source 
-  + /\tlegal form: (?<legalForm>[^\n]+?)\n/.source 
+  + /(?:\tlegal form: (?<legalForm>[^\n]+?)\n)?/.source 
   + /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
-  + /\theadquarter city: (?<city>[^\n]+?)\n/.source
-  + /\theadquarter province\/state: (?<province>[^\n]+?)\n/.source
+  + /(?:\theadquarter city: (?<city>[^\n]+?)\n)?/.source
+  + /(?:\theadquarter province\/state: (?<province>[^\n]+?)\n)?/.source
   + /\theadquarter country: (?<country>[^\n]+?)\n$/.source
 );
 
@@ -23,31 +23,12 @@ console.log(groups)
 
 const db = require('./db');
 
-const {verificationMethods} = require('./verification_methods.js');
 
 
 const createVerificationAndStatement = ({type,version, domain, statement, time, hash_b64, content, content_hash }) => (new Promise((resolve, reject)=>{
-    if (type !== "domain_verification" || version !== 1){
-        resolve({error: "invalid verification"})
-        return
-    }
-    const groups = statement.match(v1Regex).groups
-    if (groups.verifer_domain !== domain) {
-        resolve({error: "domain in verification statement not matching author domain"})
-        return
-    }
-    const appliedMethod = verificationMethods.find(m => m.statement === groups.statement)
-    if (!appliedMethod) {
-        resolve({error: "invalid verification statement"})
-        return
-    }
-    if (Object.values(groups).length != 10) {
-        resolve({error: "invalid verification format"})
-        return
-    }
-    if (groups.verifer_domain.length < 1 || groups.time.length < 1 || groups.type.length < 1 || 
-        groups.statement.length < 1 || groups.domain.length < 1 || groups.name.length < 1 || 
-        groups.country.length < 1 || groups.source.length < 1) {
+    const groups = statement.match(domainVerificationRegex).groups
+    if (groups.domain.length < 1 || groups.time.length < 1 ||
+        groups.name.length < 1 || groups.country.length < 1 ) {
         resolve({error: "Missing required fields"})
         return
     }

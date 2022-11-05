@@ -167,10 +167,10 @@ const fetchMissingStatementsFromNodes = async () => {
 
 (async () => {
     try {
-        await addSeedNodes()
-        await addNodesOfPeers()
-        await joinNetwork()
-        await fetchMissingStatementsFromNodes()
+        //await addSeedNodes()
+        //await addNodesOfPeers()
+        //await joinNetwork()
+        //await fetchMissingStatementsFromNodes()
     } catch (e) {
         console.log(e)
     }
@@ -178,7 +178,7 @@ const fetchMissingStatementsFromNodes = async () => {
 
 setInterval(async () => {
     try {
-        await fetchMissingStatementsFromNodes()
+        //await fetchMissingStatementsFromNodes()
     } catch (e) {
         console.log(e)
     }

@@ -33,6 +33,7 @@ const CreateStatement = props => {
     const [verificationMethod, setVerificationMethod] = React.useState("");
     const [contentHash, setContentHash] = React.useState(""); // for joining statement
     const [statement, setStatement] = React.useState("");
+    const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
@@ -89,17 +90,29 @@ const CreateStatement = props => {
 
     const generateSignature = () => {
         if(type == "statement"){
-            const statement = "domain: " + domain + "\n" + "time: " + props.serverTime + "\n" + "statement: " +  content
+            const statement = "domain: " + domain + "\n" + 
+            "time: " + props.serverTime + "\n" + 
+            (tags.length > 0 ? "tags: " + "\n" + tags.join(',') : '') +
+            "content: " +  content;
+            
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
         }
         if(type == "domain_verification"){
-            const statement = "domain: " + domain + "\n" + "time: " + props.serverTime + "\n" + "type: " +  type + "\n" + "statement: " +  verificationMethod
-            + "\n" + "verify organisation domain: " +  verifyDomain + "\n" + "verify organisation name: " +  verifyName
-            + "\n" + "verify organisation country: " +  country + "\n" + "verify organisation registration number: " + registrationNumber
-            + "\n" + "verify organisation registration authority: " +  registrationAuthority 
-            + "\n" + "verify organisation source: " +  verifySource 
+            const statement = 
+            "domain: " + domain + "\n" + 
+            "time: " + props.serverTime + "\n" + 
+            "tags: " + "\n" + 
+            "content: " + "\n" + 
+            "\t" + "type: domain verification" + "\n" +
+            "\t" + "description: We verified the following information about an organisation." + "\n" +
+            "\t" + "organisation name: " + verifyName + "\n" +
+            "\t" + "legal form: " + verifyName + "\n" +
+            "\t" + "domain of primary website: " + verifyName + "\n" +
+            "\t" + "headquarter city: " + verifyName + "\n" +
+            "\t" + "headquarter province/state: " + verifyName + "\n" +
+            "\t" + "headquarter country: " + verifyName + "\n" +
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})

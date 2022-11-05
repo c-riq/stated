@@ -7,8 +7,9 @@ const pool = new Pool({
   port: 5432,
 })
 
-const forbiddenChars = s => /;|>|<|"|'|’|\/|\\|=[\s\S]/.test(s) // string ending in "=" for b64
-const forbiddenStrings = a => a.map(i => forbiddenChars(''+i)).reduce((i,j) => i||j, false)
+const forbiddenChars = s => /;|>|<|"|'|’|\\|\//.test(s) 
+const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
+const forbiddenStrings = a => a.map(i => forbiddenChars(''+i) && inValid256BitBase64(''+i) ).reduce((i,j) => i||j, false)
 
 const s = (f) => { 
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
@@ -17,7 +18,7 @@ const s = (f) => {
       return f()
     }
     if (forbiddenStrings(Object.values(o))) {
-      return {error: 'invalid characters'}
+      return {error: 'invalid characters: ' + Object.values(o).filter(i => forbiddenChars(i)).join('; ')}
     } else {
       return f(o)
     }
@@ -97,8 +98,12 @@ const createStatement = ({type, version, domain, statement, time, hash_b64, cont
 
 const createVerification = ({statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source}) => (new Promise((resolve, reject)=>{
       try {
-          pool.query('INSERT INTO verifications (statement_id, version, verifer_domain, verified_domain, '+
-      'name, country, number, authority, method, source) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+          pool.query(`
+            INSERT INTO verifications 
+              (statement_id, version, verifer_domain, verified_domain, 'name, country, number, authority, method, source) 
+            VALUES 
+              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *`,
        [statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source], (error, results) => {
           if (error) {
               console.log(error)
@@ -232,7 +237,8 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
           resolve({error})
       }
     }))
-    const getStatement = ({hash}) => (new Promise((resolve, reject)=>{
+    const getStatement = ({hash_b64}) => (new Promise((resolve, reject)=>{
+      console.log('getStatement', hash_b64)
       try {
           pool.query(`
             SELECT 
@@ -241,8 +247,8 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
             FROM statements s        
               LEFT JOIN verifications v 
                 ON s.domain=v.verified_domain 
-                AND v.verifer_domain='rixdata.net'
-            WHERE hash_b64='${hash}';
+                --AND v.verifer_domain='rixdata.net'
+            WHERE hash_b64='${hash_b64}';
             `, (error, results) => {
           if (error) {
               console.log(error)
@@ -297,14 +303,14 @@ const createVerification = ({statement_id, version, verifer_domain, verified_dom
       }
     }))
 
-    const getOwnStatement = ({hash,domain}) => (new Promise((resolve, reject)=>{
+    const getOwnStatement = ({hash_b64,ownDomain}) => (new Promise((resolve, reject)=>{
       try {
           pool.query(`
             SELECT 
               *
             FROM statements s
-            WHERE hash_b64='${hash}'
-              ${domain ? "AND domain='" + domain + "'": ""}
+            WHERE hash_b64='${hash_b64}'
+              ${ownDomain ? "AND domain='" + ownDomain + "'": ""}
             ;
             `, (error, results) => {
           if (error) {
