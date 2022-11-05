@@ -25,30 +25,25 @@ const db = require('./db');
 
 
 
-const createVerificationAndStatement = ({type,version, domain, statement, time, hash_b64, content, content_hash }) => (new Promise((resolve, reject)=>{
-    const groups = statement.match(domainVerificationRegex).groups
-    if (groups.domain.length < 1 || groups.time.length < 1 ||
-        groups.name.length < 1 || groups.country.length < 1 ) {
-        resolve({error: "Missing required fields"})
-        return
-    }
+const createVerification = ({statement_id, domain, version, typedContent }) => (new Promise((resolve, reject)=>{
     try {
-        db.createStatement({type ,version , domain, statement, time, 
-                    hash_b64, content, content_hash})
-        .then(resultStatement =>{
-            console.log("resultStatement", resultStatement, resultStatement.inserted.id)
-            db.createVerification({statement_id: resultStatement.inserted.id, version, verifer_domain: groups.verifer_domain, verified_domain: groups.domain,
+        const groups = typedContent.match(domainVerificationRegex).groups
+        if (groups.domain.length < 1 || groups.time.length < 1 ||
+            groups.name.length < 1 || groups.country.length < 1 ) {
+            resolve({error: "Missing required fields"})
+            return
+        }
+        db.createVerification({statement_id, version, verifer_domain: domain, verified_domain: groups.domain,
                 name: groups.name, country: groups.country, number: groups.number, authority: groups.authority, method: appliedMethod.id, source: groups.source })
-            .then( result => {
+        .then( result => {
                 resolve([result,resultStatement])
-            }).catch(e => resolve({error: e}))
         }).catch(e => resolve({error: e}))
-    } catch (error){
+    } catch (error) {
         resolve({error})
     }
 }))
 
 
 module.exports = {
-    createVerificationAndStatement
+    createVerification
 }

@@ -119,25 +119,27 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
 })
 
 const getTXTEntries = (d) => new Promise((resolve, reject) => {
-    if (! /^[a-zA-Z\.-]+$/.test(d)) {
-        reject({error: 'invalid characters'})
+    try {
+        if (! /^[a-zA-Z\.-]+$/.test(d)) {
+            resolve({error: 'invalid characters'})
+        }
+        const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
+        dig.stdout.on('data', (data) => {
+            try {
+                const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
+                resolve(TXTEntries)
+            }
+            catch(error) {
+                resolve({error})
+            }
+        })
+        dig.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+            resolve({error: data})
+        })
+    } catch (error){
+        resolve({error})
     }
-    const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
-    dig.stdout.on('data', (data) => {
-        //console.log(`stdout: ${data}`);
-        try {
-            const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
-            //console.log('TXTEntries', d, TXTEntries)
-            resolve(TXTEntries)
-        }
-        catch(e) {
-            reject(e)
-        }
-      })
-      dig.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-        reject(data)
-      })
 })
 
 const verifyTXTRecord = async (domain, record) => {
@@ -196,7 +198,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
                 dbResult = await db.createStatement({type: domainVerificationType, version: 1, domain: s.domain, statement: s.statement, time: s.time, 
                     hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash,
                     verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
-                await domainVerification.createVerificationAndStatement({statement_id : dbResult.inserted.id})
+                await domainVerification.createVerification({statement_id : dbResult.inserted.id, version: 1, domain, typedContent: validationResult.typedContent})
             }
         } else {
             dbResult = await db.createStatement({type: 'statement', version: 1, domain: s.domain, statement: s.statement, time: s.time, 

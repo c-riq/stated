@@ -2,7 +2,6 @@ const express = require('express')
 const bodyParser = require('body-parser');
 const http = require('http')
 const https = require('https')
-
 const fs = require('fs')
 
 const humanReadableEndpoints = require('./humanReadableEndpoints');
@@ -10,19 +9,6 @@ const api = require('./api');
 
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN
-
-const directories = { "log": "./log" }
-
-const createDirectories = () => {
-    for (let [key, value] of Object.entries(directories)) {
-        if (!fs.existsSync(value)) {
-            fs.mkdirSync(value);
-        }
-    }
-}
-createDirectories()
-
-// don't share unvalidated information
 
 const app = express.Application = express();
 
@@ -87,7 +73,6 @@ if (prod) {
         console.log('HTTPS Server running on port 443');
     });
     httpsServer.on('error', function (err) { console.log(err) });
-
 } else {
     const httpServer = http.createServer(app);
     httpServer.listen(7766);
