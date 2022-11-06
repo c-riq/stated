@@ -33,10 +33,8 @@ CREATE TABLE IF NOT EXISTS verifications (
     verified_domain VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     country VARCHAR(100) NOT NULL,-- ISO 3166 country name
-    number VARCHAR(100) NOT NULL,
-    authority VARCHAR(100) NOT NULL,
-    method VARCHAR(100) NOT NULL, -- twitter_reference_blue_badge | linkedin_reference_100_employees | wikipedia_reference_100_days_unchanged | personal_contact_to_employee
-    source VARCHAR(100) NOT NULL
+    province VARCHAR(100),
+    city VARCHAR(100)
 );
 DROP TABLE IF EXISTS admin_users;
 CREATE TABLE IF NOT EXISTS admin_users (

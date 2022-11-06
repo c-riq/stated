@@ -92,7 +92,7 @@ const CreateStatement = props => {
 
 
     const checkDomainVerificationAPI = () => {
-        checkDomainVerification({domain: "stated."+domain}, res => {
+        checkDomainVerification({domain: "stated." + domain}, res => {
             if ("records" in res) {
                 setDnsResponse(res.records)
             } else {
@@ -106,8 +106,7 @@ const CreateStatement = props => {
     }
 
     const submitStatementAPI = () => {
-        submitStatement({ domain: domain, hash: statementHash, content: content, time: props.serverTime, statement: statement,
-            statement_b64: btoa(statement), content_hash: contentHash, type: type},
+        submitStatement({ statement, hash_b64: statementHash},
         async (res) => {
             setAlertMessage("Statement posted!")
             setisError(false)
@@ -275,14 +274,26 @@ const CreateStatement = props => {
                     onChange={e => { setProvince(e.target.value) }}
                     margin="normal"
                 />
+                <TextField
+                    id="country"
+                    variant="outlined"
+                    placeholder='France'
+                    label="Headquarter country"
+                    onChange={e => { setCountry(e.target.value) }}
+                    margin="normal"
+                />
+                {/*
+                TODO: fix
+
                 <Autocomplete
                     id="country"
                     options={countries.countries}
                     autoHighlight
                     getOptionLabel={(option) => option[0]}
-                    onChange={e=>setCountry(e.target.textContent)}
+                    //onChange={e=>setCountry(e.target.value)}
+                    //value={countryId}
                     renderOption={(props, option) => (
-                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                        <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                         <img
                             loading="lazy"
                             width="20"
@@ -299,11 +310,12 @@ const CreateStatement = props => {
                         label="Country"
                         inputProps={{
                             ...params.inputProps,
-                            autoComplete: 'new-password', // disable autocomplete and autofill
                         }}
                         />
                     )}
+                    sx={{marginTop: "20px"}}
                 />
+                */}
                 </FormControl>
                 )}
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
@@ -324,7 +336,7 @@ const CreateStatement = props => {
                     label=""
                     multiline
                     value={statement}
-                    readonly
+                    readOnly
                     sx={{width: "100%"}}
                         />
                         </div>

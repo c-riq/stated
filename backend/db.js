@@ -23,16 +23,16 @@ const s = (f) => {
   }
 }
 
-const createStatement = ({ type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+const createStatement = ({ type, version, domain, statement, time, hash_b64, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
-    console.log([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id])
+    console.log([type, version, domain, statement, time, hash_b64, content, content_hash_b64, verification_method, source_node_id])
     pool.query(`INSERT INTO statements (type, version, domain, statement, time,
                             hash_b64, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
                     ON CONFLICT (hash_b64) DO UPDATE
                       SET latest_verification_ts = CURRENT_TIMESTAMP
                     RETURNING *`,
-      [type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id], (error, results) => {
+      [type, version, domain, statement, time, hash_b64, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
@@ -93,15 +93,16 @@ const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const createVerification = ({ statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source }) => (new Promise((resolve, reject) => {
+const createVerification = ({ statement_id, version, verifer_domain, verified_domain, name, country, province, city }) => (new Promise((resolve, reject) => {
   try {
+    console.log([statement_id, version, verifer_domain, verified_domain, name, country, province, city])
     pool.query(`
             INSERT INTO verifications 
-              (statement_id, version, verifer_domain, verified_domain, 'name, country, number, authority, method, source) 
+              (statement_id, version, verifer_domain, verified_domain, name, country, province, city) 
             VALUES 
-              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *`,
-      [statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source], (error, results) => {
+      [statement_id, version, verifer_domain, verified_domain, name, country, province, city], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })

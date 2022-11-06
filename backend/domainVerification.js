@@ -4,17 +4,18 @@ const db = require('./db');
 const {domainVerificationRegex} = require('./statementFormats')
 
 const createVerification = ({statement_id, domain, version, typedContent }) => (new Promise((resolve, reject)=>{
+    const verifer_domain = domain
     try {
         const groups = typedContent.match(domainVerificationRegex).groups
-        if (groups.domain.length < 1 || groups.time.length < 1 ||
-            groups.name.length < 1 || groups.country.length < 1 ) {
+        const { domain, name, country, province, city } = groups
+        if (domain.length < 1 ||
+            name.length < 1 || country.length < 1 ) {
             resolve({error: "Missing required fields"})
             return
         }
-        db.createVerification({statement_id, version, verifer_domain: domain, verified_domain: groups.domain,
-                name: groups.name, country: groups.country, number: groups.number, authority: groups.authority, method: appliedMethod.id, source: groups.source })
+        db.createVerification({statement_id, version, verifer_domain, verified_domain: domain, name, country, province, city})
         .then( result => {
-                resolve([result,resultStatement])
+                resolve([result, statement_id])
         }).catch(e => resolve({error: e}))
     } catch (error) {
         resolve({error})

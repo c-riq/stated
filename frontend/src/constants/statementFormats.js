@@ -102,6 +102,7 @@ const domainVerificationRegex= new RegExp(''
 );
 
 for (let e of Object.values(examples) ){
+    continue
 	console.log(e)
 	try{
 		const content = e.match(statementRegex)

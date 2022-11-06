@@ -27,20 +27,21 @@ api.post("/get_txt_records", async (req, res, next) => {
 
 
 api.post("/submit_statement", async (req, res, next) => {
-    const { content, hash, domain, time, statement, type, content_hash } = req.body
-    const dbResult = await statementVerification.validateAndAddStatementIfMissing({type, version: 1, domain, statement, time, 
-                        hash_b64: hash, content, content_hash, verification_method: 'dns'})
+    const { statement, hash_b64 } = req.body
+    const dbResult = await statementVerification.validateAndAddStatementIfMissing({statement, hash_b64, verification_method: 'dns'})
     if(dbResult?.error){
-        res.status(400).send({message: dbResult.error})
+        next(dbResult.error)
+    } else {
+        console.log(dbResult)
+        res.end(JSON.stringify({ insertedData: dbResult }));
     }
-    res.end(JSON.stringify({ insertedData: dbResult }));
 })
 
 api.get("/statements", async (req, res, next) => {
     const minId = req.query && req.query.min_id
     const dbResult = await db.getStatements({minId})
     if(dbResult?.error){
-        throw dbResult?.error
+        next(dbResult.error)
     } else {
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     }
