@@ -1,51 +1,11 @@
 
-const example = `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-tags: hashtag1, hashtag2
-content: hello world
-`
-
-const example2 = `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: domain verification
-	organisation name: Walmart Inc.
-	legal form: U.S. corporation
-	domain of primary website: walmart.com
-	headquarter city: Bentonville
-	headquarter province/state: Arkansas
-	headquarter country: United States of America
-`
-
-var statementRegex= new RegExp(''
-    + /^domain: (?<domain>[^\n]+?)\n/.source
-    + /time: (?<time>[^\n]+?)\n/.source
-    + /(?:tags: (?<tags>[^\n]*?)\n)?/.source
-    + /content: (?<content>[\s\S]+?)$/.source
-);
-
-var contentRegex= new RegExp(''
-    + /^\n\ttype: (?<type>[^\n]+?)\n/.source
-    + /(?<typedContent>[\s\S]+?)$/.source
-    + /|^(?<content>[\s\S]+?)$/.source
-);
-
-const domainVerificationType = 'domain verification'
-
-
-console.log(example.match(statementRegex))
-console.log(example2.match(statementRegex))
-console.log('content__', String(example2.match(statementRegex).groups.content),  String(example2.match(statementRegex).groups.content).match(contentRegex))
-
-console.log('content__', String(example.match(statementRegex).groups.content),  String(example.match(statementRegex).groups.content).match(contentRegex))
-
 
 const axios = require('axios').default;
 const db = require('./db');
 const hashUtils = require('./hash');
 const domainVerification = require('./domainVerification');
 const cp = require('child_process');
-const { group } = require('console');
+const {statementRegex, domainVerificationType} = require('./statementFormats')
 
 const validateStatementMetadata = async ({domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
     const regexResults = statement.match(statementRegex)
