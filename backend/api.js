@@ -11,7 +11,7 @@ var api = express.Router();
 const apiVersion = '1'
 
 api.use((req, res, next) => {
-    console.log(req)
+    console.log(req.body)
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     next()
 })

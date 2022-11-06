@@ -20,7 +20,7 @@ import Chip from '@mui/material/Chip';
 import {countries} from '../constants/country_names_iso3166'
 
 import { submitStatement, checkDomainVerification } from '../api.js'
-
+const { statementRegex, forbiddenStrings } = require('../constants/statementFormats.js')
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
@@ -126,7 +126,14 @@ const CreateStatement = props => {
             "time: " + props.serverTime + "\n" + 
             (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
             "content: " +  content;
-            
+
+            const parsedResult = statement.match(statementRegex).groups
+            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
+                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
+                setisError(true)
+                return
+            }
+
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
@@ -140,11 +147,20 @@ const CreateStatement = props => {
             "\t" + "type: domain verification" + "\n" +
             "\t" + "description: We verified the following information about an organisation." + "\n" +
             "\t" + "organisation name: " + verifyName + "\n" +
+            "\t" + "headquarter country: " + country + "\n" +
             "\t" + "legal form: " + legalForm + "\n" +
             "\t" + "domain of primary website: " + verifyDomain + "\n" +
-            "\t" + "headquarter city: " + city + "\n" +
-            "\t" + "headquarter province/state: " + province + "\n" +
-            "\t" + "headquarter country: " + country + "\n" 
+            (province ? "\t" + "headquarter province or state: " + province + "\n" : "") +
+            (city ? "\t" + "headquarter city: " + city + "\n" : "") +
+            ""
+
+            const parsedResult = statement.match(statementRegex).groups
+            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
+                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
+                setisError(true)
+                return
+            }
+
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})

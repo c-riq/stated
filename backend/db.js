@@ -7,9 +7,7 @@ const pool = new Pool({
   port: 5432,
 })
 
-const forbiddenChars = s => /;|>|<|"|'|’|\\|\//.test(s)
-const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
-const forbiddenStrings = a => a.map(i => forbiddenChars('' + i) && inValid256BitBase64('' + i)).reduce((i, j) => i || j, false)
+const {forbiddenStrings, forbiddenChars} = require('./statementFormats')
 
 const s = (f) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
@@ -17,8 +15,8 @@ const s = (f) => {
     if (typeof o == 'undefined') {
       return f()
     }
-    if (forbiddenStrings(Object.values(o))) {
-      return { error: 'invalid characters: ' + Object.values(o).filter(i => forbiddenChars(i)).join('; ') }
+    if(forbiddenStrings(Object.values(o)).length > 0) {
+      return { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
     } else {
       return f(o)
     }
@@ -333,13 +331,11 @@ module.exports = {
   getStatement: s(getStatement),
   getOwnStatement: s(getOwnStatement),
   createVerification: s(createVerification),
-  forbiddenChars: s(forbiddenChars),
-  forbiddenStrings: s(forbiddenStrings),
   getVerifications: s(getVerifications),
   getAllVerifications: s(getAllVerifications),
   getAllNodes: s(getAllNodes),
   addNode: s(addNode),
   getJoiningStatements: s(getJoiningStatements),
   setLastReceivedStatementId: s(setLastReceivedStatementId),
-  statementExists: s(statementExists)
+  statementExists: s(statementExists),
 }

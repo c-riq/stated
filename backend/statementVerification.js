@@ -5,9 +5,9 @@ const db = require('./db');
 const hashUtils = require('./hash');
 const domainVerification = require('./domainVerification');
 const cp = require('child_process');
-const {statementRegex, domainVerificationType} = require('./statementFormats')
+const {statementRegex, domainVerificationType, contentRegex} = require('./statementFormats')
 
-const validateStatementMetadata = async ({domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
+const validateStatementMetadata = ({domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
     const regexResults = statement.match(statementRegex)
     if (!regexResults) {
         return({error: "invalid verification"})
@@ -22,13 +22,13 @@ const validateStatementMetadata = async ({domain, statement, time, hash_b64, con
     if (groups.content !== content){
         return {error: 'invalid content' + groups.content + ' vs '+ content}
     }
-    if (groups.domain.length < 1 || groups.time.length < 1 || groups.statement.length < 1 ) {
+    if (groups.domain.length < 1 || groups.time.length < 1 || groups.content.length < 1 ) {
         return({error: "Missing required fields"})
     }
-    if (!await hashUtils.verify(statement, hash_b64)){
+    if (!hashUtils.verify(statement, hash_b64)){
         return({error: "invalid hash: "+statement+hash_b64})
     }
-    if (!await hashUtils.verify(groups.content, content_hash)){
+    if (!hashUtils.verify(groups.content, content_hash)){
         return({error: "invalid content hash: "+group.statement+content_hash})
     }
     if (! (
@@ -40,7 +40,7 @@ const validateStatementMetadata = async ({domain, statement, time, hash_b64, con
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
     const parsedContent = groups.content
-    const contentRegexResults = content.match(parsedContent)
+    const contentRegexResults = parsedContent.match(contentRegex)
     const contentMatchGroups = contentRegexResults.groups
     let result = {content: parsedContent, domain: groups.domain, time: groups.time}
     if (contentMatchGroups.type) {
@@ -127,44 +127,48 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
 }
 
 const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
-    const {domain, statement, time, hash_b64, content, content_hash, source_node_id } = s
-    const validationResult = await validateStatementMetadata({domain, statement, time, hash_b64, content, content_hash, source_node_id })
-    if (validationResult.error) {
-        resolve(validationResult)
-    }
-    if ((await db.statementExists({hash_b64: s.hash_b64})).length > 0){
-        resolve({error: 'statement exists already in db'})
-        return
-    }
-    let verified = false
-    let verifiedByAPI = false
-    if (s.verification_method && s.verification_method === 'api'){
-        verified = await verifyViaStatedApi(s.domain, s.hash_b64)
-        verifiedByAPI = true
-    } else { 
-        verified = await verifyTXTRecord("stated." + s.domain, s.hash_b64)
-        if (!verified){
+    try{
+        const {domain, statement, time, hash_b64, content, content_hash, source_node_id } = s
+        const validationResult = validateStatementMetadata({domain, statement, time, hash_b64, content, content_hash, source_node_id })
+        if (validationResult.error) {
+            resolve(validationResult)
+        }
+        if ((await db.statementExists({hash_b64: s.hash_b64})).length > 0){
+            resolve({error: 'statement exists already in db'})
+            return
+        }
+        let verified = false
+        let verifiedByAPI = false
+        if (s.verification_method && s.verification_method === 'api'){
             verified = await verifyViaStatedApi(s.domain, s.hash_b64)
             verifiedByAPI = true
-        }
-    }
-    if (verified) {
-        let dbResult = {error: 'record not created'}
-        if(validationResult.type) {
-            if(validationResult.type === domainVerificationType){
-                dbResult = await db.createStatement({type: domainVerificationType, version: 1, domain: s.domain, statement: s.statement, time: s.time, 
-                    hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash,
-                    verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
-                await domainVerification.createVerification({statement_id : dbResult.inserted.id, version: 1, domain, typedContent: validationResult.typedContent})
+        } else { 
+            verified = await verifyTXTRecord("stated." + s.domain, s.hash_b64)
+            if (!verified){
+                verified = await verifyViaStatedApi(s.domain, s.hash_b64)
+                verifiedByAPI = true
             }
-        } else {
-            dbResult = await db.createStatement({type: 'statement', version: 1, domain: s.domain, statement: s.statement, time: s.time, 
-                hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash, 
-                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
         }
-        resolve(dbResult)
-    } else {
-        resolve({error: 'could not verify statement ' + s.hash + ' on '+ s.domain})
+        if (verified) {
+            let dbResult = {error: 'record not created'}
+            if(validationResult.type) {
+                if(validationResult.type === domainVerificationType){
+                    dbResult = await db.createStatement({type: domainVerificationType, version: 1, domain: s.domain, statement: s.statement, time: s.time, 
+                        hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash,
+                        verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
+                    await domainVerification.createVerification({statement_id : dbResult.inserted.id, version: 1, domain, typedContent: validationResult.typedContent})
+                }
+            } else {
+                dbResult = await db.createStatement({type: 'statement', version: 1, domain: s.domain, statement: s.statement, time: s.time, 
+                    hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash, 
+                    verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
+            }
+            resolve(dbResult)
+        } else {
+            resolve({error: 'could not verify statement ' + s.hash + ' on '+ s.domain})
+        }
+    } catch (error) {
+        resolve({error})
     }
 })
 

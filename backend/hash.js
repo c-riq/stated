@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 
 
-const verify = async (content, hash) => {
+const verify = (content, hash) => {
     const computedHash = crypto.createHash('sha256').update(content).digest('base64');
     console.log("verifyHash", hash, content, computedHash, hash == computedHash)
     return hash == computedHash
