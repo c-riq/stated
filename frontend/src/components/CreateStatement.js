@@ -18,17 +18,9 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 
 import {countries} from '../constants/country_names_iso3166'
-import {verificationMethods} from '../constants/verification_methods'
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 
-const top100Films = [
-    { title: 'The Shawshank Redemption', year: 1994 },
-    { title: 'The Godfather', year: 1972 },
-    { title: 'The Godfather: Part II', year: 1974 },
-    { title: 'The Dark Knight', year: 2008 },
-    { title: '12 Angry Men', year: 1957 },
-    { title: "Schindler's List", year: 1993 }]
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
@@ -37,7 +29,6 @@ const CreateStatement = props => {
     const [province, setProvince] = React.useState("");
     const [city, setCity] = React.useState("");
     const [legalForm, setLegalForm] = React.useState("");
-    const [verificationMethod, setVerificationMethod] = React.useState("");
     const [contentHash, setContentHash] = React.useState(""); // for joining statement
     const [statement, setStatement] = React.useState("");
     const [tags, setTags] = React.useState([]);
@@ -51,6 +42,42 @@ const CreateStatement = props => {
 
   const [alertMessage, setAlertMessage] = React.useState("");
   const [isError, setisError] = React.useState(false);
+  const [tagInput, setTagInput] = React.useState("")
+
+  function tagHandleKeyDown(event) {
+    if (event.key === "Enter") {
+        const input = event.target.value.trim().replace(',','')
+        if (!input.length){return}
+        if (tags.indexOf(input) != -1) {
+            setTagInput("")
+        } else {
+            setTags([...tags, input])
+            setTagInput("")
+        }
+    }
+    if (tags.length && !tagInput.length && event.key === "Backspace") {
+      setTags(tags.slice(0, tags.length - 1))
+    }
+  }
+  const tagOnBlur = () => {
+    if (!tagInput){return}
+    const input = tagInput.trim().replace(',','')
+    if (!input.length){return}
+    if (tags.indexOf(input) != -1) {
+        setTagInput("")
+    } else {
+        setTags([...tags, input])
+        setTagInput("")
+    }
+  }
+  const handleDelete = item => () => {
+    const updatedTags = [...tags]
+    updatedTags.splice(updatedTags.indexOf(item), 1)
+    setTags(updatedTags)
+  }
+  function tagHandleInputChange(event) {
+    setTagInput(event.target.value)
+  }
 
 
 
@@ -80,7 +107,7 @@ const CreateStatement = props => {
 
     const submitStatementAPI = () => {
         submitStatement({ domain: domain, hash: statementHash, content: content, time: props.serverTime, statement: statement,
-            statement_b64: btoa(statement), content_hash: contentHash, type: type, ...(verificationMethod ? {verification_method : verificationMethod} : {}) },
+            statement_b64: btoa(statement), content_hash: contentHash, type: type},
         async (res) => {
             setAlertMessage("Statement posted!")
             setisError(false)
@@ -93,11 +120,11 @@ const CreateStatement = props => {
         })
     }    
 
-    const generateSignature = () => {
+    const generateHash = () => {
         if(type == "statement"){
             const statement = "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
-            (tags.length > 0 ? "tags: " + "\n" + tags.join(',') : '') +
+            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
             "content: " +  content;
             
             setStatement(statement)
@@ -108,7 +135,7 @@ const CreateStatement = props => {
             const statement = 
             "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
-            (tags.length > 0 ? "tags: " + "\n" + tags.join(',') : '') +
+            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
             "content: " + "\n" + 
             "\t" + "type: domain verification" + "\n" +
             "\t" + "description: We verified the following information about an organisation." + "\n" +
@@ -117,7 +144,7 @@ const CreateStatement = props => {
             "\t" + "domain of primary website: " + verifyDomain + "\n" +
             "\t" + "headquarter city: " + city + "\n" +
             "\t" + "headquarter province/state: " + province + "\n" +
-            "\t" + "headquarter country: " + country + "\n" +
+            "\t" + "headquarter country: " + country + "\n" 
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
@@ -155,21 +182,21 @@ const CreateStatement = props => {
                     onChange={e => { setContent(e.target.value) }}
                     margin="normal"
                     value={content}
+                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
                 />
-                <Autocomplete
-                    multiple
+                <TextField
                     id="tags"
-                    options={top100Films}
-                    getOptionLabel={(option) => option.title}
-                    defaultValue={[top100Films[3]]}
-                    filterSelectedOptions
-                    renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label="filterSelectedOptions"
-                        placeholder="tags"
-                    />
-                    )}
+                    variant="outlined"
+                    placeholder=''
+                    label="Tags"
+
+                    InputProps={{ 
+                        startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
+                    onChange={tagHandleInputChange}
+                    onBlur={tagOnBlur}
+                    onKeyDown={tagHandleKeyDown}
+                    value={tagInput}
+                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
                 />
                 </div>
             )}
@@ -186,7 +213,7 @@ const CreateStatement = props => {
                 <TextField
                     id="domain to be verified"
                     variant="outlined"
-                    placeholder='google.com'
+                    placeholder='walmart.com'
                     label="Primary website domain of organisation to be verified"
                     onChange={e => { setVerifyDomain(e.target.value) }}
                     margin="normal"
@@ -195,7 +222,7 @@ const CreateStatement = props => {
                 <TextField
                     id="organisation name"
                     variant="outlined"
-                    placeholder='google.com'
+                    placeholder='Walmart Inc.'
                     label="Official name of organisation"
                     onChange={e => { setVerifyName(e.target.value) }}
                     margin="normal"
@@ -258,7 +285,7 @@ const CreateStatement = props => {
                 </FormControl>
                 )}
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-                <Button variant="contained" onClick={() => generateSignature()} margin="normal"
+                <Button variant="contained" onClick={() => generateHash()} margin="normal"
                 
                 sx={{marginTop: "24px"}}>
                     Generate hash
@@ -267,9 +294,17 @@ const CreateStatement = props => {
                     <div>
                         <div>Full statement:</div>
                         <div style={{backgroundColor: "#cccccc"}}>
-                            {
-                            statement.split(/\n/).map((s,i)=> (<div key={i}>{s}</div>))
-                            }
+                            
+                <TextField
+                    id="tags"
+                    variant="outlined"
+                    placeholder=''
+                    label=""
+                    multiline
+                    value={statement}
+                    readonly
+                    sx={{width: "100%"}}
+                        />
                         </div>
                     </div>)
                 }
