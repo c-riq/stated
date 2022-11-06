@@ -5,7 +5,7 @@ const db = require('./db');
 const hashUtils = require('./hash');
 const domainVerification = require('./domainVerification');
 const cp = require('child_process');
-const {statementRegex, domainVerificationType, contentRegex} = require('./statementFormats')
+const {statementRegex, statementTypes, contentRegex} = require('./statementFormats')
 
 const validateStatementMetadata = ({domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
     const regexResults = statement.match(statementRegex)
@@ -44,7 +44,7 @@ const validateStatementMetadata = ({domain, statement, time, hash_b64, content, 
     const contentMatchGroups = contentRegexResults.groups
     let result = {content: parsedContent, domain: groups.domain, time: groups.time}
     if (contentMatchGroups.type) {
-        if(contentMatchGroups.type === domainVerificationType) {
+        if(contentMatchGroups.type === statementTypes.domainVerification) {
             return {...result, type: contentMatchGroups.type, typedContent: contentMatchGroups.typedContent}
         } else {
             return {error: 'invalid type: ' + contentMatchGroups.type}
@@ -152,8 +152,8 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
         if (verified) {
             let dbResult = {error: 'record not created'}
             if(validationResult.type) {
-                if(validationResult.type === domainVerificationType){
-                    dbResult = await db.createStatement({type: domainVerificationType, version: 1, domain: s.domain, statement: s.statement, time: s.time, 
+                if(validationResult.type === statementTypes.domainVerification){
+                    dbResult = await db.createStatement({type: statementTypes.domainVerification, version: 1, domain: s.domain, statement: s.statement, time: s.time, 
                         hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
                     await domainVerification.createVerification({statement_id : dbResult.inserted.id, version: 1, domain, typedContent: validationResult.typedContent})

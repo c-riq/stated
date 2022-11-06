@@ -20,7 +20,7 @@ import Chip from '@mui/material/Chip';
 import {countries} from '../constants/country_names_iso3166'
 
 import { submitStatement, checkDomainVerification } from '../api.js'
-const { statementRegex, forbiddenStrings } = require('../constants/statementFormats.js')
+const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
@@ -154,13 +154,19 @@ const CreateStatement = props => {
             (city ? "\t" + "headquarter city: " + city + "\n" : "") +
             ""
 
-            const parsedResult = statement.match(statementRegex).groups
-            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
-                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
+            const parsedStatement = statement.match(statementRegex).groups
+            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
+                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
                 setisError(true)
                 return
             }
-
+            const parsedContent = parsedStatement.content.match(contentRegex).groups
+            const parsedDomainVerification = parsedContent.typedContent.match(domainVerificationRegex)
+            if(!parsedDomainVerification){
+                setAlertMessage('Invalid domain verification (missing values)')
+                setisError(true)
+                return
+            }
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
