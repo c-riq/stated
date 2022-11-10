@@ -5,7 +5,6 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
 import {Buffer} from 'buffer';
-import { textAlign } from '@mui/system';
 
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
@@ -14,38 +13,71 @@ import Portal from '@mui/material/Portal';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 
 import {countries} from '../constants/country_names_iso3166'
-import {verificationMethods} from '../constants/verification_methods'
 
 import { submitStatement, checkDomainVerification } from '../api.js'
+const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
 
 const CreateStatement = props => {
-    const { handleSubmit } = props
     const [content, setContent] = React.useState(props.statementToJoin || "");
     const [type, setType] = React.useState("statement");
     const [country, setCountry] = React.useState("");
-    const [registrationAuthority, setRegistrationAuthority] = React.useState("");
-    const [registrationNumber, setRegistrationNumber] = React.useState("");
-    const [verificationMethod, setVerificationMethod] = React.useState("");
+    const [province, setProvince] = React.useState("");
+    const [city, setCity] = React.useState("");
+    const [legalForm, setLegalForm] = React.useState("");
     const [contentHash, setContentHash] = React.useState(""); // for joining statement
     const [statement, setStatement] = React.useState("");
     const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
-    const [verifySource, setVerifySource] = React.useState("");
     const [dnsResponse, setDnsResponse] = React.useState([]);
     const [statementHash, setStatementHash] = React.useState("");
-    const [addedStatementToJoin, setAddedStatementToJoin] = React.useState("");
 
 
 
   const [alertMessage, setAlertMessage] = React.useState("");
   const [isError, setisError] = React.useState(false);
+  const [tagInput, setTagInput] = React.useState("")
+
+  function tagHandleKeyDown(event) {
+    if (event.key === "Enter") {
+        const input = event.target.value.trim().replace(',','')
+        if (!input.length){return}
+        if (tags.indexOf(input) != -1) {
+            setTagInput("")
+        } else {
+            setTags([...tags, input])
+            setTagInput("")
+        }
+    }
+    if (tags.length && !tagInput.length && event.key === "Backspace") {
+      setTags(tags.slice(0, tags.length - 1))
+    }
+  }
+  const tagOnBlur = () => {
+    if (!tagInput){return}
+    const input = tagInput.trim().replace(',','')
+    if (!input.length){return}
+    if (tags.indexOf(input) != -1) {
+        setTagInput("")
+    } else {
+        setTags([...tags, input])
+        setTagInput("")
+    }
+  }
+  const handleDelete = item => () => {
+    const updatedTags = [...tags]
+    updatedTags.splice(updatedTags.indexOf(item), 1)
+    setTags(updatedTags)
+  }
+  function tagHandleInputChange(event) {
+    setTagInput(event.target.value)
+  }
 
 
 
@@ -60,7 +92,7 @@ const CreateStatement = props => {
 
 
     const checkDomainVerificationAPI = () => {
-        checkDomainVerification({domain: "stated."+domain}, res => {
+        checkDomainVerification({domain: "stated." + domain}, res => {
             if ("records" in res) {
                 setDnsResponse(res.records)
             } else {
@@ -74,8 +106,7 @@ const CreateStatement = props => {
     }
 
     const submitStatementAPI = () => {
-        submitStatement({ domain: domain, hash: statementHash, content: content, time: props.serverTime, statement: statement,
-            statement_b64: btoa(statement), content_hash: contentHash, type: type, ...(verificationMethod ? {verification_method : verificationMethod} : {}) },
+        submitStatement({ statement, hash_b64: statementHash},
         async (res) => {
             setAlertMessage("Statement posted!")
             setisError(false)
@@ -88,13 +119,20 @@ const CreateStatement = props => {
         })
     }    
 
-    const generateSignature = () => {
+    const generateHash = () => {
         if(type == "statement"){
             const statement = "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
-            (tags.length > 0 ? "tags: " + "\n" + tags.join(',') : '') +
+            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
             "content: " +  content;
-            
+
+            const parsedResult = statement.match(statementRegex).groups
+            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
+                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
+                setisError(true)
+                return
+            }
+
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
@@ -103,16 +141,31 @@ const CreateStatement = props => {
             const statement = 
             "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
-            "tags: " + "\n" + 
+            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
             "content: " + "\n" + 
             "\t" + "type: domain verification" + "\n" +
             "\t" + "description: We verified the following information about an organisation." + "\n" +
             "\t" + "organisation name: " + verifyName + "\n" +
-            "\t" + "legal form: " + verifyName + "\n" +
-            "\t" + "domain of primary website: " + verifyName + "\n" +
-            "\t" + "headquarter city: " + verifyName + "\n" +
-            "\t" + "headquarter province/state: " + verifyName + "\n" +
-            "\t" + "headquarter country: " + verifyName + "\n" +
+            "\t" + "headquarter country: " + country + "\n" +
+            "\t" + "legal form: " + legalForm + "\n" +
+            "\t" + "domain of primary website: " + verifyDomain + "\n" +
+            (province ? "\t" + "headquarter province or state: " + province + "\n" : "") +
+            (city ? "\t" + "headquarter city: " + city + "\n" : "") +
+            ""
+
+            const parsedStatement = statement.match(statementRegex).groups
+            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
+                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
+                setisError(true)
+                return
+            }
+            const parsedContent = parsedStatement.content.match(contentRegex).groups
+            const parsedDomainVerification = parsedContent.typedContent.match(domainVerificationRegex)
+            if(!parsedDomainVerification){
+                setAlertMessage('Invalid domain verification (missing values)')
+                setisError(true)
+                return
+            }
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
             digest(content).then((valueForContent) => {setContentHash(valueForContent)})
@@ -138,7 +191,8 @@ const CreateStatement = props => {
                         <MenuItem value={"statement"}>Statement</MenuItem>
                         <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
                 </Select>
-                {type == "statement" &&(
+            {type == "statement" &&(
+                <div>
                 <TextField
                     id="content"
                     variant="outlined"
@@ -148,15 +202,25 @@ const CreateStatement = props => {
                     label="Statement"
                     onChange={e => { setContent(e.target.value) }}
                     margin="normal"
-                    // value={() => {
-                    //     if (props.statementToJoin == addedStatementToJoin) {
-                    //         return false
-                    //     } 
-                    //     setAddedStatementToJoin(props.statementToJoin) 
-                    //     return statement}}
                     value={content}
+                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
                 />
-                )}
+                <TextField
+                    id="tags"
+                    variant="outlined"
+                    placeholder=''
+                    label="Tags"
+
+                    InputProps={{ 
+                        startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
+                    onChange={tagHandleInputChange}
+                    onBlur={tagOnBlur}
+                    onKeyDown={tagHandleKeyDown}
+                    value={tagInput}
+                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                />
+                </div>
+            )}
                 <TextField
                     id="your domain"
                     variant="outlined"
@@ -165,27 +229,71 @@ const CreateStatement = props => {
                     onChange={e => { setDomain(e.target.value) }}
                     margin="normal"
                 />
-                {type == "domain_verification" &&(
-                    <FormControl sx={{width: "100%"}}>
+            {type == "domain_verification" &&(
+                <FormControl sx={{width: "100%"}}>
                 <TextField
                     id="domain to be verified"
                     variant="outlined"
-                    placeholder='google.com'
-                    label="Domain to be verified"
+                    placeholder='walmart.com'
+                    label="Primary website domain of organisation to be verified"
                     onChange={e => { setVerifyDomain(e.target.value) }}
                     margin="normal"
                     sx={{marginBottom: "24px"}}
                 />
-
+                <TextField
+                    id="organisation name"
+                    variant="outlined"
+                    placeholder='Walmart Inc.'
+                    label="Official name of organisation"
+                    onChange={e => { setVerifyName(e.target.value) }}
+                    margin="normal"
+                    sx={{marginTop: "24px"}}
+                />
+                <TextField
+                    id="legalform"
+                    variant="outlined"
+                    placeholder='U.S. corporation'
+                    label="Legal form"
+                    onChange={e => { setLegalForm(e.target.value) }}
+                    margin="normal"
+                    sx={{marginBottom: "24px"}}
+                />
+                <TextField
+                    id="city"
+                    variant="outlined"
+                    placeholder='London'
+                    label="Hedquarter city"
+                    onChange={e => { setCity(e.target.value) }}
+                    margin="normal"
+                />
+                <TextField
+                    id="province"
+                    variant="outlined"
+                    placeholder='Texas'
+                    label="Headquarter province / state"
+                    onChange={e => { setProvince(e.target.value) }}
+                    margin="normal"
+                />
+                <TextField
+                    id="country"
+                    variant="outlined"
+                    placeholder='France'
+                    label="Headquarter country"
+                    onChange={e => { setCountry(e.target.value) }}
+                    margin="normal"
+                />
+                {/*
+                TODO: fix
 
                 <Autocomplete
-                    id="country-select-demo"
+                    id="country"
                     options={countries.countries}
                     autoHighlight
                     getOptionLabel={(option) => option[0]}
-                    onChange={e=>setCountry(e.target.textContent)}
+                    //onChange={e=>setCountry(e.target.value)}
+                    //value={countryId}
                     renderOption={(props, option) => (
-                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                        <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                         <img
                             loading="lazy"
                             width="20"
@@ -202,69 +310,16 @@ const CreateStatement = props => {
                         label="Country"
                         inputProps={{
                             ...params.inputProps,
-                            autoComplete: 'new-password', // disable autocomplete and autofill
                         }}
                         />
                     )}
-                    />
-
-
-
-                <TextField
-                    id="legal entity name"
-                    variant="outlined"
-                    placeholder='google.com'
-                    label="Full name of legal entity"
-                    onChange={e => { setVerifyName(e.target.value) }}
-                    margin="normal"
-                    sx={{marginTop: "24px"}}
+                    sx={{marginTop: "20px"}}
                 />
-                <TextField
-                    id="registration number"
-                    variant="outlined"
-                    placeholder='1234'
-                    label="Registration Number"
-                    onChange={e => { setRegistrationNumber(e.target.value) }}
-                    margin="normal"
-                />
-                <TextField
-                    id="registration authority"
-                    variant="outlined"
-                    placeholder='Amtsgericht Berlin'
-                    label="Registration Authority"
-                    onChange={e => { setRegistrationAuthority(e.target.value) }}
-                    margin="normal"
-                    sx={{marginBottom: "24px"}}
-                />
-
-                <FormControl sx={{width: "100%"}}>
-                <InputLabel id="verification-method-label">Verification Method</InputLabel>
-                <Select
-                        labelId="verification-method-label"
-                        id="verification-method"
-                        value={verificationMethod}
-                        label="Verification Method"
-                        onChange={(e)=>setVerificationMethod(e.target.value)}
-                >
-                    {verificationMethods.map((m,i) => {
-                        return(<MenuItem key={i} sx={{wordBreak: "break-all", width: "500px", whiteSpace: 'normal'}} value={m.statement}>{m.statement}</MenuItem>)
-                    })}
-                </Select>
+                */}
                 </FormControl>
-
-                <TextField
-                    id="Source: Full URL or employee name"
-                    variant="outlined"
-                    placeholder='https://wikipedia.org'
-                    label="Source: Full URL or employee name"
-                    onChange={e => { setVerifySource (e.target.value) }}
-                    margin="normal"
-                    sx={{marginTop: "24px"}}
-                />
-                    </FormControl>
                 )}
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-                <Button variant="contained" onClick={() => generateSignature()} margin="normal"
+                <Button variant="contained" onClick={() => generateHash()} margin="normal"
                 
                 sx={{marginTop: "24px"}}>
                     Generate hash
@@ -273,9 +328,17 @@ const CreateStatement = props => {
                     <div>
                         <div>Full statement:</div>
                         <div style={{backgroundColor: "#cccccc"}}>
-                            {
-                            statement.split(/\n/).map((s,i)=> (<div key={i}>{s}</div>))
-                            }
+                            
+                <TextField
+                    id="tags"
+                    variant="outlined"
+                    placeholder=''
+                    label=""
+                    multiline
+                    value={statement}
+                    readOnly
+                    sx={{width: "100%"}}
+                        />
                         </div>
                     </div>)
                 }

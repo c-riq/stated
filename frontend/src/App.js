@@ -73,14 +73,15 @@ function App() {
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState(false);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const navigate = useNavigate();
 
   React.useEffect(() => {window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));}, []);
 
   const getStatementsAPI = () => {
-    console.log("getPosts")
-      getStatements((s)=>{
+    console.log("getPosts", searchQuery)
+      getStatements(searchQuery, (s)=>{
           console.log(s)
           if ("statements" in s) {
               setPosts(s.statements)
@@ -119,11 +120,14 @@ function App() {
             </div>
             <div style={{ flexGrow: 1 }}></div>
             <div>
-              <TextField id="serach-field" label="" variant="outlined" size='small'
-              sx={{height: "40px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
-              '& label': { paddingLeft: (theme) => theme.spacing(2) },
-              '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
-              '& fieldset': {
+              <TextField id="search-field" label="" variant="outlined" size='small'
+                onChange={e => { setSearchQuery(e.target.value) }}
+                onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
+                onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
+                sx={{height: "40px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
+                  '& label': { paddingLeft: (theme) => theme.spacing(2) },
+                  '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
+                  '& fieldset': {
                 paddingLeft: (theme) => theme.spacing(2.5),
                 borderRadius: '15px',
                 height: '40 px'

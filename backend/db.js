@@ -7,9 +7,7 @@ const pool = new Pool({
   port: 5432,
 })
 
-const forbiddenChars = s => /;|>|<|"|'|’|\\|\//.test(s)
-const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
-const forbiddenStrings = a => a.map(i => forbiddenChars('' + i) && inValid256BitBase64('' + i)).reduce((i, j) => i || j, false)
+const {forbiddenStrings, forbiddenChars} = require('./statementFormats')
 
 const s = (f) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
@@ -17,25 +15,24 @@ const s = (f) => {
     if (typeof o == 'undefined') {
       return f()
     }
-    if (forbiddenStrings(Object.values(o))) {
-      return { error: 'invalid characters: ' + Object.values(o).filter(i => forbiddenChars(i)).join('; ') }
+    if(forbiddenStrings(Object.values(o)).length > 0) {
+      return { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
     } else {
       return f(o)
     }
   }
 }
 
-const createStatement = ({ type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+const createStatement = ({ type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
-    console.log([type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id])
-    //TODO add source_node_id if not null
+    console.log(type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id)
     pool.query(`INSERT INTO statements (type, version, domain, statement, time,
-                            hash_b64, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
-                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+                            hash_b64, tags, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
+                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
                     ON CONFLICT (hash_b64) DO UPDATE
                       SET latest_verification_ts = CURRENT_TIMESTAMP
                     RETURNING *`,
-      [type, version, domain, statement, time, hash_b64, content, content_hash, verification_method, source_node_id], (error, results) => {
+      [type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
@@ -48,7 +45,7 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, con
   }
 }))
 
-const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
+const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
   try {
     if (forbiddenChars(minId)) {
       throw 'forbidden characters'
@@ -62,6 +59,7 @@ const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
                 FROM statements 
                 WHERE type = 'statement'
                 ${minId ? 'AND id > ' + minId : ''}
+                ${searchQuery ? 'AND (content LIKE \'%' + searchQuery + '%\' OR tags LIKE \'%' + searchQuery + '%\')' : ''}
                 GROUP BY 1
                 ORDER BY repost_count DESC
                 LIMIT 20
@@ -75,6 +73,7 @@ const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
                 s.time,
                 s.created_at,
                 s.hash_b64,
+                s.tags,
                 s.content,
                 s.content_hash
             FROM statements s
@@ -96,15 +95,16 @@ const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const createVerification = ({ statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source }) => (new Promise((resolve, reject) => {
+const createVerification = ({ statement_id, version, verifer_domain, verified_domain, name, country, province, city }) => (new Promise((resolve, reject) => {
   try {
+    console.log([statement_id, version, verifer_domain, verified_domain, name, country, province, city])
     pool.query(`
             INSERT INTO verifications 
-              (statement_id, version, verifer_domain, verified_domain, 'name, country, number, authority, method, source) 
+              (statement_id, version, verifer_domain, verified_domain, name, country, province, city) 
             VALUES 
-              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *`,
-      [statement_id, version, verifer_domain, verified_domain, name, country, number, authority, method, source], (error, results) => {
+      [statement_id, version, verifer_domain, verified_domain, name, country, province, city], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
@@ -237,6 +237,7 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
     resolve({ error })
   }
 }))
+
 const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   console.log('getStatement', hash_b64)
   try {
@@ -261,6 +262,7 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
     resolve({ error })
   }
 }))
+
 const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, reject) => {
   console.log('setLastReceivedStatementId', domain, id)
   try {
@@ -284,6 +286,7 @@ const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, re
     resolve({ error })
   }
 }))
+
 const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
@@ -331,13 +334,11 @@ module.exports = {
   getStatement: s(getStatement),
   getOwnStatement: s(getOwnStatement),
   createVerification: s(createVerification),
-  forbiddenChars: s(forbiddenChars),
-  forbiddenStrings: s(forbiddenStrings),
   getVerifications: s(getVerifications),
   getAllVerifications: s(getAllVerifications),
   getAllNodes: s(getAllNodes),
   addNode: s(addNode),
   getJoiningStatements: s(getJoiningStatements),
   setLastReceivedStatementId: s(setLastReceivedStatementId),
-  statementExists: s(statementExists)
+  statementExists: s(statementExists),
 }

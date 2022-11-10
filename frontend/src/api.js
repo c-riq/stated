@@ -36,8 +36,8 @@ export const getStatement = (hash_b64, cb) => {
         } 
     }, e => {return})
 }
-export const getStatements = (cb) => {
-    req('GET','statements', {}, (json) => {
+export const getStatements = (searchQuery, cb) => {
+    req('GET',(searchQuery ? 'statements?search_query=' + searchQuery : 'statements'), {}, (json) => {
         cb(json)
     }, e => {return})
 }

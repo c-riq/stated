@@ -1,78 +1,29 @@
 
-const example = `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-tags: hashtag1, hashtag2
-content: hello world
-`
-
-const example2 = `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: domain verification
-	organisation name: Walmart Inc.
-	legal form: U.S. corporation
-	domain of primary website: walmart.com
-	headquarter city: Bentonville
-	headquarter province/state: Arkansas
-	headquarter country: United States of America
-`
-
-var statementRegex= new RegExp(''
-    + /^domain: (?<domain>[^\n]+?)\n/.source
-    + /time: (?<time>[^\n]+?)\n/.source
-    + /(?:tags: (?<tags>[^\n]*?)\n)?/.source
-    + /content: (?<content>[\s\S]+?)$/.source
-);
-
-
-var contentRegex= new RegExp(''
-// with content type
-    + /^\n\ttype: (?<type>[^\n]+?)\n/.source
-    + /(?<typedContent>[\s\S]+?)$/.source
-// without content type
-    + /|^(?<content>[^\n][\s\S]+?)$/.source
-);
-
-const domainVerificationType = 'domain verification'
-
-
-console.log(example.match(statementRegex))
-console.log(example2.match(statementRegex))
-console.log('content__', String(example2.match(statementRegex).groups.content),  String(example2.match(statementRegex).groups.content).match(contentRegex))
-
-console.log('content__', String(example.match(statementRegex).groups.content),  String(example.match(statementRegex).groups.content).match(contentRegex))
-
 
 const axios = require('axios').default;
 const db = require('./db');
 const hashUtils = require('./hash');
 const domainVerification = require('./domainVerification');
 const cp = require('child_process');
-const { group } = require('console');
+const {statementRegex, statementTypes, contentRegex} = require('./statementFormats')
 
-const validateStatementMetadata = async ({domain, statement, time, hash_b64, content, content_hash, source_node_id }) => {
+const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     const regexResults = statement.match(statementRegex)
     if (!regexResults) {
         return({error: "invalid verification"})
     }
     const groups = regexResults.groups
-    if (groups.domain !== domain) {
-        return({error: "domain in verification statement not matching author domain"})
+    if (!groups.domain) {
+        return({error: "domain missing"})
     }
-    // if (groups.time !== time){
-    //     return {error: 'invalid time' + groups.time + ' vs ' + time}
-    // }
-    if (groups.content !== content){
-        return {error: 'invalid content' + groups.content + ' vs '+ content}
+    if (!groups.content){
+        return {error: 'content missing'}
     }
-    if (groups.domain.length < 1 || groups.time.length < 1 || groups.statement.length < 1 ) {
-        return({error: "Missing required fields"})
+    if (!groups.time){
+        return {error: 'time missing'}
     }
-    if (!await hashUtils.verify(statement, hash_b64)){
+    if (!hashUtils.verify(statement, hash_b64)){
         return({error: "invalid hash: "+statement+hash_b64})
-    }
-    if (!await hashUtils.verify(groups.content, content_hash)){
-        return({error: "invalid content hash: "+group.statement+content_hash})
     }
     if (! (
         (typeof source_node_id == 'number')
@@ -83,11 +34,12 @@ const validateStatementMetadata = async ({domain, statement, time, hash_b64, con
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
     const parsedContent = groups.content
-    const contentRegexResults = content.match(parsedContent)
+    const contentRegexResults = parsedContent.match(contentRegex)
     const contentMatchGroups = contentRegexResults.groups
-    let result = {content: parsedContent, domain: groups.domain, time: groups.time}
+    let result = {content: parsedContent, domain: groups.domain, time: groups.time,  tags: groups.tags, 
+        content_hash_b64: hashUtils.sha256Hash(parsedContent), time: Date.parse(groups.time)}
     if (contentMatchGroups.type) {
-        if(contentMatchGroups.type === domainVerificationType) {
+        if(contentMatchGroups.type === statementTypes.domainVerification) {
             return {...result, type: contentMatchGroups.type, typedContent: contentMatchGroups.typedContent}
         } else {
             return {error: 'invalid type: ' + contentMatchGroups.type}
@@ -120,12 +72,14 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
 
 const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
+        console.log('getTXTEntries', d)
         if (! /^[a-zA-Z\.-]+$/.test(d)) {
             resolve({error: 'invalid characters'})
         }
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
         dig.stdout.on('data', (data) => {
             try {
+                console.log('data',data)
                 const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
                 resolve(TXTEntries)
             }
@@ -146,7 +100,7 @@ const verifyTXTRecord = async (domain, record) => {
     console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
-        //console.log(domain, TXTEntries, record)
+        console.log('TXTEntries result', domain, TXTEntries, record)
         return TXTEntries.includes(record)
     }
     catch (e) {
@@ -161,8 +115,8 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
     const result = await axios({
         method: "POST",
         url, headers: { 'Content-Type': 'application/json'},
-        data: { hash_b64: s.hash_b64 }})
-    console.log(result.data.statements[0].hash_b64, 'result from ', s.domain)
+        data: { hash_b64 }})
+    console.log(result.data.statements[0].hash_b64, 'result from ', domain)
     if (result.data.statements[0].hash_b64 === hash_b64){
         return true
     }
@@ -170,44 +124,48 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
 }
 
 const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
-    const {domain, statement, time, hash_b64, content, content_hash, source_node_id } = s
-    const validationResult = await validateStatementMetadata({domain, statement, time, hash_b64, content, content_hash, source_node_id })
-    if (validationResult.error) {
-        resolve(validationResult)
-    }
-    if ((await db.statementExists({hash_b64: s.hash_b64})).length > 0){
-        resolve({error: 'statement exists already in db'})
-        return
-    }
-    let verified = false
-    let verifiedByAPI = false
-    if (s.verification_method && s.verification_method === 'api'){
-        verified = await verifyViaStatedApi(s.domain, s.hash_b64)
-        verifiedByAPI = true
-    } else { 
-        verified = await verifyTXTRecord("stated." + s.domain, s.hash_b64)
-        if (!verified){
-            verified = await verifyViaStatedApi(s.domain, s.hash_b64)
+    try{
+        const {statement, hash_b64, source_node_id, verification_method } = s
+        const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
+        const {domain, time, tags, content_hash_b64, type, typedContent, content } = validationResult
+        if (validationResult.error) {
+            resolve(validationResult)
+        }
+        if ((await db.statementExists({hash_b64})).length > 0){
+            resolve({error: 'statement exists already in db'})
+            return
+        }
+        let verified = false
+        let verifiedByAPI = false
+        if (verification_method && verification_method === 'api'){
+            verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
             verifiedByAPI = true
-        }
-    }
-    if (verified) {
-        let dbResult = {error: 'record not created'}
-        if(validationResult.type) {
-            if(validationResult.type === domainVerificationType){
-                dbResult = await db.createStatement({type: domainVerificationType, version: 1, domain: s.domain, statement: s.statement, time: s.time, 
-                    hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash,
-                    verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
-                await domainVerification.createVerification({statement_id : dbResult.inserted.id, version: 1, domain, typedContent: validationResult.typedContent})
+        } else { 
+            verified = await verifyTXTRecord("stated." + validationResult.domain, hash_b64)
+            if (!verified){
+                verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
+                verifiedByAPI = true
             }
-        } else {
-            dbResult = await db.createStatement({type: 'statement', version: 1, domain: s.domain, statement: s.statement, time: s.time, 
-                hash_b64: s.hash_b64, content: s.content, content_hash: s.content_hash, 
-                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id: s.source_node_id})
         }
-        resolve(dbResult)
-    } else {
-        resolve({error: 'could not verify statement ' + s.hash + ' on '+ s.domain})
+        if (verified) {
+            let dbResult = {error: 'record not created'}
+            if(type) {
+                if(type === statementTypes.domainVerification){
+                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                        verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+                    dbResult = await domainVerification.createVerification({statement_id : dbResult.inserted.id, 
+                        version: 1, domain, typedContent})
+                }
+            } else {
+                dbResult = await db.createStatement({type: statementTypes.statement, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                    verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+            }
+            resolve(dbResult)
+        } else {
+            resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
+        }
+    } catch (error) {
+        resolve({error})
     }
 })
 

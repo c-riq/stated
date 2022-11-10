@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build --domain=\"rixdata.net\" && rm -rf ../backend/public && mkdir ../backend/public && cp -r build/* ../backend/public/",
+    "build": "react-scripts build --domain=\"rixdata.net\" && rm -rf ../backend/public && mkdir ../backend/public && cp -r build/* ../backend/public/ && cp ./src/constants/statementFormats.js ../backend/statementFormats.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
