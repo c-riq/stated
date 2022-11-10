@@ -64,6 +64,7 @@ content:
 	organisation name: AMBOSS GmbH
 	organisation domain: amboss.com
 	our rating (out of 5 stars): 5
+	comment: 
 `
 }
 

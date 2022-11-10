@@ -16,8 +16,9 @@ CREATE TABLE IF NOT EXISTS statements (
     statement VARCHAR(1500) NOT NULL, 
     time VARCHAR(100) NOT NULL,
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
-    content VARCHAR(1000) NOT NULL, -- for grouping joint statements
-    content_hash VARCHAR(500) NOT NULL,
+    tags VARCHAR(1000),
+    content VARCHAR(1000) NOT NULL, -- for search
+    content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements
     source_node_id int,
     latest_verification_ts TIMESTAMP,
     verification_method VARCHAR(4) -- dns, api
@@ -35,13 +36,6 @@ CREATE TABLE IF NOT EXISTS verifications (
     country VARCHAR(100) NOT NULL,-- ISO 3166 country name
     province VARCHAR(100),
     city VARCHAR(100)
-);
-DROP TABLE IF EXISTS admin_users;
-CREATE TABLE IF NOT EXISTS admin_users (
-  id SERIAL PRIMARY KEY,
-  email VARCHAR(150) UNIQUE NOT NULL,
-  name VARCHAR(150) NOT NULL,
-  password VARCHAR(150) NOT NULL
 );
 DROP TABLE IF EXISTS p2p_nodes;
 CREATE TABLE IF NOT EXISTS p2p_nodes (

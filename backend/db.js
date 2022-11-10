@@ -23,16 +23,16 @@ const s = (f) => {
   }
 }
 
-const createStatement = ({ type, version, domain, statement, time, hash_b64, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+const createStatement = ({ type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
-    console.log([type, version, domain, statement, time, hash_b64, content, content_hash_b64, verification_method, source_node_id])
+    console.log(type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id)
     pool.query(`INSERT INTO statements (type, version, domain, statement, time,
-                            hash_b64, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
-                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+                            hash_b64, tags, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
+                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
                     ON CONFLICT (hash_b64) DO UPDATE
                       SET latest_verification_ts = CURRENT_TIMESTAMP
                     RETURNING *`,
-      [type, version, domain, statement, time, hash_b64, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
+      [type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
@@ -45,7 +45,7 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, con
   }
 }))
 
-const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
+const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
   try {
     if (forbiddenChars(minId)) {
       throw 'forbidden characters'
@@ -59,6 +59,7 @@ const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
                 FROM statements 
                 WHERE type = 'statement'
                 ${minId ? 'AND id > ' + minId : ''}
+                ${searchQuery ? 'AND (content LIKE \'%' + searchQuery + '%\' OR tags LIKE \'%' + searchQuery + '%\')' : ''}
                 GROUP BY 1
                 ORDER BY repost_count DESC
                 LIMIT 20
@@ -72,6 +73,7 @@ const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
                 s.time,
                 s.created_at,
                 s.hash_b64,
+                s.tags,
                 s.content,
                 s.content_hash
             FROM statements s

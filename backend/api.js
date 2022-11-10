@@ -39,7 +39,8 @@ api.post("/submit_statement", async (req, res, next) => {
 
 api.get("/statements", async (req, res, next) => {
     const minId = req.query && req.query.min_id
-    const dbResult = await db.getStatements({minId})
+    const searchQuery = req.query && req.query.search_query
+    const dbResult = await db.getStatements({minId, searchQuery})
     if(dbResult?.error){
         next(dbResult.error)
     } else {

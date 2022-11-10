@@ -36,7 +36,7 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     const parsedContent = groups.content
     const contentRegexResults = parsedContent.match(contentRegex)
     const contentMatchGroups = contentRegexResults.groups
-    let result = {content: parsedContent, domain: groups.domain, time: groups.time, 
+    let result = {content: parsedContent, domain: groups.domain, time: groups.time,  tags: groups.tags, 
         content_hash_b64: hashUtils.sha256Hash(parsedContent), time: Date.parse(groups.time)}
     if (contentMatchGroups.type) {
         if(contentMatchGroups.type === statementTypes.domainVerification) {
@@ -72,12 +72,14 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
 
 const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
+        console.log('getTXTEntries', d)
         if (! /^[a-zA-Z\.-]+$/.test(d)) {
             resolve({error: 'invalid characters'})
         }
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
         dig.stdout.on('data', (data) => {
             try {
+                console.log('data',data)
                 const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
                 resolve(TXTEntries)
             }
@@ -98,7 +100,7 @@ const verifyTXTRecord = async (domain, record) => {
     console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
-        //console.log(domain, TXTEntries, record)
+        console.log('TXTEntries result', domain, TXTEntries, record)
         return TXTEntries.includes(record)
     }
     catch (e) {
@@ -125,7 +127,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
     try{
         const {statement, hash_b64, source_node_id, verification_method } = s
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
-        const {domain, time, content_hash_b64, type, typedContent, content } = validationResult
+        const {domain, time, tags, content_hash_b64, type, typedContent, content } = validationResult
         if (validationResult.error) {
             resolve(validationResult)
         }
@@ -149,13 +151,13 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
             let dbResult = {error: 'record not created'}
             if(type) {
                 if(type === statementTypes.domainVerification){
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, content, content_hash_b64,
+                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
                     dbResult = await domainVerification.createVerification({statement_id : dbResult.inserted.id, 
-                        version: 1, domain, typedContent,  })
+                        version: 1, domain, typedContent})
                 }
             } else {
-                dbResult = await db.createStatement({type: statementTypes.statement, version: 1, domain, statement, time, hash_b64, content, content_hash_b64,
+                dbResult = await db.createStatement({type: statementTypes.statement, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                     verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
             }
             resolve(dbResult)
