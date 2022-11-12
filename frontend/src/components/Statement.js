@@ -33,7 +33,7 @@ const Statement = props => {
         setPostsFetched(true)
       }
     })
-
+    console.log('verifications',verifications)
     return (
         <div style={{ maxWidth: "90vw", padding: "7%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
@@ -48,7 +48,9 @@ const Statement = props => {
                 </TableRow>
                 </TableHead>
                 <TableBody sx={{ maxWidth: "100vw"}}>
-                {Object.keys(post).map((row,i) => (
+                {Object.keys(post).map((row,i) => 
+                    {if (['statement', 'hash_b64'].includes(row)){
+                        return (
                     <TableRow
                     key={i}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 }, maxWidth: "90vw" }}
@@ -62,8 +64,9 @@ const Statement = props => {
                               (<ListItem key={i}>{s}</ListItem>
                             ))}
                           </List>) : post[row]}</TableCell>
-                    </TableRow>
-                ))}
+                    </TableRow>)
+                    }}
+                )}
                 </TableBody>
             </Table>
             </TableContainer>

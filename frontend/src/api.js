@@ -43,7 +43,7 @@ export const getStatements = (searchQuery, cb) => {
 }
 export const getJoiningStatements = (hash_b64, cb) => {
     req('POST', 'joining_statements', {hash_b64}, (json) => {
-        if ("posts" in json) {
+        if ("statements" in json) {
             cb(json.statements)
             window.scrollTo(0,0)
         } 
@@ -51,7 +51,7 @@ export const getJoiningStatements = (hash_b64, cb) => {
 }
 export const getVerifications = (hash_b64, cb) => {
     req('POST', 'verifications', {hash_b64}, (json) => {
-        if ("posts" in json) {
+        if ("statements" in json) {
             cb(json.statements)
             window.scrollTo(0,0)
         } 

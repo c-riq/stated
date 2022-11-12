@@ -47,19 +47,17 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, tag
 
 const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
   try {
-    if (forbiddenChars(minId)) {
-      throw 'forbidden characters'
-    }
     pool.query(`
             WITH reposts as(
                 SELECT 
                     content as _content, 
                     count(distinct domain) as repost_count, 
-                    first_value(min(id)) over(partition by content order by min(created_at) asc) as first_id
+                    first_value(min(id)) over(partition by content order by min(created_at) asc) as first_id,
+                    $1 || $2 input
                 FROM statements 
                 WHERE type = 'statement'
-                ${minId ? 'AND id > ' + minId : ''}
-                ${searchQuery ? 'AND (content LIKE \'%' + searchQuery + '%\' OR tags LIKE \'%' + searchQuery + '%\')' : ''}
+                ${minId ? 'AND id > $1' : ''}
+                ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
                 GROUP BY 1
                 ORDER BY repost_count DESC
                 LIMIT 20
@@ -82,7 +80,8 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                 LEFT JOIN verifications v 
                     ON s.domain=v.verified_domain 
                     AND v.verifer_domain='rixdata.net';
-            `, (error, results) => {
+            `,[minId || 'minId', searchQuery || 'searchQuery']
+            , (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -124,7 +123,7 @@ const getVerifications = ({ hash_b64 }) => (new Promise((resolve, reject) => {
             WITH domains AS (
               SELECT domain 
               FROM statements
-              WHERE hash_b64='${hash_b64}'
+              WHERE hash_b64=$1
               LIMIT 1
             )
             SELECT 
@@ -133,7 +132,7 @@ const getVerifications = ({ hash_b64 }) => (new Promise((resolve, reject) => {
             FROM verifications v
               JOIN statements s ON v.statement_id=s.id
             WHERE v.verified_domain IN (SELECT domain FROM domains);
-            `, (error, results) => {
+            `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -191,11 +190,11 @@ const addNode = ({ domain }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
             INSERT INTO p2p_nodes (domain, last_seen) VALUES
-                ('${domain}', CURRENT_TIMESTAMP)
+                ($1, CURRENT_TIMESTAMP)
             ON CONFLICT (domain) DO UPDATE
               SET last_seen = CURRENT_TIMESTAMP
             RETURNING *
-            `, (error, results) => {
+            `,[domain], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -214,7 +213,7 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
             WITH content_hashes AS(
               SELECT content_hash
               FROM statements
-              WHERE hash_b64='${hash_b64}'
+              WHERE hash_b64=$1
             )
             SELECT 
                 s.*,
@@ -224,8 +223,8 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
                 ON s.domain=v.verified_domain 
                 AND v.verifer_domain='rixdata.net'
             WHERE content_hash IN (SELECT content_hash FROM content_hashes)
-            AND hash_b64 <>'${hash_b64}';
-            `, (error, results) => {
+            AND hash_b64 <> $1;
+            `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -249,8 +248,8 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
               LEFT JOIN verifications v 
                 ON s.domain=v.verified_domain 
                 --AND v.verifer_domain='rixdata.net'
-            WHERE hash_b64='${hash_b64}';
-            `, (error, results) => {
+            WHERE hash_b64=$1;
+            `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -268,13 +267,13 @@ const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, re
   try {
     pool.query(`
             UPDATE p2p_nodes
-            SET last_received_statement_id = ${id}
-            WHERE domain = '${domain}'
+            SET last_received_statement_id = $1
+            WHERE domain = $2
               AND (last_received_statement_id IS NULL
                 OR
-                last_received_statement_id < ${id}
+                last_received_statement_id < $1
               );
-            `, (error, results) => {
+            `,[id, domain], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -290,8 +289,8 @@ const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, re
 const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
-            SELECT 1 FROM statements WHERE hash_b64 = '${hash_b64}' LIMIT 1;
-            `, (error, results) => {
+            SELECT 1 FROM statements WHERE hash_b64 = $1 LIMIT 1;
+            `, [hash_b64], (error, results) => {
 
       //console.log('statementExists', hash_b64, results, error)
       if (error) {
@@ -310,12 +309,13 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
   try {
     pool.query(`
             SELECT 
-              *
+              *,
+              $1 || $2 input
             FROM statements s
-            WHERE hash_b64='${hash_b64}'
-              ${ownDomain ? "AND domain='" + ownDomain + "'" : ""}
+            WHERE hash_b64=$1
+              ${ownDomain ? "AND domain=$2" : ""}
             ;
-            `, (error, results) => {
+            `,[hash_b64, ownDomain], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })

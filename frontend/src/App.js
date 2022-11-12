@@ -124,12 +124,12 @@ function App() {
                 onChange={e => { setSearchQuery(e.target.value) }}
                 onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
                 onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
-                sx={{height: "40px", padding: "0px", borderRadius:"15px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
+                sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
                   '& label': { paddingLeft: (theme) => theme.spacing(2) },
-                  '& input': { paddingLeft: (theme) => theme.spacing(3.5) },
+                  '& input': { paddingLeft: (theme) => theme.spacing(3) },
                   '& fieldset': {
                 paddingLeft: (theme) => theme.spacing(2.5),
-                borderRadius: '15px',
+                borderRadius: '40px',
                 height: '40 px'
               },}}/>
             </div>
