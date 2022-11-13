@@ -84,15 +84,20 @@ const Statement = props => {
             <h5>Verifications of {post.domain}</h5>
                 {/* <div style={{width:"500px"}}>{JSON.stringify(verifications)}</div> */}
                 {verifications.map((v,i)=>(
-                    <Link key={i} onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                        {v.verifer_domain}{v.name ? " | " + v.name + " ✅":  ""}
-                    </Link>))}
+                    <div key={i}>
+                        <Link onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
+                            {v.verifer_domain}{v.name ? " | " + v.name + " ✅":  ""}
+                        </Link>
+                    </div>))}
             <h3>Organisations that joined the statemet</h3>
                 {/* <div style={{width:"500px"}}>{JSON.stringify(posts)}</div> */}
                 {posts.map((v,i)=>(
+                    <div key={i}>
                         <Link key={i} onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                            {v.domain + " | " + v.time}{v.name ? " | " + v.name + " ✅":  ""}
-                        </Link>))}
+                            {v.domain + " | " + (new Date(parseInt(v.time)).toUTCString())}{v.name ? " | " + v.name + " ✅":  ""}
+                        </Link>
+                    </div>
+                ))}
             </div>
         </div>
     )

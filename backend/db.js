@@ -62,24 +62,28 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                 ORDER BY repost_count DESC
                 LIMIT 20
             )
-            SELECT 
-                s.id,
-                s.domain,
-                v.name,
-                s.statement,
-                r.repost_count,
-                s.time,
-                s.created_at,
-                s.hash_b64,
-                s.tags,
-                s.content,
-                s.content_hash
-            FROM statements s
-                JOIN reposts r
-                    ON id=first_id
-                LEFT JOIN verifications v 
-                    ON s.domain=v.verified_domain 
-                    AND v.verifer_domain='rixdata.net';
+            SELECT * FROM (
+              SELECT 
+                  s.id,
+                  s.domain,
+                  v.name,
+                  s.statement,
+                  r.repost_count,
+                  s.time,
+                  s.created_at,
+                  s.hash_b64,
+                  s.tags,
+                  s.content,
+                  s.content_hash,
+                  rank() over(partition by s.id order by v.created_at desc) _rank
+                FROM statements s
+                    JOIN reposts r
+                        ON id=first_id
+                    LEFT JOIN verifications v 
+                        ON s.domain=v.verified_domain 
+                        AND v.verifer_domain='rixdata.net'
+                ) AS results 
+              WHERE _rank=1;
             `,[minId || 'minId', searchQuery || 'searchQuery']
             , (error, results) => {
       if (error) {
@@ -215,15 +219,18 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
               FROM statements
               WHERE hash_b64=$1
             )
-            SELECT 
-                s.*,
-                v.name
-            FROM statements s        
-              LEFT JOIN verifications v 
-                ON s.domain=v.verified_domain 
-                AND v.verifer_domain='rixdata.net'
-            WHERE content_hash IN (SELECT content_hash FROM content_hashes)
-            AND hash_b64 <> $1;
+            SELECT * FROM (
+              SELECT 
+                  s.*,
+                  v.name,
+                  rank() over(partition by s.id order by v.created_at desc) _rank
+              FROM statements s        
+                LEFT JOIN verifications v 
+                  ON s.domain=v.verified_domain 
+                  AND v.verifer_domain='rixdata.net'
+              WHERE content_hash IN (SELECT content_hash FROM content_hashes)
+              AND hash_b64 <> $1) AS result
+            WHERE _rank = 1;
             `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
@@ -315,7 +322,7 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
             WHERE hash_b64=$1
               ${ownDomain ? "AND domain=$2" : ""}
             ;
-            `,[hash_b64, ownDomain], (error, results) => {
+            `,[hash_b64, ownDomain || 'ownDomain'], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
