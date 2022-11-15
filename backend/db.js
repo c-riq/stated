@@ -98,21 +98,21 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
   }
 }))
 
-const createVerification = ({ statement_id, version, verifer_domain, verified_domain, name, country, province, city }) => (new Promise((resolve, reject) => {
+const createVerification = ({ statement_hash, version, verifer_domain, verified_domain, name, country, province, city }) => (new Promise((resolve, reject) => {
   try {
-    console.log([statement_id, version, verifer_domain, verified_domain, name, country, province, city])
+    console.log([statement_hash, version, verifer_domain, verified_domain, name, country, province, city])
     pool.query(`
             INSERT INTO verifications 
-              (statement_id, version, verifer_domain, verified_domain, name, country, province, city) 
+              (statement_hash, version, verifer_domain, verified_domain, name, country, province, city) 
             VALUES 
               ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *`,
-      [statement_id, version, verifer_domain, verified_domain, name, country, province, city], (error, results) => {
+      [statement_hash, version, verifer_domain, verified_domain, name, country, province, city], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
         } else {
-          resolve(`Statement inserted with ID: ${results.rows[0].id}`)
+          resolve(`Verification inserted with ID: ${results.rows[0].id}`)
         }
       })
   } catch (error) {
@@ -134,7 +134,7 @@ const getVerifications = ({ hash_b64 }) => (new Promise((resolve, reject) => {
                 v.*,
                 s.*
             FROM verifications v
-              JOIN statements s ON v.statement_id=s.id
+              JOIN statements s ON v.statement_hash=s.hash_b64
             WHERE v.verified_domain IN (SELECT domain FROM domains);
             `,[hash_b64], (error, results) => {
       if (error) {

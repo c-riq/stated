@@ -13,13 +13,9 @@ import Portal from '@mui/material/Portal';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 
-import {countries} from '../constants/country_names_iso3166'
-import {legalForms} from '../constants/legalForms'
-import {cities} from '../constants/cities'
+import DomainVerificationForm from './DomainVerificationForm.js';
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
@@ -27,39 +23,33 @@ const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
     const [type, setType] = React.useState("statement");
-    const [country, setCountry] = React.useState("");
-
-
-    const [country2, setCountry2] = React.useState("");
-    const [country3, setCountry3] = React.useState("");
-
-    const [legalForm2, setLegalForm2] = React.useState("");
-    const [legalForm3, setLegalForm3] = React.useState("");
-
-    const [city2, setCity2] = React.useState("");
-    const [city3, setCity3] = React.useState("");
-
-    const [province, setProvince] = React.useState("");
-    const [city, setCity] = React.useState("");
-    const [legalForm, setLegalForm] = React.useState("");
-    const [contentHash, setContentHash] = React.useState(""); // for joining statement
     const [statement, setStatement] = React.useState("");
     const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
-    const [verifyDomain, setVerifyDomain] = React.useState("");
-    const [verifyName, setVerifyName] = React.useState("");
     const [dnsResponse, setDnsResponse] = React.useState([]);
     const [statementHash, setStatementHash] = React.useState("");
+    const [alertMessage, setAlertMessage] = React.useState("");
+    const [isError, setisError] = React.useState(false);
+    const [tagInput, setTagInput] = React.useState("")
 
-
-
-  const [alertMessage, setAlertMessage] = React.useState("");
-  const [isError, setisError] = React.useState(false);
-  const [tagInput, setTagInput] = React.useState("")
-
-  function tagHandleKeyDown(event) {
-    if (event.key === "Enter") {
-        const input = event.target.value.trim().replace(',','')
+    function tagHandleKeyDown(event) {
+        if (event.key === "Enter") {
+            const input = event.target.value.trim().replace(',','')
+            if (!input.length){return}
+            if (tags.indexOf(input) != -1) {
+                setTagInput("")
+            } else {
+                setTags([...tags, input])
+                setTagInput("")
+            }
+        }
+        if (tags.length && !tagInput.length && event.key === "Backspace") {
+        setTags(tags.slice(0, tags.length - 1))
+        }
+    }
+    const tagOnBlur = () => {
+        if (!tagInput){return}
+        const input = tagInput.trim().replace(',','')
         if (!input.length){return}
         if (tags.indexOf(input) != -1) {
             setTagInput("")
@@ -68,29 +58,14 @@ const CreateStatement = props => {
             setTagInput("")
         }
     }
-    if (tags.length && !tagInput.length && event.key === "Backspace") {
-      setTags(tags.slice(0, tags.length - 1))
+    const handleDelete = item => () => {
+        const updatedTags = [...tags]
+        updatedTags.splice(updatedTags.indexOf(item), 1)
+        setTags(updatedTags)
     }
-  }
-  const tagOnBlur = () => {
-    if (!tagInput){return}
-    const input = tagInput.trim().replace(',','')
-    if (!input.length){return}
-    if (tags.indexOf(input) != -1) {
-        setTagInput("")
-    } else {
-        setTags([...tags, input])
-        setTagInput("")
+    function tagHandleInputChange(event) {
+        setTagInput(event.target.value)
     }
-  }
-  const handleDelete = item => () => {
-    const updatedTags = [...tags]
-    updatedTags.splice(updatedTags.indexOf(item), 1)
-    setTags(updatedTags)
-  }
-  function tagHandleInputChange(event) {
-    setTagInput(event.target.value)
-  }
 
 
 
@@ -133,7 +108,6 @@ const CreateStatement = props => {
     }    
 
     const generateHash = () => {
-        console.log(country2, country3)
         if(type == "statement"){
             const statement = "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
@@ -149,40 +123,6 @@ const CreateStatement = props => {
 
             setStatement(statement)
             digest(statement).then((value) => {setStatementHash(value)})
-            digest(content).then((valueForContent) => {setContentHash(valueForContent)})
-        }
-        if(type == "domain_verification"){
-            const statement = 
-            "domain: " + domain + "\n" + 
-            "time: " + props.serverTime + "\n" + 
-            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
-            "content: " + "\n" + 
-            "\t" + "type: domain verification" + "\n" +
-            "\t" + "description: We verified the following information about an organisation." + "\n" +
-            "\t" + "organisation name: " + verifyName + "\n" +
-            "\t" + "headquarter country: " + country + "\n" +
-            "\t" + "legal form: " + legalForm + "\n" +
-            "\t" + "domain of primary website: " + verifyDomain + "\n" +
-            (province ? "\t" + "headquarter province or state: " + province + "\n" : "") +
-            (city ? "\t" + "headquarter city: " + city + "\n" : "") +
-            ""
-
-            const parsedStatement = statement.match(statementRegex).groups
-            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
-                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
-                setisError(true)
-                return
-            }
-            const parsedContent = parsedStatement.content.match(contentRegex).groups
-            const parsedDomainVerification = parsedContent.typedContent.match(domainVerificationRegex)
-            if(!parsedDomainVerification){
-                setAlertMessage('Invalid domain verification (missing values)')
-                setisError(true)
-                return
-            }
-            setStatement(statement)
-            digest(statement).then((value) => {setStatementHash(value)})
-            digest(content).then((valueForContent) => {setContentHash(valueForContent)})
         }
     }
 
@@ -243,142 +183,35 @@ const CreateStatement = props => {
                     onChange={e => { setDomain(e.target.value) }}
                     margin="normal"
                 />
-            {type == "domain_verification" &&(
-                <FormControl sx={{width: "100%"}}>
-                <TextField
-                    id="domain to be verified"
-                    variant="outlined"
-                    placeholder='walmart.com'
-                    label="Primary website domain of organisation to be verified"
-                    onChange={e => { setVerifyDomain(e.target.value) }}
-                    margin="normal"
-                    sx={{marginBottom: "24px"}}
-                />
-                <TextField
-                    id="organisation name"
-                    variant="outlined"
-                    placeholder='Walmart Inc.'
-                    label="Official name of organisation"
-                    onChange={e => { setVerifyName(e.target.value) }}
-                    margin="normal"
-                    sx={{marginTop: "0px"}}
-                />
-                <TextField
-                    id="country"
-                    variant="outlined"
-                    placeholder='France'
-                    label="Headquarter country"
-                    onChange={e => { setCountry(e.target.value) }}
-                    margin="normal"
-                />
-                <TextField
-                    id="legalform"
-                    variant="outlined"
-                    placeholder='U.S. corporation'
-                    label="Legal form"
-                    onChange={e => { setLegalForm(e.target.value) }}
-                    margin="normal"
-                    sx={{marginBottom: "12px"}}
-                />
-                <TextField
-                    id="city"
-                    variant="outlined"
-                    placeholder='London'
-                    label="Hedquarter city"
-                    onChange={e => { setCity(e.target.value) }}
-                    margin="normal"
-                />
-                <TextField
-                    id="province"
-                    variant="outlined"
-                    placeholder='Texas'
-                    label="Headquarter province / state"
-                    onChange={e => { setProvince(e.target.value) }}
-                    margin="normal"
-                />
-                <Autocomplete
-                    id="country"
-                    options={countries.countries}
-                    autoHighlight
-                    getOptionLabel={(option) => option ? option[0] : ''}
-                    freeSolo
-                    onChange={(e,newvalue)=>setCountry2(newvalue)}
-                    value={country2}
-                    inputValue={country3}
-                    onInputChange={(event, newInputValue) => setCountry3(newInputValue)}
-                    renderOption={(props, option) => (
-                        <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
-                        <img
-                            loading="lazy"
-                            width="20"
-                            src={`https://flagcdn.com/w20/${option[1].toLowerCase()}.png`}
-                            srcSet={`https://flagcdn.com/w40/${option[1].toLowerCase()}.png 2x`}
-                            alt=""
-                        />
-                        {option[0]}
-                        </Box>
-                    )}
-                    renderInput={(params) => (
-                        <TextField
-                        {...params}
-                        label="Headquarter country"
-                        />
-                    )}
-                    sx={{marginTop: "20px"}}
-                />
-                <Autocomplete
-                    id="legalForm"
-                    options={legalForms.legalForms.filter(l => l[0] == country2[1] || l[0] == 'all')}
-                    autoHighlight
-                    getOptionLabel={(option) => option ? option[2] : ''}
-                    freeSolo
-                    onChange={(e,newvalue)=>setLegalForm2(newvalue)}
-                    value={legalForm2}
-                    inputValue={legalForm3}
-                    onInputChange={(event, newInputValue) => setLegalForm3(newInputValue)}
-                    renderInput={(params) => <TextField {...params} label="Legal Form" />}
-                    sx={{marginTop: "20px"}}
-                />
-                <Autocomplete
-                    id="city"
-                    options={cities.cities.filter(l => l[2] == country2[4] )}
-                    autoHighlight
-                    getOptionLabel={(option) => option ? option[1] : ''}
-                    freeSolo
-                    onChange={(e,newvalue)=>setCity2(newvalue)}
-                    value={city2}
-                    inputValue={city3}
-                    onInputChange={(event, newInputValue) => setCity3(newInputValue)}
-                    renderInput={(params) => <TextField {...params} label="Headquarter city" />}
-                    sx={{marginTop: "20px"}}
-                />
-                </FormControl>
-                )}
+            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} 
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime} />)}
+            {type == "statement" && (
+                <React.Fragment>
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
                 <Button variant="contained" onClick={() => generateHash()} margin="normal"
-                
                 sx={{marginTop: "24px"}}>
                     Generate hash
                 </Button>
-                {statement && (
-                    <div>
-                        <div>Full statement:</div>
-                        <div style={{backgroundColor: "#cccccc"}}>
-                            
-                <TextField
-                    id="tags"
-                    variant="outlined"
-                    placeholder=''
-                    label=""
-                    multiline
-                    value={statement}
-                    readOnly
-                    sx={{width: "100%"}}
-                        />
-                        </div>
-                    </div>)
-                }
-                {(statementHash.length > 0) && (
+                </React.Fragment>
+            )}
+            {statement && (
+                <div>
+                    <div>Full statement:</div>
+                    <div style={{backgroundColor: "#cccccc"}}>
+                    <TextField
+                        id="tags"
+                        variant="outlined"
+                        placeholder=''
+                        label=""
+                        multiline
+                        value={statement}
+                        readOnly
+                        sx={{width: "100%"}}
+                            />
+                    </div>
+                </div>)
+            }
+            {(statementHash.length > 0) && (
                     <div width="100%" style={{ paddingTop: "20px" }}>
                         <span >Add the following TXT record in your {domain} domain settings to verify domain ownership: </span>
                         <TextField

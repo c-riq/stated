@@ -1,5 +1,6 @@
 
-export const cities ={
+export const cities =
+{
     //"header":["cityWikidataId","cityLabelEnglish","countryWikidataId"],
     "cities":
 [
@@ -25185,4 +25186,5 @@ export const cities ={
 ["Q113513507","A Garduñeira","Q29"],
 ["Q113513557","Barxelas","Q29"],
 ["Q215646","Edo","Q17"]
-]}
+]
+}

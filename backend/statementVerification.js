@@ -112,13 +112,21 @@ const verifyTXTRecord = async (domain, record) => {
 const verifyViaStatedApi = async (domain, hash_b64) => {
     let url = 'https://stated.' + domain + '/api/statement/'
     console.log('verifyViaStatedApi', url, hash_b64)
-    const result = await axios({
-        method: "POST",
-        url, headers: { 'Content-Type': 'application/json'},
-        data: { hash_b64 }})
-    console.log(result.data.statements[0].hash_b64, 'result from ', domain)
-    if (result.data.statements[0].hash_b64 === hash_b64){
-        return true
+    let result = {}
+    try {
+        result = await axios({
+            method: "POST",
+            url, headers: { 'Content-Type': 'application/json'},
+            data: { hash_b64 }})
+    } catch(e) {
+        console.log(e)
+        return false
+    }
+    if (result.data && result.data.statements){
+        console.log(result.data.statements[0].hash_b64, 'result from ', domain)
+        if (result.data.statements[0].hash_b64 === hash_b64){
+            return true
+        }
     }
     return false
 }
@@ -153,7 +161,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
                 if(type === statementTypes.domainVerification){
                     dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
-                    dbResult = await domainVerification.createVerification({statement_id : dbResult.inserted.id, 
+                    dbResult = await domainVerification.createVerification({statement_hash : dbResult.inserted.hash_b64, 
                         version: 1, domain, typedContent})
                 }
             } else {
