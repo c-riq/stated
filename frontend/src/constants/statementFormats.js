@@ -102,6 +102,20 @@ const domainVerificationRegex= new RegExp(''
   + /$/.source
 );
 
+const pollRegex= new RegExp(''
+  + /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
+  + /(?:\tcountry scope: (?<country>[^\n]+?)\n)?/.source
+  + /(?:\tcity scope: (?<city>[^\n]+?)\n)?/.source
+  + /(?:\tlegal entities scope: (?<legalEntity>[^\n]+?)\n)?/.source
+  + /\torganisation name: (?<name>[^\n]+?)\n/.source 
+  + /\theadquarter country: (?<country>[^\n]+?)\n/.source
+  + /\tlegal form: (?<legalForm>[^\n]+?)\n/.source
+  + /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
+  + /(?:\theadquarter province or state: (?<province>[^\n]+?)\n)?/.source
+  + /(?:\theadquarter city: (?<city>[^\n]+?)\n)?/.source
+  + /$/.source
+);
+
 for (let e of Object.values(examples) ){
     continue
 	console.log(e)

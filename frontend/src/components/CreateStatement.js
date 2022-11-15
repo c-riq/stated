@@ -16,6 +16,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Chip from '@mui/material/Chip';
 
 import DomainVerificationForm from './DomainVerificationForm.js';
+import PollForm from './PollForm.js';
+import DisputeStatementForm from './DisputeStatementForm.js';
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
@@ -144,6 +146,8 @@ const CreateStatement = props => {
                     >
                         <MenuItem value={"statement"}>Statement</MenuItem>
                         <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
+                        <MenuItem value={"poll"}>Poll</MenuItem>
+                        <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
             {type == "statement" &&(
                 <div>
@@ -184,6 +188,12 @@ const CreateStatement = props => {
                     margin="normal"
                 />
             {type == "domain_verification" &&(<DomainVerificationForm domain={domain} 
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+            {type == "poll" &&(<PollForm domain={domain} 
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+            {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} 
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} />)}
             {type == "statement" && (

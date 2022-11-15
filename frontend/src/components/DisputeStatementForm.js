@@ -4,11 +4,6 @@ import {Buffer} from 'buffer';
 
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import moment from 'moment'
-
 
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
@@ -18,7 +13,7 @@ import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 
-const PollForm = props => {
+const DisputeStatementForm = props => {
     const province = ''
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
@@ -26,9 +21,10 @@ const PollForm = props => {
     const [legalFormObject, setLegalFormObject] = React.useState("");
     const [city, setCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState("");
-    const [options, setOptions] = React.useState(['','']);
+    const [options, setOptions] = React.useState("");
+    const [verifyName, setVerifyName] = React.useState("");
     const [nodes, setNodes] = React.useState("");
-    const [votingDeadline, setVotingDeadline] = React.useState(moment());
+    const [votingDeadline, setVotingDeadline] = React.useState("");
     const [poll, setPoll] = React.useState("");
 
     const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
@@ -52,8 +48,8 @@ const PollForm = props => {
             "\t" + "poll type: majority vote wins" + "\n" +
             (country ? "\t" + "country scope: " + country + "\n" : "") +
             (city ? "\t" + "city scope: " + city + "\n" : "") +
-            (legalForm ? "\t" + "legal entities scope: " + legalForm + "\n" : "") +
-            "\t" + "decision is finalized when the following nodes agree: " + nodes + "\n" +
+            (legalForm ? "\t" + "legal entity scope: " + legalForm + "\n" : "") +
+            "\t" + "decision is finalized when the following nodes agree: " + nodes.join(', ') + "\n" +
             "\t" + "voting deadline: " + votingDeadline + "\n" +
             "\t" + "poll: " + poll + "\n" +
             (options.length > 0 ? "\t" + "option 1: " + options[0] + "\n" : "") +
@@ -85,7 +81,7 @@ const PollForm = props => {
         <TextField
             id="poll judges"
             variant="outlined"
-            placeholder='rixdata.net'
+            placeholder='stated.rixdata.net'
             label="Poll judging domains"
             onChange={e => { setNodes(e.target.value) }}
             margin="normal"
@@ -116,23 +112,9 @@ const PollForm = props => {
             renderInput={(params) => (
                 <TextField
                 {...params}
-                label="Voting country (optional)"
+                label="Headquarter country"
                 />
             )}
-            sx={{marginTop: "20px"}}
-        />
-        <Autocomplete
-            id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] == countryObject[4] ) : []}
-            autoHighlight
-            getOptionLabel={(option) => option ? option[1] : ''}
-            freeSolo
-            onChange={(e,newvalue)=>setCityObject(newvalue)}
-            value={cityObject}
-            inputValue={city}
-            onInputChange={(event, newInputValue) => setCity(newInputValue)}
-            renderInput={(params) => <TextField {...params} label="Voting city (optional)" />}
-            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -147,54 +129,25 @@ const PollForm = props => {
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
-            renderInput={(params) => <TextField {...params} label="Voting legal entities (optional)" />}
+            renderInput={(params) => <TextField {...params} label="Legal Form" />}
             renderOption={(props, option) => (<Box {...props} id={option[1]} >{option[2]}</Box>)}
-            sx={{marginTop: "20px", marginBottom: "20px"}}
+            sx={{marginTop: "20px"}}
         />
-        <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DateTimePicker
-            label="deadline"
-            value={votingDeadline}
-            onChange={(v) => setVotingDeadline(v)}
-            renderInput={(params) => <TextField {...params} />}
-            />
-        </LocalizationProvider>
-
-        <TextField
-            id="poll"
-            variant="outlined"
-            placeholder='What should ...'
-            label="Poll"
-            onChange={e => { setPoll(e.target.value) }}
-            margin="normal"
-            sx={{marginTop: '24px'}}
+        <Autocomplete
+            id="city"
+            options={countryObject ? cities.cities.filter(l => l[2] == countryObject[4] ) : []}
+            autoHighlight
+            getOptionLabel={(option) => option ? option[1] : ''}
+            freeSolo
+            onChange={(e,newvalue)=>setCityObject(newvalue)}
+            value={cityObject}
+            inputValue={city}
+            onInputChange={(event, newInputValue) => setCity(newInputValue)}
+            renderInput={(params) => <TextField {...params} label="Headquarter city" />}
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
+            sx={{marginTop: "20px"}}
         />
-        <TextField
-            id="option1"
-            variant="outlined"
-            placeholder=''
-            label="Option 1"
-            onChange={e => { 
-                let options = [...options]
-                options[0] = e.target.value
-                setOptions(options) }}
-            margin="normal"
-            sx={{marginTop: '24px'}}
-        />
-        <TextField
-            id="option2"
-            variant="outlined"
-            placeholder=''
-            label="Option 2"
-            onChange={e => { 
-                let options = [...options]
-                options[1] = e.target.value
-                setOptions(options) }}
-            margin="normal"
-            sx={{marginTop: '24px'}}
-        />
-
-        <div style={{textAlign: "left", marginTop: "16px"}}>Current time: {props.serverTime}</div>
+        <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
         <Button variant="contained" onClick={() => generateHash()} margin="normal"
             sx={{marginTop: "24px"}}>
                 Generate hash
@@ -203,4 +156,4 @@ const PollForm = props => {
     )
 }
 
-export default PollForm
+export default DisputeStatementForm
