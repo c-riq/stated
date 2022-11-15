@@ -184,7 +184,8 @@ const CreateStatement = props => {
                     margin="normal"
                 />
             {type == "domain_verification" &&(<DomainVerificationForm domain={domain} 
-                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime} />)}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} />)}
             {type == "statement" && (
                 <React.Fragment>
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>

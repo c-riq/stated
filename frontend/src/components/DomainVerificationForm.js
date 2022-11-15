@@ -15,20 +15,14 @@ import {cities} from '../constants/cities'
 
 const DomainVerificationForm = props => {
     const province = ''
-    const [content, setContent] = React.useState(props.statementToJoin || "");
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
     const [legalForm, setLegalForm] = React.useState("");
     const [legalFormObject, setLegalFormObject] = React.useState("");
     const [city, setCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState("");
-    const [contentHash, setContentHash] = React.useState(""); // for joining statement
-    const [statement, setStatement] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
-    const [statementHash, setStatementHash] = React.useState("");
-    const [alertMessage, setAlertMessage] = React.useState("");
-    const [isError, setisError] = React.useState(false);
 
     const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
 
@@ -59,15 +53,15 @@ const DomainVerificationForm = props => {
 
             const parsedStatement = statement.match(statementRegex).groups
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
-                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
-                setisError(true)
+                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
+                props.setisError(true)
                 return
             }
             const parsedContent = parsedStatement.content.match(contentRegex).groups
             const parsedDomainVerification = parsedContent.typedContent.match(domainVerificationRegex)
             if(!parsedDomainVerification){
-                setAlertMessage('Invalid domain verification (missing values)')
-                setisError(true)
+                props.setAlertMessage('Invalid domain verification (missing values)')
+                props.setisError(true)
                 return
             }
             props.setStatement(statement)
