@@ -18,6 +18,8 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 
 import {countries} from '../constants/country_names_iso3166'
+import {legalForms} from '../constants/legalForms'
+import {cities} from '../constants/cities'
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
@@ -26,6 +28,17 @@ const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
     const [type, setType] = React.useState("statement");
     const [country, setCountry] = React.useState("");
+
+
+    const [country2, setCountry2] = React.useState("");
+    const [country3, setCountry3] = React.useState("");
+
+    const [legalForm2, setLegalForm2] = React.useState("");
+    const [legalForm3, setLegalForm3] = React.useState("");
+
+    const [city2, setCity2] = React.useState("");
+    const [city3, setCity3] = React.useState("");
+
     const [province, setProvince] = React.useState("");
     const [city, setCity] = React.useState("");
     const [legalForm, setLegalForm] = React.useState("");
@@ -120,6 +133,7 @@ const CreateStatement = props => {
     }    
 
     const generateHash = () => {
+        console.log(country2, country3)
         if(type == "statement"){
             const statement = "domain: " + domain + "\n" + 
             "time: " + props.serverTime + "\n" + 
@@ -247,7 +261,15 @@ const CreateStatement = props => {
                     label="Official name of organisation"
                     onChange={e => { setVerifyName(e.target.value) }}
                     margin="normal"
-                    sx={{marginTop: "24px"}}
+                    sx={{marginTop: "0px"}}
+                />
+                <TextField
+                    id="country"
+                    variant="outlined"
+                    placeholder='France'
+                    label="Headquarter country"
+                    onChange={e => { setCountry(e.target.value) }}
+                    margin="normal"
                 />
                 <TextField
                     id="legalform"
@@ -256,7 +278,7 @@ const CreateStatement = props => {
                     label="Legal form"
                     onChange={e => { setLegalForm(e.target.value) }}
                     margin="normal"
-                    sx={{marginBottom: "24px"}}
+                    sx={{marginBottom: "12px"}}
                 />
                 <TextField
                     id="city"
@@ -274,24 +296,16 @@ const CreateStatement = props => {
                     onChange={e => { setProvince(e.target.value) }}
                     margin="normal"
                 />
-                <TextField
-                    id="country"
-                    variant="outlined"
-                    placeholder='France'
-                    label="Headquarter country"
-                    onChange={e => { setCountry(e.target.value) }}
-                    margin="normal"
-                />
-                {/*
-                TODO: fix
-
                 <Autocomplete
                     id="country"
                     options={countries.countries}
                     autoHighlight
-                    getOptionLabel={(option) => option[0]}
-                    //onChange={e=>setCountry(e.target.value)}
-                    //value={countryId}
+                    getOptionLabel={(option) => option ? option[0] : ''}
+                    freeSolo
+                    onChange={(e,newvalue)=>setCountry2(newvalue)}
+                    value={country2}
+                    inputValue={country3}
+                    onInputChange={(event, newInputValue) => setCountry3(newInputValue)}
                     renderOption={(props, option) => (
                         <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                         <img
@@ -307,15 +321,37 @@ const CreateStatement = props => {
                     renderInput={(params) => (
                         <TextField
                         {...params}
-                        label="Country"
-                        inputProps={{
-                            ...params.inputProps,
-                        }}
+                        label="Headquarter country"
                         />
                     )}
                     sx={{marginTop: "20px"}}
                 />
-                */}
+                <Autocomplete
+                    id="legalForm"
+                    options={legalForms.legalForms.filter(l => l[0] == country2[1] || l[0] == 'all')}
+                    autoHighlight
+                    getOptionLabel={(option) => option ? option[2] : ''}
+                    freeSolo
+                    onChange={(e,newvalue)=>setLegalForm2(newvalue)}
+                    value={legalForm2}
+                    inputValue={legalForm3}
+                    onInputChange={(event, newInputValue) => setLegalForm3(newInputValue)}
+                    renderInput={(params) => <TextField {...params} label="Legal Form" />}
+                    sx={{marginTop: "20px"}}
+                />
+                <Autocomplete
+                    id="city"
+                    options={cities.cities.filter(l => l[2] == country2[4] )}
+                    autoHighlight
+                    getOptionLabel={(option) => option ? option[1] : ''}
+                    freeSolo
+                    onChange={(e,newvalue)=>setCity2(newvalue)}
+                    value={city2}
+                    inputValue={city3}
+                    onInputChange={(event, newInputValue) => setCity3(newInputValue)}
+                    renderInput={(params) => <TextField {...params} label="Headquarter city" />}
+                    sx={{marginTop: "20px"}}
+                />
                 </FormControl>
                 )}
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
