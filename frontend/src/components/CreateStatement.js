@@ -20,6 +20,8 @@ import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
 
 import { submitStatement, checkDomainVerification } from '../api.js'
+import { digest } from '../utils/hash.js';
+
 const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
 
 const CreateStatement = props => {
@@ -67,17 +69,6 @@ const CreateStatement = props => {
     }
     function tagHandleInputChange(event) {
         setTagInput(event.target.value)
-    }
-
-
-
-    const digest = async (input) => {
-        var enc = new TextEncoder(); // utf-8
-        const buf = enc.encode(input)
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buf)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const hashHex = Buffer.from(hashArray).toString('base64');
-        return hashHex
     }
 
 

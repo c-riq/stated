@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
+import { digest } from '../utils/hash';
 
 const DisputeStatementForm = props => {
     const province = ''
@@ -29,16 +30,6 @@ const DisputeStatementForm = props => {
 
     const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
 
-
-
-    const digest = async (input) => {
-        var enc = new TextEncoder(); // utf-8
-        const buf = enc.encode(input)
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buf)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const hashHex = Buffer.from(hashArray).toString('base64');
-        return hashHex
-    }
     const generateHash = () => {
             const statement = 
             "domain: " + props.domain + "\n" + 

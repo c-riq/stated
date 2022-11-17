@@ -55,7 +55,7 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                     first_value(min(id)) over(partition by content order by min(created_at) asc) as first_id,
                     $1 || $2 input
                 FROM statements 
-                WHERE type = 'statement'
+                WHERE (type = 'statement' OR type = 'poll')
                 ${minId ? 'AND id > $1' : ''}
                 ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
                 GROUP BY 1
@@ -65,6 +65,7 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
             SELECT * FROM (
               SELECT 
                   s.id,
+                  s.type,
                   s.domain,
                   v.name,
                   s.statement,

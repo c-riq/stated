@@ -27,11 +27,12 @@ const PollForm = props => {
     const [city, setCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState("");
     const [options, setOptions] = React.useState(['','']);
+    const [domainScope, setDomainScope] = React.useState([]);
     const [nodes, setNodes] = React.useState("");
     const [votingDeadline, setVotingDeadline] = React.useState(moment());
     const [poll, setPoll] = React.useState("");
 
-    const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
+    const { statementRegex, forbiddenStrings, pollRegex, contentRegex } = require('../constants/statementFormats.js')
 
 
 
@@ -52,9 +53,10 @@ const PollForm = props => {
             "\t" + "poll type: majority vote wins" + "\n" +
             (country ? "\t" + "country scope: " + country + "\n" : "") +
             (city ? "\t" + "city scope: " + city + "\n" : "") +
-            (legalForm ? "\t" + "legal entities scope: " + legalForm + "\n" : "") +
+            (legalForm ? "\t" + "legal entity scope: " + legalForm + "\n" : "") +
+            (domainScope.length > 0 ? "\t" + "domain scope: " + domainScope.join(', ') + "\n" : "") +
             "\t" + "decision is finalized when the following nodes agree: " + nodes + "\n" +
-            "\t" + "voting deadline: " + votingDeadline + "\n" +
+            "\t" + "voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
             "\t" + "poll: " + poll + "\n" +
             (options.length > 0 ? "\t" + "option 1: " + options[0] + "\n" : "") +
             (options.length > 1 ? "\t" + "option 2: " + options[1] + "\n" : "") +
@@ -63,6 +65,8 @@ const PollForm = props => {
             (options.length > 4 ? "\t" + "option 5: " + options[4] + "\n" : "") +
             ""
 
+            console.log(statement)
+
             const parsedStatement = statement.match(statementRegex).groups
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
                 props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
@@ -70,7 +74,7 @@ const PollForm = props => {
                 return
             }
             const parsedContent = parsedStatement.content.match(contentRegex).groups
-            const parsedDomainVerification = parsedContent.typedContent.match(domainVerificationRegex)
+            const parsedDomainVerification = parsedContent.typedContent.match(pollRegex)
             if(!parsedDomainVerification){
                 props.setAlertMessage('Invalid domain verification (missing values)')
                 props.setisError(true)
@@ -175,9 +179,9 @@ const PollForm = props => {
             placeholder=''
             label="Option 1"
             onChange={e => { 
-                let options = [...options]
-                options[0] = e.target.value
-                setOptions(options) }}
+                let optionsNew = [...options]
+                optionsNew[0] = e.target.value
+                setOptions(optionsNew) }}
             margin="normal"
             sx={{marginTop: '24px'}}
         />
@@ -187,9 +191,9 @@ const PollForm = props => {
             placeholder=''
             label="Option 2"
             onChange={e => { 
-                let options = [...options]
-                options[1] = e.target.value
-                setOptions(options) }}
+                let optionsNew = [...options]
+                optionsNew[1] = e.target.value
+                setOptions(optionsNew) }}
             margin="normal"
             sx={{marginTop: '24px'}}
         />

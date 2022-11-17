@@ -68,7 +68,7 @@ const CenterModal = (props) => {
 
 function App() {
   const [serverTime, setServerTime] = React.useState(new Date().toUTCString());
-  const [statementToJoin, setStatementToJoin] = React.useState("");
+  const [statementToJoin, setStatementToJoin] = React.useState(false);
   const [posts, setPosts] = React.useState([]);
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -152,12 +152,12 @@ function App() {
       <Routes>
           <Route path='/' exact />
           <Route path='/statement/:statementId' element={(
-            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(""); setPostToView(false)}}>
+            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)}}>
               <Statement hash_b16={useParams()} hash_b64={Buffer.from(useParams().statementId || '', 'hex').toString('base64')} />
             </CenterModal>)} 
           />
           <Route path='/create-statement' element={
-            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(""); setPostToView(false)}}>
+            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)}}>
               <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} />
             </CenterModal>} 
           />
