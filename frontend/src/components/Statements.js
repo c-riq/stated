@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 import { b64ToHex } from '../utils/hash.js';
 
-const { statementTypes, pollRegex, statementRegex, contentRegex } = require('../constants/statementFormats.js')
+const { statementTypes } = require('../constants/statementFormats.js')
 
 const Statements = props => {
     const { lt850px } = props
@@ -43,21 +43,11 @@ const Statements = props => {
                     )
                         }
                         if (p.type == statementTypes.poll){
-
-                            const statementParsed = p.statement.match(statementRegex).groups
-                            const contentParsed = statementParsed.content.match(contentRegex).groups
-                            const pollParsed = contentParsed.typedContent.match(pollRegex).groups
-
-                            const votingContent = `
-	type: vote
-	poll: ${p.hash_b64}
-	vote: ${pollParsed.option1}
-`
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"center"}}>
                                     <div>{p.repost_count}</div>
                                 <Link to="/create-statement">
-                                    <Button onClick={()=>{props.setStatementToJoin(votingContent)}} variant='contained' 
+                                    <Button onClick={()=>{props.voteOnPoll(p)}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                                         <PollIcon variant='contained'/>
                                     </Button>

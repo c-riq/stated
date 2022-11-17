@@ -69,6 +69,7 @@ const CenterModal = (props) => {
 function App() {
   const [serverTime, setServerTime] = React.useState(new Date().toUTCString());
   const [statementToJoin, setStatementToJoin] = React.useState(false);
+  const [poll, setPoll] = React.useState(false);
   const [posts, setPosts] = React.useState([]);
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -96,8 +97,13 @@ function App() {
     setStatementToJoin(statement)
     setModalOpen(true)
   }
+  const voteOnPoll = (poll) => {
+    setPoll(poll)
+    setModalOpen(true)
+  }
   const onPostSuccess = () => {
     setStatementToJoin("")
+    setPoll(false)
     setModalOpen(false)
     getStatementsAPI()
     navigate("/")
@@ -142,7 +148,7 @@ function App() {
           </div>
         </div>
       </header>
-      <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} posts={posts} lt850px={lt850px}>
+      <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}>
         <Link to="/create-statement">
           <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
           sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
@@ -158,7 +164,7 @@ function App() {
           />
           <Route path='/create-statement' element={
             <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)}}>
-              <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} />
+              <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} />
             </CenterModal>} 
           />
       </Routes>

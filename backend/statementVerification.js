@@ -39,7 +39,7 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     let result = {content: parsedContent, domain: groups.domain, time: groups.time,  tags: groups.tags, 
         content_hash_b64: hashUtils.sha256Hash(parsedContent), time: Date.parse(groups.time)}
     if (contentMatchGroups.type) {
-        if([ statementTypes.domainVerification, statementTypes.poll ].includes(contentMatchGroups.type)) {
+        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(contentMatchGroups.type)) {
             return {...result, type: contentMatchGroups.type, typedContent: contentMatchGroups.typedContent}
         } else {
             return {error: 'invalid type: ' + contentMatchGroups.type}
@@ -122,7 +122,7 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
         console.log(e)
         return false
     }
-    if (result.data && result.data.statements){
+    if (result.data && result.data.statements && result.data.statements.length > 0){
         console.log(result.data.statements[0].hash_b64, 'result from ', domain)
         if (result.data.statements[0].hash_b64 === hash_b64){
             return true
@@ -164,8 +164,8 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
                     dbResult = await domainVerification.createVerification({statement_hash : dbResult.inserted.hash_b64, 
                         version: 1, domain, typedContent})
                 }
-                if(type === statementTypes.poll){
-                    dbResult = await db.createStatement({type: statementTypes.poll, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                if([statementTypes.poll, statementTypes.vote].includes(type)){
+                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
                 }
             } else {

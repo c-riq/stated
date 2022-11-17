@@ -4,8 +4,6 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
-import {Buffer} from 'buffer';
-
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Portal from '@mui/material/Portal';
@@ -18,6 +16,7 @@ import Chip from '@mui/material/Chip';
 import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
+import VoteForm from './VoteForm.js';
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 import { digest } from '../utils/hash.js';
@@ -26,7 +25,7 @@ const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex 
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
-    const [type, setType] = React.useState("statement");
+    const [type, setType] = React.useState(props.poll ? "vote" : "statement");
     const [statement, setStatement] = React.useState("");
     const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
@@ -138,6 +137,7 @@ const CreateStatement = props => {
                         <MenuItem value={"statement"}>Statement</MenuItem>
                         <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
                         <MenuItem value={"poll"}>Poll</MenuItem>
+                        <MenuItem value={"vote"}>Vote</MenuItem>
                         <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
             {type == "statement" &&(
@@ -182,6 +182,9 @@ const CreateStatement = props => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} />)}
             {type == "poll" &&(<PollForm domain={domain} 
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+            {type == "vote" &&(<VoteForm domain={domain} poll={props.poll}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} />)}
             {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} 
