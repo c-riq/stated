@@ -1,4 +1,6 @@
-const Pool = require('pg').Pool
+import * as pg from 'pg'
+const { Pool } = pg.default
+
 const pool = new Pool({
   user: 'sdf',
   host: 'localhost',
@@ -6,8 +8,9 @@ const pool = new Pool({
   password: 'sdf',
   port: 5432,
 })
+console.log(pool)
 
-const {forbiddenStrings, forbiddenChars} = require('./statementFormats')
+import {forbiddenStrings} from './statementFormats.js'
 
 const s = (f) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
@@ -336,7 +339,7 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
   }
 }))
 
-module.exports = {
+export default {
   createStatement: s(createStatement),
   getStatements: s(getStatements),
   getStatement: s(getStatement),

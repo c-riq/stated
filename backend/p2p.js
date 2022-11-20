@@ -1,10 +1,9 @@
 
-const axios = require('axios').default;
+import axios from 'axios'
 
-const p2p_seed = require('./p2p_seed.js');
-const db = require('./db');
-const hash = require('./hash');
-const statementVerification = require('./statementVerification');
+import {p2p_seed} from './p2p_seed.js'
+import db from './db.js'
+import {validateAndAddStatementIfMissing} from './statementVerification.js'
 
 const ownDomain = process.env.DOMAIN
 
@@ -128,7 +127,7 @@ const fetchMissingStatementsFromNode = (n) => new Promise((resolve, reject) => {
                 console.log(json.data)
                 console.log(json.data.statements)
                 Promise.all(json.data.statements.map(s => {
-                    statementVerification.validateAndAddStatementIfMissing({...s, source_node_id: n.id})
+                    validateAndAddStatementIfMissing({...s, source_node_id: n.id})
                 }))
                     .then(
                         async r=>{
@@ -184,7 +183,7 @@ setInterval(async () => {
     }
 }, 20 * 1000)
 
-module.exports = {
+export default {
     validateAndAddNode
 }
 

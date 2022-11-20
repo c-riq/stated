@@ -1,9 +1,9 @@
-var express = require('express');
-const db = require('./db');
+import express from 'express'
+import db from './db.js'
 
-var humanReadableEndpoints = express.Router();
+const router = express.Router();
 
-humanReadableEndpoints.get("/statements|statements.txt", async (req, res, next) => {
+router.get("/statements|statements.txt", async (req, res, next) => {
     try {
         const dbResult = await db.getStatements({minId: undefined})
         if(dbResult?.error){
@@ -15,7 +15,7 @@ humanReadableEndpoints.get("/statements|statements.txt", async (req, res, next) 
         return next(err);
     }
 });
-humanReadableEndpoints.get("/statement/:hex", async (req, res, next) => {
+router.get("/statement/:hex", async (req, res, next) => {
     console.log(req.params)
     try {
         const hex = req.params.hex
@@ -31,7 +31,7 @@ humanReadableEndpoints.get("/statement/:hex", async (req, res, next) => {
         return next(err);
     }
 });
-humanReadableEndpoints.get("/verifications|verifications.txt", async (req, res, next) => {
+router.get("/verifications|verifications.txt", async (req, res, next) => {
     try {
         const dbResult = await db.getAllVerifications()
         if(dbResult?.error){
@@ -43,7 +43,7 @@ humanReadableEndpoints.get("/verifications|verifications.txt", async (req, res, 
         return next(err);
     }
 });
-humanReadableEndpoints.get("/nodes|nodes.txt", async (req, res, next) => {
+router.get("/nodes|nodes.txt", async (req, res, next) => {
     try {
         const dbResult = await db.getAllNodes()
         if(dbResult?.error){
@@ -56,4 +56,4 @@ humanReadableEndpoints.get("/nodes|nodes.txt", async (req, res, next) => {
     }
 });
 
-module.exports = humanReadableEndpoints;
+export const humanReadableEndpoints = router

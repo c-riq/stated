@@ -1,5 +1,3 @@
-const domains = [
+export const p2p_seed = [
     'stated.rixdata.net'
 ]
-
-module.exports = {domains}

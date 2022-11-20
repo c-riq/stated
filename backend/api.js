@@ -1,10 +1,9 @@
-var express = require('express');
+import express from 'express'
 
 
-const db = require('./db');
-const p2p = require('./p2p');
-const hashUtils = require('./hash');
-const statementVerification = require('./statementVerification');
+import db from './db.js'
+import p2p from './p2p.js'
+import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification.js'
 
 
 var api = express.Router();
@@ -17,7 +16,7 @@ api.use((req, res, next) => {
 })
 
 api.post("/get_txt_records", async (req, res, next) => {
-    const records = await statementVerification.getTXTEntries(req.body.domain)
+    const records = await getTXTEntries(req.body.domain)
     if(records.error){
         next(records.error)
     } else {
@@ -28,7 +27,7 @@ api.post("/get_txt_records", async (req, res, next) => {
 
 api.post("/submit_statement", async (req, res, next) => {
     const { statement, hash_b64 } = req.body
-    const dbResult = await statementVerification.validateAndAddStatementIfMissing({statement, hash_b64, verification_method: 'dns'})
+    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, verification_method: 'dns'})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -102,4 +101,5 @@ api.get("/health", async (req, res, next) => {
     }
 })
 
-module.exports = api;
+export default api
+

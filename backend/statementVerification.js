@@ -1,11 +1,11 @@
 
 
-const axios = require('axios').default;
-const db = require('./db');
-const hashUtils = require('./hash');
-const domainVerification = require('./domainVerification');
-const cp = require('child_process');
-const {statementRegex, statementTypes, contentRegex, pollRegex, voteRegex} = require('./statementFormats')
+import axios from 'axios'
+import db from './db.js'
+import * as hashUtils from './hash.js'
+import {createVerification} from './domainVerification.js'
+import * as cp from 'child_process'
+import {statementRegex, statementTypes, contentRegex, pollRegex, voteRegex} from './statementFormats.js'
 
 const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     const regexResults = statement.match(statementRegex)
@@ -70,10 +70,10 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
         })
 })
 
-const getTXTEntries = (d) => new Promise((resolve, reject) => {
+export const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
         console.log('getTXTEntries', d)
-        if (! /^[a-zA-Z\.-]{7,253}$/.test(d)) {
+        if (! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
             resolve({error: 'invalid domain'})
         }
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
@@ -96,7 +96,7 @@ const getTXTEntries = (d) => new Promise((resolve, reject) => {
     }
 })
 
-const verifyTXTRecord = async (domain, record) => {
+export const verifyTXTRecord = async (domain, record) => {
     console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
@@ -131,7 +131,7 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
     return false
 }
 
-const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
+export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
     try{
         const {statement, hash_b64, source_node_id, verification_method } = s
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
@@ -161,7 +161,7 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
                 if(type === statementTypes.domainVerification){
                     dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
-                    dbResult = await domainVerification.createVerification({statement_hash : dbResult.inserted.hash_b64, 
+                    dbResult = await createVerification({statement_hash : dbResult.inserted.hash_b64, 
                         version: 1, domain, typedContent})
                 }
                 if([statementTypes.poll, statementTypes.vote].includes(type)){
@@ -180,10 +180,3 @@ const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reje
         resolve({error})
     }
 })
-
-
-module.exports = {
-    validateAndAddStatementIfMissing,
-    verifyTXTRecord,
-    getTXTEntries
-}

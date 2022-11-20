@@ -1,11 +1,16 @@
-const express = require('express')
-const bodyParser = require('body-parser');
-const http = require('http')
-const https = require('https')
-const fs = require('fs')
+import express from 'express'
+import bodyParser from 'body-parser'
+import http from 'http'
+import https from 'https'
+import fs from 'fs'
 
-const humanReadableEndpoints = require('./humanReadableEndpoints');
-const api = require('./api');
+import {humanReadableEndpoints} from './humanReadableEndpoints.js'
+import api from './api.js'
+
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN

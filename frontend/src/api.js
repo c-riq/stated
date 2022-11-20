@@ -1,7 +1,7 @@
 
 const req = (method, path, body, cb, reject) => {
     const url = `${(
-        process.env.NODE_ENV == 'development' ? 'http://localhost:7766' : 'https://'+ window.location.host 
+        process.env.NODE_ENV == 'development' || window.location.host == 'localhost:7766' ? 'http://localhost:7766' : 'https://'+ window.location.host 
         )}/api/${path}`
     const opts = {
         headers: {

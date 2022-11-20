@@ -1,9 +1,7 @@
+import db from './db.js'
+import {domainVerificationRegex} from './statementFormats.js'
 
-
-const db = require('./db');
-const {domainVerificationRegex} = require('./statementFormats')
-
-const createVerification = ({statement_hash, domain, version, typedContent }) => (new Promise((resolve, reject)=>{
+export const createVerification = ({statement_hash, domain, version, typedContent }) => (new Promise((resolve, reject)=>{
     const verifer_domain = domain
     try {
         const groups = typedContent.match(domainVerificationRegex).groups
@@ -21,8 +19,3 @@ const createVerification = ({statement_hash, domain, version, typedContent }) =>
         resolve({error})
     }
 }))
-
-
-module.exports = {
-    createVerification
-}
