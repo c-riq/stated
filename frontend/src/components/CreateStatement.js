@@ -16,12 +16,12 @@ import Chip from '@mui/material/Chip';
 import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
-import VoteForm from './VoteForm.js';
+import {VoteForm} from './VoteForm.js';
 
 import { submitStatement, checkDomainVerification } from '../api.js'
 import { digest } from '../utils/hash.js';
 
-import { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } from '../constants/statementFormats.js'
+import { parseStatement, forbiddenStrings } from '../constants/statementFormats.js'
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
@@ -106,7 +106,7 @@ const CreateStatement = props => {
             (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
             "content: " +  content;
 
-            const parsedResult = statement.match(statementRegex).groups
+            const parsedResult = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
                 setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
                 setisError(true)

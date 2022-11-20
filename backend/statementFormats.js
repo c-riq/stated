@@ -1,4 +1,3 @@
-
 // copied from frotend to backend directory via 'npm run build'
 
 const examples = {
@@ -82,19 +81,67 @@ export const statementTypes = {
     dispute: 'dispute statement',
     trustworthinessRating: 'trustworthiness rating'
 }
+export const parseStatement = (s) => {
+	const statementRegex= new RegExp(''
+	+ /^domain: ([^\n]+?)\n/.source
+	+ /time: ([^\n]+?)\n/.source
+	+ /(?:tags: ([^\n]*?)\n)?/.source
+	+ /content: ([\s\S]+?)$/.source
+	);
+	const m = s.match(statementRegex)
+	return m ? {
+		domain: m[1],
+		time: m[2],
+		tags: m[3],
+		content: m[4],
+	} : {}
+}
+export const parseContent = (s) => {
+	const contentRegex= new RegExp(''
+	+ /^\n\ttype: ([^\n]+?)\n/.source
+	+ /([\s\S]+?)$/.source
+	+ /|^([\s\S]+?)$/.source
+	)
+	const m = s.match(contentRegex)
+	return m ? {
+		type: m[1],
+		typedContent: m[2],
+		content: m[3]
+	} : {}
+}
+export const parsePoll = (s) => {
+	const pollRegex= new RegExp(''
+	+ /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
+	+ /(?:\tcountry scope: (?<country>[^\n]+?)\n)?/.source
+	+ /(?:\tcity scope: (?<city>[^\n]+?)\n)?/.source
+	+ /(?:\tlegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
+	+ /(?:\tdomain scope: (?<domainScope>[^\n]+?)\n)?/.source
+	+ /\tdecision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source 
+	+ /\tvoting deadline: (?<deadline>[^\n]+?)\n/.source 
+	+ /\tpoll: (?<poll>[^\n]+?)\n/.source 
+	+ /(?:\toption 1: (?<option1>[^\n]+?)\n)?/.source
+	+ /(?:\toption 2: (?<option2>[^\n]+?)\n)?/.source
+	+ /(?:\toption 3: (?<option3>[^\n]+?)\n)?/.source
+	+ /(?:\toption 4: (?<option4>[^\n]+?)\n)?/.source
+	+ /(?:\toption 5: (?<option5>[^\n]+?)\n)?/.source
+	+ /$/.source)
+	const m = s.match(pollRegex)
+	return m ? {
+		pollType: m[1],
+		country: m[2],
+		city: m[3],
+		legalEntity: m[4],
+		domainScope: m[5],
+		judges: m[6],
+		deadline: m[7],
+		option1: m[8],
+		option2: m[9],
+		option3: m[10],
+		option4: m[11],
+		option5: m[12]
+	} : {}
+}
 
-export const statementRegex= new RegExp(''
-	+ /^domain: (?<domain>[^\n]+?)\n/.source
-	+ /time: (?<time>[^\n]+?)\n/.source
-	+ /(?:tags: (?<tags>[^\n]*?)\n)?/.source
-	+ /content: (?<content>[\s\S]+?)$/.source
-);
-
-export const contentRegex= new RegExp(''
-	+ /^\n\ttype: (?<type>[^\n]+?)\n/.source
-	+ /(?<typedContent>[\s\S]+?)$/.source
-	+ /|^(?<content>[\s\S]+?)$/.source
-);
 
 export const domainVerificationRegex= new RegExp(''
   + /^\tdescription: We verified the following information about an organisation.\n/.source 
@@ -132,18 +179,15 @@ export const voteRegex= new RegExp(''
 );
 
 for (let e of Object.values(examples) ){
-    continue
+    //continue
 	console.log(e)
 	try{
-		const content = e.match(statementRegex)
-			.groups.content.match(contentRegex)
-		console.log(content.groups)
+		const content = parseContent(parseStatement(e).content)
+		console.log(content)
 
-		if(content && content.groups && content.groups.typedContent == statementTypes.domainVerification){
+		if(content && content.typedContent == statementTypes.domainVerification){
 
-				console.log(e.match(statementRegex).groups.content
-				.match(contentRegex).groups
-				.typedContent.match(domainVerificationRegex)
+				console.log(content.typedContent.match(domainVerificationRegex)
 					.groups)
 
 		}

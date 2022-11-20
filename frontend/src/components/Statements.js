@@ -6,8 +6,8 @@ import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 
 import { b64ToHex } from '../utils/hash.js';
+import { statementTypes } from '../constants/statementFormats.js'
 
-const { statementTypes } = require('../constants/statementFormats.js')
 
 const Statements = props => {
     const { lt850px } = props

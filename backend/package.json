@@ -2,7 +2,7 @@
   "name": "stated_backend",
   "version": "1.0.0",
   "description": "",
-  "type":"module",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.26.1",
+    "core-js": "^3.26.1",
     "crypto": "^1.0.1",
     "express": "^4.17.3",
     "fs-extra": "^10.0.1",

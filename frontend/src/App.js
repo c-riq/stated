@@ -99,6 +99,7 @@ function App() {
   }
   const voteOnPoll = (poll) => {
     setPoll(poll)
+    console.log('poll', poll)
     setModalOpen(true)
   }
   const onPostSuccess = () => {

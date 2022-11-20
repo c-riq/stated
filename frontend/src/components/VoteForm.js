@@ -11,18 +11,23 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import { b64ToHex } from '../utils/hash';
 
-const { voteRegex, pollRegex, statementRegex, contentRegex, forbiddenStrings, domainVerificationRegex } = require('../constants/statementFormats.js')
+import { parseVote, parsePoll,  parseContent, parseStatement } from '../constants/statementFormats.js'
 
 
 
-const VoteForm = props => {
-
-    const statementParsed = props.poll.statement.match(statementRegex).groups
-    const contentParsed = statementParsed.content.match(contentRegex).groups
-    const pollParsed = contentParsed.typedContent.match(pollRegex).groups
-    const options = [pollParsed.option1, pollParsed.option2, pollParsed.option3, pollParsed.option4, pollParsed.option5].filter(o=>o)
+export const VoteForm = props => {
 
     const [vote, setVote] = React.useState("");
+
+    console.log(props)
+    if (!props || !(props.poll)){return (<div>no poll referenced</div>)}
+
+
+    const statementParsed = parseStatement(props.poll.statement)
+    const contentParsed = parseContent(statementParsed.content)
+    const pollParsed = parsePoll(contentParsed.typedContent)
+    console.log(pollParsed)
+    const options = [pollParsed.option1, pollParsed.option2, pollParsed.option3, pollParsed.option4, pollParsed.option5].filter(o=>o)
 
     const generateHash = () => {
             const statement = 
@@ -35,9 +40,9 @@ const VoteForm = props => {
             "\t" + "vote: " + vote + "\n" +
             ""
 
-            const parsedStatement = statement.match(statementRegex).groups
-            const parsedContent = parsedStatement.content.match(contentRegex).groups
-            const parsedVote = parsedContent.typedContent.match(voteRegex)
+            const parsedStatement = parseStatement(statement)
+            const parsedContent = parseContent(parsedStatement.content)
+            const parsedVote = parseVote(parsedContent.typedContent)
             if(!parsedVote){
                 props.setAlertMessage('Invalid vote format')
                 props.setisError(true)
@@ -69,5 +74,3 @@ const VoteForm = props => {
         </FormControl>
     )
 }
-
-export default VoteForm

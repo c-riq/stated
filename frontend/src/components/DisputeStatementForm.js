@@ -14,6 +14,9 @@ import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 import { digest } from '../utils/hash';
 
+import { parseStatement, forbiddenStrings, parseDomainVerification, parseContent } from '../constants/statementFormats.js'
+
+
 const DisputeStatementForm = props => {
     const province = ''
     const [country, setCountry] = React.useState("");
@@ -27,8 +30,6 @@ const DisputeStatementForm = props => {
     const [nodes, setNodes] = React.useState("");
     const [votingDeadline, setVotingDeadline] = React.useState("");
     const [poll, setPoll] = React.useState("");
-
-    const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
 
     const generateHash = () => {
             const statement = 
@@ -50,14 +51,14 @@ const DisputeStatementForm = props => {
             (options.length > 4 ? "\t" + "option 5: " + options[4] + "\n" : "") +
             ""
 
-            const parsedStatement = statement.match(statementRegex).groups
+            const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
                 props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
                 props.setisError(true)
                 return
             }
-            const parsedContent = parsedStatement.content.match(contentRegex).groups
-            const parsedDomainVerification = parsedContent.typedContent.match(domainVerificationRegex)
+            const parsedContent = parseContent(parsedStatement.content)
+            const parsedDomainVerification = parseDomainVerification(parsedContent.typedContent)
             if(!parsedDomainVerification){
                 props.setAlertMessage('Invalid domain verification (missing values)')
                 props.setisError(true)

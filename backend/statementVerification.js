@@ -5,21 +5,20 @@ import db from './db.js'
 import * as hashUtils from './hash.js'
 import {createVerification} from './domainVerification.js'
 import * as cp from 'child_process'
-import {statementRegex, statementTypes, contentRegex, pollRegex, voteRegex} from './statementFormats.js'
+import {parseStatement, parseContent, statementTypes} from './statementFormats.js'
 
 const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
-    const regexResults = statement.match(statementRegex)
-    if (!regexResults) {
+    const parsedStatement = parseStatement(statement)
+    if (!parsedStatement) {
         return({error: "invalid verification"})
     }
-    const groups = regexResults.groups
-    if (!groups.domain) {
+    if (!parsedStatement.domain) {
         return({error: "domain missing"})
     }
-    if (!groups.content){
+    if (!parsedStatement.content){
         return {error: 'content missing'}
     }
-    if (!groups.time){
+    if (!parsedStatement.time){
         return {error: 'time missing'}
     }
     if (!hashUtils.verify(statement, hash_b64)){
@@ -33,16 +32,15 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     ){
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
-    const parsedContent = groups.content
-    const contentRegexResults = parsedContent.match(contentRegex)
-    const contentMatchGroups = contentRegexResults.groups
+    const content = parsedStatement.content
+    const parsedContent = parseContent(content)
     let result = {content: parsedContent, domain: groups.domain, time: groups.time,  tags: groups.tags, 
         content_hash_b64: hashUtils.sha256Hash(parsedContent), time: Date.parse(groups.time)}
-    if (contentMatchGroups.type) {
-        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(contentMatchGroups.type)) {
-            return {...result, type: contentMatchGroups.type, typedContent: contentMatchGroups.typedContent}
+    if (parsedContent.type) {
+        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(parsedContent.type)) {
+            return {...result, type: parsedContent.type, typedContent: parsedContent.typedContent}
         } else {
-            return {error: 'invalid type: ' + contentMatchGroups.type}
+            return {error: 'invalid type: ' + parsedContent.type}
         }
     } else {
         return result
