@@ -3,74 +3,74 @@
 // TODO: use named matching groups, (did not work in the js bundle)
 
 const examples = {
-normalStatementWithTags: `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-tags: hashtag1, hashtag2
-content: hello world
+normalStatementWithTags: `Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Tags: hashtag1, hashtag2
+Content: hello world
 `,
-domainVerification: `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: domain verification
-	description: We verified the following information about an organisation.
-	organisation name: Walmart Inc.
-	headquarter country: United States of America
-	legal form: U.S. corporation
-	domain of primary website: walmart.com
-	headquarter province or state: Arkansas
-	headquarter city: Bentonville
+domainVerification: `Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Content: 
+	Type: domain verification
+	Description: We verified the following information about an organisation.
+	Organisation name: Walmart Inc.
+	Headquarter country: United States of America
+	Legal entity: U.S. corporation
+	Domain of primary website: walmart.com
+	Headquarter province or state: Arkansas
+	Headquarter city: Bentonville
 `,
-response: `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: response
-	to: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-	response: No, we don't want that.
+response: `Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Content: 
+	Type: response
+	To: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Response: No, we don't want that.
 `,
-dispute: `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: dispute statement
-	description: We are convinced that the referenced statement is false.
-	hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+dispute: `Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Content: 
+	Type: dispute statement
+	Description: We are convinced that the referenced statement is false.
+	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 `,
-poll:`domain: rixdata.net
-time: Thu, 17 Nov 2022 13:38:20 GMT
-content: 
-	type: poll
-	poll type: majority vote wins
-	country scope: United Kingdom of Great Britain and Northern Ireland (the)
-	legal entity scope: limited liability corporation
-	decision is finalized when the following nodes agree: rixdata.net
-	voting deadline: Thu, 01 Dec 2022 13:38:26 GMT
-	poll: Should the UK join the EU
-	option 1: Yes
-	option 2: No
+poll:`Domain: rixdata.net
+Time: Thu, 17 Nov 2022 13:38:20 GMT
+Content: 
+	Type: poll
+	Poll type: majority vote wins
+	Country scope: United Kingdom of Great Britain and Northern Ireland (the)
+	Legal entity scope: limited liability corporation
+	Decision is finalized when the following nodes agree: rixdata.net
+	Voting deadline: Thu, 01 Dec 2022 13:38:26 GMT
+	Poll: Should the UK join the EU
+	Option 1: Yes
+	Option 2: No
 `,
-voteReferencingOption: `domain: rixdata.net
-time: Thu, 17 Nov 2022 20:13:46 GMT
-content: 
-	type: vote
-	poll hash: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
-	poll: Should the UK join the EU
-	vote: Yes
+voteReferencingOption: `Domain: rixdata.net
+Time: Thu, 17 Nov 2022 20:13:46 GMT
+Content: 
+	Type: vote
+	Poll id: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
+	Poll: Should the UK join the EU
+	Vote: Yes
 `,
-freeTextVote: `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: vote
-	poll: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-	vote: keep the money
+freeTextVote: `Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Content: 
+	Type: vote
+	Poll: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Vote: keep the money
 `,
-rating:`domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
-content: 
-	type: trustworthiness rating
-	description: Based on doing business with the following organisation we give the following rating.
-	organisation name: AMBOSS GmbH
-	organisation domain: amboss.com
-	our rating (out of 5 stars): 5
-	comment: 
+rating:`Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Content: 
+	Type: trustworthiness rating
+	Description: Based on doing business with the following organisation we give the following rating.
+	Organisation name: AMBOSS GmbH
+	Organisation domain: amboss.com
+	Our rating (out of 5 stars): 5
+	Comment: 
 `
 }
 
@@ -84,18 +84,18 @@ export const statementTypes = {
     trustworthinessRating: 'trustworthiness rating'
 }
 export const buildStatement = ({domain, time, tags, content}) => {
-	const statement = "domain: " + domain + "\n" + 
-            "time: " + time + "\n" + 
-            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
-            "content: " +  content;
+	const statement = "Domain: " + domain + "\n" + 
+            "Time: " + time + "\n" + 
+            (tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
+            "Content: " +  content;
 	return statement
 }
 export const parseStatement = (s) => {
 	const statementRegex= new RegExp(''
-	+ /^domain: ([^\n]+?)\n/.source
-	+ /time: ([^\n]+?)\n/.source
-	+ /(?:tags: ([^\n]*?)\n)?/.source
-	+ /content: ([\s\S]+?)$/.source
+	+ /^Domain: ([^\n]+?)\n/.source
+	+ /Time: ([^\n]+?)\n/.source
+	+ /(?:Tags: ([^\n]*?)\n)?/.source
+	+ /Content: ([\s\S]+?)$/.source
 	);
 	const m = s.match(statementRegex)
 	return m ? {
@@ -107,7 +107,7 @@ export const parseStatement = (s) => {
 }
 export const parseContent = (s) => {
 	const contentRegex= new RegExp(''
-	+ /^\n\ttype: ([^\n]+?)\n/.source
+	+ /^\n\tType: ([^\n]+?)\n/.source
 	+ /([\s\S]+?)$/.source
 	+ /|^([\s\S]+?)$/.source
 	)
@@ -120,38 +120,38 @@ export const parseContent = (s) => {
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
 	const content = "\n" + 
-	"\t" + "type: poll" + "\n" +
-	"\t" + "poll type: majority vote wins" + "\n" +
-	(country ? "\t" + "country scope: " + country + "\n" : "") +
-	(city ? "\t" + "city scope: " + city + "\n" : "") +
-	(legalEntity ? "\t" + "legal entity scope: " + legalEntity + "\n" : "") +
-	(domainScope.length > 0 ? "\t" + "domain scope: " + domainScope.join(', ') + "\n" : "") +
-	"\t" + "decision is finalized when the following nodes agree: " + nodes + "\n" +
-	"\t" + "voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
-	"\t" + "poll: " + poll + "\n" +
-	(options.length > 0 ? "\t" + "option 1: " + options[0] + "\n" : "") +
-	(options.length > 1 ? "\t" + "option 2: " + options[1] + "\n" : "") +
-	(options.length > 2 ? "\t" + "option 3: " + options[2] + "\n" : "") +
-	(options.length > 3 ? "\t" + "option 4: " + options[3] + "\n" : "") +
-	(options.length > 4 ? "\t" + "option 5: " + options[4] + "\n" : "") +
+	"\t" + "Type: poll" + "\n" +
+	"\t" + "Poll type: majority vote wins" + "\n" +
+	(country ? "\t" + "Country scope: " + country + "\n" : "") +
+	(city ? "\t" + "City scope: " + city + "\n" : "") +
+	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
+	(domainScope.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
+	"\t" + "The Decision is finalized when the following nodes agree: " + nodes + "\n" +
+	"\t" + "Voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
+	"\t" + "Poll: " + poll + "\n" +
+	(options.length > 0 ? "\t" + "Option 1: " + options[0] + "\n" : "") +
+	(options.length > 1 ? "\t" + "Option 2: " + options[1] + "\n" : "") +
+	(options.length > 2 ? "\t" + "Option 3: " + options[2] + "\n" : "") +
+	(options.length > 3 ? "\t" + "Option 4: " + options[3] + "\n" : "") +
+	(options.length > 4 ? "\t" + "Option 5: " + options[4] + "\n" : "") +
 	""
 	return content
 }
 export const parsePoll = (s) => {
 	const pollRegex= new RegExp(''
-	+ /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
-	+ /(?:\tcountry scope: (?<country>[^\n]+?)\n)?/.source
-	+ /(?:\tcity scope: (?<city>[^\n]+?)\n)?/.source
-	+ /(?:\tlegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
-	+ /(?:\tdomain scope: (?<domainScope>[^\n]+?)\n)?/.source
-	+ /\tdecision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source 
-	+ /\tvoting deadline: (?<deadline>[^\n]+?)\n/.source 
-	+ /\tpoll: (?<poll>[^\n]+?)\n/.source 
-	+ /(?:\toption 1: (?<option1>[^\n]+?)\n)?/.source
-	+ /(?:\toption 2: (?<option2>[^\n]+?)\n)?/.source
-	+ /(?:\toption 3: (?<option3>[^\n]+?)\n)?/.source
-	+ /(?:\toption 4: (?<option4>[^\n]+?)\n)?/.source
-	+ /(?:\toption 5: (?<option5>[^\n]+?)\n)?/.source
+	+ /^\tPoll type: (?<pollType>[^\n]+?)\n/.source 
+	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
+	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
+	+ /(?:\tLegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
+	+ /(?:\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
+	+ /\tDecision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source 
+	+ /\tVoting deadline: (?<deadline>[^\n]+?)\n/.source 
+	+ /\tPoll: (?<poll>[^\n]+?)\n/.source 
+	+ /(?:\tOption 1: (?<option1>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 2: (?<option2>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 3: (?<option3>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
 	+ /$/.source)
 	const m = s.match(pollRegex)
 	return m ? {
@@ -173,26 +173,26 @@ export const parsePoll = (s) => {
 
 export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain}) => {
 	const content = "\n" + 
-	"\t" + "type: domain verification" + "\n" +
-	"\t" + "description: We verified the following information about an organisation." + "\n" +
-	"\t" + "organisation name: " + verifyName + "\n" +
-	"\t" + "headquarter country: " + country + "\n" +
-	"\t" + "legal entity: " + legalEntity + "\n" +
-	"\t" + "domain of primary website: " + verifyDomain + "\n" +
-	(province ? "\t" + "headquarter province or state: " + province + "\n" : "") +
-	(city ? "\t" + "headquarter city: " + city + "\n" : "") +
+	"\t" + "Type: domain verification" + "\n" +
+	"\t" + "Description: We verified the following information about an organisation." + "\n" +
+	"\t" + "Organisation name: " + verifyName + "\n" +
+	"\t" + "Headquarter country: " + country + "\n" +
+	"\t" + "Legal entity: " + legalEntity + "\n" +
+	"\t" + "Domain of primary website: " + verifyDomain + "\n" +
+	(province ? "\t" + "Headquarter province or state: " + province + "\n" : "") +
+	(city ? "\t" + "Headquarter city: " + city + "\n" : "") +
 	""
 	return content
 }
 export const parseDomainVerification = (s) => {
 	const domainVerificationRegex= new RegExp(''
-	+ /^\tdescription: We verified the following information about an organisation.\n/.source 
-	+ /\torganisation name: (?<name>[^\n]+?)\n/.source 
-	+ /\theadquarter country: (?<country>[^\n]+?)\n/.source
-	+ /\tlegal form: (?<legalForm>[^\n]+?)\n/.source
-	+ /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
-	+ /(?:\theadquarter province or state: (?<province>[^\n]+?)\n)?/.source
-	+ /(?:\theadquarter city: (?<city>[^\n]+?)\n)?/.source
+	+ /^\tDescription: We verified the following information about an organisation.\n/.source 
+	+ /\tOrganisation name: (?<name>[^\n]+?)\n/.source 
+	+ /\tHeadquarter country: (?<country>[^\n]+?)\n/.source
+	+ /\tLegal form: (?<legalForm>[^\n]+?)\n/.source
+	+ /\tDomain of primary website: (?<domain>[^\n]+?)\n/.source
+	+ /(?:\tHeadquarter province or state: (?<province>[^\n]+?)\n)?/.source
+	+ /(?:\tHeadquarter city: (?<city>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(domainVerificationRegex)
@@ -216,9 +216,9 @@ export const buildVoteContent = ({hash_b64, poll, vote}) => {
 }
 export const parseVote = (s) => {
 	const voteRegex= new RegExp(''
-	+ /^\tpoll hash: (?<pollHash>[^\n]+?)\n/.source 
-	+ /\tpoll: (?<poll>[^\n]+?)\n/.source 
-	+ /\tvote: (?<vote>[^\n]+?)\n/.source 
+	+ /^\tPoll id: (?<pollHash>[^\n]+?)\n/.source 
+	+ /\tPoll: (?<poll>[^\n]+?)\n/.source 
+	+ /\tVote: (?<vote>[^\n]+?)\n/.source 
 	+ /$/.source
 	);
 	const m = s.match(voteRegex)
