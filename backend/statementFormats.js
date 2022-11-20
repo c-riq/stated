@@ -47,11 +47,12 @@ content:
 	option 2: No
 `,
 voteReferencingOption: `domain: rixdata.net
-time: Sun, 04 Sep 2022 14:48:50 GMT
+time: Thu, 17 Nov 2022 20:13:46 GMT
 content: 
 	type: vote
-	poll: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-	vote: option 1: Donate to Wikipedia (WIKIMEDIA FOUNDATION INC, IBAN: GB12CITI18500818796270)
+	poll hash: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
+	poll: Should the UK join the EU
+	vote: Yes
 `,
 freeTextVote: `domain: rixdata.net
 time: Sun, 04 Sep 2022 14:48:50 GMT
@@ -72,7 +73,7 @@ content:
 `
 }
 
-const statementTypes = {
+export const statementTypes = {
     statement: 'statement',
     domainVerification: 'domain verification',
     poll: 'poll',
@@ -82,20 +83,20 @@ const statementTypes = {
     trustworthinessRating: 'trustworthiness rating'
 }
 
-const statementRegex= new RegExp(''
+export const statementRegex= new RegExp(''
 	+ /^domain: (?<domain>[^\n]+?)\n/.source
 	+ /time: (?<time>[^\n]+?)\n/.source
 	+ /(?:tags: (?<tags>[^\n]*?)\n)?/.source
 	+ /content: (?<content>[\s\S]+?)$/.source
 );
 
-const contentRegex= new RegExp(''
+export const contentRegex= new RegExp(''
 	+ /^\n\ttype: (?<type>[^\n]+?)\n/.source
 	+ /(?<typedContent>[\s\S]+?)$/.source
 	+ /|^(?<content>[\s\S]+?)$/.source
 );
 
-const domainVerificationRegex= new RegExp(''
+export const domainVerificationRegex= new RegExp(''
   + /^\tdescription: We verified the following information about an organisation.\n/.source 
   + /\torganisation name: (?<name>[^\n]+?)\n/.source 
   + /\theadquarter country: (?<country>[^\n]+?)\n/.source
@@ -106,24 +107,7 @@ const domainVerificationRegex= new RegExp(''
   + /$/.source
 );
 
-
-const a=`
-domain: jkl
-time: Thu, 17 Nov 2022 13:38:20 GMT
-content: 
-	type: poll
-	poll type: majority vote wins
-	country scope: jkl
-	city scope: jkl
-	legal entity scope: jkl
-	decision is finalized when the following nodes agree: jkl
-	voting deadline: 1668692306086
-	poll: jkl
-	option 1: jkl
-	option 2: jkl
-`
-
-const pollRegex= new RegExp(''
+export const pollRegex= new RegExp(''
   + /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
   + /(?:\tcountry scope: (?<country>[^\n]+?)\n)?/.source
   + /(?:\tcity scope: (?<city>[^\n]+?)\n)?/.source
@@ -137,6 +121,13 @@ const pollRegex= new RegExp(''
   + /(?:\toption 3: (?<option3>[^\n]+?)\n)?/.source
   + /(?:\toption 4: (?<option4>[^\n]+?)\n)?/.source
   + /(?:\toption 5: (?<option5>[^\n]+?)\n)?/.source
+  + /$/.source
+);
+
+export const voteRegex= new RegExp(''
+  + /^\tpoll hash: (?<pollHash>[^\n]+?)\n/.source 
+  + /\tpoll: (?<poll>[^\n]+?)\n/.source 
+  + /\tvote: (?<vote>[^\n]+?)\n/.source 
   + /$/.source
 );
 
@@ -162,19 +153,9 @@ for (let e of Object.values(examples) ){
 	
 }
 
-const forbiddenChars = s => /;|>|<|"|'|’|\\|\//.test(s)
-const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
-const forbiddenStrings = a => 
+export const forbiddenChars = s => /;|>|<|"|'|’|\\/.test(s)
+export const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
+export const forbiddenStrings = a => 
 	a.filter(i => 
 		forbiddenChars('' + i) && inValid256BitBase64('' + i)
 	)
-
-module.exports = {
-	domainVerificationRegex,
-	pollRegex,
-	statementRegex,
-	contentRegex,
-	statementTypes,
-	forbiddenStrings,
-	forbiddenChars
-}

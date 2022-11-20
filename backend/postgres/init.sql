@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS statements (
     statement VARCHAR(1500) NOT NULL, 
     time VARCHAR(100) NOT NULL,
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
+    referenced_statement VARCHAR(500), -- response, vote, dispute
     tags VARCHAR(1000),
     content VARCHAR(1000) NOT NULL, -- for search
     content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements

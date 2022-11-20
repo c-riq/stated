@@ -21,7 +21,7 @@ import VoteForm from './VoteForm.js';
 import { submitStatement, checkDomainVerification } from '../api.js'
 import { digest } from '../utils/hash.js';
 
-const { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } = require('../constants/statementFormats.js')
+import { statementRegex, forbiddenStrings, domainVerificationRegex, contentRegex } from '../constants/statementFormats.js'
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
@@ -211,7 +211,7 @@ const CreateStatement = props => {
                         multiline
                         value={statement}
                         readOnly
-                        sx={{width: "100%"}}
+                        sx={{width: "100%", overflowX: "scroll"}}
                             />
                     </div>
                 </div>)

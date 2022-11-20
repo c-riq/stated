@@ -73,7 +73,7 @@ content:
 `
 }
 
-const statementTypes = {
+export const statementTypes = {
     statement: 'statement',
     domainVerification: 'domain verification',
     poll: 'poll',
@@ -83,20 +83,20 @@ const statementTypes = {
     trustworthinessRating: 'trustworthiness rating'
 }
 
-const statementRegex= new RegExp(''
+export const statementRegex= new RegExp(''
 	+ /^domain: (?<domain>[^\n]+?)\n/.source
 	+ /time: (?<time>[^\n]+?)\n/.source
 	+ /(?:tags: (?<tags>[^\n]*?)\n)?/.source
 	+ /content: (?<content>[\s\S]+?)$/.source
 );
 
-const contentRegex= new RegExp(''
+export const contentRegex= new RegExp(''
 	+ /^\n\ttype: (?<type>[^\n]+?)\n/.source
 	+ /(?<typedContent>[\s\S]+?)$/.source
 	+ /|^(?<content>[\s\S]+?)$/.source
 );
 
-const domainVerificationRegex= new RegExp(''
+export const domainVerificationRegex= new RegExp(''
   + /^\tdescription: We verified the following information about an organisation.\n/.source 
   + /\torganisation name: (?<name>[^\n]+?)\n/.source 
   + /\theadquarter country: (?<country>[^\n]+?)\n/.source
@@ -107,7 +107,7 @@ const domainVerificationRegex= new RegExp(''
   + /$/.source
 );
 
-const pollRegex= new RegExp(''
+export const pollRegex= new RegExp(''
   + /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
   + /(?:\tcountry scope: (?<country>[^\n]+?)\n)?/.source
   + /(?:\tcity scope: (?<city>[^\n]+?)\n)?/.source
@@ -124,7 +124,7 @@ const pollRegex= new RegExp(''
   + /$/.source
 );
 
-const voteRegex= new RegExp(''
+export const voteRegex= new RegExp(''
   + /^\tpoll hash: (?<pollHash>[^\n]+?)\n/.source 
   + /\tpoll: (?<poll>[^\n]+?)\n/.source 
   + /\tvote: (?<vote>[^\n]+?)\n/.source 
@@ -153,20 +153,9 @@ for (let e of Object.values(examples) ){
 	
 }
 
-const forbiddenChars = s => /;|>|<|"|'|’|\\|\//.test(s)
-const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
-const forbiddenStrings = a => 
+export const forbiddenChars = s => /;|>|<|"|'|’|\\/.test(s)
+export const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
+export const forbiddenStrings = a => 
 	a.filter(i => 
 		forbiddenChars('' + i) && inValid256BitBase64('' + i)
 	)
-
-module.exports = {
-	domainVerificationRegex,
-	pollRegex,
-	voteRegex,
-	statementRegex,
-	contentRegex,
-	statementTypes,
-	forbiddenStrings,
-	forbiddenChars
-}

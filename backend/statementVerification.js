@@ -5,7 +5,7 @@ const db = require('./db');
 const hashUtils = require('./hash');
 const domainVerification = require('./domainVerification');
 const cp = require('child_process');
-const {statementRegex, statementTypes, contentRegex} = require('./statementFormats')
+const {statementRegex, statementTypes, contentRegex, pollRegex, voteRegex} = require('./statementFormats')
 
 const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     const regexResults = statement.match(statementRegex)
@@ -73,8 +73,8 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
 const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
         console.log('getTXTEntries', d)
-        if (! /^[a-zA-Z\.-]+$/.test(d)) {
-            resolve({error: 'invalid characters'})
+        if (! /^[a-zA-Z\.-]{7,253}$/.test(d)) {
+            resolve({error: 'invalid domain'})
         }
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
         dig.stdout.on('data', (data) => {
