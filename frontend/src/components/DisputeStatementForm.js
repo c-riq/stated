@@ -32,24 +32,7 @@ const DisputeStatementForm = props => {
     const [poll, setPoll] = React.useState("");
 
     const generateHash = () => {
-            const statement = 
-            "domain: " + props.domain + "\n" + 
-            "time: " + props.serverTime + "\n" + 
-            "content: " + "\n" + 
-            "\t" + "type: poll" + "\n" +
-            "\t" + "poll type: majority vote wins" + "\n" +
-            (country ? "\t" + "country scope: " + country + "\n" : "") +
-            (city ? "\t" + "city scope: " + city + "\n" : "") +
-            (legalForm ? "\t" + "legal entity scope: " + legalForm + "\n" : "") +
-            "\t" + "decision is finalized when the following nodes agree: " + nodes.join(', ') + "\n" +
-            "\t" + "voting deadline: " + votingDeadline + "\n" +
-            "\t" + "poll: " + poll + "\n" +
-            (options.length > 0 ? "\t" + "option 1: " + options[0] + "\n" : "") +
-            (options.length > 1 ? "\t" + "option 2: " + options[1] + "\n" : "") +
-            (options.length > 2 ? "\t" + "option 3: " + options[2] + "\n" : "") +
-            (options.length > 3 ? "\t" + "option 4: " + options[3] + "\n" : "") +
-            (options.length > 4 ? "\t" + "option 5: " + options[4] + "\n" : "") +
-            ""
+            const statement = ""
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {

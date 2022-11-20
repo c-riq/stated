@@ -1,5 +1,7 @@
 // copied from frotend to backend directory via 'npm run build'
 
+// TODO: use named matching groups, (did not work in the js bundle)
+
 const examples = {
 normalStatementWithTags: `domain: rixdata.net
 time: Sun, 04 Sep 2022 14:48:50 GMT
@@ -81,6 +83,13 @@ export const statementTypes = {
     dispute: 'dispute statement',
     trustworthinessRating: 'trustworthiness rating'
 }
+export const buildStatement = ({domain, time, tags, content}) => {
+	const statement = "domain: " + domain + "\n" + 
+            "time: " + time + "\n" + 
+            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
+            "content: " +  content;
+	return statement
+}
 export const parseStatement = (s) => {
 	const statementRegex= new RegExp(''
 	+ /^domain: ([^\n]+?)\n/.source
@@ -109,6 +118,25 @@ export const parseContent = (s) => {
 		content: m[3]
 	} : {}
 }
+export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
+	const content = "\n" + 
+	"\t" + "type: poll" + "\n" +
+	"\t" + "poll type: majority vote wins" + "\n" +
+	(country ? "\t" + "country scope: " + country + "\n" : "") +
+	(city ? "\t" + "city scope: " + city + "\n" : "") +
+	(legalEntity ? "\t" + "legal entity scope: " + legalEntity + "\n" : "") +
+	(domainScope.length > 0 ? "\t" + "domain scope: " + domainScope.join(', ') + "\n" : "") +
+	"\t" + "decision is finalized when the following nodes agree: " + nodes + "\n" +
+	"\t" + "voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
+	"\t" + "poll: " + poll + "\n" +
+	(options.length > 0 ? "\t" + "option 1: " + options[0] + "\n" : "") +
+	(options.length > 1 ? "\t" + "option 2: " + options[1] + "\n" : "") +
+	(options.length > 2 ? "\t" + "option 3: " + options[2] + "\n" : "") +
+	(options.length > 3 ? "\t" + "option 4: " + options[3] + "\n" : "") +
+	(options.length > 4 ? "\t" + "option 5: " + options[4] + "\n" : "") +
+	""
+	return content
+}
 export const parsePoll = (s) => {
 	const pollRegex= new RegExp(''
 	+ /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
@@ -134,52 +162,75 @@ export const parsePoll = (s) => {
 		domainScope: m[5],
 		judges: m[6],
 		deadline: m[7],
-		option1: m[8],
-		option2: m[9],
-		option3: m[10],
-		option4: m[11],
-		option5: m[12]
+		poll: m[8],
+		option1: m[9],
+		option2: m[10],
+		option3: m[11],
+		option4: m[12],
+		option5: m[13]
 	} : {}
 }
 
-
-export const domainVerificationRegex= new RegExp(''
-  + /^\tdescription: We verified the following information about an organisation.\n/.source 
-  + /\torganisation name: (?<name>[^\n]+?)\n/.source 
-  + /\theadquarter country: (?<country>[^\n]+?)\n/.source
-  + /\tlegal form: (?<legalForm>[^\n]+?)\n/.source
-  + /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
-  + /(?:\theadquarter province or state: (?<province>[^\n]+?)\n)?/.source
-  + /(?:\theadquarter city: (?<city>[^\n]+?)\n)?/.source
-  + /$/.source
-);
-
-export const pollRegex= new RegExp(''
-  + /^\tpoll type: (?<pollType>[^\n]+?)\n/.source 
-  + /(?:\tcountry scope: (?<country>[^\n]+?)\n)?/.source
-  + /(?:\tcity scope: (?<city>[^\n]+?)\n)?/.source
-  + /(?:\tlegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
-  + /(?:\tdomain scope: (?<domainScope>[^\n]+?)\n)?/.source
-  + /\tdecision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source 
-  + /\tvoting deadline: (?<deadline>[^\n]+?)\n/.source 
-  + /\tpoll: (?<poll>[^\n]+?)\n/.source 
-  + /(?:\toption 1: (?<option1>[^\n]+?)\n)?/.source
-  + /(?:\toption 2: (?<option2>[^\n]+?)\n)?/.source
-  + /(?:\toption 3: (?<option3>[^\n]+?)\n)?/.source
-  + /(?:\toption 4: (?<option4>[^\n]+?)\n)?/.source
-  + /(?:\toption 5: (?<option5>[^\n]+?)\n)?/.source
-  + /$/.source
-);
-
-export const voteRegex= new RegExp(''
-  + /^\tpoll hash: (?<pollHash>[^\n]+?)\n/.source 
-  + /\tpoll: (?<poll>[^\n]+?)\n/.source 
-  + /\tvote: (?<vote>[^\n]+?)\n/.source 
-  + /$/.source
-);
+export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain}) => {
+	const content = "\n" + 
+	"\t" + "type: domain verification" + "\n" +
+	"\t" + "description: We verified the following information about an organisation." + "\n" +
+	"\t" + "organisation name: " + verifyName + "\n" +
+	"\t" + "headquarter country: " + country + "\n" +
+	"\t" + "legal entity: " + legalEntity + "\n" +
+	"\t" + "domain of primary website: " + verifyDomain + "\n" +
+	(province ? "\t" + "headquarter province or state: " + province + "\n" : "") +
+	(city ? "\t" + "headquarter city: " + city + "\n" : "") +
+	""
+	return content
+}
+export const parseDomainVerification = (s) => {
+	const domainVerificationRegex= new RegExp(''
+	+ /^\tdescription: We verified the following information about an organisation.\n/.source 
+	+ /\torganisation name: (?<name>[^\n]+?)\n/.source 
+	+ /\theadquarter country: (?<country>[^\n]+?)\n/.source
+	+ /\tlegal form: (?<legalForm>[^\n]+?)\n/.source
+	+ /\tdomain of primary website: (?<domain>[^\n]+?)\n/.source
+	+ /(?:\theadquarter province or state: (?<province>[^\n]+?)\n)?/.source
+	+ /(?:\theadquarter city: (?<city>[^\n]+?)\n)?/.source
+	+ /$/.source
+	);
+	const m = s.match(domainVerificationRegex)
+	return m ? {
+		name: m[1],
+		country: m[2],
+		legalForm: m[3],
+		domain: m[4],
+		province: m[5],
+		city: m[6]
+	} : {}
+}
+export const buildVoteContent = ({hash_b64, poll, vote}) => {
+	const content = "\n" + 
+	"\t" + "type: vote" + "\n" +
+	"\t" + "poll id: " + hash_b64 + "\n" +
+	"\t" + "poll: " + poll + "\n" +
+	"\t" + "vote: " + vote + "\n" +
+	""
+	return content
+}
+export const parseVote = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\tpoll hash: (?<pollHash>[^\n]+?)\n/.source 
+	+ /\tpoll: (?<poll>[^\n]+?)\n/.source 
+	+ /\tvote: (?<vote>[^\n]+?)\n/.source 
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		pollHash: m[1],
+		poll: m[2],
+		vote: m[3]
+	} : {}
+}
 
 for (let e of Object.values(examples) ){
-    //continue
+    continue
 	console.log(e)
 	try{
 		const content = parseContent(parseStatement(e).content)
@@ -187,8 +238,7 @@ for (let e of Object.values(examples) ){
 
 		if(content && content.typedContent == statementTypes.domainVerification){
 
-				console.log(content.typedContent.match(domainVerificationRegex)
-					.groups)
+				console.log(parseDomainVerification(content.typedContent))
 
 		}
 	} catch (e) {

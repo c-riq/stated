@@ -11,7 +11,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import { b64ToHex } from '../utils/hash';
 
-import { parseVote, parsePoll,  parseContent, parseStatement } from '../constants/statementFormats.js'
+import { parseVote, buildVoteContent, parsePoll, parseContent, parseStatement, buildStatement } from '../constants/statementFormats.js'
 
 
 
@@ -30,15 +30,8 @@ export const VoteForm = props => {
     const options = [pollParsed.option1, pollParsed.option2, pollParsed.option3, pollParsed.option4, pollParsed.option5].filter(o=>o)
 
     const generateHash = () => {
-            const statement = 
-            "domain: " + props.domain + "\n" + 
-            "time: " + props.serverTime + "\n" + 
-            "content: " + "\n" + 
-            "\t" + "type: vote" + "\n" +
-            "\t" + "poll hash: " + props.poll.hash_b64 + "\n" +
-            "\t" + "poll: " + pollParsed.poll + "\n" +
-            "\t" + "vote: " + vote + "\n" +
-            ""
+        const content = buildVoteContent({hash_b64: props.poll.hash_b64, poll: pollParsed.poll , vote})
+        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             const parsedContent = parseContent(parsedStatement.content)

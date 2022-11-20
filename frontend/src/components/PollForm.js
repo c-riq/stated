@@ -18,7 +18,7 @@ import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 
-import { parseStatement, parseContent, forbiddenStrings, parsePoll } from '../constants/statementFormats.js'
+import { parseStatement, parseContent, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../constants/statementFormats.js'
 
 
 const PollForm = props => {
@@ -45,26 +45,8 @@ const PollForm = props => {
         return hashHex
     }
     const generateHash = () => {
-            const statement = 
-            "domain: " + props.domain + "\n" + 
-            "time: " + props.serverTime + "\n" + 
-            "content: " + "\n" + 
-            "\t" + "type: poll" + "\n" +
-            "\t" + "poll type: majority vote wins" + "\n" +
-            (country ? "\t" + "country scope: " + country + "\n" : "") +
-            (city ? "\t" + "city scope: " + city + "\n" : "") +
-            (legalForm ? "\t" + "legal entity scope: " + legalForm + "\n" : "") +
-            (domainScope.length > 0 ? "\t" + "domain scope: " + domainScope.join(', ') + "\n" : "") +
-            "\t" + "decision is finalized when the following nodes agree: " + nodes + "\n" +
-            "\t" + "voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
-            "\t" + "poll: " + poll + "\n" +
-            (options.length > 0 ? "\t" + "option 1: " + options[0] + "\n" : "") +
-            (options.length > 1 ? "\t" + "option 2: " + options[1] + "\n" : "") +
-            (options.length > 2 ? "\t" + "option 3: " + options[2] + "\n" : "") +
-            (options.length > 3 ? "\t" + "option 4: " + options[3] + "\n" : "") +
-            (options.length > 4 ? "\t" + "option 5: " + options[4] + "\n" : "") +
-            ""
-
+        const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, nodes, votingDeadline, poll, options})
+        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
             console.log(statement)
 
             const parsedStatement = parseStatement(statement)

@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
-import { parseStatement, forbiddenStrings, parseDomainVerification, parseContent } from '../constants/statementFormats.js'
+import { parseStatement, buildStatement, forbiddenStrings, buildDomainVerificationContent, parseDomainVerification, parseContent } from '../constants/statementFormats.js'
 
 
 const DomainVerificationForm = props => {
@@ -36,19 +36,8 @@ const DomainVerificationForm = props => {
         return hashHex
     }
     const generateHash = () => {
-            const statement = 
-            "domain: " + props.domain + "\n" + 
-            "time: " + props.serverTime + "\n" + 
-            "content: " + "\n" + 
-            "\t" + "type: domain verification" + "\n" +
-            "\t" + "description: We verified the following information about an organisation." + "\n" +
-            "\t" + "organisation name: " + verifyName + "\n" +
-            "\t" + "headquarter country: " + country + "\n" +
-            "\t" + "legal form: " + legalForm + "\n" +
-            "\t" + "domain of primary website: " + verifyDomain + "\n" +
-            (province ? "\t" + "headquarter province or state: " + province + "\n" : "") +
-            (city ? "\t" + "headquarter city: " + city + "\n" : "") +
-            ""
+        const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, legalEntity: legalForm})
+        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {

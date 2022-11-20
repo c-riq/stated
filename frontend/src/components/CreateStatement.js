@@ -21,7 +21,7 @@ import {VoteForm} from './VoteForm.js';
 import { submitStatement, checkDomainVerification } from '../api.js'
 import { digest } from '../utils/hash.js';
 
-import { parseStatement, forbiddenStrings } from '../constants/statementFormats.js'
+import { parseStatement, forbiddenStrings, buildStatement } from '../constants/statementFormats.js'
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
@@ -101,11 +101,7 @@ const CreateStatement = props => {
 
     const generateHash = () => {
         if(type == "statement"){
-            const statement = "domain: " + domain + "\n" + 
-            "time: " + props.serverTime + "\n" + 
-            (tags.length > 0 ? "tags: " + tags.join(', ') + "\n" : '') +
-            "content: " +  content;
-
+            const statement = buildStatement({domain, time: props.serverTime, tags, content})
             const parsedResult = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
                 setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
