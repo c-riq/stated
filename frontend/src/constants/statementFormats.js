@@ -59,7 +59,7 @@ freeTextVote: `Domain: rixdata.net
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content: 
 	Type: vote
-	Poll: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 	Vote: keep the money
 `,
 rating:`Domain: rixdata.net
@@ -84,6 +84,7 @@ export const statementTypes = {
     trustworthinessRating: 'trustworthiness rating'
 }
 export const buildStatement = ({domain, time, tags, content}) => {
+	tags = tags || []
 	const statement = "Domain: " + domain + "\n" + 
             "Time: " + time + "\n" + 
             (tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
@@ -95,27 +96,15 @@ export const parseStatement = (s) => {
 	+ /^Domain: ([^\n]+?)\n/.source
 	+ /Time: ([^\n]+?)\n/.source
 	+ /(?:Tags: ([^\n]*?)\n)?/.source
-	+ /Content: ([\s\S]+?)$/.source
+	+ /Content: (?:(\n\tType: ([^\n]+?)\n[\s\S]+?$)|([\s\S]+?$))/.source
 	);
 	const m = s.match(statementRegex)
 	return m ? {
 		domain: m[1],
 		time: m[2],
 		tags: m[3],
-		content: m[4],
-	} : {}
-}
-export const parseContent = (s) => {
-	const contentRegex= new RegExp(''
-	+ /^\n\tType: ([^\n]+?)\n/.source
-	+ /([\s\S]+?)$/.source
-	+ /|^([\s\S]+?)$/.source
-	)
-	const m = s.match(contentRegex)
-	return m ? {
-		type: m[1],
-		typedContent: m[2],
-		content: m[3]
+		content: m[4] || m[6],
+		type: m[5],
 	} : {}
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
@@ -139,7 +128,8 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, nodes
 }
 export const parsePoll = (s) => {
 	const pollRegex= new RegExp(''
-	+ /^\tPoll type: (?<pollType>[^\n]+?)\n/.source 
+	+ /^\n\tType: poll\n/.source 
+	+ /\tPoll type: (?<pollType>[^\n]+?)\n/.source 
 	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
 	+ /(?:\tLegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
@@ -186,7 +176,8 @@ export const buildDomainVerificationContent = ({verifyName, country, city, provi
 }
 export const parseDomainVerification = (s) => {
 	const domainVerificationRegex= new RegExp(''
-	+ /^\tDescription: We verified the following information about an organisation.\n/.source 
+	+ /^\n\tType: domain verification\n/.source 
+	+ /\tDescription: We verified the following information about an organisation.\n/.source 
 	+ /\tOrganisation name: (?<name>[^\n]+?)\n/.source 
 	+ /\tHeadquarter country: (?<country>[^\n]+?)\n/.source
 	+ /\tLegal form: (?<legalForm>[^\n]+?)\n/.source
@@ -216,7 +207,8 @@ export const buildVoteContent = ({hash_b64, poll, vote}) => {
 }
 export const parseVote = (s) => {
 	const voteRegex= new RegExp(''
-	+ /^\tPoll id: (?<pollHash>[^\n]+?)\n/.source 
+	+ /^\n\tType: vote\n/.source 
+	+ /\tPoll id: (?<pollHash>[^\n]+?)\n/.source 
 	+ /\tPoll: (?<poll>[^\n]+?)\n/.source 
 	+ /\tVote: (?<vote>[^\n]+?)\n/.source 
 	+ /$/.source
@@ -230,21 +222,17 @@ export const parseVote = (s) => {
 }
 
 for (let e of Object.values(examples) ){
-    continue
+    //continue
 	console.log(e)
 	try{
-		const content = parseContent(parseStatement(e).content)
+		const {content, type} = parseStatement(e)
 		console.log(content)
-
-		if(content && content.typedContent == statementTypes.domainVerification){
-
-				console.log(parseDomainVerification(content.typedContent))
-
+		if(content && type == statementTypes.domainVerification){
+			console.log(parseDomainVerification(content))
 		}
 	} catch (e) {
 		console.log(e)
 	}
-	
 }
 
 export const forbiddenChars = s => /;|>|<|"|'|’|\\/.test(s)

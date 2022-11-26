@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
-import { parseStatement, buildStatement, forbiddenStrings, buildDomainVerificationContent, parseDomainVerification, parseContent } from '../constants/statementFormats.js'
+import { parseStatement, buildStatement, forbiddenStrings, buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
 
 
 const DomainVerificationForm = props => {
@@ -45,8 +45,7 @@ const DomainVerificationForm = props => {
                 props.setisError(true)
                 return
             }
-            const parsedContent = parseContent(parsedStatement.content)
-            const parsedDomainVerification = parseDomainVerification(parsedContent.typedContent)
+            const parsedDomainVerification = parseDomainVerification(parsedStatement.content)
             if(!parsedDomainVerification){
                 props.setAlertMessage('Invalid domain verification (missing values)')
                 props.setisError(true)

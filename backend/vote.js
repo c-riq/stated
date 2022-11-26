@@ -3,10 +3,10 @@
 import db from './db.js'
 import {parseDomainVerification} from './statementFormats'
 
-export const createVerification = ({statement_hash, domain, version, typedContent }) => (new Promise((resolve, reject)=>{
+export const createVerification = ({statement_hash, domain, version, content }) => (new Promise((resolve, reject)=>{
     const verifer_domain = domain
     try {
-        const groups = parseDomainVerification(typedContent)
+        const groups = parseDomainVerification(content)
         const { domain, name, country, province, city } = groups
         if (domain.length < 1 ||
             name.length < 1 || country.length < 1 ) {

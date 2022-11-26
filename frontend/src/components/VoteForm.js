@@ -11,7 +11,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import { b64ToHex } from '../utils/hash';
 
-import { parseVote, buildVoteContent, parsePoll, parseContent, parseStatement, buildStatement } from '../constants/statementFormats.js'
+import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../constants/statementFormats.js'
 
 
 
@@ -24,8 +24,7 @@ export const VoteForm = props => {
 
 
     const statementParsed = parseStatement(props.poll.statement)
-    const contentParsed = parseContent(statementParsed.content)
-    const pollParsed = parsePoll(contentParsed.typedContent)
+    const pollParsed = parsePoll(statementParsed.content)
     console.log(pollParsed)
     const options = [pollParsed.option1, pollParsed.option2, pollParsed.option3, pollParsed.option4, pollParsed.option5].filter(o=>o)
 
@@ -34,8 +33,7 @@ export const VoteForm = props => {
         const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
-            const parsedContent = parseContent(parsedStatement.content)
-            const parsedVote = parseVote(parsedContent.typedContent)
+            const parsedVote = parseVote(parsedStatement.content)
             if(!parsedVote){
                 props.setAlertMessage('Invalid vote format')
                 props.setisError(true)

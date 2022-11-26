@@ -47,5 +47,11 @@ CREATE TABLE IF NOT EXISTS p2p_nodes (
   reputation real,
   last_received_statement_id bigint
 );
+DROP TABLE IF EXISTS migrations;
+CREATE TABLE IF NOT EXISTS migrations (
+  id SERIAL PRIMARY KEY,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  to_version bigint NOT NULL
+);
 
 

@@ -18,7 +18,7 @@ import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 
-import { parseStatement, parseContent, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../constants/statementFormats.js'
+import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../constants/statementFormats.js'
 
 
 const PollForm = props => {
@@ -55,8 +55,7 @@ const PollForm = props => {
                 props.setisError(true)
                 return
             }
-            const parsedContent = parseContent(parsedStatement)
-            const parsedDomainVerification = parsePoll(parsedContent.typedContent)
+            const parsedDomainVerification = parsePoll(parsedStatement.content)
             if(!parsedDomainVerification){
                 props.setAlertMessage('Invalid domain verification (missing values)')
                 props.setisError(true)

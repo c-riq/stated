@@ -5,20 +5,21 @@ import db from './db.js'
 import * as hashUtils from './hash.js'
 import {createVerification} from './domainVerification.js'
 import * as cp from 'child_process'
-import {parseStatement, parseContent, statementTypes} from './statementFormats.js'
+import {parseStatement, statementTypes} from './statementFormats.js'
 
 const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
     if (!parsedStatement) {
         return({error: "invalid verification"})
     }
-    if (!parsedStatement.domain) {
+    const {domain, time, content, tags, type} = parsedStatement
+    if (!domain) {
         return({error: "domain missing"})
     }
-    if (!parsedStatement.content){
+    if (!content){
         return {error: 'content missing'}
     }
-    if (!parsedStatement.time){
+    if (!time){
         return {error: 'time missing'}
     }
     if (!hashUtils.verify(statement, hash_b64)){
@@ -32,13 +33,10 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     ){
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
-    const content = parsedStatement.content
-    const parsedContent = parseContent(content)
-    let result = {content: parsedContent, domain: groups.domain, time: groups.time,  tags: groups.tags, 
-        content_hash_b64: hashUtils.sha256Hash(parsedContent), time: Date.parse(groups.time)}
-    if (parsedContent.type) {
+    let result = {content, domain, tags, content_hash_b64: hashUtils.sha256Hash(content), time: Date.parse(time)}
+    if (type) {
         if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(parsedContent.type)) {
-            return {...result, type: parsedContent.type, typedContent: parsedContent.typedContent}
+            return result
         } else {
             return {error: 'invalid type: ' + parsedContent.type}
         }
@@ -133,7 +131,7 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
     try{
         const {statement, hash_b64, source_node_id, verification_method } = s
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
-        const {domain, time, tags, content_hash_b64, type, typedContent, content } = validationResult
+        const {domain, time, tags, content_hash_b64, type, content } = validationResult
         if (validationResult.error) {
             resolve(validationResult)
         }
@@ -160,7 +158,7 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
                     dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
                     dbResult = await createVerification({statement_hash : dbResult.inserted.hash_b64, 
-                        version: 1, domain, typedContent})
+                        version: 1, domain, content})
                 }
                 if([statementTypes.poll, statementTypes.vote].includes(type)){
                     dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
