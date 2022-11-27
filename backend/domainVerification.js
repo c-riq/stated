@@ -4,8 +4,10 @@ import {parseDomainVerification} from './statementFormats.js'
 export const createVerification = ({statement_hash, domain, version, content }) => (new Promise((resolve, reject)=>{
     const verifer_domain = domain
     try {
-        const groups = parseDomainVerification(content)
-        const { domain, name, country, province, city } = groups
+        console.log(content)
+        const parsedDomainVerification = parseDomainVerification(content)
+        console.log(parsedDomainVerification)
+        const { domain, name, country, province, city } = parsedDomainVerification
         if (domain.length < 1 ||
             name.length < 1 || country.length < 1 ) {
             resolve({error: "Missing required fields"})

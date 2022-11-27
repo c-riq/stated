@@ -11,10 +11,22 @@ const pool = new Pool({
 console.log(pool)
 
 import {forbiddenStrings} from './statementFormats.js'
+import {performMigrations} from './migrations.js'
+
+let migrationsDone = false
+setInterval(
+async () => {
+  if(!migrationsDone){
+    performMigrations(pool, ()=>migrationsDone=true)
+  }
+},500)
 
 const s = (f) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
   return (o) => {
+    if (!migrationsDone){
+      return {error: 'database migrations not finished'}
+    }
     if (typeof o == 'undefined') {
       return f()
     }
@@ -30,8 +42,8 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, tag
   try {
     console.log(type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id)
     pool.query(`INSERT INTO statements (type, version, domain, statement, time,
-                            hash_b64, tags, content, content_hash, verification_method, source_node_id, latest_verification_ts) 
-                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
+                            hash_b64, tags, content, content_hash, verification_method, source_node_id, first_verification_ts, latest_verification_ts) 
+                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     ON CONFLICT (hash_b64) DO UPDATE
                       SET latest_verification_ts = CURRENT_TIMESTAMP
                     RETURNING *`,

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS statements (
     content VARCHAR(1000) NOT NULL, -- for search
     content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements
     source_node_id int,
+    first_verification_ts TIMESTAMP,
     latest_verification_ts TIMESTAMP,
     verification_method VARCHAR(4) -- dns, api
 );

@@ -115,7 +115,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, nodes
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
 	(domainScope.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
-	"\t" + "The Decision is finalized when the following nodes agree: " + nodes + "\n" +
+	"\t" + "The decision is finalized when the following nodes agree: " + nodes + "\n" +
 	"\t" + "Voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
 	"\t" + "Poll: " + poll + "\n" +
 	(options.length > 0 ? "\t" + "Option 1: " + options[0] + "\n" : "") +
@@ -134,7 +134,7 @@ export const parsePoll = (s) => {
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
 	+ /(?:\tLegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
 	+ /(?:\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
-	+ /\tDecision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source 
+	+ /\tThe decision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source 
 	+ /\tVoting deadline: (?<deadline>[^\n]+?)\n/.source 
 	+ /\tPoll: (?<poll>[^\n]+?)\n/.source 
 	+ /(?:\tOption 1: (?<option1>[^\n]+?)\n)?/.source
@@ -180,7 +180,7 @@ export const parseDomainVerification = (s) => {
 	+ /\tDescription: We verified the following information about an organisation.\n/.source 
 	+ /\tOrganisation name: (?<name>[^\n]+?)\n/.source 
 	+ /\tHeadquarter country: (?<country>[^\n]+?)\n/.source
-	+ /\tLegal form: (?<legalForm>[^\n]+?)\n/.source
+	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
 	+ /\tDomain of primary website: (?<domain>[^\n]+?)\n/.source
 	+ /(?:\tHeadquarter province or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tHeadquarter city: (?<city>[^\n]+?)\n)?/.source

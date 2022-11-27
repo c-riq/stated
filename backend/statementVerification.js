@@ -33,12 +33,12 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     ){
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
-    let result = {content, domain, tags, content_hash_b64: hashUtils.sha256Hash(content), time: Date.parse(time)}
+    let result = {content, domain, tags, type, content_hash_b64: hashUtils.sha256Hash(content), time: Date.parse(time)}
     if (type) {
-        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(parsedContent.type)) {
+        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(type)) {
             return result
         } else {
-            return {error: 'invalid type: ' + parsedContent.type}
+            return {error: 'invalid type: ' + type}
         }
     } else {
         return result
@@ -157,6 +157,10 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
                 if(type === statementTypes.domainVerification){
                     dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+                    if(dbResult.error){
+                        resolve(dbResult)
+                        return
+                    }
                     dbResult = await createVerification({statement_hash : dbResult.inserted.hash_b64, 
                         version: 1, domain, content})
                 }
