@@ -77,6 +77,19 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                 ORDER BY repost_count DESC
                 LIMIT 20
             )
+            ,votes as (
+              SELECT 
+                poll_hash,
+                json_object_agg(option, cnt) AS votes 
+              FROM ( SELECT 
+                    poll_hash,
+                    option,
+                    count(*) as cnt
+                FROM votes 
+                WHERE qualified = TRUE
+                GROUP BY 1,2
+              ) AS counts GROUP BY 1
+            )
             SELECT * FROM (
               SELECT 
                   s.id,
@@ -99,6 +112,7 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                         ON s.domain=v.verified_domain 
                         AND v.verifer_domain='rixdata.net'
                 ) AS results 
+                LEFT JOIN votes on results.hash_b64=votes.poll_hash
               WHERE _rank=1;
             `,[minId || 'minId', searchQuery || 'searchQuery']
             , (error, results) => {
