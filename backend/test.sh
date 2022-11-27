@@ -63,5 +63,5 @@ curl 'http://localhost:7766/api/submit_statement' \
   -H 'sec-ch-ua: "Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"' \
   -H 'sec-ch-ua-mobile: ?0' \
   -H 'sec-ch-ua-platform: "macOS"' \
-  --data-raw '{"statement":"Domain: rixdata.net\nTime: Sun, 27 Nov 2022 15:03:58 GMT\nContent: \n\ttype: vote\n\tpoll id: b7ldTjr8gP6wNy8NXMs6l+1pOnfxHAykNF1E/I/1vmQ=\n\tpoll: Which feature should be built first?\n\tvote: Feature A\n","hash_b64":"wq9TJlg7LBzLM4IZrU2DdBI/65Bdi7d6lFV/w+VdVFU="}' \
+  --data-raw '{"statement":"Domain: rixdata.net\nTime: Sun, 27 Nov 2022 15:06:51 GMT\nContent: \n\tType: vote\n\tPoll id: b7ldTjr8gP6wNy8NXMs6l+1pOnfxHAykNF1E/I/1vmQ=\n\tPoll: Which feature should be built first?\n\tOption: Feature B\n","hash_b64":"Lhm8JIaXCVMMcRMiGQiXmnesRX+nD/N5fwjhBvpN1ws="}' \
   --compressed

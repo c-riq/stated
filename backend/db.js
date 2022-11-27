@@ -136,6 +136,27 @@ const createVerification = ({ statement_hash, version, verifer_domain, verified_
   }
 }))
 
+const createVote = ({ statement_hash, poll_hash, option, domain, name, qualified }) => (new Promise((resolve, reject) => {
+  try {
+    console.log([statement_hash, poll_hash, option, domain, name, qualified])
+    pool.query(`
+            INSERT INTO votes 
+              (statement_hash, poll_hash, option, domain, name, qualified) 
+            VALUES 
+              ($1, $2, $3, $4, $5, $6)
+            RETURNING *`,
+      [statement_hash, poll_hash, option, domain, name, qualified], (error, results) => {
+        if (error) {
+          console.log(error)
+          resolve({ error })
+        } else {
+          resolve(`Vote inserted with ID: ${results.rows[0].id}`)
+        }
+      })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
 
 const getVerifications = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
@@ -357,6 +378,7 @@ export default {
   getStatement: s(getStatement),
   getOwnStatement: s(getOwnStatement),
   createVerification: s(createVerification),
+  createVote: s(createVote),
   getVerifications: s(getVerifications),
   getAllVerifications: s(getAllVerifications),
   getAllNodes: s(getAllNodes),

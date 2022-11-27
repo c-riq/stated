@@ -53,14 +53,14 @@ Content:
 	Type: vote
 	Poll id: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
 	Poll: Should the UK join the EU
-	Vote: Yes
+	Option: Yes
 `,
 freeTextVote: `Domain: rixdata.net
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content: 
 	Type: vote
 	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-	Vote: keep the money
+	Option: keep the money
 `,
 rating:`Domain: rixdata.net
 Time: Sun, 04 Sep 2022 14:48:50 GMT
@@ -198,10 +198,10 @@ export const parseDomainVerification = (s) => {
 }
 export const buildVoteContent = ({hash_b64, poll, vote}) => {
 	const content = "\n" + 
-	"\t" + "type: vote" + "\n" +
-	"\t" + "poll id: " + hash_b64 + "\n" +
-	"\t" + "poll: " + poll + "\n" +
-	"\t" + "vote: " + vote + "\n" +
+	"\t" + "Type: vote" + "\n" +
+	"\t" + "Poll id: " + hash_b64 + "\n" +
+	"\t" + "Poll: " + poll + "\n" +
+	"\t" + "Option: " + vote + "\n" +
 	""
 	return content
 }
@@ -210,14 +210,14 @@ export const parseVote = (s) => {
 	+ /^\n\tType: vote\n/.source 
 	+ /\tPoll id: (?<pollHash>[^\n]+?)\n/.source 
 	+ /\tPoll: (?<poll>[^\n]+?)\n/.source 
-	+ /\tVote: (?<vote>[^\n]+?)\n/.source 
+	+ /\tOption: (?<option>[^\n]+?)\n/.source 
 	+ /$/.source
 	);
 	const m = s.match(voteRegex)
 	return m ? {
 		pollHash: m[1],
 		poll: m[2],
-		vote: m[3]
+		option: m[3]
 	} : {}
 }
 

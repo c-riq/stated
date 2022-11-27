@@ -1,19 +1,19 @@
 
 
 import db from './db.js'
-import {parseDomainVerification} from './statementFormats'
+import {parseVote} from './statementFormats.js'
 
-export const createVerification = ({statement_hash, domain, version, content }) => (new Promise((resolve, reject)=>{
-    const verifer_domain = domain
+export const createVote = ({statement_hash, domain, content }) => (new Promise((resolve, reject)=>{
     try {
-        const groups = parseDomainVerification(content)
-        const { domain, name, country, province, city } = groups
-        if (domain.length < 1 ||
-            name.length < 1 || country.length < 1 ) {
+        const parsedVote = parseVote(content)
+        const { pollHash, option } = parsedVote
+        if (domain.length < 1 || statement_hash.length < 1 ||
+            option.length < 1 || pollHash.length < 1 ) {
             resolve({error: "Missing required fields"})
             return
         }
-        db.createVerification({statement_hash, version, verifer_domain, verified_domain: domain, name, country, province, city})
+        // TODO: evaluate whether vote is qualified for poll according to participant scope, domain verification and deadline
+        db.createVote({statement_hash, poll_hash: pollHash, option, domain, name: "", qualified: true })
         .then( result => {
                 resolve([result, statement_hash])
         }).catch(e => resolve({error: e}))

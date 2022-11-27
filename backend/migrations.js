@@ -1,6 +1,6 @@
-const currentVersion = 1
+const currentCodeVersion = 2
 
-const dataModelVersions = {
+const migrationsFromDBVersionToCurrentCodeVersion = {
     0: {
         sql: `
         DROP TABLE IF EXISTS statements;
@@ -37,6 +37,18 @@ const dataModelVersions = {
             province VARCHAR(100),
             city VARCHAR(100)
         );
+        DROP TABLE IF EXISTS votes;
+        CREATE TABLE IF NOT EXISTS votes (
+            id SERIAL PRIMARY KEY,
+            statement_hash VARCHAR(500) UNIQUE NOT NULL,
+            poll_hash VARCHAR(500) NOT NULL,
+            option VARCHAR(500) NOT NULL,
+            domain VARCHAR(100) NOT NULL,
+            created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            name VARCHAR(100),
+            qualified BOOLEAN
+        );
         DROP TABLE IF EXISTS p2p_nodes;
         CREATE TABLE IF NOT EXISTS p2p_nodes (
             id SERIAL PRIMARY KEY,
@@ -54,6 +66,22 @@ const dataModelVersions = {
             to_version bigint NOT NULL
         );
         `
+    },
+    1: {
+        sql: `
+        DROP TABLE IF EXISTS votes;
+        CREATE TABLE IF NOT EXISTS votes (
+            id SERIAL PRIMARY KEY,
+            statement_hash VARCHAR(500) UNIQUE NOT NULL,
+            poll_hash VARCHAR(500) NOT NULL,
+            option VARCHAR(500) NOT NULL,
+            domain VARCHAR(100) NOT NULL,
+            created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            name VARCHAR(100),
+            qualified BOOLEAN
+        );
+        `
     }
 }
 
@@ -68,17 +96,18 @@ export const performMigrations = async (pool, cb) => {
                     AND table_name   = 'migrations'
             );`
         let res = await pool.query(sql)
+        let dbVersion
         if (res.rows && res.rows[0]){
             if(! (res.rows[0].exists === true)){
-                const fromVersion = 0
-                sql = dataModelVersions[fromVersion]['sql']
+                dbVersion = 0
+                sql = migrationsFromDBVersionToCurrentCodeVersion[dbVersion]['sql']
                 res = await pool.query(sql)
-                console.log('migration from 1 to ' + currentVersion, res)
+                console.log('migration from 1 to ' + currentCodeVersion, res)
                 if(res.error){
                     return
                 } else {
                     sql = `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`
-                    res = await pool.query(sql, [fromVersion, currentVersion])
+                    res = await pool.query(sql, [dbVersion, currentCodeVersion])
                     if(res.error) {
                         console.log(res.error)
                         return
@@ -93,8 +122,25 @@ export const performMigrations = async (pool, cb) => {
                     console.log('res error', res.error)
                 } else {
                     const maxVersion = res.rows[0].max_version
-                    if (maxVersion === '' + currentVersion) {
+                    if (maxVersion === '' + currentCodeVersion) {
                         cb()
+                    } else {
+                        dbVersion = parseInt(maxVersion)
+                        if(migrationsFromDBVersionToCurrentCodeVersion[dbVersion]){
+                            sql = migrationsFromDBVersionToCurrentCodeVersion[dbVersion]['sql']
+                            res = await pool.query(sql)
+                            console.log('migration from ' + dbVersion + ' to ' + currentCodeVersion, res)
+                            if(res.error){
+                                return
+                            } else {
+                                sql = `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`
+                                res = await pool.query(sql, [dbVersion, currentCodeVersion])
+                                if(res.error) {
+                                    console.log(res.error)
+                                    return
+                                }
+                            }
+                        }
                     }
                 }
             }
