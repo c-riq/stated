@@ -79,7 +79,7 @@ const Statements = props => {
                                                     <div style={{backgroundColor: "rbga(0,0,0,0)", width:"200px", height:"30px", borderRadius: "15px", borderWidth: "1px", borderStyle: "solid", borderColor: "#cccccc"}} />
                                                 </div>
                                                 <div style={{gridArea: "1 / 1"}}>
-                                                    <div style={{backgroundColor: "rgba(42, 74, 103, 0.5)", width: (totalVotes == 0 ? 0 : 100 * votes[o] / totalVotes) + 'px', height:"30px", borderRadius: "15px"}} />
+                                                    <div style={{backgroundColor: "rgba(42, 74, 103, 0.5)", width: (totalVotes == 0 ? 0 : 200 * votes[o] / totalVotes) + 'px', height:"30px", borderRadius: "15px"}} />
                                                 </div>
                                                 <div style={{gridArea: "1 / 1"}}>
                                                     <div style={{backgroundColor: "rbga(0,0,0,0)", width:"200px", height:"30px", borderRadius: "15px", padding: "3px 5px 0px 10px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>

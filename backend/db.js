@@ -68,7 +68,7 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                     content as _content, 
                     count(distinct domain) as repost_count, 
                     first_value(min(id)) over(partition by content order by min(created_at) asc) as first_id,
-                    $1 || $2 input
+                    CAST($1 AS varchar) || $2 as input
                 FROM statements 
                 WHERE (type = 'statement' OR type = 'poll')
                 ${minId ? 'AND id > $1' : ''}
@@ -114,7 +114,7 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                 ) AS results 
                 LEFT JOIN votes on results.hash_b64=votes.poll_hash
               WHERE _rank=1;
-            `,[minId || 'minId', searchQuery || 'searchQuery']
+            `,[minId || 1, searchQuery || 'searchQuery']
             , (error, results) => {
       if (error) {
         console.log(error)
