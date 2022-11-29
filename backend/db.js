@@ -8,7 +8,6 @@ const pool = new Pool({
   password: 'sdf',
   port: 5432,
 })
-console.log(pool)
 
 import {forbiddenStrings} from './statementFormats.js'
 import {performMigrations} from './migrations.js'
@@ -347,7 +346,6 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
 }))
 
 const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve, reject) => {
-  console.log('updateNode', domain, lastReceivedStatementId, certificateAuthority, fingerprint)
   try {
     pool.query(`
             UPDATE p2p_nodes

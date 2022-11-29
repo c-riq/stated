@@ -126,9 +126,9 @@ export const performMigrations = async (pool, cb) => {
             } else {
                 sql = `SELECT MAX(to_version) max_version FROM migrations`
                 res = await pool.query(sql)
-                console.log(res)
                 if (res.error){
                     console.log('res error', res.error)
+                    console.trace()
                 } else {
                     const maxVersion = res.rows[0].max_version
                     if (maxVersion === '' + currentCodeVersion) {
@@ -156,5 +156,6 @@ export const performMigrations = async (pool, cb) => {
         }
       } catch (error) {
         console.log(error)
+        console.trace()
     }
 }

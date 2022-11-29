@@ -222,7 +222,8 @@ export const parseVote = (s) => {
 }
 
 for (let e of Object.values(examples) ){
-    //continue
+    continue
+	// TODO: add to tests
 	console.log(e)
 	try{
 		const {content, type} = parseStatement(e)
