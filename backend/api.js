@@ -56,7 +56,6 @@ api.get("/statements", async (req, res, next) => {
     if(minId && minId.length > 0){
         minId = parseInt(minId)
     }
-    console.log('minid', minId, typeof minId)
     const dbResult = await db.getStatements({minId})
     if(dbResult?.error){
         next(dbResult.error)

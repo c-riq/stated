@@ -18,7 +18,7 @@ async () => {
   if(!migrationsDone){
     performMigrations(pool, ()=>migrationsDone=true)
   }
-},500)
+}, 500)
 
 const s = (f) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
@@ -60,7 +60,6 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, tag
 }))
 
 const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
-  console.log(minId, searchQuery, 'minId, searchQuery')
   try {
     pool.query(`
             WITH reposts as(
@@ -130,7 +129,6 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
 }))
 
 const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
-  console.log(minId, 'minId, searchQuery')
   try {
     pool.query(`
               SELECT 

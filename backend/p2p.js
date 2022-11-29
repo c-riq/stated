@@ -13,7 +13,7 @@ const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => 
         resolve({error: 'invalid domain'})
         return
     }
-    if (domain.match(ownDomain)){
+    if (domain === 'stated.' + ownDomain) {
         resolve({error: 'skip validatin of own domain ' + domain})
         return
     }
@@ -41,7 +41,7 @@ const addNodesOfPeers = async () => {
 const sendJoinRequest = ({domain}) => new Promise(async (resolve, reject) => {
     if (!ownDomain) {
         resolve({error: 'no ownDomain defined'}); return}    
-    if ( !d.match(/stated\./) || (d.match(/\./g).length > 4) || d.match(/[\/&\?]/g) || forbiddenChars(d)) { 
+    if ( !domain.match(/stated\./) || (domain.match(/\./g).length > 4) || domain.match(/[\/&\?]/g) || forbiddenChars(domain)) { 
         resolve({error: 'invalid domain, should be analogous to stated.example.com'})
         return
     }
@@ -60,6 +60,7 @@ const joinNetwork = async () => {
 const fetchMissingStatementsFromNode = ({domain, last_received_statement_id}) => new Promise(async (resolve, reject) => {
     console.log('fetch statements from ', domain)
     try {
+        if (domain === 'stated.' + ownDomain) { resolve(); return }
         const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0)})
         if (res.error){
             console.log(domain, res.error)

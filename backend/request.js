@@ -4,7 +4,7 @@ const ownDomain = process.env.DOMAIN
 
 export const get = ({hostname, path}) => new Promise((resolve, reject) => {
     if(hostname === 'stated.' + ownDomain){
-        resolve({error: 'skip request to own domain'})
+        resolve({error: 'skip request to own domain: ' + hostname})
         return
     }
     let cert = {}
