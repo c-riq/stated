@@ -41,7 +41,7 @@ const CenterModal = (props) => {
       left: '50%',
       transform: 'translate(-50%, -50%)',
       width: lt850px ? '100vw' : '70vw',
-      height:  lt850px ? '100vh' :'70vh',
+      height:  lt850px ? '100vh' :'90vh',
       bgcolor: '#ffffff',
       borderRadius: '12px',
       borderWidth: '0px',
@@ -52,7 +52,7 @@ const CenterModal = (props) => {
     {!lt850px&&(<div style={{height: 50, padding: '16px 16px 16px 16px'}}>
       <a onClick={props.onClose} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
     </div>)}
-    <div style={{padding: '20px', overflowY: 'scroll'}}>
+    <div style={{...(lt850px?{padding: '30px'}:{padding: '20px 200px 200px 200px'}), overflowY: 'scroll'}}>
       {
         props.children
       }
