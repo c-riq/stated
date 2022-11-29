@@ -49,6 +49,14 @@ export const getJoiningStatements = (hash_b64, cb) => {
         } 
     }, e => {return})
 }
+export const getVotes = (hash_b64, cb) => {
+    req('POST', 'votes', {hash_b64}, (json) => {
+        if ("statements" in json) {
+            cb(json.statements)
+            window.scrollTo(0,0)
+        } 
+    }, e => {return})
+}
 export const getVerifications = (hash_b64, cb) => {
     req('POST', 'verifications', {hash_b64}, (json) => {
         if ("statements" in json) {

@@ -1,7 +1,7 @@
 import React from 'react'
 import TextareaAutosize from '@mui/material/TextareaAutosize';
-import { BrowserRouter as Router, Route, Routes, Link, useParams } from 'react-router-dom';
-import {Buffer} from 'buffer';
+import { Link, useParams } from 'react-router-dom';
+import { Buffer } from 'buffer';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,12 +13,14 @@ import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 
-import {getStatement, getJoiningStatements, getVerifications} from '../api.js'
+import { getStatement, getJoiningStatements, getVerifications, getVotes } from '../api.js'
+import { statementTypes } from '../constants/statementFormats.js';
 
 
 const Statement = props => {
-    const [posts, setPosts] = React.useState([]);
-    const [post, setPost] = React.useState({});
+    const [joiningStatements, setJoiningStatements] = React.useState([]);
+    const [votes, setVotes] = React.useState([]);
+    const [statement, setStatement] = React.useState({});
     const [verifications, setVerifications] = React.useState([]);
     const [postsFetched, setPostsFetched] = React.useState(false);
 
@@ -27,9 +29,10 @@ const Statement = props => {
 
 
     React.useEffect(() => { if(!postsFetched) {
-        getStatement(hash_b64, s=>setPost(s))
-        getJoiningStatements(hash_b64, s=>setPosts(s))
-        getVerifications(hash_b64, v=>setVerifications(v))
+        getStatement(hash_b64, s => setStatement(s))
+        getJoiningStatements(hash_b64, s => setJoiningStatements(s))
+        getVotes(hash_b64, v => setVotes(v))
+        getVerifications(hash_b64, v => setVerifications(v))
         setPostsFetched(true)
       }
     })
@@ -48,7 +51,7 @@ const Statement = props => {
                 </TableRow>
                 </TableHead>
                 <TableBody sx={{ maxWidth: "100vw"}}>
-                {Object.keys(post).map((row,i) => 
+                {Object.keys(statement).map((row,i) => 
                     {if (['statement', 'hash_b64'].includes(row)){
                         return (
                     <TableRow
@@ -60,10 +63,10 @@ const Statement = props => {
                     </TableCell>
                     <TableCell align="right">{row == "statement" ? 
                         (<List>
-                            {post[row].split(/\n/).map((s,i)=>
+                            {statement[row].split(/\n/).map((s,i)=>
                               (<ListItem key={i}>{s}</ListItem>
                             ))}
-                          </List>) : post[row]}</TableCell>
+                          </List>) : statement[row]}</TableCell>
                     </TableRow>)
                     }}
                 )}
@@ -74,30 +77,49 @@ const Statement = props => {
             <div>
                 <h5>Verifiy statement hash (fingerprint) via terminal</h5>
                 <div>
-                    <TextareaAutosize style={{width:"100%"}} value={"echo -n \""+ post.statement +"\"| openssl sha256 -binary | base64 -"} />
+                    <TextareaAutosize style={{width:"100%"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 -"} />
                 </div>
                 <h5>Verify domain owners intention to publish statement</h5>
                 <div>
-                    <TextareaAutosize style={{width:"100%"}} value={"dig -t txt stated."+post.domain+" +short | grep " + post.hash_b64}/>
+                    <TextareaAutosize style={{width:"100%"}} value={"dig -t txt stated."+statement.domain+" +short | grep " + statement.hash_b64}/>
                 </div>
             </div>
-            <h5>Verifications of {post.domain}</h5>
-                {/* <div style={{width:"500px"}}>{JSON.stringify(verifications)}</div> */}
-                {verifications.map((v,i)=>(
-                    <div key={i}>
-                        <Link onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                            {v.verifer_domain}{v.name ? " | " + v.name + " ✅":  ""}
-                        </Link>
-                    </div>))}
-            <h3>Organisations that joined the statemet</h3>
-                {/* <div style={{width:"500px"}}>{JSON.stringify(posts)}</div> */}
-                {posts.map((v,i)=>(
+
+            {verifications.length > 0 && (<div>
+                <h5>Verifications of {statement.domain}</h5>
+                    {verifications.map((v,i)=>(
+                        <div key={i}>
+                            <Link onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
+                                {v.verifer_domain}{v.name ? " | " + v.name + " ✅":  ""}
+                            </Link>
+                        </div>))}
+            </div>)}
+            
+            {joiningStatements.length > 0 && statement && statement.type == statementTypes.statement && (<div><h3>Organisations that joined the statemet</h3>
+                {joiningStatements.map((v,i)=>(
                     <div key={i}>
                         <Link key={i} onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
                             {v.domain + " | " + (new Date(parseInt(v.time)).toUTCString())}{v.name ? " | " + v.name + " ✅":  ""}
                         </Link>
                     </div>
-                ))}
+                    )
+                )}
+            </div>
+            )}
+
+            
+            {votes.length > 0 && (<div><h3>Qualified votes</h3>
+                {votes.map((v,i)=>(
+                    <div key={i}>
+                        <Link key={i} onClick={()=>setPostsFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
+                            {v.option + " | " + v.domain + " | " + (new Date(parseInt(v.time)).toUTCString())}{v.name ? " | " + v.name + " ✅":  ""}
+                        </Link>
+                    </div>
+                    )
+                )}
+            </div>
+            )}
+
             </div>
         </div>
     )

@@ -91,6 +91,15 @@ api.post("/joining_statements", async (req, res, next) => {
     }
 })
 
+api.post("/votes", async (req, res, next) => {
+    const dbResult = await db.getVotes({hash_b64: req.body.hash_b64})
+    if(dbResult?.error){
+        next(dbResult.error)
+    } else {
+        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
+    }
+})
+
 api.get("/nodes", async (req, res, next) => {
     const dbResult = await db.getAllNodes()
     if(dbResult?.error){

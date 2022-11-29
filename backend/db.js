@@ -318,6 +318,29 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
   }
 }))
 
+const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+      SELECT 
+        *
+      FROM votes v 
+        LEFT JOIN statements s 
+          ON v.statement_hash = s.hash_b64
+      WHERE qualified = TRUE
+        AND poll_hash = $1
+      `,[hash_b64], (error, results) => {
+      if (error) {
+        console.log(error)
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
+
 const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   console.log('getStatement', hash_b64)
   try {
@@ -432,6 +455,7 @@ export default {
   getAllNodes: s(getAllNodes),
   addNode: s(addNode),
   getJoiningStatements: s(getJoiningStatements),
+  getVotes: s(getVotes),
   updateNode: s(updateNode),
   statementExists: s(statementExists),
 }
