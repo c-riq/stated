@@ -36,10 +36,28 @@ api.post("/submit_statement", async (req, res, next) => {
     }
 })
 
-api.get("/statements", async (req, res, next) => {
-    const minId = req.query && req.query.min_id
+api.get("/statements_with_details", async (req, res, next) => {
+    let minId = req.query && req.query.min_id
+    if(minId && minId.length > 0){
+        minId = parseInt(minId)
+    }
+    console.log('minid', minId, typeof minId)
     const searchQuery = req.query && req.query.search_query
-    const dbResult = await db.getStatements({minId, searchQuery})
+    const dbResult = await db.getStatementsWithDetail({minId, searchQuery})
+    if(dbResult?.error){
+        next(dbResult.error)
+    } else {
+        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    }
+})
+
+api.get("/statements", async (req, res, next) => {
+    let minId = req.query && req.query.min_id
+    if(minId && minId.length > 0){
+        minId = parseInt(minId)
+    }
+    console.log('minid', minId, typeof minId)
+    const dbResult = await db.getStatements({minId})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -84,11 +102,16 @@ api.get("/nodes", async (req, res, next) => {
 })
 
 api.post("/join_network", async (req, res, next) => {
-    const r = await p2p.validateAndAddNode({domain: req.body.domain})
-    if(r?.error){
-        next(r?.error)
-    } else {
-        res.end(JSON.stringify(r))
+    try {
+        const r = await p2p.validateAndAddNode({domain: req.body.domain})
+        if(r?.error){
+            next(r?.error)
+        } else {
+            res.end(JSON.stringify(r))
+        }
+    } catch (error) {
+        console.log(error)
+        next(error)
     }
 })
 

@@ -49,8 +49,10 @@ const Statements = props => {
                             const options = [parsedPoll.option1, parsedPoll.option2, parsedPoll.option3, 
                                 parsedPoll.option4, parsedPoll.option5].filter(o=>o)
                             let votes = {}
-                            for (let o of Object.keys(p.votes)){
-                                votes[o] = p.votes[o]
+                            if (p.votes){
+                                for (let o of Object.keys(p.votes)){
+                                    votes[o] = p.votes[o]
+                                }
                             }
                             for (let o of options){
                                 if(!(votes[o])){

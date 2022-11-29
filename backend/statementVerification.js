@@ -136,7 +136,14 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
         if (validationResult.error) {
             resolve(validationResult)
         }
-        if ((await db.statementExists({hash_b64})).length > 0){
+        console.log('check if exsits', hash_b64)
+        const result = await db.statementExists({hash_b64})
+        if (result.error){
+            resolve({result})
+            return
+        }
+        if (result.rows && result.rows.length > 0){
+            console.log('statement exists already in db')
             resolve({error: 'statement exists already in db'})
             return
         }

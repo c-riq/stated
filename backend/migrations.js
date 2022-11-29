@@ -1,4 +1,4 @@
-const currentCodeVersion = 2
+const currentCodeVersion = 3
 
 const migrationsFromDBVersionToCurrentCodeVersion = {
     0: {
@@ -56,7 +56,9 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             ip VARCHAR(150),
             last_seen timestamp,
             reputation real,
-            last_received_statement_id bigint
+            last_received_statement_id bigint,
+            certificate_authority VARCHAR(100),
+            fingerprint VARCHAR(100)
         );
         DROP TABLE IF EXISTS migrations;
         CREATE TABLE IF NOT EXISTS migrations (
@@ -81,6 +83,13 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             name VARCHAR(100),
             qualified BOOLEAN
         );
+        `
+    },
+    2: {
+        sql: `
+        ALTER TABLE p2p_nodes
+          ADD certificate_authority VARCHAR(100),
+          ADD fingerprint VARCHAR(100);
         `
     }
 }

@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/statements|statements.txt", async (req, res, next) => {
     try {
-        const dbResult = await db.getStatements({minId: undefined})
+        const dbResult = await db.getStatements({minId: 0})
         if(dbResult?.error){
             throw dbResult?.error
         }

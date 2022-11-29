@@ -1,37 +1,87 @@
 
-import axios from 'axios'
-
 import {p2p_seed} from './p2p_seed.js'
 import db from './db.js'
 import {validateAndAddStatementIfMissing} from './statementVerification.js'
+import { forbiddenChars } from './statementFormats.js'
+
+import https from 'https'
+
+const get = ({hostname, path}) => new Promise((resolve, reject) => {
+    let cert = {}
+    let ip = ''
+    const options = {
+        hostname: hostname,
+        protocol: 'https',
+        path: path,
+        method: 'GET',
+    }
+    const req = https.request(options, res => {  
+        let data = ''
+        res.on('data', chunk => {
+            cert = res.req.socket.getPeerCertificate()
+            ip = res.req.socket.remoteAddress
+            data += chunk
+        })
+        res.on('end', () => {
+            try {
+                data = JSON.parse(data)
+                resolve({data, cert, ip})
+            } catch(error) {
+                resolve({error})
+            }
+        })
+    })
+    req.on('error', (error) => resolve({error}))
+    req.end()
+})
+
+const post = ({hostname, path, data}) => new Promise((resolve, reject) => {
+    const options = {
+        hostname: hostname,
+        protocol: 'https',
+        path: path,
+        method: 'POST',
+    }
+    const req = https.request(options, res => {  
+        let data = ''
+        res.on('data', chunk => data += chunk)
+        res.on('end', () => {
+            try {
+                data = JSON.parse(data)
+                resolve({data, cert, ip})
+            } catch(error) {
+                resolve({error})
+            }
+        })
+    })
+    req.on('error', (error) => resolve({error}))
+    req.end()
+})
 
 const ownDomain = process.env.DOMAIN
 
-const validateAndAddNode = (d) => new Promise((resolve, reject) => {
+const validateAndAddNode = ({domain}) => new Promise((resolve, reject) => {
     // sql injection; running stated?
-    if ( !d.match(/stated\./)
-        || (d.match(/\./g).length > 4)
-        || d.match(/[\/&\?]/g)
-        || db.forbiddenChars(d)
+    if ( !domain.match(/stated\./)
+        || (domain.match(/\./g).length > 4)
+        || domain.match(/[\/&\?]/g)
+        || forbiddenChars(domain)
     ) {
         resolve({error: 'invalid domain, should be analogous to stated.example.com'})
         return
     }
-    let url = 'https://' + d + '/api/health'
+    let url = 'https://' + domain + '/api/health'
     console.log('checkNode', url)
     axios.get(url)
         .then((res) => {
             try {
-                // console.log(res.request.res.socket.getPeerCertificate(false).infoAccess['OCSP - URI'])
-                // console.log(res.request.res.socket.getPeerCertificate(false).fingerprint)
-                // console.log(res.request.socket.remoteAddress)
                 console.log(res.data)
                 if(res.data.application == 'stated'){
-                    db.addNode(d)
+                    db.addNode({domain})
                         .then(r => resolve(r))
                         .catch(error => resolve({error}))
                 } else {
-                    resolve({error: 'health check failed on ' + d})
+                    resolve({error: 'health check failed on ' + domain})
                 }
             }
             catch(error) {
@@ -50,7 +100,7 @@ const addNodesOfPeer = (d) => new Promise((resolve, reject) => {
         .then( async (json) => {
             try {
                 console.log(json.data.domains, 'json.data.domains')
-                const res = await Promise.all(json.data.domains.map(dd=>validateAndAddNode(dd)))
+                const res = await Promise.all(json.data.domains.map(dd=>validateAndAddNode({domain: dd})))
                 resolve({domain: d, ...res['0']})
             }
             catch(error) {
@@ -83,7 +133,7 @@ const sendJoinRequest = (d) => new Promise((resolve, reject) => {
     if ( !d.match(/stated\./)
         || (d.match(/\./g).length > 4)
         || d.match(/[\/&\?]/g)
-        || db.forbiddenChars(d)
+        || forbiddenChars(d)
     ) {
         resolve({error: 'invalid domain, should be analogous to stated.example.com'})
         return
@@ -118,40 +168,44 @@ const joinNetwork = async () => {
     console.log(result)
 }
 
-const fetchMissingStatementsFromNode = (n) => new Promise((resolve, reject) => {
-    let url = 'https://' + n.domain + '/api/statements?min_id=' + (n.last_received_statement_id || 0)
-    console.log('fetch statements from ', url)
-    axios.get(url)
-        .then((json) => {
-            try {
-                console.log(json.data)
-                console.log(json.data.statements)
-                Promise.all(json.data.statements.map(s => {
-                    validateAndAddStatementIfMissing({...s, source_node_id: n.id})
-                }))
-                    .then(
-                        async r=>{
-                            let lastReceivedStatementId = Math.max(...json.data.statements.map(s => s.id))
-                            if (lastReceivedStatementId >= 0) {
-                                await db.setLastReceivedStatementId({domain: n.domain, lastReceivedStatementId})
-                            }
-                            resolve(r)
-                        }
-                    ).catch(error=>reject({error}))
+const fetchMissingStatementsFromNode = (n) => new Promise(async (resolve, reject) => {
+    console.log('fetch statements from ', n.domain)
+    try {
+        const res = await get({hostname: n.domain, path: '/api/statements?min_id=' + (n.last_received_statement_id || 0)})
+        if (res.error){
+            console.log(res.error)
+        }
+        const {cert, ip} = res
+        const certificateAuthority = cert && cert.infoAccess && cert.infoAccess['OCSP - URI'] && ''+cert.infoAccess['OCSP - URI'][0]
+        const fingerprint = cert && ''+cert.fingerprint
+        Promise.all(res.data.statements.map(s => {
+            validateAndAddStatementIfMissing({...s, source_node_id: n.id})
+        }))
+        .then(
+            async r=>{
+                let lastReceivedStatementId = Math.max(...res.data.statements.map(s => s.id), n.last_received_statement_id)
+                if (lastReceivedStatementId >= 0) {
+                    console.log('db.updateNode', lastReceivedStatementId, certificateAuthority, fingerprint, ip)
+                    await db.updateNode({domain: n.domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
+                }
+                resolve(r)
             }
-            catch(error) {
-                resolve({error})
-            }
-        })
-        .catch((error) => {
-            console.log(error);
+        ).catch(error=>reject({error}))
+    }
+    catch (error){
+            console.log(error)
             resolve({error})
-        })
+    }
 })
 
 const addSeedNodes = async () => {
-    const res = await Promise.all(p2p_seed.domains.map(d => validateAndAddNode(d)))
-    console.log(res)
+    console.log(p2p_seed, 'p2p_seed')
+    try {
+        const res = await Promise.all(p2p_seed.map(d => validateAndAddNode({domain: d})))
+        console.log(res)
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 const fetchMissingStatementsFromNodes = async () => {
@@ -164,20 +218,20 @@ const fetchMissingStatementsFromNodes = async () => {
     console.log(res)
 }
 
-(async () => {
+setTimeout(async () => {
     try {
-        //await addSeedNodes()
-        //await addNodesOfPeers()
-        //await joinNetwork()
-        //await fetchMissingStatementsFromNodes()
+        await addSeedNodes()
+        await addNodesOfPeers()
+        await joinNetwork()
+        await fetchMissingStatementsFromNodes()
     } catch (e) {
         console.log(e)
     }
-})()
+}, 1000)
 
 setInterval(async () => {
     try {
-        //await fetchMissingStatementsFromNodes()
+        await fetchMissingStatementsFromNodes()
     } catch (e) {
         console.log(e)
     }

@@ -60,7 +60,8 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, tag
   }
 }))
 
-const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
+const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
+  console.log(minId, searchQuery, 'minId, searchQuery')
   try {
     pool.query(`
             WITH reposts as(
@@ -68,10 +69,11 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                     content as _content, 
                     count(distinct domain) as repost_count, 
                     first_value(min(id)) over(partition by content order by min(created_at) asc) as first_id,
-                    CAST($1 AS varchar) || $2 as input
+                    CAST($1 AS INTEGER) as input1,
+                    $2 as input2
                 FROM statements 
                 WHERE (type = 'statement' OR type = 'poll')
-                ${minId ? 'AND id > $1' : ''}
+                ${minId ? 'AND id > $1 ' : ''}
                 ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
                 GROUP BY 1
                 ORDER BY repost_count DESC
@@ -114,7 +116,31 @@ const getStatements = ({ minId, searchQuery }) => (new Promise((resolve, reject)
                 ) AS results 
                 LEFT JOIN votes on results.hash_b64=votes.poll_hash
               WHERE _rank=1;
-            `,[minId || 1, searchQuery || 'searchQuery']
+            `,[minId || 0, searchQuery || 'searchQuery']
+            , (error, results) => {
+      if (error) {
+        console.log(error)
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
+
+const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
+  console.log(minId, 'minId, searchQuery')
+  try {
+    pool.query(`
+              SELECT 
+                  id,
+                  statement,
+                  hash_b64
+                FROM statements 
+                WHERE id > $1
+            `,[minId || 0]
             , (error, results) => {
       if (error) {
         console.log(error)
@@ -320,18 +346,28 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, reject) => {
-  console.log('setLastReceivedStatementId', domain, id)
+const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve, reject) => {
+  console.log('updateNode', domain, lastReceivedStatementId, certificateAuthority, fingerprint)
   try {
     pool.query(`
             UPDATE p2p_nodes
-            SET last_received_statement_id = $1
+            SET 
+            last_received_statement_id = $1,
+            last_seen = CURRENT_TIMESTAMP,
+            ${certificateAuthority ? `certificate_authority = $3,` : ''}
+            ${fingerprint ? `fingerprint = $4,` : ''}
+            ip = $5
             WHERE domain = $2
               AND (last_received_statement_id IS NULL
                 OR
-                last_received_statement_id < $1
-              );
-            `,[id, domain], (error, results) => {
+                last_received_statement_id <= $1
+              ) 
+              OR (FALSE AND $3 = $4);
+            `,[lastReceivedStatementId,
+              domain, 
+              certificateAuthority || 'certificateAuthority', 
+              fingerprint || 'fingerprint',
+              ip], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -346,11 +382,11 @@ const setLastReceivedStatementId = ({ domain, id }) => (new Promise((resolve, re
 
 const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
+    console.log(hash_b64, 'check')
     pool.query(`
-            SELECT 1 FROM statements WHERE hash_b64 = $1 LIMIT 1;
+            SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
             `, [hash_b64], (error, results) => {
-
-      //console.log('statementExists', hash_b64, results, error)
+      console.log('statementExists', hash_b64, results, error)
       if (error) {
         console.log(error)
         resolve({ error })
@@ -359,6 +395,7 @@ const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
       }
     })
   } catch (error) {
+    console.log(error, 'sdf')
     resolve({ error })
   }
 }))
@@ -389,6 +426,7 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
 export default {
   createStatement: s(createStatement),
   getStatements: s(getStatements),
+  getStatementsWithDetail: s(getStatementsWithDetail),
   getStatement: s(getStatement),
   getOwnStatement: s(getOwnStatement),
   createVerification: s(createVerification),
@@ -398,6 +436,6 @@ export default {
   getAllNodes: s(getAllNodes),
   addNode: s(addNode),
   getJoiningStatements: s(getJoiningStatements),
-  setLastReceivedStatementId: s(setLastReceivedStatementId),
+  updateNode: s(updateNode),
   statementExists: s(statementExists),
 }
