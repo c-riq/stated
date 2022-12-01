@@ -21,20 +21,41 @@ This approach is faster and cheaper than installing a stated server instance.
 However installing new stated instances will make the P2P network more resillient and it will also make the verification of statements easier.
 
 ## Statement format
-# Example
-domain: mit.edu<br/>
-time: Sun, 04 Sep 2022 14:48:50 GMT<br/>
-statement: hello world<br/>
+# Plain statement example
+```
+Domain: mit.edu
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement: hello world
+```
 
-# Verification example
-domain: walmart.com<br/>
-time: Wed, 07 Sep 2022 16:50:10 GMT<br/>
-type: domain_verification<br/>
-statement: We confirm that the organisations main domain is in accordance with the listed source, which we regard as trustworthy and authentic.<br/>
-verify organisation domain: mit.edu<br/>
-verify organisation name: Massachusetts Institute of Technology<br/>
-verify organisation country: United States of America<br/>
-verify organisation source: https://www.neche.org/institution/massachusetts-institute-of-technology/<br/>
+# Domain verification example
+The owner of rixdata.net verifying the primary website domain of Walmart along with a few additional data points:
+```
+Domain: rixdata.net
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Content: 
+	Type: domain verification
+	Description: We verified the following information about an organisation.
+	Organisation name: Walmart Inc.
+	Headquarter country: United States of America
+	Legal entity: limited liability corporation
+	Domain of primary website: walmart.com
+	Headquarter province or state: Arkansas
+	Headquarter city: Bentonville
+```
+
+# Vote example
+The owner of rixdata.net verifying the primary website domain of Walmart along with a few additional data points:
+```
+Domain: rixdata.net
+Time: Thu, 17 Nov 2022 20:13:46 GMT
+Content: 
+	Type: vote
+	Poll id: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
+	Poll: Should tax havens be eliminated?
+	Option: Yes
+```
+See [source code](https://github.com/c-riq/stated/blob/master/frontend/src/constants/statementFormats.js) for more details and examples.
 
 ### Front end 
 #### React.js Application for publishing and aggregating statements

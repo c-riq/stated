@@ -57,7 +57,7 @@ const joinNetwork = async () => {
     return result
 }
 
-const fetchMissingStatementsFromNode = ({domain, last_received_statement_id}) => new Promise(async (resolve, reject) => {
+const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}) => new Promise(async (resolve, reject) => {
     console.log('fetch statements from ', domain)
     try {
         if (domain === 'stated.' + ownDomain) { resolve(); return }
@@ -69,7 +69,7 @@ const fetchMissingStatementsFromNode = ({domain, last_received_statement_id}) =>
         const {cert, ip} = res
         const certificateAuthority = cert && cert.infoAccess && cert.infoAccess['OCSP - URI'] && ''+cert.infoAccess['OCSP - URI'][0]
         const fingerprint = cert && ''+cert.fingerprint
-        const res2 = await Promise.all(res.data.statements.map(s => { validateAndAddStatementIfMissing({...s, source_node_id: n.id})}))
+        const res2 = await Promise.all(res.data.statements.map(s => { validateAndAddStatementIfMissing({...s, source_node_id: id})}))
         let lastReceivedStatementId = Math.max(...res.data.statements.map(s => s.id), last_received_statement_id)
         if (lastReceivedStatementId >= 0) {
             await db.updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
@@ -97,7 +97,7 @@ const fetchMissingStatementsFromNodes = async () => {
     const dbResult = await db.getAllNodes()
     const nodes = dbResult.rows
     const res = await Promise.all(nodes.map(node => 
-        fetchMissingStatementsFromNode({domain: node.domain, last_received_statement_id: node.last_received_statement_id})))
+        fetchMissingStatementsFromNode({domain: node.domain, id: node.id, last_received_statement_id: node.last_received_statement_id})))
     return res
 }
 
