@@ -160,7 +160,7 @@ function App() {
           <Route path='/' exact />
           <Route path='/statement/:statementId' element={(
             <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)}}>
-              <Statement hash_b16={useParams()} hash_b64={Buffer.from(useParams().statementId || '', 'hex').toString('base64')} />
+              <Statement hash_b16={useParams()} hash_b64={Buffer.from(useParams().statementId || '', 'hex').toString('base64')} voteOnPoll={voteOnPoll} />
             </CenterModal>)} 
           />
           <Route path='/create-statement' element={

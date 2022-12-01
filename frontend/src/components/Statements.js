@@ -20,38 +20,38 @@ const Statements = props => {
                 <h3>Statements</h3> {props.children}</div>
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {props.posts && props.posts.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
-                    {props.posts && props.posts.length > 0 && props.posts.map((p,i) => {
-                        if (p.type == statementTypes.statement){
+                    {props.posts && props.posts.length > 0 && props.posts.map((s,i) => {
+                        if (s.type == statementTypes.statement){
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
-                                    <div>{p.repost_count}</div>
+                                    <div>{s.repost_count}</div>
                                 <Link to="/create-statement">
-                                    <Button onClick={()=>{props.setStatementToJoin(p.content)}} variant='contained' 
+                                    <Button onClick={()=>{props.setStatementToJoin(s.content)}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                                         <PlusOneIcon variant='contained'/>
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + b64ToHex(p.hash_b64)} style={{flexGrow: 1}}>
+                            <Link to={"/statement/" + b64ToHex(s.hash_b64)} style={{flexGrow: 1}}>
                                 <div className="statement" 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
-                                    {p.content.split("\n").map((s,i)=>(<div key={i}>{s}</div>))}
-                                    <img src={'https://www.'+p.domain+'/favicon.ico'} style={{
+                                    {s.content.split("\n").map((s,i)=>(<div key={i}>{s}</div>))}
+                                    <img src={'https://www.'+s.domain+'/favicon.ico'} style={{
                                     width: "20px", height: "20px", borderRadius: "10px", paddingTop: "8px", paddingRight: "3px"
-                                }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{p.name ? p.name : p.domain}</span>
+                                }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{s.name ? s.name : s.domain}</span>
                                 </div>
                             </Link>
                         </div>
                     )
                         }
-                        if (p.type == statementTypes.poll){
-                            const parsedPoll = parsePoll(p.content)
+                        if (s.type == statementTypes.poll){
+                            const parsedPoll = parsePoll(s.content)
                             const options = [parsedPoll.option1, parsedPoll.option2, parsedPoll.option3, 
                                 parsedPoll.option4, parsedPoll.option5].filter(o=>o)
                             let votes = {}
-                            if (p.votes){
-                                for (let o of Object.keys(p.votes)){
-                                    votes[o] = p.votes[o]
+                            if (s.votes){
+                                for (let o of Object.keys(s.votes)){
+                                    votes[o] = s.votes[o]
                                 }
                             }
                             for (let o of options){
@@ -62,15 +62,15 @@ const Statements = props => {
                             const totalVotes = Object.values(votes).reduce((a,b)=>a+b)
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
-                                    <div>{p.repost_count}</div>
+                                    <div>{s.repost_count}</div>
                                 <Link to="/create-statement">
-                                    <Button onClick={()=>{props.voteOnPoll(p)}} variant='contained' 
+                                    <Button onClick={()=>{props.voteOnPoll(s)}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                                         <PollIcon variant='contained'/>
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + b64ToHex(p.hash_b64)} style={{flexGrow: 1}}>
+                            <Link to={"/statement/" + b64ToHex(s.hash_b64)} style={{flexGrow: 1}}>
                                 <div className="statement" 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
                                     <div>{parsedPoll.poll}</div>
@@ -92,9 +92,9 @@ const Statements = props => {
                                         ))}
                                     </Stack>
                                         
-                                    <img src={'https://www.'+p.domain+'/favicon.ico'} style={{
+                                    <img src={'https://www.'+s.domain+'/favicon.ico'} style={{
                                     width: "20px", height: "20px", borderRadius: "10px", paddingTop: "8px", paddingRight: "3px"
-                                }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{p.name ? p.name : p.domain}</span>
+                                }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{s.name ? s.name : s.domain}</span>
                                 </div>
                             </Link>
                         </div>

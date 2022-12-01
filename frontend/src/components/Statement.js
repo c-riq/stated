@@ -2,6 +2,7 @@ import React from 'react'
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { Buffer } from 'buffer';
+import Button from '@mui/material/Button';
 
 import { getStatement, getJoiningStatements, getVerifications, getVotes } from '../api.js'
 import { statementTypes } from '../constants/statementFormats.js';
@@ -41,6 +42,12 @@ const Statement = props => {
                 statement.statement.match(/\n/g) ? (40 + statement.statement.match(/\n/g).length * 18) + 'px' : "250px"), 
                 overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement && statement.statement} />
 
+            {statement && statement.type == statementTypes.poll && (<Link to="/create-statement">
+                <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
+                sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
+                    Vote
+                </Button>
+            </Link>)}
             <h3>Verify the statement's authenticity</h3>
             <div>
                 <h4>1. generate the statement hash</h4>
