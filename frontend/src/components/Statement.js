@@ -37,23 +37,25 @@ const Statement = props => {
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
-            <TextareaAutosize style={{width:"100%", height:"250px", overflowX: "scroll", whiteSpace: "nowrap", fontFamily:"Arial"}} value={statement && statement.statement} />
+            <TextareaAutosize style={{width:"100%", height:(statement && statement.statement && 
+                statement.statement.match(/\n/g) ? (40 + statement.statement.match(/\n/g).length * 18) + 'px' : "250px"), 
+                overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement && statement.statement} />
 
             <h3>Verify the statement's authenticity</h3>
             <div>
-                <h5>1. generate the statement hash</h5>
+                <h4>1. generate the statement hash</h4>
                 <p>The SHA256 hash (in base 64 representation) is a transformed version of the above statement text. 
                     Due to its limited length and small set of characters it can be more easily stored and shared than the full text of the statement. 
                     Running the following command in the mac terminal allows you to independently verify the hash:</p>
                 <div>
-                    <TextareaAutosize style={{width:"100%"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 -"} />
+                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 -"} />
                 </div>
-                <h5>2. check the domain owners intention to publish statement via the DNS records</h5>
+                <h4>2. check the domain owners intention to publish statement via the DNS records</h4>
                 <p>Only a owner of a website domain can change the DNS records. If the hash representing the statement was added there, 
                     this implies that the domain owner is also the author of the statement. Running the following command in the mac terminal 
                     allows you to verify that the statement hash is published in the domain's DNS records:</p>
                 <div>
-                    <TextareaAutosize style={{width:"100%"}} value={"dig -t txt stated."+statement.domain+" +short | grep " + statement.hash_b64}/>
+                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"dig -t txt stated."+statement.domain+" +short | grep " + statement.hash_b64}/>
                 </div>
             </div>
 
