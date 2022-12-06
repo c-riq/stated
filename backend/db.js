@@ -1,9 +1,11 @@
 import * as pg from 'pg'
 const { Pool } = pg.default
 
+const pgHost = process.env.POSTGRES_HOST || "localhost"
+
 const pool = new Pool({
   user: 'sdf',
-  host: 'localhost',
+  host: pgHost,
   database: 'dev',
   password: 'sdf',
   port: 5432,

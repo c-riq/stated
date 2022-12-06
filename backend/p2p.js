@@ -17,8 +17,18 @@ const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => 
         resolve({error: 'skip validatin of own domain ' + domain})
         return
     }
-
     const res = await get({hostname: domain, path: '/api/health'})
+    console.log(res, 'validateAndAddNode')
+    if(res && res.data && res.data.application == 'stated'){
+        const res = await db.addNode({domain})
+        if (res.error){
+            resolve({error: 'health check request failed on ' + domain})
+        } else {
+            resolve(res)
+        }
+    } else {
+        resolve({error: 'health check failed on ' + domain})
+    }
     resolve({res})
 })
 
@@ -33,7 +43,7 @@ const addNodesOfPeer = ({domain}) => new Promise(async (resolve, reject) => {
 
 const addNodesOfPeers = async () => {
     const dbResult = await db.getAllNodes()
-    const domains = dbResult.rows.map(row => row.domain)
+    const domains = (dbResult.rows || []).map(row => row.domain)
     const result = await Promise.all(domains.map(domain => addNodesOfPeer({domain})))
     return result
 }
@@ -111,7 +121,7 @@ setTimeout(async () => {
         console.log(error)
         console.trace()
     }
-}, 1000)
+}, 3000)
 
 setInterval(async () => {
     try {

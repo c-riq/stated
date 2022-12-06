@@ -1,0 +1,36 @@
+# docker-compose build --no-cache && docker-compose up --force-recreate
+
+services:
+  db:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sdf}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sdf}
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume2:/data/postgres
+       - ./backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated: 
+    build: .
+    ports:
+      - '7766:7766'
+    networks:
+      - postgres
+    depends_on:
+      - db
+    restart: unless-stopped
+
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    postgres_volume2:
