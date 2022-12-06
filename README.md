@@ -56,6 +56,23 @@ Content:
 ```
 See [source code](https://github.com/c-riq/stated/blob/master/frontend/src/constants/statementFormats.js) for more details and examples.
 
+### Run locally with docker compose
+build the frontend files
+```sh
+cd frontend
+DOCKER_BUILDKIT=1 docker build --file frontend/Dockerfile --output frontend/docker_output .
+```
+copy frontend build files to the file server directory
+```sh
+rm -rf backend/public && mkdir backend/public
+cp -r frontend/docker_output/* backend/public/
+```
+run the backend and database using docker compose
+```sh
+docker compose -f docker-compose.yml up 
+```
+open localhost:7766 in your browser
+
 ### Front end 
 #### React.js Application for publishing and aggregating statements
 check frontend/README.md

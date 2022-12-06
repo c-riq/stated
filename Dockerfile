@@ -1,8 +1,8 @@
-FROM node:16
+FROM node:16-alpine
 
 WORKDIR /usr/src/stated
 
-RUN apt-get update && apt-get install -y dnsutils
+RUN apk update && apk add bind-tools
 
 COPY backend/package*.json ./
 
