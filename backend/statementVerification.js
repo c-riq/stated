@@ -34,7 +34,17 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     ){
         return({error: "invalid sourceNodeId: " + sourceNodeId})
     }
-    let result = {content, domain, tags, type, content_hash_b64: hashUtils.sha256Hash(content), time: Date.parse(time)}
+    let proclaimed_publication_time = -1
+    try {
+        const millisecondsSince1970 = new Date(time).getTime()
+        proclaimed_publication_time = millisecondsSince1970 / 1000.0
+    } catch(error) {
+        console.log(error)
+    }
+    if (!(proclaimed_publication_time > 0)){
+        return({error: "invalid publication timestamp (unix epoch):" + proclaimed_publication_time})
+    }
+    let result = {content, domain, tags, type, content_hash_b64: hashUtils.sha256Hash(content), proclaimed_publication_time}
     if (type) {
         if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(type)) {
             return result
@@ -132,24 +142,25 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
     try{
         const {statement, hash_b64, source_node_id, verification_method } = s
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
-        const {domain, time, tags, content_hash_b64, type, content } = validationResult
+        const {domain, proclaimed_publication_time, tags, content_hash_b64, type, content } = validationResult
+        console.log('proclaimed_publication_time', proclaimed_publication_time)
         if (validationResult.error) {
             resolve(validationResult)
         }
         console.log('check if exsits', hash_b64)
         const result = await db.statementExists({hash_b64})
         if (result.error){
-            resolve({result})
+            resolve(result)
             return
         }
         if (result.rows && result.rows.length > 0){
-            console.log('statement exists already in db')
-            resolve({error: 'statement exists already in db'})
+            resolve({log: 'statement exists already in db' + hash_b64})
             return
         }
         let verified = false
         let verifiedByAPI = false
         if (verification_method && verification_method === 'api'){
+            console.log('validate via api', hash_b64)
             verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
             verifiedByAPI = true
         } else { 
@@ -163,7 +174,7 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
             let dbResult = {error: 'record not created'}
             if(type) {
                 if(type === statementTypes.domainVerification){
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                    dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
                     if(dbResult.error){
                         resolve(dbResult)
@@ -172,12 +183,12 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
                     dbResult = await createVerification({statement_hash : dbResult.inserted.hash_b64, 
                         version: 1, domain, content})
                 }
-                if([statementTypes.poll, statementTypes.vote].includes(type)){
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                if(type === statementTypes.poll){
+                    dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
                 }
                 if (type === statementTypes.vote) {
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                    dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
                     if(dbResult.error){
                         resolve(dbResult)
@@ -186,7 +197,7 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
                     dbResult = await createVote({statement_hash: dbResult.inserted.hash_b64, domain, content})
                 }
             } else {
-                dbResult = await db.createStatement({type: statementTypes.statement, version: 1, domain, statement, time, hash_b64, tags, content, content_hash_b64,
+                dbResult = await db.createStatement({type: statementTypes.statement, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                     verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
             }
             resolve(dbResult)

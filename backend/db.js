@@ -39,16 +39,15 @@ const s = (f) => {
   }
 }
 
-const createStatement = ({ type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+const createStatement = ({ type, version, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
-    console.log(type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id)
-    pool.query(`INSERT INTO statements (type, version, domain, statement, time,
+    console.log(type, version, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id)
+    pool.query(`INSERT INTO statements (type, version, domain, statement, proclaimed_publication_time,
                             hash_b64, tags, content, content_hash, verification_method, source_node_id, first_verification_ts, latest_verification_ts) 
-                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                    ON CONFLICT (hash_b64) DO UPDATE
-                      SET latest_verification_ts = CURRENT_TIMESTAMP
+                      VALUES ($1, $2, $3, $4, TO_TIMESTAMP($5), $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    ON CONFLICT (hash_b64) DO NOTHING
                     RETURNING *`,
-      [type, version, domain, statement, time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
+      [type, version, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
@@ -57,6 +56,7 @@ const createStatement = ({ type, version, domain, statement, time, hash_b64, tag
         }
       })
   } catch (error) {
+    console.log(error)
     resolve({ error })
   }
 }))
@@ -68,7 +68,7 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                 SELECT 
                     content as _content, 
                     count(distinct domain) as repost_count, 
-                    first_value(min(id)) over(partition by content order by min(created_at) asc) as first_id,
+                    first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
                     CAST($1 AS INTEGER) as input1,
                     $2 as input2
                 FROM statements 
@@ -101,7 +101,7 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                   s.statement,
                   r.repost_count,
                   s.time,
-                  s.created_at,
+                  s.proclaimed_publication_time,
                   s.hash_b64,
                   s.tags,
                   s.content,
@@ -197,7 +197,7 @@ const createVote = ({ statement_hash, poll_hash, option, domain, name, qualified
   }
 }))
 
-const getVerifications = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
             WITH domains AS (
@@ -224,6 +224,26 @@ const getVerifications = ({ hash_b64 }) => (new Promise((resolve, reject) => {
     resolve({ error })
   }
 }));
+
+const getVerifications = ({ domain }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            SELECT 
+                *
+            FROM verifications
+            WHERE v.verified_domain = $1;
+            `,[domain], (error, results) => {
+      if (error) {
+        console.log(error)
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
 
 const getAllVerifications = () => (new Promise((resolve, reject) => {
   try {
@@ -269,10 +289,9 @@ const getAllNodes = () => (new Promise((resolve, reject) => {
 const addNode = ({ domain }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
-            INSERT INTO p2p_nodes (domain, last_seen) VALUES
-                ($1, CURRENT_TIMESTAMP)
-            ON CONFLICT (domain) DO UPDATE
-              SET last_seen = CURRENT_TIMESTAMP
+            INSERT INTO p2p_nodes (domain, first_seen, last_seen) VALUES
+                ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT (domain) DO NOTHING
             RETURNING *
             `,[domain], (error, results) => {
       if (error) {
@@ -299,7 +318,7 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
               SELECT 
                   s.*,
                   v.name,
-                  rank() over(partition by s.id order by v.created_at desc) _rank
+                  rank() over(partition by s.id order by v.first_verification desc) _rank
               FROM statements s        
                 LEFT JOIN verifications v 
                   ON s.domain=v.verified_domain 
@@ -453,6 +472,7 @@ export default {
   createVerification: s(createVerification),
   createVote: s(createVote),
   getVerifications: s(getVerifications),
+  getVerificationsForStatement: s(getVerificationsForStatement),
   getAllVerifications: s(getAllVerifications),
   getAllNodes: s(getAllNodes),
   addNode: s(addNode),

@@ -12,6 +12,7 @@ export const createVote = ({statement_hash, domain, content }) => (new Promise((
             resolve({error: "Missing required fields"})
             return
         }
+        //db.getVerifications
         // TODO: evaluate whether vote is qualified for poll according to participant scope, domain verification and deadline
         db.createVote({statement_hash, poll_hash: pollHash, option, domain, name: "", qualified: true })
         .then( result => {

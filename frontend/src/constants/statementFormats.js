@@ -220,6 +220,26 @@ export const parseVote = (s) => {
 		option: m[3]
 	} : {}
 }
+export const buildDisputeContent = ({hash_b64}) => {
+	const content = "\n" + 
+	"\t" + "Type: dispute statement" + "\n" +
+	"\tDescription: We are convinced that the referenced statement is false.\n" +
+	"\t" + "Hash of referenced statement: " + hash_b64 + "\n" +
+	""
+	return content
+}
+export const parseDispute = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\n\tType: dispute statement\n/.source 
+	+ /\tDescription: We are convinced that the referenced statement is false.\n/.source 
+	+ /\tHash of referenced statement: (?<hash_b64>[^\n]+?)\n/.source 
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		hash_b64: m[1]
+	} : {}
+}
 
 for (let e of Object.values(examples) ){
     continue

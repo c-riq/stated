@@ -1,4 +1,4 @@
-const currentCodeVersion = 3
+const currentCodeVersion = 4
 
 const migrationsFromDBVersionToCurrentCodeVersion = {
     0: {
@@ -6,13 +6,11 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         DROP TABLE IF EXISTS statements;
         CREATE TABLE IF NOT EXISTS statements (
             id SERIAL PRIMARY KEY,
-            created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
             type VARCHAR(100) NOT NULL, -- statement | domain_verification
             version INT NOT NULL, 
             domain VARCHAR(100) NOT NULL,
             statement VARCHAR(1500) NOT NULL, 
-            time VARCHAR(100) NOT NULL,
+            proclaimed_publication_time TIMESTAMP,
             hash_b64 VARCHAR(500) UNIQUE NOT NULL,
             referenced_statement VARCHAR(500), -- response, vote, dispute
             tags VARCHAR(1000),
@@ -46,14 +44,31 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             domain VARCHAR(100) NOT NULL,
             created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
             updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            name VARCHAR(100),
             qualified BOOLEAN
+        );
+        DROP TABLE IF EXISTS polls;
+        CREATE TABLE IF NOT EXISTS polls (
+            id SERIAL PRIMARY KEY,
+            statement_hash VARCHAR(500) UNIQUE NOT NULL,
+            participants_entity_type VARCHAR(500) NOT NULL,
+            participants_country VARCHAR(500) NOT NULL,
+            participants_city VARCHAR(500) NOT NULL,
+            deadline timestamp NOT NULL
+        );
+        DROP TABLE IF EXISTS disputes;
+        CREATE TABLE IF NOT EXISTS disputes (
+            id SERIAL PRIMARY KEY,
+            statement_hash VARCHAR(500) UNIQUE NOT NULL,
+            disputed_statement_hash VARCHAR(500) NOT NULL,
+            domain VARCHAR(500) NOT NULL,
+            p2p_node_id int
         );
         DROP TABLE IF EXISTS p2p_nodes;
         CREATE TABLE IF NOT EXISTS p2p_nodes (
             id SERIAL PRIMARY KEY,
             domain VARCHAR(150) UNIQUE NOT NULL,
             ip VARCHAR(150),
+            first_seen timestamp,
             last_seen timestamp,
             reputation real,
             last_received_statement_id bigint,
@@ -90,6 +105,20 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         ALTER TABLE p2p_nodes
           ADD certificate_authority VARCHAR(100),
           ADD fingerprint VARCHAR(100);
+        `
+    },
+    3: {
+        sql: `
+        ALTER TABLE p2p_nodes
+          ADD first_seen TIMESTAMP;
+        ALTER TABLE statements
+          DROP created_at,
+          DROP updated_at;  
+        ALTER TABLE votes
+            DROP name;
+        ALTER TABLE statements
+          ADD proclaimed_publication_time TIMESTAMP,
+          DROP time;
         `
     }
 }

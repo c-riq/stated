@@ -50,7 +50,7 @@ sudo certbot certonly --standalone
 
 quit node server
 <br /> <br />
-sudo certbot renew <br />
+sudo certbot renew --standalone<br />
 <br />
 Stop NginX or Apache if they were used for the cert renewal</br>
 sudo nginx stop <br />

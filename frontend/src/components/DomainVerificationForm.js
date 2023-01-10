@@ -117,7 +117,7 @@ const DomainVerificationForm = props => {
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
-            renderInput={(params) => <TextField {...params} label="Legal Form" />}
+            renderInput={(params) => <TextField {...params} label="Legal entity" />}
             renderOption={(props, option) => (<Box {...props} id={option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />

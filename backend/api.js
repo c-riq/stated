@@ -74,7 +74,7 @@ api.post("/statement", async (req, res, next) => {
 })
 
 api.post("/verifications", async (req, res, next) => {
-    const dbResult = await db.getVerifications({hash_b64: req.body.hash_b64})
+    const dbResult = await db.getVerificationsForStatement({hash_b64: req.body.hash_b64})
     if(dbResult?.error){
         next(dbResult?.error)
     } else {
