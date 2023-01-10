@@ -174,16 +174,38 @@ const createVerification = ({ statement_hash, version, verifer_domain, verified_
   }
 }))
 
+const createPoll = ({ statement_hash, participants_entity_type, participants_country, participants_city, deadline }) => (new Promise((resolve, reject) => {
+  try {
+    console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
+    pool.query(`
+            INSERT INTO polls 
+              (statement_hash, participants_entity_type, participants_country, participants_city, deadline) 
+            VALUES 
+              ($1, $2, $3, $4, $5)
+            RETURNING *`,
+      [statement_hash, participants_entity_type, participants_country, participants_city, deadline ], (error, results) => {
+        if (error) {
+          console.log(error)
+          resolve({ error })
+        } else {
+          resolve(`Vote inserted with ID: ${results.rows[0].id}`)
+        }
+      })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
+
 const createVote = ({ statement_hash, poll_hash, option, domain, name, qualified }) => (new Promise((resolve, reject) => {
   try {
-    console.log([statement_hash, poll_hash, option, domain, name, qualified])
+    console.log('createVote', [statement_hash, poll_hash, option, domain, name, qualified])
     pool.query(`
             INSERT INTO votes 
-              (statement_hash, poll_hash, option, domain, name, qualified) 
+              (statement_hash, poll_hash, option, domain, qualified) 
             VALUES 
-              ($1, $2, $3, $4, $5, $6)
+              ($1, $2, $3, $4, $5)
             RETURNING *`,
-      [statement_hash, poll_hash, option, domain, name, qualified], (error, results) => {
+      [statement_hash, poll_hash, option, domain, qualified], (error, results) => {
         if (error) {
           console.log(error)
           resolve({ error })
@@ -232,6 +254,28 @@ const getVerifications = ({ domain }) => (new Promise((resolve, reject) => {
             FROM verifications
             WHERE v.verified_domain = $1;
             `,[domain], (error, results) => {
+      if (error) {
+        console.log(error)
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
+
+const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            SELECT 
+                *
+            FROM polls
+            JOIN statements 
+              ON polls.statement_hash = statements.hash_b64
+              AND polls.statement_hash = $1;
+            `,[statement_hash], (error, results) => {
       if (error) {
         console.log(error)
         resolve({ error })
@@ -317,7 +361,7 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
               SELECT 
                   s.*,
                   v.name,
-                  rank() over(partition by s.id order by v.first_verification desc) _rank
+                  rank() over(partition by s.id order by v.created_at desc) _rank
               FROM statements s        
                 LEFT JOIN verifications v 
                   ON s.domain=v.verified_domain 
@@ -500,6 +544,8 @@ export default {
   getStatement: s(getStatement),
   getOwnStatement: s(getOwnStatement),
   createVerification: s(createVerification),
+  createPoll: s(createPoll),
+  getPoll: s(getPoll),
   createVote: s(createVote),
   getVerifications: s(getVerifications),
   getVerificationsForStatement: s(getVerificationsForStatement),

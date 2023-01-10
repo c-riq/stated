@@ -4,7 +4,7 @@ import axios from 'axios'
 import db from './db.js'
 import * as hashUtils from './hash.js'
 import {createVerification} from './domainVerification.js'
-import {createVote} from './vote.js'
+import {createVote, createPoll} from './poll.js'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats.js'
 
@@ -186,6 +186,11 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
                 if(type === statementTypes.poll){
                     dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                         verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+                    if(dbResult.error){
+                        resolve(dbResult)
+                        return
+                    }
+                    dbResult = await createPoll({statement_hash : dbResult.inserted.hash_b64, domain, content})
                 }
                 if (type === statementTypes.vote) {
                     dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,

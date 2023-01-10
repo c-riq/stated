@@ -31,6 +31,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             verifer_domain VARCHAR(100) NOT NULL,
             verified_domain VARCHAR(100) NOT NULL,
             name VARCHAR(100) NOT NULL,
+            legal_entity_type VARCHAR(100) NOT NULL,
             country VARCHAR(100) NOT NULL,-- ISO 3166 country name
             province VARCHAR(100),
             city VARCHAR(100)
