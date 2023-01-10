@@ -82,6 +82,22 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             from_version bigint NOT NULL,
             to_version bigint NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS wikidata_org_domains (
+            type_id TEXT,
+            english_label TEXT,
+            official_website TEXT,
+            lat DOUBLE PRECISION,
+            lon DOUBLE PRECISION,
+            country_id TEXT,
+            city_id TEXT,
+            employees DOUBLE PRECISION,
+            twitter_id TEXT,
+            twitter_name TEXT,
+            crunchbase_id TEXT,
+            facebook_id TEXT,
+            linkedin_id TEXT,
+            grid_id TEXT           
+        );
         `
     },
     1: {
@@ -119,6 +135,22 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         ALTER TABLE statements
           ADD proclaimed_publication_time TIMESTAMP,
           DROP time;
+        CREATE TABLE IF NOT EXISTS wikidata_org_domains (
+              type_id TEXT,
+              english_label TEXT,
+              official_website TEXT,
+              lat DOUBLE PRECISION,
+              lon DOUBLE PRECISION,
+              country_id TEXT,
+              city_id TEXT,
+              employees DOUBLE PRECISION,
+              twitter_id TEXT,
+              twitter_name TEXT,
+              crunchbase_id TEXT,
+              facebook_id TEXT,
+              linkedin_id TEXT,
+              grid_id TEXT           
+          );
         `
     }
 }

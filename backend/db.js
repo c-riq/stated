@@ -100,7 +100,6 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                   v.name,
                   s.statement,
                   r.repost_count,
-                  s.time,
                   s.proclaimed_publication_time,
                   s.hash_b64,
                   s.tags,
@@ -463,6 +462,37 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
   }
 }))
 
+const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            WITH regex AS (
+              SELECT '^(http:\/\/|https:\/\/)?(www\.)?' || $1 || '\..*$' as pattern
+            ),
+             matches AS (SELECT 
+              *
+            FROM wikidata_org_domains
+            CROSS JOIN regex
+            WHERE 
+              official_website ~ regex.pattern
+            )
+            SELECT 
+              *,
+              0.8 / count(*) over() AS confidence,
+              'https://www.wikidata.org/wiki/Wikidata:Database_download wikidata-20220103-all.json.gz' AS source
+            FROM matches;
+            `,[domain], (error, results) => {
+      if (error) {
+        console.log(error)
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    resolve({ error })
+  }
+}))
+
 export default {
   createStatement: s(createStatement),
   getStatements: s(getStatements),
@@ -480,4 +510,5 @@ export default {
   getVotes: s(getVotes),
   updateNode: s(updateNode),
   statementExists: s(statementExists),
+  getDomainOwnershipBeliefs: s(getDomainOwnershipBeliefs)
 }

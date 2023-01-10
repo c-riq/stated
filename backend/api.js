@@ -132,5 +132,19 @@ api.get("/health", async (req, res, next) => {
     }
 })
 
+api.get("/domain_ownership_beliefs", async (req, res, next) => {
+    let domain = req.query && req.query.domain
+    if(!domain || domain.length == 0){
+        next({error: "missing parameter: domain"})
+        return
+    }
+    const dbResult = await db.getDomainOwnershipBeliefs({domain})
+    if(dbResult?.error){
+        next(dbResult.error)
+    } else {
+        res.end(JSON.stringify({result: dbResult.rows}))       
+    }
+})
+
 export default api
 
