@@ -5,12 +5,13 @@ import db from './db.js'
 import p2p from './p2p.js'
 import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification.js'
 
+const log = false
 
 var api = express.Router();
 const apiVersion = '1'
 
 api.use((req, res, next) => {
-    console.log(req.body)
+    log && console.log(req.body)
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     next()
 })
@@ -26,13 +27,13 @@ api.post("/get_txt_records", async (req, res, next) => {
 
 
 api.post("/submit_statement", async (req, res, next) => {
-    const { statement, hash_b64 } = req.body
-    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, verification_method: 'dns'})
+    const { statement, hash_b64, api_key } = req.body
+    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, verification_method: api_key ? 'api' : 'dns', api_key})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
-        console.log(dbResult)
-        res.end(JSON.stringify({ insertedData: dbResult }));
+        log && console.log(dbResult)
+        res.end(JSON.stringify({ insertedData: dbResult.rows[0] }));
     }
 })
 
@@ -41,7 +42,7 @@ api.get("/statements_with_details", async (req, res, next) => {
     if(minId && minId.length > 0){
         minId = parseInt(minId)
     }
-    console.log('minid', minId, typeof minId)
+    log && console.log('minid', minId, typeof minId)
     const searchQuery = req.query && req.query.search_query
     const dbResult = await db.getStatementsWithDetail({minId, searchQuery})
     if(dbResult?.error){
@@ -60,7 +61,8 @@ api.get("/statements", async (req, res, next) => {
     if(dbResult?.error){
         next(dbResult.error)
     } else {
-        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+        let statements = dbResult.rows.map(({id, statement, hash_b64}) => {id, statement, hash_b64})
+        res.end(JSON.stringify({statements, time: new Date().toUTCString()}))       
     }
 })
 

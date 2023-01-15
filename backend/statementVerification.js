@@ -8,6 +8,10 @@ import {createVote, createPoll} from './poll.js'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats.js'
 
+const log = false
+const ownAPIKey = process.env.API_KEY
+const ownDomain = process.env.DOMAIN
+
 const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
     if (!parsedStatement) {
@@ -39,6 +43,7 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
         const millisecondsSince1970 = new Date(time).getTime()
         proclaimed_publication_time = millisecondsSince1970 / 1000.0
     } catch(error) {
+        console.trace()
         console.log(error)
     }
     if (!(proclaimed_publication_time > 0)){
@@ -59,12 +64,12 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
 const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
     // check terms before using
     let url = 'https://dns.google/resolve?name=' + d + '&type=TXT&do=true&rand=' + Math.random()
-    console.log('checkDomain', url)
+    log && console.log('checkDomain', url)
     axios.get(url)
         .then(function (json) {
             try {
                 const TXTEntries = json.data['Answer'].map(v => v['data'])
-                console.log(TXTEntries)
+                log && console.log(TXTEntries)
                 resolve(TXTEntries)
             }
             catch {
@@ -72,6 +77,7 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
             }
         })
         .catch(function (error) {
+            console.trace()
             console.log(error);
             reject()
         })
@@ -79,14 +85,14 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
 
 export const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
-        console.log('getTXTEntries', d)
+        log && console.log('getTXTEntries', d)
         if (! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
             resolve({error: 'invalid domain'})
         }
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
         dig.stdout.on('data', (data) => {
             try {
-                console.log('data',data)
+                log && console.log('data',data)
                 const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
                 resolve(TXTEntries)
             }
@@ -104,10 +110,10 @@ export const getTXTEntries = (d) => new Promise((resolve, reject) => {
 })
 
 export const verifyTXTRecord = async (domain, record) => {
-    console.log("verifyTXTRecord")
+    log && console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
-        console.log('TXTEntries result', domain, TXTEntries, record)
+        log && console.log('TXTEntries result', domain, TXTEntries, record)
         return TXTEntries.includes(record)
     }
     catch (e) {
@@ -118,7 +124,7 @@ export const verifyTXTRecord = async (domain, record) => {
 
 const verifyViaStatedApi = async (domain, hash_b64) => {
     let url = 'https://stated.' + domain + '/api/statement/'
-    console.log('verifyViaStatedApi', url, hash_b64)
+    log && console.log('verifyViaStatedApi', url, hash_b64)
     let result = {}
     try {
         result = await axios({
@@ -138,31 +144,51 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
     return false
 }
 
-export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolve, reject) => {
-    try{
-        const {statement, hash_b64, source_node_id, verification_method } = s
+const verifyViaAPIKey = async ({domain, api_key}) => {
+    log && console.log('verifyViaAPIKey', domain, api_key)
+    if(!domain){return false}
+    if(!api_key){return false}
+    if(domain === ownDomain && api_key === ownAPIKey){
+        return true
+    }
+    return false
+}
+
+export const validateAndAddStatementIfMissing = 
+    ({statement, hash_b64, source_node_id, verification_method, api_key }) => 
+    (new Promise(async (resolve, reject) => {
+    let existsOrCreated = false
+    try {
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
         const {domain, proclaimed_publication_time, tags, content_hash_b64, type, content } = validationResult
-        console.log('proclaimed_publication_time', proclaimed_publication_time)
+        log && console.log('proclaimed_publication_time', proclaimed_publication_time)
         if (validationResult.error) {
             resolve(validationResult)
         }
-        console.log('check if exsits', hash_b64)
+        log && console.log('check if exsits', hash_b64)
         const result = await db.statementExists({hash_b64})
         if (result.error){
+            console.log(result.error)
+            console.trace()
             resolve(result)
             return
         }
         if (result.rows && result.rows.length > 0){
-            resolve({log: 'statement exists already in db' + hash_b64})
+            existsOrCreated = true
+            resolve({existsOrCreated})
             return
         }
         let verified = false
         let verifiedByAPI = false
         if (verification_method && verification_method === 'api'){
-            console.log('validate via api', hash_b64)
-            verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
-            verifiedByAPI = true
+            if (api_key) {
+                verified = verifyViaAPIKey({domain, api_key})
+                verifiedByAPI = true
+            } else {
+                log && console.log('validate via api', hash_b64)
+                verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
+                verifiedByAPI = true
+            }
         } else { 
             verified = await verifyTXTRecord("stated." + validationResult.domain, hash_b64)
             if (!verified){
@@ -170,46 +196,90 @@ export const validateAndAddStatementIfMissing = (s) => new Promise(async (resolv
                 verifiedByAPI = true
             }
         }
+        let dbResult = {error: 'no entity created'}
         if (verified) {
-            let dbResult = {error: 'record not created'}
-            if(type) {
-                if(type === statementTypes.domainVerification){
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                        verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
-                    if(dbResult.error){
-                        resolve(dbResult)
-                        return
-                    }
-                    dbResult = await createVerification({statement_hash : dbResult.inserted.hash_b64, 
-                        version: 1, domain, content})
-                }
-                if(type === statementTypes.poll){
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                        verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
-                    if(dbResult.error){
-                        resolve(dbResult)
-                        return
-                    }
-                    dbResult = await createPoll({statement_hash : dbResult.inserted.hash_b64, domain, content})
-                }
-                if (type === statementTypes.vote) {
-                    dbResult = await db.createStatement({type, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                        verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
-                    if(dbResult.error){
-                        resolve(dbResult)
-                        return
-                    }
-                    dbResult = await createVote({statement_hash: dbResult.inserted.hash_b64, domain, content})
-                }
+            dbResult = await db.createStatement({type: type || statementTypes.statement,
+                domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
+                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+            if(dbResult.error){
+                console.log(dbResult.error)
+                console.trace()
+                resolve(dbResult)
+                return
             } else {
-                dbResult = await db.createStatement({type: statementTypes.statement, version: 1, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                    verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+                if(dbResult.rows && dbResult.rows[0]){
+                    existsOrCreated = true
+                }
             }
-            resolve(dbResult)
+            if(type && dbResult.rows[0]) {
+                await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, domain, content, type, proclaimed_publication_time})
+            }
+            if(dbResult.error){
+                console.log(error)
+                console.trace()
+                resolve(dbResult)
+                return
+            }
         } else {
-            resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
+            if (api_key){
+                resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
+            } else {
+                dbResult = await db.createUnverifiedStatement({statement, hash_b64, source_node_id, source_verification_method: verification_method})
+                if(dbResult.error){
+                    console.log(error)
+                    console.trace()
+                    resolve(dbResult)
+                    return
+                } else {
+                    if(dbResult.rows && dbResult.rows[0]){
+                        existsOrCreated = true
+                    }
+                }
+                dbResult = await db.updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
+                if(dbResult.error){
+                    console.log(error)
+                    console.trace()
+                    resolve(dbResult)
+                    return
+                }
+            }
         }
+        resolve({...dbResult,existsOrCreated})
     } catch (error) {
+        console.log(error)
+        console.trace()
         resolve({error})
     }
-})
+}))
+
+export const createDerivedEntity = 
+    ({statement_hash, domain, content, type, proclaimed_publication_time}) => 
+    (new Promise(async (resolve, reject) => {
+        let dbResult = {error: 'no entity created'}
+        try {
+            if(type === statementTypes.domainVerification){
+                dbResult = await createVerification({statement_hash, domain, content})
+            }
+            if(type === statementTypes.poll){
+                dbResult = await createPoll({statement_hash, domain, content})
+            }
+            if (type === statementTypes.vote) {
+                dbResult = await createVote({statement_hash, domain, content, proclaimed_publication_time})
+            }
+            if((!dbResult.error) && dbResult.entityCreated === true){
+                dbResult = await db.updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
+            } else {
+                dbResult = await db.updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: 1 })
+            }
+            if(dbResult.error){
+                console.log(dbResult.error)
+                console.trace()
+                resolve(dbResult)
+            }
+        } catch (error) {
+            console.log(error)
+            console.trace()
+            resolve({error})
+        }
+    })
+)

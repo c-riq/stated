@@ -3,9 +3,10 @@
 import db from './db.js'
 import {parseVote, parsePoll} from './statementFormats.js'
 
+const log = true
 
-export const createPoll = ({statement_hash, domain, content }) => (new Promise((resolve, reject)=>{
-    console.log('createPoll', statement_hash, domain, content)
+export const createPoll = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+    log && console.log('createPoll', statement_hash, domain, content)
     try {
         const parsedPoll = parsePoll(content)
         const { pollType, country, city, legalEntity, domainScope,
@@ -14,42 +15,95 @@ export const createPoll = ({statement_hash, domain, content }) => (new Promise((
             resolve({error: "Missing required fields"})
             return
         }
-        db.createPoll({ statement_hash, participants_entity_type: legalEntity, 
-            participants_country: country, participants_city: city, deadline })
-        .then( result => {
-                resolve([result, statement_hash])
-        }).catch(e => resolve({error: e}))
+        const dbResult = await db.createPoll({ statement_hash, participants_entity_type: legalEntity, 
+            participants_country: country, participants_city: city, deadline })   
+        if(dbResult.error){
+            console.log(dbResult.error)
+            console.trace()
+            resolve(dbResult)
+            return
+        } 
+        if(dbResult.rows[0]){
+            dbResult.entityCreated = true
+        }
+        resolve(dbResult)
     } catch (error) {
+        console.log(error)
+        console.trace()
         resolve({error})
     }
 }))
 
 
-export const createVote = ({statement_hash, domain, content }) => (new Promise((resolve, reject)=>{
+export const createVote = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+    log && console.log('createVote', content)
     try {
         const parsedVote = parseVote(content)
         const { pollHash, option } = parsedVote
         if (domain.length < 1 || statement_hash.length < 1 ||
             option.length < 1 || pollHash.length < 1 ) {
+            log && console.log("Missing required fields")
             resolve({error: "Missing required fields"})
             return
         }
-        let dbResult = db.getVerifications({domain})
+        let dbResult = await db.getVerifications({domain})
+        if(dbResult.error){
+            console.log(dbResult)
+            resolve(dbResult)
+            return
+        }
+        if(dbResult.rows.length == 0){
+            log && console.log("No verification for voting entity")
+            resolve({error: "No verification for voting entity"})
+            return
+        }
         const verification = dbResult.rows[0]
-        dbResult = db.getPoll({statement_hash})
+        
+        dbResult = await db.getPoll({statement_hash: pollHash})
+        if(dbResult.rows.length == 0){
+            log && console.log("Poll does not exist")
+            resolve({error: "Poll does not exist"})
+            return
+        }
         const poll = dbResult.rows[0]
         
-        console.log(poll.deadline, poll.participants_entity_type, poll.participants_country, poll.participants_city)
-        console.log(verification.legal_entity_type, verification.country, verification.city)
-        console.log(verification.proclaimed_publication_time)
+        log && console.log("poll.deadline", poll.deadline, poll.participants_entity_type, poll.participants_country, poll.participants_city)
+        log && console.log("verification.legal_entity_type", verification.legal_entity_type, verification.country, verification.city)
+        log && console.log("verification.proclaimed_publication_time", parsedVote.proclaimed_publication_time)
 
-        // TODO: evaluate whether vote is qualified for poll according to participant scope, domain verification and deadline
-        
-        db.createVote({statement_hash, poll_hash: pollHash, option, domain, name: "", qualified: true })
-        .then( result => {
-                resolve([result, statement_hash])
-        }).catch(e => resolve({error: e}))
+        let voteTimeQualified = false
+        if(parsedVote.proclaimed_publication_time <= poll.deadline) {
+            voteTimeQualified = true
+        }
+        // TODO: if ownDomain == poll judge, then compare against current time
+        let votingEntityQualified = false
+        if( 
+            ( (!poll.participants_entity_type) || (poll.participants_entity_type === verification.legal_entity_type) )
+            &&
+            ( (!poll.participants_country) || (poll.participants_country === verification.country) )
+            &&
+            ( (!poll.participants_city) || (poll.participants_city === verification.city) )
+         ) {
+            votingEntityQualified = true
+        }
+        if(voteTimeQualified && votingEntityQualified){
+            dbResult = await db.createVote({statement_hash, poll_hash: pollHash, option, domain, qualified })
+            if(dbResult.error){
+                console.log(dbResult.error)
+                console.trace()
+                resolve(dbResult)
+                return
+            } 
+            if(dbResult.rows[0]){
+                dbResult.entityCreated = true
+            }
+            resolve(dbResult)
+        } else {
+            resolve({error: 'vote not qualified ' + statement_hash})
+        }
     } catch (error) {
+        console.log(error)
+        console.trace()
         resolve({error})
     }
 }))

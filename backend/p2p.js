@@ -6,6 +6,8 @@ import { forbiddenChars } from './statementFormats.js'
 
 import { get, post } from './request.js'
 
+const log = false
+
 const ownDomain = process.env.DOMAIN
 
 const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => {
@@ -18,7 +20,7 @@ const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => 
         return
     }
     const res = await get({hostname: domain, path: '/api/health'})
-    console.log(res, 'validateAndAddNode')
+    // log && console.log(res, 'validateAndAddNode')
     if(res && res.data && res.data.application == 'stated'){
         const res = await db.addNode({domain})
         if (res.error){
@@ -35,7 +37,7 @@ const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => 
 
 const addNodesOfPeer = ({domain}) => new Promise(async (resolve, reject) => {
     try {
-        console.log('get nodes from', domain)
+        log && console.log('get nodes from', domain)
         const response = await get({hostname: domain, path: '/api/nodes'})
         const result = await Promise.all(response.data.domains.map(domain => validateAndAddNode({domain})))
         resolve(result)
@@ -50,18 +52,19 @@ const addNodesOfPeers = async () => {
 }
 
 const sendJoinRequest = ({domain}) => new Promise(async (resolve, reject) => {
-    if (!ownDomain) {
-        resolve({error: 'no ownDomain defined'}); return}    
     if ( !domain.match(/stated\./) || (domain.match(/\./g).length > 4) || domain.match(/[\/&\?]/g) || forbiddenChars(domain)) { 
         resolve({error: 'invalid domain, should be analogous to stated.example.com'})
         return
     }
     
-    console.log('sendJoinRequest to ', domain)
+    log && console.log('sendJoinRequest to ', domain)
     const res = await post({ hostname: domain, path: '/api/join_network/', data: { domain: 'stated.' + ownDomain }})
     resolve(res)
 })
 const joinNetwork = async () => {
+    if (!ownDomain) {
+        return
+    }
     const dbResult = await db.getAllNodes()
     const domains = dbResult.rows.map(row => row.domain)
     const result = await Promise.all(domains.map(domain => sendJoinRequest({domain})))
@@ -80,19 +83,35 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
         const {cert, ip} = res
         const certificateAuthority = cert && cert.infoAccess && cert.infoAccess['OCSP - URI'] && ''+cert.infoAccess['OCSP - URI'][0]
         const fingerprint = cert && cert.fingerprint && cert.fingerprint.match(":") && ''+cert.fingerprint
-        const res2 = await Promise.all(res.data.statements.map(s => { validateAndAddStatementIfMissing({...s, source_node_id: id})}))
-        console.log(res2, 'res2')
-        if(res2 && res2.length && res2.reduce((c,i) => c || (i && i.error)), false){
-            const errors = res2.filter((i) => i.error)
+        log && console.log(res.data.statements.length, ' new statements from ', domain)
+        const addStatementsResult = await Promise.all(res.data.statements.map(s => { validateAndAddStatementIfMissing({...s, source_node_id: id})}))
+        log && console.log(addStatementsResult, 'res2')
+        if(addStatementsResult && addStatementsResult.length && addStatementsResult.reduce((c,i) => c || (i && i.error)), false){
+            const errors = addStatementsResult.filter((i) => i.error)
+            console.trace()
             console.log(errors)
             resolve(errors)
+            return
+        }
+        let allStatementsInDB = false
+        if(addStatementsResult && addStatementsResult.length && addStatementsResult.reduce((c,i) => c && (i && i.existsOrCreated)), true){
+            allStatementsInDB = true
+        }
+        if(!allStatementsInDB){
+            console.log('not all statements are in DB, and errors not handeled', domain)
+            resolve({error: 'not all statements added to DB'})
+            return
         }
         // TODO: check if all statements were added already before updating last_received_statement_id
         let lastReceivedStatementId = Math.max(...res.data.statements.map(s => s.id), last_received_statement_id)
         if (lastReceivedStatementId >= 0) {
-            await db.updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
+            let dbResult = await db.updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
+            if(dbResult.error) {
+                console.log(dbResult)
+                console.trace()
+            }
         }
-        resolve(res2)
+        resolve(addStatementsResult)
     }
     catch (error){
         console.log(error)
@@ -145,15 +164,18 @@ setTimeout(async () => {
     }
 }, 3000)
 
-setInterval(async () => {
-    try {
-        await fetchMissingStatementsFromNodes()
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
-}, 20 * 1000)
+const setupSchedule = () => {
+    setInterval(async () => {
+        try {
+            await fetchMissingStatementsFromNodes()
+        } catch (error) {
+            console.log(error)
+            console.trace()
+        }
+    }, 20 * 1000)
+}
 
 export default {
-    validateAndAddNode
+    validateAndAddNode,
+    setupSchedule
 }

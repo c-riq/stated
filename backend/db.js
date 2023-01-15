@@ -1,18 +1,23 @@
 import * as pg from 'pg'
+import {forbiddenStrings} from './statementFormats.js'
+import {performMigrations} from './migrations.js'
+
 const { Pool } = pg.default
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
+const pgDatabase = process.env.POSTGRES_DB || "dev"
+const pgUser = process.env.POSTGRES_USER || "sdf"
+const pgPassword = process.env.POSTGRES_PW || "sdf"
 
 const pool = new Pool({
-  user: 'sdf',
+  user: pgUser,
   host: pgHost,
-  database: 'dev',
-  password: 'sdf',
+  database: pgDatabase,
+  password: pgPassword,
   port: 5432,
 })
 
-import {forbiddenStrings} from './statementFormats.js'
-import {performMigrations} from './migrations.js'
+const log = false
 
 let migrationsDone = false
 setInterval(
@@ -39,24 +44,32 @@ const s = (f) => {
   }
 }
 
-const createStatement = ({ type, version, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+const createStatement = ({ type, domain, statement, proclaimed_publication_time, hash_b64, 
+  tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
-    console.log(type, version, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id)
-    pool.query(`INSERT INTO statements (type, version, domain, statement, proclaimed_publication_time,
-                            hash_b64, tags, content, content_hash, verification_method, source_node_id, first_verification_ts, latest_verification_ts) 
-                      VALUES ($1, $2, $3, $4, TO_TIMESTAMP($5), $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    log && console.log(type, domain, statement, proclaimed_publication_time, hash_b64, 
+      tags, content, content_hash_b64, verification_method, source_node_id)
+    pool.query(`INSERT INTO statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
+                                        tags,                  content,                content_hash,           verification_method,               source_node_id,
+                                        first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count) 
+                      VALUES ($1, $2, $3, TO_TIMESTAMP($4), $5,
+                              $6, $7, $8, $9, $10, 
+                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0)
                     ON CONFLICT (hash_b64) DO NOTHING
                     RETURNING *`,
-      [type, version, domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64, verification_method, source_node_id], (error, results) => {
+      [ type, domain,  statement,        proclaimed_publication_time, hash_b64, 
+        tags, content, content_hash_b64, verification_method,         source_node_id], (error, results) => {
         if (error) {
           console.log(error)
+          console.trace()
           resolve({ error })
         } else {
-          resolve({ inserted: results.rows[0] })
+          resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -105,13 +118,15 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                   s.tags,
                   s.content,
                   s.content_hash,
-                  rank() over(partition by s.id order by v.created_at desc) _rank
+                  rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
                 FROM statements s
                     JOIN reposts r
                         ON id=first_id
                     LEFT JOIN verifications v 
                         ON s.domain=v.verified_domain 
                         AND v.verifer_domain='rixdata.net'
+                    LEFT JOIN statements verification_statement
+                        ON v.statement_hash = verification_statement.hash_b64
                 ) AS results 
                 LEFT JOIN votes on results.hash_b64=votes.poll_hash
               WHERE _rank=1;
@@ -119,86 +134,260 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
             , (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
-const getStatements = ({ minId }) => (new Promise((resolve, reject) => {
+const getStatements = ({ minId, onlyStatementsWithMissingEntities }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
               SELECT 
                   id,
                   statement,
-                  hash_b64
+                  type,
+                  content,
+                  domain,
+                  hash_b64,
+                  first_verification_time,
+                  derived_entity_creation_retry_count
                 FROM statements 
-                WHERE id > $1
+                WHERE id > $1 ${onlyStatementsWithMissingEntities ? 
+                  ' AND derived_entity_created IS FALSE ' + 
+                  ' AND derived_entity_creation_retry_count < 6 ' + 
+                  ' AND type <> \'statement\' '
+                  : ''}
             `,[minId || 0]
             , (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
-const createVerification = ({ statement_hash, version, verifer_domain, verified_domain, name, country, province, city }) => (new Promise((resolve, reject) => {
+const updateStatement = ({ hash_b64, derived_entity_created, 
+  increment_derived_entity_creation_retry_count }) => (new Promise((resolve, reject) => {
+  if (!hash_b64 || !(derived_entity_created || increment_derived_entity_creation_retry_count)){
+    resolve({error: 'missing parameters for updateStatement'})
+  }
   try {
-    console.log([statement_hash, version, verifer_domain, verified_domain, name, country, province, city])
-    pool.query(`
-            INSERT INTO verifications 
-              (statement_hash, version, verifer_domain, verified_domain, name, country, province, city) 
-            VALUES 
-              ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING *`,
-      [statement_hash, version, verifer_domain, verified_domain, name, country, province, city], (error, results) => {
+    if(hash_b64 && derived_entity_created){
+      pool.query(`
+      UPDATE statements SET 
+        derived_entity_created = $2
+        WHERE hash_b64 = $1 
+    `,[hash_b64, derived_entity_created]
+    , (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+      })
+    } 
+    if(hash_b64 && increment_derived_entity_creation_retry_count){
+      pool.query(`
+      UPDATE statements 
+      SET derived_entity_creation_retry_count = derived_entity_creation_retry_count + $2
+        WHERE hash_b64 = $1 
+    `,[hash_b64, increment_derived_entity_creation_retry_count]
+    , (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+    return
+  }
+}))
+
+const createUnverifiedStatement = ({ statement, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve, reject) => {
+  try {
+    log && console.log(statement, hash_b64, source_node_id, source_verification_method)
+    pool.query(`INSERT INTO unverified_statements (statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count) 
+                      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 0)
+                    ON CONFLICT (hash_b64) DO NOTHING
+                    RETURNING *`,
+      [statement, hash_b64, source_node_id, source_verification_method], (error, results) => {
         if (error) {
           console.log(error)
+          console.trace()
           resolve({ error })
         } else {
-          resolve(`Verification inserted with ID: ${results.rows[0].id}`)
+          resolve(results)
         }
       })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
-const createPoll = ({ statement_hash, participants_entity_type, participants_country, participants_city, deadline }) => (new Promise((resolve, reject) => {
+const getUnverifiedStatements = () => (new Promise((resolve, reject) => {
   try {
-    console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
+    pool.query(`
+              SELECT 
+                statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count
+              FROM 
+                unverified_statements 
+            `, (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_count }) => (new Promise((resolve, reject) => {
+  try {
+      if(hash_b64 && increment_verification_retry_count){
+        pool.query(`
+        UPDATE unverified_statements SET 
+          verification_retry_count = verification_retry_count + $2
+          WHERE hash_b64 = $1 
+      `,[hash_b64, increment_verification_retry_count]
+      , (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          resolve({ error })
+        } else {
+          resolve(results)
+        }
+        })
+      } else {
+        resolve({error: 'missing values'})
+      }
+    } catch (error) {
+      console.log(error)
+      console.trace()
+      resolve({ error })
+      return
+    }
+  }
+))
+
+const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_count}) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+              DELETE FROM 
+                unverified_statements
+              WHERE 
+                  (
+                    received_time < CURRENT_TIMESTAMP + ($1 * INTERVAL '1 hour')
+                    AND verification_retry_count > $2
+                  )
+                  OR hash_b64 IN (SELECT hash_b64 from statements)
+            `,[max_age_hours, max_verification_retry_count]
+            , (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+const createVerification = ({ statement_hash, verifer_domain, verified_domain, name, legal_entity_type, country, province, city }) => (new Promise((resolve, reject) => {
+  try {
+    log && console.log([statement_hash, verifer_domain, verified_domain, name, legal_entity_type, country, province, city])
+    pool.query(`
+            INSERT INTO verifications 
+              (statement_hash, verifer_domain, verified_domain, name, legal_entity_type, 
+                country, province, city) 
+            VALUES 
+              ($1, $2, $3, $4, $5, 
+                $6, $7, $8)
+            RETURNING *`,
+      [statement_hash, verifer_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          resolve({ error })
+        } else {
+          resolve(results)
+        }
+      })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+const createPoll = ({ statement_hash, participants_entity_type, participants_country, participants_city, deadline }) => 
+(new Promise((resolve, reject) => {
+  try {
+    log && console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
     pool.query(`
             INSERT INTO polls 
               (statement_hash, participants_entity_type, participants_country, participants_city, deadline) 
             VALUES 
               ($1, $2, $3, $4, $5)
+            ON CONFLICT (statement_hash) DO NOTHING
             RETURNING *`,
       [statement_hash, participants_entity_type, participants_country, participants_city, deadline ], (error, results) => {
         if (error) {
           console.log(error)
+          console.trace()
           resolve({ error })
         } else {
-          resolve(`Vote inserted with ID: ${results.rows[0].id}`)
+          resolve(results)
         }
       })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
-const createVote = ({ statement_hash, poll_hash, option, domain, name, qualified }) => (new Promise((resolve, reject) => {
+const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve, reject) => {
   try {
-    console.log('createVote', [statement_hash, poll_hash, option, domain, name, qualified])
+    log && console.log('createVote', [statement_hash, poll_hash, option, domain, qualified])
     pool.query(`
             INSERT INTO votes 
               (statement_hash, poll_hash, option, domain, qualified) 
@@ -208,12 +397,15 @@ const createVote = ({ statement_hash, poll_hash, option, domain, name, qualified
       [statement_hash, poll_hash, option, domain, qualified], (error, results) => {
         if (error) {
           console.log(error)
-          resolve({ error })
+          console.trace()
+          resolve({error})
         } else {
-          resolve(`Vote inserted with ID: ${results.rows[0].id}`)
+          resolve(results)
         }
       })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -236,12 +428,15 @@ const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, re
             `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }));
@@ -252,21 +447,25 @@ const getVerifications = ({ domain }) => (new Promise((resolve, reject) => {
             SELECT 
                 *
             FROM verifications
-            WHERE v.verified_domain = $1;
+            WHERE verified_domain = $1;
             `,[domain], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
 const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
+  console.log('getPoll', statement_hash)
   try {
     pool.query(`
             SELECT 
@@ -278,12 +477,15 @@ const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
             `,[statement_hash], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -298,12 +500,15 @@ const getAllVerifications = () => (new Promise((resolve, reject) => {
             `, (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }));
@@ -319,12 +524,15 @@ const getAllNodes = () => (new Promise((resolve, reject) => {
             `, (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }));
@@ -339,12 +547,15 @@ const addNode = ({ domain }) => (new Promise((resolve, reject) => {
             `,[domain], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
-        resolve({ inserted: results.rows[0] })
+        resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }));
@@ -361,23 +572,28 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
               SELECT 
                   s.*,
                   v.name,
-                  rank() over(partition by s.id order by v.created_at desc) _rank
+                  rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
               FROM statements s        
                 LEFT JOIN verifications v 
                   ON s.domain=v.verified_domain 
                   AND v.verifer_domain='rixdata.net'
+                LEFT JOIN statements verification_statement
+                  ON v.statement_hash = verification_statement.hash_b64
               WHERE content_hash IN (SELECT content_hash FROM content_hashes)
               AND hash_b64 <> $1) AS result
             WHERE _rank = 1;
             `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -395,18 +611,21 @@ const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
       `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
 const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
-  console.log('getStatement', hash_b64)
+  log && console.log('getStatement', hash_b64)
   try {
     pool.query(`
             SELECT 
@@ -420,12 +639,15 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
             `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -453,32 +675,37 @@ const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fin
               ip], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
 const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
-    console.log(hash_b64, 'check')
+    log && console.log(hash_b64, 'check')
     pool.query(`
             SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
             `, [hash_b64], (error, results) => {
-      console.log('statementExists', hash_b64, results, error)
+      log && console.log('statementExists', hash_b64, results, error)
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
-    console.log(error, 'sdf')
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -496,12 +723,15 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
             `,[hash_b64, ownDomain || 'ownDomain'], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
@@ -527,18 +757,26 @@ const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject)
             `,[domain], (error, results) => {
       if (error) {
         console.log(error)
+        console.trace()
         resolve({ error })
       } else {
         resolve(results)
       }
     })
   } catch (error) {
+    console.log(error)
+    console.trace()
     resolve({ error })
   }
 }))
 
 export default {
+  createUnverifiedStatement: s(createUnverifiedStatement),
+  getUnverifiedStatements: s(getUnverifiedStatements),
+  updateUnverifiedStatement: s(updateUnverifiedStatement),
+  cleanUpUnverifiedStatements: s(cleanUpUnverifiedStatements),
   createStatement: s(createStatement),
+  updateStatement: s(updateStatement),
   getStatements: s(getStatements),
   getStatementsWithDetail: s(getStatementsWithDetail),
   getStatement: s(getStatement),
