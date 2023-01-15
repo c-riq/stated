@@ -9,6 +9,7 @@ Tags: hashtag1, hashtag2
 Content: hello world
 `,
 domainVerification: `Domain: rixdata.net
+Author: Rix Data
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content: 
 	Type: domain verification
@@ -218,6 +219,26 @@ export const parseVote = (s) => {
 		pollHash: m[1],
 		poll: m[2],
 		option: m[3]
+	} : {}
+}
+export const buildDisputeContent = ({hash_b64}) => {
+	const content = "\n" + 
+	"\t" + "Type: dispute statement" + "\n" +
+	"\tDescription: We are convinced that the referenced statement is false.\n" +
+	"\t" + "Hash of referenced statement: " + hash_b64 + "\n" +
+	""
+	return content
+}
+export const parseDispute = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\n\tType: dispute statement\n/.source 
+	+ /\tDescription: We are convinced that the referenced statement is false.\n/.source 
+	+ /\tHash of referenced statement: (?<hash_b64>[^\n]+?)\n/.source 
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		hash_b64: m[1]
 	} : {}
 }
 
