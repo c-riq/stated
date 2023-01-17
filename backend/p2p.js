@@ -62,7 +62,7 @@ const sendJoinRequest = ({domain}) => new Promise(async (resolve, reject) => {
     resolve(res)
 })
 const joinNetwork = async () => {
-    if (!ownDomain) {
+    if (!ownDomain && ownDomain !== 'localhost') {
         return
     }
     const dbResult = await db.getAllNodes()

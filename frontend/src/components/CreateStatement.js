@@ -29,6 +29,9 @@ const CreateStatement = props => {
     const [statement, setStatement] = React.useState("");
     const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
+    const [author, setAuthor] = React.useState("");
+    const [apiKey, setApiKey] = React.useState("");
+    const [viaAPI, setViaAPI] = React.useState("");
     const [dnsResponse, setDnsResponse] = React.useState([]);
     const [statementHash, setStatementHash] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState("");
@@ -86,7 +89,7 @@ const CreateStatement = props => {
     }
 
     const submitStatementAPI = () => {
-        submitStatement({ statement, hash_b64: statementHash},
+        submitStatement({ statement, hash_b64: statementHash, ...(apiKey ? {api_key: apiKey} : {}) },
         async (res) => {
             setAlertMessage("Statement posted!")
             setisError(false)
@@ -100,8 +103,25 @@ const CreateStatement = props => {
     }    
 
     const generateHash = () => {
+        setViaAPI(false)
         if(type == "statement"){
-            const statement = buildStatement({domain, time: props.serverTime, tags, content})
+            const statement = buildStatement({domain, author, time: props.serverTime, tags, content})
+            const parsedResult = parseStatement(statement)
+            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
+                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
+                setisError(true)
+                return
+            }
+
+            setStatement(statement)
+            digest(statement).then((value) => {setStatementHash(value)})
+        }
+    }
+
+    const publishViaAPI = () => {
+        setViaAPI(true)
+        if(type == "statement"){
+            const statement = buildStatement({domain, author, time: props.serverTime, tags, content})
             const parsedResult = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
                 setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
@@ -154,7 +174,7 @@ const CreateStatement = props => {
                     id="tags"
                     variant="outlined"
                     placeholder=''
-                    label="Tags"
+                    label="Tags (optional)"
 
                     InputProps={{ 
                         startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
@@ -166,14 +186,22 @@ const CreateStatement = props => {
                 />
                 </div>
             )}
-                <TextField
-                    id="your domain"
-                    variant="outlined"
-                    placeholder='google.com'
-                    label="Your organisations primary domain"
-                    onChange={e => { setDomain(e.target.value) }}
-                    margin="normal"
-                />
+            <TextField
+                id="publishing domain"
+                variant="outlined"
+                placeholder='google.com'
+                label="The domain which will be used for publishing the statement"
+                onChange={e => { setDomain(e.target.value) }}
+                margin="normal"
+            />
+            <TextField
+                id="author"
+                variant="outlined"
+                placeholder='Example Inc.'
+                label="Author of the content"
+                onChange={e => { setAuthor(e.target.value) }}
+                margin="normal"
+            />
             {type == "domain_verification" &&(<DomainVerificationForm domain={domain} 
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} />)}
@@ -189,10 +217,16 @@ const CreateStatement = props => {
             {type == "statement" && (
                 <React.Fragment>
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-                <Button variant="contained" onClick={() => generateHash()} margin="normal"
-                sx={{marginTop: "24px"}}>
-                    Generate hash
-                </Button>
+                <div style={{display: "flex", flexDirection:"row"}}>
+                    <Button variant="contained" onClick={() => generateHash()} margin="normal"
+                        sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px"}}>
+                        Authenticate via DNS
+                    </Button>
+                    <Button variant="contained" onClick={() => publishViaAPI()} margin="normal"
+                        sx={{marginTop: "24px", flexGrow: 1}}>
+                        Publish as {window.location.hostname}
+                    </Button>
+                </div>
                 </React.Fragment>
             )}
             {statement && (
@@ -212,7 +246,22 @@ const CreateStatement = props => {
                     </div>
                 </div>)
             }
-            {(statementHash.length > 0) && (
+            {statement && viaAPI && (
+                <React.Fragment>
+                    <TextField
+                        id="api-key"
+                        variant="outlined"
+                        placeholder='3CVAaK2c4WvcoYoYtKAoaoRGRrFrE3Sp'
+                        label={"API key for " + window.location.hostname}
+                        onChange={e => { setApiKey(e.target.value) }}
+                        margin="normal"
+                    />
+                    <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>
+                        Submit</Button>
+                </React.Fragment>
+                )
+            }
+            {!viaAPI && (statementHash.length > 0) && (
                     <div width="100%" style={{ paddingTop: "20px" }}>
                         <span >Add the following TXT record in your {domain} domain settings to verify domain ownership: </span>
                         <TextField
@@ -229,13 +278,13 @@ const CreateStatement = props => {
                             margin="normal" onClick={() => { checkDomainVerificationAPI() }}>Check DNS records</Button>
                     </div>)
                 }
-                {(dnsResponse.length > 0) && (
+                {!viaAPI && (dnsResponse.length > 0) && (
                     <div width="100%" style={{ paddingTop: "20px" }}>
                         <span > TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</span>
                         {dnsResponse.includes(statementHash) ?
                             (<div>
                                 <div style={{backgroundColor: "#aaffaa"}}>Domain ownership verified.</div>
-                                <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>Post</Button>
+                                <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
                             </div>)
                             :
                             (<div>

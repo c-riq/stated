@@ -8,7 +8,7 @@ import {createVote, createPoll} from './poll.js'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats.js'
 
-const log = false
+const log = true
 const ownAPIKey = process.env.API_KEY
 const ownDomain = process.env.DOMAIN
 
@@ -145,7 +145,7 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
 }
 
 const verifyViaAPIKey = async ({domain, api_key}) => {
-    log && console.log('verifyViaAPIKey', domain, api_key)
+    log && console.log('verifyViaAPIKey', domain, ownDomain, api_key, ownAPIKey)
     if(!domain){return false}
     if(!api_key){return false}
     if(domain === ownDomain && api_key === ownAPIKey){
@@ -182,7 +182,8 @@ export const validateAndAddStatementIfMissing =
         let verifiedByAPI = false
         if (verification_method && verification_method === 'api'){
             if (api_key) {
-                verified = verifyViaAPIKey({domain, api_key})
+                log && console.log('verifiy via api key', hash_b64)
+                verified = await verifyViaAPIKey({domain, api_key})
                 verifiedByAPI = true
             } else {
                 log && console.log('validate via api', hash_b64)
@@ -190,14 +191,17 @@ export const validateAndAddStatementIfMissing =
                 verifiedByAPI = true
             }
         } else { 
+            log && console.log('verifiy via dns', hash_b64)
             verified = await verifyTXTRecord("stated." + validationResult.domain, hash_b64)
             if (!verified){
+                log && console.log('verifiy via stated api', hash_b64)
                 verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
                 verifiedByAPI = true
             }
         }
         let dbResult = {error: 'no entity created'}
         if (verified) {
+            console.log('verified', verified, verifiedByAPI)
             dbResult = await db.createStatement({type: type || statementTypes.statement,
                 domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                 verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
@@ -223,6 +227,7 @@ export const validateAndAddStatementIfMissing =
         } else {
             if (api_key){
                 resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
+                return
             } else {
                 dbResult = await db.createUnverifiedStatement({statement, hash_b64, source_node_id, source_verification_method: verification_method})
                 if(dbResult.error){

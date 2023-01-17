@@ -12,6 +12,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+
 import CloseIcon from '@mui/icons-material/Close';
 import { Route, Routes, Link, useParams, useNavigate } from 'react-router-dom';
 import { Buffer } from 'buffer';
@@ -33,7 +37,7 @@ import gh from './img/github.png'
 const CenterModal = (props) => {
   const { lt850px } = props
   return(
-  <Modal sx={{backgroundColor:'rgba(0,0,0,0.1)'}} open={props.modalOpen} onClose={props.onClose}>
+  <Modal sx={{backgroundColor:'rgba(0,0,0,0.1)'}} open={props.modalOpen} onClose={() => props.onClose({warning: true})}>
     <div>
   <Box sx={{
       position: 'absolute',
@@ -50,7 +54,7 @@ const CenterModal = (props) => {
       p: 0
     }}>
     {!lt850px&&(<div style={{height: 50, padding: '16px 16px 16px 16px'}}>
-      <a onClick={props.onClose} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
+      <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
     </div>)}
     <div style={{...(lt850px?{padding: '30px'}:{padding: '20px 200px 200px 200px'}), overflowY: 'scroll'}}>
       {
@@ -59,7 +63,7 @@ const CenterModal = (props) => {
     </div>
   </Box>
   {lt850px && (<div style={{position: 'fixed', top: "16px", left: "16px", height: "50px", width: "50px"}}>
-    <a onClick={props.onClose} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
+    <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
   </div>)}
 </div>
 </Modal>)
@@ -76,6 +80,8 @@ function App() {
   const [postToView, setPostToView] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState(false);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
   const navigate = useNavigate();
 
   React.useEffect(() => {window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));}, []);
@@ -103,11 +109,8 @@ function App() {
     setModalOpen(true)
   }
   const onPostSuccess = () => {
-    setStatementToJoin("")
-    setPoll(false)
-    setModalOpen(false)
+    resetState()
     getStatementsAPI()
-    navigate("/")
   }
   React.useEffect(() => { if(!postsFetched) {
     console.log("useEffect")
@@ -115,6 +118,9 @@ function App() {
       setPostsFetched(true)
     }
   })
+  const resetState = () => {
+    navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)
+  }
   return (
     <div className="App">
     <CssBaseline />
@@ -159,12 +165,12 @@ function App() {
       <Routes>
           <Route path='/' exact />
           <Route path='/statement/:statementId' element={(
-            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)}}>
+            <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
               <Statement hash_b16={useParams()} hash_b64={Buffer.from(useParams().statementId || '', 'hex').toString('base64')} voteOnPoll={voteOnPoll} />
             </CenterModal>)} 
           />
           <Route path='/create-statement' element={
-            <CenterModal modalOpen={true} lt850px={lt850px} onClose={() => {navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)}}>
+            <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}) => {warning ? setDialogOpen(true) : resetState() }}>
               <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} />
             </CenterModal>} 
           />
@@ -180,6 +186,22 @@ function App() {
         </div>
       </div>
     </div>
+    <Dialog
+        open={dialogOpen}
+        onClose={()=>setDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Are you sure to discard changes?"}
+        </DialogTitle>
+        <DialogActions>
+          <Button onClick={()=>{setDialogOpen(false)}}>Keep editing</Button>
+          <Button color="warning" style={{color: "ff0000"}} onClick={()=>{resetState();setDialogOpen(false)}} autoFocus>
+            Discard Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

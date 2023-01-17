@@ -64,6 +64,10 @@ const Statement = props => {
                 <div>
                     <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"dig -t txt stated."+statement.domain+" +short | grep " + statement.hash_b64}/>
                 </div>
+                <p>Or check if the domain owner runs a stated node and verify the intention to publish by running the following command and verifying that the response object also contains the above statement:</p>
+                <div>
+                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"curl 'https://stated." + statement.domain + `/api/statement/' --data '{"hash_b64": "` + statement.hash_b64 + `"}' --header 'Content-Type: application/json'`}/>
+                </div>
             </div>
 
             {verifications.length > 0 && (<div>

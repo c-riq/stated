@@ -4,13 +4,13 @@
 
 const examples = {
 normalStatementWithTags: `Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Tags: hashtag1, hashtag2
 Content: hello world
 `,
 domainVerification: `Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
 	Type: domain verification
@@ -23,7 +23,7 @@ Content:
 	Headquarter city: Bentonville
 `,
 response: `Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
 	Type: response
@@ -31,7 +31,7 @@ Content:
 	Response: No, we don't want that.
 `,
 dispute: `Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
 	Type: dispute statement
@@ -39,7 +39,7 @@ Content:
 	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 `,
 poll:`Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Thu, 17 Nov 2022 13:38:20 GMT
 Content:
 	Type: poll
@@ -53,7 +53,7 @@ Content:
 	Option 2: No
 `,
 voteReferencingOption: `Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Thu, 17 Nov 2022 20:13:46 GMT
 Content:
 	Type: vote
@@ -62,7 +62,7 @@ Content:
 	Option: Yes
 `,
 freeTextVote: `Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
 	Type: vote
@@ -70,7 +70,7 @@ Content:
 	Option: keep the money
 `,
 rating:`Domain: rixdata.net
-Author: Rix Data
+Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
 	Type: trustworthiness rating

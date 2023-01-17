@@ -579,8 +579,8 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
                   AND v.verifer_domain='rixdata.net'
                 LEFT JOIN statements verification_statement
                   ON v.statement_hash = verification_statement.hash_b64
-              WHERE content_hash IN (SELECT content_hash FROM content_hashes)
-              AND hash_b64 <> $1) AS result
+              WHERE s.content_hash IN (SELECT content_hash FROM content_hashes)
+              AND s.hash_b64 <> $1) AS result
             WHERE _rank = 1;
             `,[hash_b64], (error, results) => {
       if (error) {
