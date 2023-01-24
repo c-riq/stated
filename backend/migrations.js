@@ -79,6 +79,13 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             city2 VARCHAR(100),
             city2_confidence DOUBLE PRECISION
         );
+        INSERT INTO identiy_beliefs_organisations (
+            primary_domain1, primary_domain1_confidence, name1, name1_confidence, 
+            legal_entity_type1, legal_entity_type1_confidence, country1, country1_confidence,
+            city1, city1_confidence) 
+        VALUES ('rixdata.net', 1.0, 'Rix Data UG (haftungsbeschränkt)', 1.0,
+            'limited liability corporation', 1.0, 'DE', 1.0, 
+            'Bamberg', 1.0);
         DROP TABLE IF EXISTS identiy_beliefs_people;
         CREATE TABLE IF NOT EXISTS identiy_beliefs_people (
             id SERIAL PRIMARY KEY,

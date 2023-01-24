@@ -441,7 +441,7 @@ const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, re
   }
 }));
 
-const getVerifications = ({ domain }) => (new Promise((resolve, reject) => {
+const getVerificationsForDomain = ({ domain }) => (new Promise((resolve, reject) => {
   try {
     pool.query(`
             SELECT 
@@ -463,6 +463,30 @@ const getVerifications = ({ domain }) => (new Promise((resolve, reject) => {
     resolve({ error })
   }
 }))
+
+const getAllVerifications = () => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            SELECT 
+                v.*,
+                s.*
+            FROM verifications v
+              JOIN statements s ON v.statement_hash=s.hash_b64;
+            `, (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}));
 
 const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
   console.log('getPoll', statement_hash)
@@ -490,28 +514,6 @@ const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const getAllVerifications = () => (new Promise((resolve, reject) => {
-  try {
-    pool.query(`
-            SELECT 
-                s.*
-            FROM verifications v
-              JOIN statements s ON v.statement_id=s.id
-            `, (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        resolve({ error })
-      } else {
-        resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    resolve({ error })
-  }
-}));
 
 const getAllNodes = () => (new Promise((resolve, reject) => {
   try {
@@ -785,7 +787,7 @@ export default {
   createPoll: s(createPoll),
   getPoll: s(getPoll),
   createVote: s(createVote),
-  getVerifications: s(getVerifications),
+  getVerifications: s(getVerificationsForDomain),
   getVerificationsForStatement: s(getVerificationsForStatement),
   getAllVerifications: s(getAllVerifications),
   getAllNodes: s(getAllNodes),
