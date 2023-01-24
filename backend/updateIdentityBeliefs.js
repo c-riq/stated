@@ -6,79 +6,54 @@ const log = false
 const updateBasedOnVerifications = async () => {
     let dbResult = {} 
     try {
-        dbResult = await db.getAllVerifications()
+        dbResult = await db.getHighConfidenceVerifications()
     } catch (error) {
         console.log(error)
         console.trace()
     }
-    let unverifiedStatements = dbResult.rows
-    log && console.log('unverifiedStatements count ', unverifiedStatements.length)
-    unverifiedStatements = unverifiedStatements.filter(s => {
-        const diffTime = (new Date()) - s.received_time
-        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
-        const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-        if (targetRetryCount > s.verification_retry_count) {
-            return true
-        } return false
-    })
-    log && console.log('unverifiedStatements up for retry ', unverifiedStatements.length)
-    try {
-        const res = await Promise.all(unverifiedStatements.map(({statement, hash_b64, source_node_id, verification_method}) =>
-            validateAndAddStatementIfMissing({statement, hash_b64, source_node_id, source_verification_method: verification_method, api_key: undefined })
-        ))
-        return res
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
-}
 
-const tryAddMissingDerivedEntitiesFromStatements = async () => {
-    /* Use cases: Poll might arrive after votes; version upgrades may be necessary. */
-    let dbResult = {} 
-    try {
-        dbResult = await db.getStatements({onlyStatementsWithMissingEntities : true})
-    } catch (error) {
-        console.log(error)
-        console.trace()
+    let highConfidenceVerifications = dbResult.rows
+    let domainMap = {}
+    for(let v of highConfidenceVerifications ){
+        const {verified_domain, verifier_domain, name, legal_entity_type, country, province, city, verifier_domain_confidence, verifier_domain_name} = v
+        if(!domainMap[verified_domain]){
+            domainMap[verified_domain] = []
+        }
+        domainMap[verified_domain].append({verified_domain, verifier_domain, name, legal_entity_type, 
+            country, province, city, verifier_domain_confidence, verifier_domain_name})
     }
-    let statements = dbResult.rows
-    log && console.log('statements without entity ', statements.length)
-    statements = statements.filter(s => {
-        const diffTime = (new Date()) - s.first_verification_time
-        console.log(diffTime, new Date(), s.first_verification_time)
-        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
-        console.log(diffHours)
-        const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-        if (targetRetryCount > s.derived_entity_creation_retry_count) {
-            return true
-        } return false
+    const insertJobs = Object.entries(domainMap).forEach(([verified_domain, verifications]) => {
+        const dataPointMap = {name:{}, legal_entity_type:{}, country:{}, province:{}, city:{}}
+        for(let v of verifications) {
+            for(let key of Object.keys(dataPointMap)){
+                if(!dataPointMap[key][v[key]]){
+                    dataPointMap[key][v[key]] = []
+                }
+                dataPointMap[key][v[key]].append(v.verifier_domain_confidence)
+            }
+        }
+        return( new Promise(async (resolve, reject) => {
+            try {
+                dbResult = await db.createOrganisationIDBelief({domain1: verified_domain, domain1_confidence: 0})
+            } catch (error) {
+                console.log(error)
+                console.trace()
+            }
+        }))
     })
-    log && console.log('statements without entity up for retry ', statements.length)
-    try {
-        const res = await Promise.all(statements.map(({type, domain, content, hash_b64}) => 
-            createDerivedEntity({statement_hash: hash_b64, domain, content, type})
-        ))
-        return res
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
+    await Promise.all(insertJobs)
 }
 
 const setupSchedule = () => {
     setInterval(async () => {
-        console.log('retry verification started')
+        console.log('updating identity beliefs')
         try {
-            await tryVerifyUnverifiedStatements()
-            await db.cleanUpUnverifiedStatements({max_age_hours: Math.max(...verificationRetryScheduleHours) | 1,
-                 max_verification_retry_count: verificationRetryScheduleHours.length | 1})
-            await tryAddMissingDerivedEntitiesFromStatements()
+            await updateBasedOnVerifications()
         } catch (error) {
             console.log(error)
             console.trace()
         }
-    }, 5 * 1000)   
+    }, 40 * 1000)   
 }
 
 export default {

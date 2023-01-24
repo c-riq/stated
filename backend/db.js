@@ -488,6 +488,98 @@ const getAllVerifications = () => (new Promise((resolve, reject) => {
   }
 }));
 
+const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_primary_domain_confidence}) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            SELECT 
+                v.*,
+                b.primary_domain1_confidence verifier_domain_confidence,
+                b.name1 verifier_domain_name,
+                n.last_seen verifier_node_last_seen
+            FROM verifications v
+              JOIN identiy_beliefs_organisations b 
+                ON v.verifier_domain=b.primary_domain1
+                AND b.primary_domain1_confidence > $1
+                AND b.name1_confidence > $1
+              JOIN p2p_nodes n 
+                ON ('stated.' || b.primary_domain1)=n.domain
+                AND n.last_seen > (now() - interval '$2 day')
+              ;
+            `,[min_primary_domain_confidence || 0.9, max_inactive_verifier_node_days || 1], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}));
+
+const createOrganisationIDBelief = ({ primary_domain1,
+                                      primary_domain1_confidence,
+                                      name1,
+                                      name1_confidence,
+                                      legal_entity_type1,
+                                      legal_entity_type1_confidence,
+                                      country1,
+                                      country1_confidence,
+                                      province1,
+                                      province1_confidence,
+                                      city1,
+                                      city1_confidence }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            INSERT INTO identiy_beliefs_organisations (
+              primary_domain1,
+              primary_domain1_confidence,
+              name1,
+              name1_confidence,
+              legal_entity_type1,
+              legal_entity_type1_confidence,
+              country1,
+              country1_confidence,
+              province1,
+              province1_confidence,
+              city1,
+              city1_confidence
+            ) VALUES
+                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            ON CONFLICT (primary_domain1) DO NOTHING
+            RETURNING *
+            `,[primary_domain1,
+              primary_domain1_confidence,
+              name1,
+              name1_confidence,
+              legal_entity_type1,
+              legal_entity_type1_confidence,
+              country1,
+              country1_confidence,
+              province1,
+              province1_confidence,
+              city1,
+              city1_confidence], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}));
+
+
 const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
   console.log('getPoll', statement_hash)
   try {
@@ -790,6 +882,8 @@ export default {
   getVerifications: s(getVerificationsForDomain),
   getVerificationsForStatement: s(getVerificationsForStatement),
   getAllVerifications: s(getAllVerifications),
+  getHighConfidenceVerifications:  s(getHighConfidenceVerifications),
+  createOrganisationIDBelief: s(createOrganisationIDBelief),
   getAllNodes: s(getAllNodes),
   addNode: s(addNode),
   getJoiningStatements: s(getJoiningStatements),

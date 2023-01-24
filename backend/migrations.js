@@ -54,7 +54,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         DROP TABLE IF EXISTS identiy_beliefs_organisations;
         CREATE TABLE IF NOT EXISTS identiy_beliefs_organisations (
             id SERIAL PRIMARY KEY,
-            primary_domain1 VARCHAR(100) NOT NULL,
+            primary_domain1 VARCHAR(100) UNIQUE NOT NULL,
             primary_domain1_confidence DOUBLE PRECISION NOT NULL,
             primary_domain2 VARCHAR(100),
             primary_domain2_confidence DOUBLE PRECISION,
