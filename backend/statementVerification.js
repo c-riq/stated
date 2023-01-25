@@ -87,7 +87,8 @@ export const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
         log && console.log('getTXTEntries', d)
         if (! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
-            resolve({error: 'invalid domain'})
+            console.log('invalid domain', d)
+            resolve({error: 'invalid domain '+ d})
         }
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
         dig.stdout.on('data', (data) => {
@@ -104,6 +105,13 @@ export const getTXTEntries = (d) => new Promise((resolve, reject) => {
             console.error(`stderr: ${data}`);
             resolve({error: data})
         })
+        dig.on('error', (error) => { 
+            resolve({error: 'dig process error: ' + error}) 
+        })
+        dig.on('close', function (code) {
+            resolve({error: 'dig process exited with code ' + code})
+        });
+          
     } catch (error){
         resolve({error})
     }
@@ -113,6 +121,10 @@ export const verifyTXTRecord = async (domain, record) => {
     log && console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
+        console.log(TXTEntries, 'TXTEntries')
+        if(TXTEntries.error){
+            console.log(TXTEntries.error)
+        }
         log && console.log('TXTEntries result', domain, TXTEntries, record)
         return TXTEntries.includes(record)
     }
@@ -216,7 +228,13 @@ export const validateAndAddStatementIfMissing =
                 }
             }
             if(type && dbResult.rows[0]) {
-                await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, domain, content, type, proclaimed_publication_time})
+                const derivedEntityResult = await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, 
+                    domain, content, type, proclaimed_publication_time})
+                if(derivedEntityResult.error){
+                    console.log(derivedEntityResult.error)
+                    console.trace()
+                    return
+                }
             }
             if(dbResult.error){
                 console.log(error)
@@ -229,7 +247,8 @@ export const validateAndAddStatementIfMissing =
                 resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
                 return
             } else {
-                dbResult = await db.createUnverifiedStatement({statement, hash_b64, source_node_id, source_verification_method: verification_method})
+                dbResult = await db.createUnverifiedStatement({statement, hash_b64, source_node_id, 
+                    source_verification_method: verification_method})
                 if(dbResult.error){
                     console.log(error)
                     console.trace()

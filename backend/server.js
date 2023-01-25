@@ -12,9 +12,11 @@ import { fileURLToPath } from 'url';
 
 import p2p from './p2p.js'
 import retryAndCleanUp from './retryAndCleanUp.js'
+import updateIdentityBeliefs from './updateIdentityBeliefs.js'
 
 p2p.setupSchedule()
 retryAndCleanUp.setupSchedule()
+updateIdentityBeliefs.setupSchedule()
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -6,7 +6,7 @@ const log = false
 export const get = ({hostname, path}) => new Promise((resolve, reject) => {
     log && console.log('get request', hostname, path)
     try {
-        if(hostname === 'stated.' + ownDomain){
+        if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
             resolve({error: 'skip request to own domain: ' + hostname})
             return
         }

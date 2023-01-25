@@ -6,7 +6,7 @@ const log = false
 const updateBasedOnVerifications = async () => {
     let dbResult = {} 
     try {
-        dbResult = await db.getHighConfidenceVerifications()
+        dbResult = await db.getHighConfidenceVerifications({max_inactive_verifier_node_days: 1, min_primary_domain_confidence: 0.9})
     } catch (error) {
         console.log(error)
         console.trace()
@@ -41,7 +41,7 @@ const updateBasedOnVerifications = async () => {
             }
         }))
     })
-    await Promise.all(insertJobs)
+    await Promise.all(insertJobs || [])
 }
 
 const setupSchedule = () => {
@@ -53,7 +53,7 @@ const setupSchedule = () => {
             console.log(error)
             console.trace()
         }
-    }, 40 * 1000)   
+    }, 10 * 1000)   
 }
 
 export default {

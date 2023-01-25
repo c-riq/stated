@@ -102,24 +102,8 @@ const CreateStatement = props => {
         })
     }    
 
-    const generateHash = () => {
-        setViaAPI(false)
-        if(type == "statement"){
-            const statement = buildStatement({domain, author, time: props.serverTime, tags, content})
-            const parsedResult = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
-                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
-                setisError(true)
-                return
-            }
-
-            setStatement(statement)
-            digest(statement).then((value) => {setStatementHash(value)})
-        }
-    }
-
-    const publishViaAPI = () => {
-        setViaAPI(true)
+    const generateHash = ({viaAPI}) => {
+        setViaAPI(viaAPI)
         if(type == "statement"){
             const statement = buildStatement({domain, author, time: props.serverTime, tags, content})
             const parsedResult = parseStatement(statement)
@@ -204,25 +188,25 @@ const CreateStatement = props => {
             />
             {type == "domain_verification" &&(<DomainVerificationForm domain={domain} 
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {type == "poll" &&(<PollForm domain={domain} 
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
             {type == "vote" &&(<VoteForm domain={domain} poll={props.poll}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} 
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {type == "statement" && (
                 <React.Fragment>
                 <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
                 <div style={{display: "flex", flexDirection:"row"}}>
-                    <Button variant="contained" onClick={() => generateHash()} margin="normal"
+                    <Button variant="contained" onClick={() => generateHash({viaAPI: false})} margin="normal"
                         sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px"}}>
                         Authenticate via DNS
                     </Button>
-                    <Button variant="contained" onClick={() => publishViaAPI()} margin="normal"
+                    <Button variant="contained" onClick={() => generateHash({viaAPI: true})} margin="normal"
                         sx={{marginTop: "24px", flexGrow: 1}}>
                         Publish as {window.location.hostname}
                     </Button>

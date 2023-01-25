@@ -12,7 +12,8 @@ import Box from '@mui/material/Box';
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
-import { parseStatement, buildStatement, forbiddenStrings, buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
+import { parseStatement, buildStatement, forbiddenStrings, 
+    buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
 
 
 const DomainVerificationForm = props => {
@@ -35,7 +36,8 @@ const DomainVerificationForm = props => {
         const hashHex = Buffer.from(hashArray).toString('base64');
         return hashHex
     }
-    const generateHash = () => {
+    const generateHash = ({viaAPI}) => {
+        props.setViaAPI(viaAPI)
         const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, legalEntity: legalForm})
         const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
 
@@ -135,11 +137,19 @@ const DomainVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
-        <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-        <Button variant="contained" onClick={() => generateHash()} margin="normal"
-            sx={{marginTop: "24px"}}>
-                Generate hash
-        </Button>
+        <React.Fragment>
+                <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
+                <div style={{display: "flex", flexDirection:"row"}}>
+                    <Button variant="contained" onClick={() => generateHash({viaAPI: false})} margin="normal"
+                        sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px"}}>
+                        Authenticate via DNS
+                    </Button>
+                    <Button variant="contained" onClick={() => generateHash({viaAPI: true})} margin="normal"
+                        sx={{marginTop: "24px", flexGrow: 1}}>
+                        Publish as {window.location.hostname}
+                    </Button>
+                </div>
+        </React.Fragment>
         </FormControl>
     )
 }

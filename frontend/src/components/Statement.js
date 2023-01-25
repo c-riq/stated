@@ -75,7 +75,7 @@ const Statement = props => {
                     {verifications.map((v,i)=>(
                         <div key={i}>
                             <Link onClick={()=>setDataFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                                {v.verifer_domain}{v.name ? " | " + v.name + " ✅":  ""}
+                                {v.verifier_domain}{v.name ? " | " + v.name + " ✅":  ""}
                             </Link>
                         </div>))}
             </div>)}

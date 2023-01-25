@@ -124,7 +124,7 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                         ON id=first_id
                     LEFT JOIN verifications v 
                         ON s.domain=v.verified_domain 
-                        AND v.verifer_domain='rixdata.net'
+                        AND v.verifier_domain='rixdata.net'
                     LEFT JOIN statements verification_statement
                         ON v.statement_hash = verification_statement.hash_b64
                 ) AS results 
@@ -331,18 +331,18 @@ const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_coun
   }
 }))
 
-const createVerification = ({ statement_hash, verifer_domain, verified_domain, name, legal_entity_type, country, province, city }) => (new Promise((resolve, reject) => {
+const createVerification = ({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city }) => (new Promise((resolve, reject) => {
   try {
-    log && console.log([statement_hash, verifer_domain, verified_domain, name, legal_entity_type, country, province, city])
+    log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
     pool.query(`
             INSERT INTO verifications 
-              (statement_hash, verifer_domain, verified_domain, name, legal_entity_type, 
+              (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
                 country, province, city) 
             VALUES 
               ($1, $2, $3, $4, $5, 
                 $6, $7, $8)
             RETURNING *`,
-      [statement_hash, verifer_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -503,7 +503,7 @@ const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_pr
                 AND b.name1_confidence > $1
               JOIN p2p_nodes n 
                 ON ('stated.' || b.primary_domain1)=n.domain
-                AND n.last_seen > (now() - interval '$2 day')
+                AND n.last_seen > (now() - ($2 * INTERVAL '1 day'))
               ;
             `,[min_primary_domain_confidence || 0.9, max_inactive_verifier_node_days || 1], (error, results) => {
       if (error) {
@@ -670,7 +670,7 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
               FROM statements s        
                 LEFT JOIN verifications v 
                   ON s.domain=v.verified_domain 
-                  AND v.verifer_domain='rixdata.net'
+                  AND v.verifier_domain='rixdata.net'
                 LEFT JOIN statements verification_statement
                   ON v.statement_hash = verification_statement.hash_b64
               WHERE s.content_hash IN (SELECT content_hash FROM content_hashes)
@@ -728,7 +728,7 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
             FROM statements s        
               LEFT JOIN verifications v 
                 ON s.domain=v.verified_domain 
-                --AND v.verifer_domain='rixdata.net'
+                --AND v.verifier_domain='rixdata.net'
             WHERE hash_b64=$1;
             `,[hash_b64], (error, results) => {
       if (error) {

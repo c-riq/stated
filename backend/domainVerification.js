@@ -4,7 +4,7 @@ import {parseDomainVerification} from './statementFormats.js'
 const log = false
 
 export const createVerification = ({statement_hash, domain, version, content }) => (new Promise(async (resolve, reject)=>{
-    const verifer_domain = domain
+    const verifier_domain = domain
     try {
         log && console.log(content)
         const parsedDomainVerification = parseDomainVerification(content)
@@ -17,7 +17,7 @@ export const createVerification = ({statement_hash, domain, version, content }) 
             resolve({error: "Missing required fields"})
             return
         }
-        const dbResult = await db.createVerification({statement_hash, version, verifer_domain, verified_domain: domain, 
+        const dbResult = await db.createVerification({statement_hash, version, verifier_domain, verified_domain: domain, 
             name, legal_entity_type: legalForm, country, province, city})        
         if(dbResult.error){
             console.log(dbResult.error)

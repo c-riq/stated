@@ -33,7 +33,7 @@ api.post("/submit_statement", async (req, res, next) => {
         next(dbResult.error)
     } else {
         log && console.log(dbResult)
-        res.end(JSON.stringify({ insertedData: dbResult.rows[0] }));
+        res.end(JSON.stringify({ insertedData: dbResult && dbResult.rows && dbResult.rows[0] }));
     }
 })
 

@@ -43,7 +43,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         CREATE TABLE IF NOT EXISTS verifications (
             id SERIAL PRIMARY KEY,
             statement_hash VARCHAR(500) UNIQUE NOT NULL,
-            verifer_domain VARCHAR(100) NOT NULL,
+            verifier_domain VARCHAR(100) NOT NULL,
             verified_domain VARCHAR(100) NOT NULL,
             name VARCHAR(100) NOT NULL,
             legal_entity_type VARCHAR(100) NOT NULL,
