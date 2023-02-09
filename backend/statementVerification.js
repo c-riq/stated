@@ -233,7 +233,6 @@ export const validateAndAddStatementIfMissing =
                 if(derivedEntityResult.error){
                     console.log(derivedEntityResult.error)
                     console.trace()
-                    return
                 }
             }
             if(dbResult.error){

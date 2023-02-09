@@ -148,5 +148,19 @@ api.get("/domain_ownership_beliefs", async (req, res, next) => {
     }
 })
 
+api.get("/match_domain", async (req, res, next) => {
+    let domain_substring = req.query && req.query.domain_substring
+    if(!domain_substring || domain_substring.length == 0){
+        next({error: "missing parameter: domain"})
+        return
+    }
+    const dbResult = await db.matchDomain({domain_substring})
+    if(dbResult?.error){
+        next(dbResult.error)
+    } else {
+        res.end(JSON.stringify({result: dbResult.rows}))       
+    }
+})
+
 export default api
 

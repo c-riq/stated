@@ -864,6 +864,40 @@ const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject)
   }
 }))
 
+
+
+const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`
+            with regex AS ( SELECT '.*' || $1 || '.*' pattern)
+            SELECT 
+              host domain,
+              "subject.O" AS orgnaization,
+              "subject.C" AS country,
+              "subject.ST" AS state,
+              "subject.L" AS city,
+              index
+            FROM ssl_certificates
+              JOIN regex ON host ~ regex.pattern
+            ORDER BY index ASC LIMIT 20
+            ;
+            `,[domain_substring || ''], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+
 export default {
   createUnverifiedStatement: s(createUnverifiedStatement),
   getUnverifiedStatements: s(getUnverifiedStatements),
@@ -890,5 +924,6 @@ export default {
   getVotes: s(getVotes),
   updateNode: s(updateNode),
   statementExists: s(statementExists),
-  getDomainOwnershipBeliefs: s(getDomainOwnershipBeliefs)
+  getDomainOwnershipBeliefs: s(getDomainOwnershipBeliefs),
+  matchDomain: s(matchDomain)
 }

@@ -13,12 +13,14 @@ import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import Chip from '@mui/material/Chip';
 
+import Autocomplete from '@mui/material/Autocomplete';
+
 import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
 import {VoteForm} from './VoteForm.js';
 
-import { submitStatement, checkDomainVerification } from '../api.js'
+import { submitStatement, checkDomainVerification, getDomainSuggestions } from '../api.js'
 import { digest } from '../utils/hash.js';
 
 import { parseStatement, forbiddenStrings, buildStatement } from '../constants/statementFormats.js'
@@ -37,6 +39,15 @@ const CreateStatement = props => {
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
     const [tagInput, setTagInput] = React.useState("")
+
+    const [options, setOptions] = React.useState([]);
+    const [inputValue, setInputValue] = React.useState('');
+
+    React.useEffect(()=>{
+        getDomainSuggestions(domain, res  => {
+            setOptions(res ? (res.result || []) : [])
+        })
+    },[domain])
 
     function tagHandleKeyDown(event) {
         if (event.key === "Enter") {
@@ -170,6 +181,18 @@ const CreateStatement = props => {
                 />
                 </div>
             )}
+            <Autocomplete
+                freeSolo
+                disableClearable
+                id="asynchronous-demo"
+                sx={{ width: 300 }}
+                open={true}
+                isOptionEqualToValue={(option, value) => option.domain === value.domain}
+                getOptionLabel={(option) => option ? option.domain : ''}
+                options={options}
+                onInputChange={(event, newInputValue) => setDomain(newInputValue) && setInputValue(newInputValue)}
+                renderInput={(params) => <TextField {...params} label="freeSolo" />}
+                />
             <TextField
                 id="publishing domain"
                 variant="outlined"
