@@ -31,6 +31,7 @@ const CreateStatement = props => {
     const [statement, setStatement] = React.useState("");
     const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
+    const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
     const [viaAPI, setViaAPI] = React.useState("");
@@ -40,14 +41,14 @@ const CreateStatement = props => {
     const [isError, setisError] = React.useState(false);
     const [tagInput, setTagInput] = React.useState("")
 
-    const [options, setOptions] = React.useState([]);
-    const [inputValue, setInputValue] = React.useState('');
+    const [domainOptions, setDomainOptions] = React.useState([]);
+    const [domainInputValue, setDomainInputValue] = React.useState('');
 
     React.useEffect(()=>{
-        getDomainSuggestions(domain, res  => {
-            setOptions(res ? (res.result || []) : [])
+        getDomainSuggestions(domainInputValue, res  => {
+            setDomainOptions(res ? (res.result || []) : [])
         })
-    },[domain])
+    },[domainInputValue])
 
     function tagHandleKeyDown(event) {
         if (event.key === "Enter") {
@@ -177,7 +178,7 @@ const CreateStatement = props => {
                     onBlur={tagOnBlur}
                     onKeyDown={tagHandleKeyDown}
                     value={tagInput}
-                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                    sx={{marginTop: "24px", marginBottom: "24px", width: "50vw", maxWidth: "500px"}}
                 />
                 </div>
             )}
@@ -186,26 +187,26 @@ const CreateStatement = props => {
                 disableClearable
                 id="asynchronous-demo"
                 sx={{ width: 300 }}
-                open={true}
-                isOptionEqualToValue={(option, value) => option.domain === value.domain}
-                getOptionLabel={(option) => option ? option.domain : ''}
-                options={options}
-                onInputChange={(event, newInputValue) => setDomain(newInputValue) && setInputValue(newInputValue)}
-                renderInput={(params) => <TextField {...params} label="freeSolo" />}
+                isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
+                getOptionLabel={(option) => option ? option.domain || '' : ''}
+                options={domainOptions}
+                onChange={(event, newInputValue) => {
+                    setDomainIdendity(newInputValue)
+                    setDomain(newInputValue.domain)
+                    setAuthor(newInputValue.orgnaization)
+                }}
+                onInputChange={(event, newValue) => {
+                    setDomainOptions([newValue, ...domainOptions]);
+                    setDomainInputValue(newValue)
+                }}
+                renderInput={(params) => <TextField {...params} label="domain" />}
                 />
-            <TextField
-                id="publishing domain"
-                variant="outlined"
-                placeholder='google.com'
-                label="The domain which will be used for publishing the statement"
-                onChange={e => { setDomain(e.target.value) }}
-                margin="normal"
-            />
             <TextField
                 id="author"
                 variant="outlined"
                 placeholder='Example Inc.'
                 label="Author of the content"
+                value={author}
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
             />
