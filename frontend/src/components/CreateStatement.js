@@ -196,7 +196,6 @@ const CreateStatement = props => {
                     setAuthor(newInputValue.orgnaization)
                 }}
                 onInputChange={(event, newValue) => {
-                    setDomainOptions([newValue, ...domainOptions]);
                     setDomainInputValue(newValue)
                 }}
                 renderInput={(params) => <TextField {...params} label="domain" />}
