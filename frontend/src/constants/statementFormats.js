@@ -77,7 +77,7 @@ Content:
 	Description: Based on doing business with the following organisation we give the following rating.
 	Organisation name: AMBOSS GmbH
 	Organisation domain: amboss.com
-	Our rating (out of 5 stars): 5
+	Our rating: 5/5 Stars
 	Comment:
 `
 }
@@ -249,6 +249,36 @@ export const parseDispute = (s) => {
 	const m = s.match(voteRegex)
 	return m ? {
 		hash_b64: m[1]
+	} : {}
+}
+
+export const buildRating = ({organisation, domain, rating, comment}) => {
+	const content = "\n" +
+	"\t" + "Type: dispute statement" + "\n" +
+	"\t" + "Description: Based on doing business with the following organisation we give the following rating.\n" +
+	"\t" + "Organisation name: " + organisation + "\n" +
+	"\t" + "Organisation domain: " + domain + "\n" +
+	"\t" + "Our rating: " + rating + "\n" +
+	"\t" + "Comment: " + comment + "\n" +
+	""
+	return content
+}
+export const parseRating = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\n\tType: dispute statement\n/.source
+	+ /\tDescription: Based on doing business with the following organisation we give the following rating.\n/.source
+	+ /\tOrganisation name: (?<organisation>[^\n]+?)\n/.source
+	+ /\tOrganisation domain: (?<domain>[^\n]+?)\n/.source
+	+ /\tOur rating: (?<rating>[^\n]+?)\n/.source
+	+ /\tComment: (?<comment>[^\n]+?)\n/.source
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		organisation: m[1],
+		domain: m[2],
+		rating: m[3],
+		comment: m[4]
 	} : {}
 }
 

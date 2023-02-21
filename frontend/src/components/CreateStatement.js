@@ -18,6 +18,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
+import RatingForm from './RatingForm.js';
 import GenerateStatement from './GenerateStatement.js'
 import {VoteForm} from './VoteForm.js';
 
@@ -149,6 +150,7 @@ const CreateStatement = props => {
                     >
                         <MenuItem value={"statement"}>Statement</MenuItem>
                         <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
+                        <MenuItem value={"rating"}>Rating</MenuItem>
                         <MenuItem value={"poll"}>Poll</MenuItem>
                         <MenuItem value={"vote"}>Vote</MenuItem>
                         <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
@@ -214,6 +216,9 @@ const CreateStatement = props => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {type == "poll" &&(<PollForm domain={domain} 
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
+            {type == "rating" &&(<RatingForm domain={domain} 
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
             {type == "vote" &&(<VoteForm domain={domain} poll={props.poll}
