@@ -12,7 +12,8 @@
             "program": "${workspaceFolder}/backend/server.js",
             "restart": true,
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "env": {"API_KEY":"XXX", "DOMAIN":"localhost"}
         },{
             "name": "frontend",
             "type": "node",

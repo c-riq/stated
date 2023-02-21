@@ -18,6 +18,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
+import GenerateStatement from './GenerateStatement.js'
 import {VoteForm} from './VoteForm.js';
 
 import { submitStatement, checkDomainVerification, getDomainSuggestions } from '../api.js'
@@ -102,7 +103,7 @@ const CreateStatement = props => {
 
     const submitStatementAPI = () => {
         submitStatement({ statement, hash_b64: statementHash, ...(apiKey ? {api_key: apiKey} : {}) },
-        async (res) => {
+        (res) => {
             setAlertMessage("Statement posted!")
             setisError(false)
             setStatementHash("")
@@ -117,7 +118,7 @@ const CreateStatement = props => {
     const generateHash = ({viaAPI}) => {
         setViaAPI(viaAPI)
         if(type == "statement"){
-            const statement = buildStatement({domain, author, time: props.serverTime, tags, content})
+            const statement = buildStatement({domain: domainInputValue, author, time: props.serverTime, tags, content})
             const parsedResult = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
                 setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
@@ -186,7 +187,6 @@ const CreateStatement = props => {
                 freeSolo
                 disableClearable
                 id="asynchronous-demo"
-                sx={{ width: 300 }}
                 isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
@@ -197,6 +197,7 @@ const CreateStatement = props => {
                 }}
                 onInputChange={(event, newValue) => {
                     setDomainInputValue(newValue)
+                    setDomain(newValue)
                 }}
                 renderInput={(params) => <TextField {...params} label="domain" />}
                 />
@@ -222,19 +223,7 @@ const CreateStatement = props => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {type == "statement" && (
-                <React.Fragment>
-                <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-                <div style={{display: "flex", flexDirection:"row"}}>
-                    <Button variant="contained" onClick={() => generateHash({viaAPI: false})} margin="normal"
-                        sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px"}}>
-                        Authenticate via DNS
-                    </Button>
-                    <Button variant="contained" onClick={() => generateHash({viaAPI: true})} margin="normal"
-                        sx={{marginTop: "24px", flexGrow: 1}}>
-                        Publish as {window.location.hostname}
-                    </Button>
-                </div>
-                </React.Fragment>
+                <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
             )}
             {statement && (
                 <div>

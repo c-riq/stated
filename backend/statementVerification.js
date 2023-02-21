@@ -298,11 +298,14 @@ export const createDerivedEntity =
                 console.log(dbResult.error)
                 console.trace()
                 resolve(dbResult)
+                return
             }
         } catch (error) {
             console.log(error)
             console.trace()
             resolve({error})
+            return
         }
+        resolve(dbResult)
     })
 )

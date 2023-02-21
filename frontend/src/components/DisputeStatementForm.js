@@ -6,12 +6,14 @@ import Button from '@mui/material/Button';
 
 import { digest } from '../utils/hash';
 import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forbiddenStrings } from '../constants/statementFormats.js'
+import GenerateStatement from './GenerateStatement';
 
 
 const DisputeStatementForm = props => {
     const [disputedStatementHash, setDisputedStatementHash] = React.useState("");
 
-    const generateHash = () => {
+    const generateHash = ({viaAPI}) => {
+            props.setViaAPI(viaAPI)
             const content = buildDisputeContent({hash_b64: disputedStatementHash})
             const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
 
@@ -42,11 +44,7 @@ const DisputeStatementForm = props => {
             margin="normal"
             sx={{marginBottom: "24px"}}
         />
-        <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-        <Button variant="contained" onClick={() => generateHash()} margin="normal"
-            sx={{marginTop: "24px"}}>
-                Generate hash
-        </Button>
+        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

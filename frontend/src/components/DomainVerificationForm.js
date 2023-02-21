@@ -6,7 +6,6 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
 import Autocomplete from '@mui/material/Autocomplete';
-import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
 import {countries} from '../constants/country_names_iso3166'
@@ -14,6 +13,7 @@ import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 import { parseStatement, buildStatement, forbiddenStrings, 
     buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
+import GenerateStatement from './GenerateStatement';
 
 
 const DomainVerificationForm = props => {
@@ -137,19 +137,7 @@ const DomainVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
-        <React.Fragment>
-                <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-                <div style={{display: "flex", flexDirection:"row"}}>
-                    <Button variant="contained" onClick={() => generateHash({viaAPI: false})} margin="normal"
-                        sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px"}}>
-                        Authenticate via DNS
-                    </Button>
-                    <Button variant="contained" onClick={() => generateHash({viaAPI: true})} margin="normal"
-                        sx={{marginTop: "24px", flexGrow: 1}}>
-                        Publish as {window.location.hostname}
-                    </Button>
-                </div>
-        </React.Fragment>
+        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
 }
