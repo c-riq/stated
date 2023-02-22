@@ -23,7 +23,7 @@ export const RatingForm = props => {
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         const content = buildRating({organisation, domain, rating, comment})
-        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             const parsedRating = parseRating(parsedStatement.content)

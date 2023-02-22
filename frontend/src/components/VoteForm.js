@@ -30,7 +30,7 @@ export const VoteForm = props => {
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         const content = buildVoteContent({hash_b64: props.poll.hash_b64, poll: pollParsed.poll , vote})
-        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             const parsedVote = parseVote(parsedStatement.content)

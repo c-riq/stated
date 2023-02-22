@@ -39,7 +39,7 @@ const DomainVerificationForm = props => {
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, legalEntity: legalForm})
-        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {

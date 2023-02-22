@@ -15,7 +15,7 @@ const DisputeStatementForm = props => {
     const generateHash = ({viaAPI}) => {
             props.setViaAPI(viaAPI)
             const content = buildDisputeContent({hash_b64: disputedStatementHash})
-            const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+            const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {

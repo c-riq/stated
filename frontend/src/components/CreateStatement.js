@@ -212,19 +212,19 @@ const CreateStatement = props => {
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
             />
-            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} 
+            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} f
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
-            {type == "poll" &&(<PollForm domain={domain} 
+            {type == "poll" &&(<PollForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
-            {type == "rating" &&(<RatingForm domain={domain} 
+            {type == "rating" &&(<RatingForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
-            {type == "vote" &&(<VoteForm domain={domain} poll={props.poll}
+            {type == "vote" &&(<VoteForm domain={domain} poll={props.poll} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
-            {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} 
+            {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {type == "statement" && (
