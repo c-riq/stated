@@ -1,10 +1,12 @@
 import https from 'https'
 
 const ownDomain = process.env.DOMAIN
+const log = false
 
 export const get = ({hostname, path}) => new Promise((resolve, reject) => {
+    log && console.log('get request', hostname, path)
     try {
-        if(hostname === 'stated.' + ownDomain){
+        if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
             resolve({error: 'skip request to own domain: ' + hostname})
             return
         }
@@ -41,6 +43,7 @@ export const get = ({hostname, path}) => new Promise((resolve, reject) => {
 })
 
 export const post = ({hostname, path, data}) => new Promise((resolve, reject) => {
+    log && console.log('post request', hostname, path, data)
     if(hostname.match(ownDomain)){
         resolve({error: 'skip request to own domain: ' + hostname})
         return

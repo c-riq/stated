@@ -1,7 +1,5 @@
 import React from 'react'
 
-import Button from '@mui/material/Button';
-
 import { digest } from '../utils/hash';
 
 import Radio from '@mui/material/Radio';
@@ -12,6 +10,7 @@ import FormLabel from '@mui/material/FormLabel';
 import { b64ToHex } from '../utils/hash';
 
 import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../constants/statementFormats.js'
+import GenerateStatement from './GenerateStatement';
 
 
 
@@ -28,9 +27,10 @@ export const VoteForm = props => {
     console.log(pollParsed)
     const options = [pollParsed.option1, pollParsed.option2, pollParsed.option3, pollParsed.option4, pollParsed.option5].filter(o=>o)
 
-    const generateHash = () => {
+    const generateHash = ({viaAPI}) => {
+        props.setViaAPI(viaAPI)
         const content = buildVoteContent({hash_b64: props.poll.hash_b64, poll: pollParsed.poll , vote})
-        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             const parsedVote = parseVote(parsedStatement.content)
@@ -57,11 +57,7 @@ export const VoteForm = props => {
             {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
         ))}
         </RadioGroup>
-        <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-        <Button variant="contained" onClick={() => generateHash()} margin="normal"
-            sx={{marginTop: "24px"}}>
-                Generate hash
-        </Button>
+        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

@@ -41,6 +41,15 @@ export const getStatements = (searchQuery, cb) => {
         cb(json)
     }, e => {return})
 }
+export const getDomainSuggestions = (searchQuery, cb) => {
+    if (searchQuery.length < 1) {
+        cb([])
+        return
+    }
+    req('GET',(searchQuery ? 'match_domain?domain_substring=' + searchQuery : 'match_domain'), {}, (json) => {
+        cb(json)
+    }, e => {return})
+}
 export const getJoiningStatements = (hash_b64, cb) => {
     req('POST', 'joining_statements', {hash_b64}, (json) => {
         if ("statements" in json) {

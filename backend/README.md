@@ -4,7 +4,7 @@
 ```sh
 docker-compose -f postgres/docker-compose.yml up
 # to reapply init.sql: docker-compose -f postgres/docker-compose.yml up --build
-nodemon server.js
+ API_KEY=XXX DOMAIN=localhost nodemon server.js
 ```
 ## production
 
@@ -37,7 +37,7 @@ sudo npm install -g nodemon
 Copy files using the script in scp.sh with your server details. <br />
 Use tmux (or something similar) for runinng to the node server
 ```
-sudo NODE_ENV=production DOMAIN=rixdata.net nodemon --ignore 'log/*' server.js 
+sudo NODE_ENV=production DOMAIN=rixdata.net API_KEY=XXX nodemon --ignore 'log/*' server.js 
 # sudo NODE_ENV=production DOMAIN=gritapp.info nodemon --ignore 'log/*' server.js
 ```
 
@@ -50,7 +50,7 @@ sudo certbot certonly --standalone
 
 quit node server
 <br /> <br />
-sudo certbot renew <br />
+sudo certbot renew --standalone<br />
 <br />
 Stop NginX or Apache if they were used for the cert renewal</br>
 sudo nginx stop <br />

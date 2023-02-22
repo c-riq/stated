@@ -6,13 +6,14 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
 import Autocomplete from '@mui/material/Autocomplete';
-import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
-import { parseStatement, buildStatement, forbiddenStrings, buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
+import { parseStatement, buildStatement, forbiddenStrings, 
+    buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
+import GenerateStatement from './GenerateStatement';
 
 
 const DomainVerificationForm = props => {
@@ -35,9 +36,10 @@ const DomainVerificationForm = props => {
         const hashHex = Buffer.from(hashArray).toString('base64');
         return hashHex
     }
-    const generateHash = () => {
+    const generateHash = ({viaAPI}) => {
+        props.setViaAPI(viaAPI)
         const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, legalEntity: legalForm})
-        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
@@ -117,7 +119,7 @@ const DomainVerificationForm = props => {
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
-            renderInput={(params) => <TextField {...params} label="Legal Form" />}
+            renderInput={(params) => <TextField {...params} label="Legal entity" />}
             renderOption={(props, option) => (<Box {...props} id={option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />
@@ -135,11 +137,7 @@ const DomainVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
-        <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
-        <Button variant="contained" onClick={() => generateHash()} margin="normal"
-            sx={{marginTop: "24px"}}>
-                Generate hash
-        </Button>
+        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

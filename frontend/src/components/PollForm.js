@@ -11,12 +11,12 @@ import moment from 'moment'
 
 
 import Autocomplete from '@mui/material/Autocomplete';
-import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
+import GenerateStatement from './GenerateStatement.js'
 
 import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../constants/statementFormats.js'
 
@@ -44,9 +44,10 @@ const PollForm = props => {
         const hashHex = Buffer.from(hashArray).toString('base64');
         return hashHex
     }
-    const generateHash = () => {
+    const generateHash = ({viaAPI}) => {
+        props.setViaAPI(viaAPI)
         const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, nodes, votingDeadline, poll, options})
-        const statement = buildStatement({domain: props.domain, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
             console.log(statement)
 
             const parsedStatement = parseStatement(statement)
@@ -178,12 +179,7 @@ const PollForm = props => {
             margin="normal"
             sx={{marginTop: '24px'}}
         />
-
-        <div style={{textAlign: "left", marginTop: "16px"}}>Current time: {props.serverTime}</div>
-        <Button variant="contained" onClick={() => generateHash()} margin="normal"
-            sx={{marginTop: "24px"}}>
-                Generate hash
-        </Button>
+        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
 }
