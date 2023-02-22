@@ -37,7 +37,7 @@ sudo npm install -g nodemon
 Copy files using the script in scp.sh with your server details. <br />
 Use tmux (or something similar) for runinng to the node server
 ```
-sudo NODE_ENV=production DOMAIN=rixdata.net nodemon --ignore 'log/*' server.js 
+sudo NODE_ENV=production DOMAIN=rixdata.net API_KEY=XXX nodemon --ignore 'log/*' server.js 
 # sudo NODE_ENV=production DOMAIN=gritapp.info nodemon --ignore 'log/*' server.js
 ```
 

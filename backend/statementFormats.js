@@ -93,7 +93,7 @@ export const statementTypes = {
 export const buildStatement = ({domain, author, time, tags, content}) => {
 	tags = tags || []
 	const statement = "Domain: " + domain + "\n" +
-			"Author: " + author + "\n" +
+			"Author: " + (author || "") + "\n" +
 			"Time: " + time + "\n" +
             (tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
             "Content: " +  content;

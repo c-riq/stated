@@ -61,7 +61,7 @@ api.get("/statements", async (req, res, next) => {
     if(dbResult?.error){
         next(dbResult.error)
     } else {
-        let statements = dbResult.rows.map(({id, statement, hash_b64}) => {id, statement, hash_b64})
+        let statements = dbResult.rows.map(({id, statement, hash_b64}) => ({id, statement, hash_b64}))
         res.end(JSON.stringify({statements, time: new Date().toUTCString()}))       
     }
 })
