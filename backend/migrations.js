@@ -6,7 +6,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         DROP TYPE IF EXISTS statement_type CASCADE;
         CREATE TYPE statement_type AS ENUM 
             ('statement', 'dispute statement', 'response',
-            'domain verification', 'poll', 'vote', 'trustworthiness rating');
+            'domain verification', 'poll', 'vote', 'rating');
         DROP TYPE IF EXISTS verification_method CASCADE;
         CREATE TYPE verification_method AS ENUM 
             ('api', 'dns');
@@ -129,6 +129,15 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             participants_country VARCHAR(500),
             participants_city VARCHAR(500),
             deadline timestamp NOT NULL
+        );
+        DROP TABLE IF EXISTS ratings;
+        CREATE TABLE IF NOT EXISTS ratings (
+            id SERIAL PRIMARY KEY,
+            statement_hash VARCHAR(500) UNIQUE NOT NULL,
+            organisation VARCHAR(500) NOT NULL,
+            domain VARCHAR(500) NOT NULL,
+            rating int NOT NULL,
+            comment VARCHAR(500) NOT NULL
         );
         DROP TABLE IF EXISTS disputes;
         CREATE TABLE IF NOT EXISTS disputes (

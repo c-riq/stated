@@ -7,7 +7,7 @@ normalStatementWithTags: `Domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Tags: hashtag1, hashtag2
-Content: hello world
+Content: Hello world
 `,
 domainVerification: `Domain: rixdata.net
 Author: Example Inc.
@@ -26,7 +26,7 @@ response: `Domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
-	Type: response
+	Type: Response
 	To: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 	Response: No, we don't want that.
 `,
@@ -34,15 +34,15 @@ dispute: `Domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
-	Type: dispute statement
-	Description: We are convinced that the referenced statement is false.
+	Type: Dispute statement
+	Description: We are convinced that the referenced statement is not authentic.
 	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 `,
 poll:`Domain: rixdata.net
 Author: Example Inc.
 Time: Thu, 17 Nov 2022 13:38:20 GMT
 Content:
-	Type: poll
+	Type: Poll
 	Poll type: majority vote wins
 	Country scope: United Kingdom of Great Britain and Northern Ireland (the)
 	Legal entity scope: limited liability corporation
@@ -56,7 +56,7 @@ voteReferencingOption: `Domain: rixdata.net
 Author: Example Inc.
 Time: Thu, 17 Nov 2022 20:13:46 GMT
 Content:
-	Type: vote
+	Type: Vote
 	Poll id: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
 	Poll: Should the UK join the EU
 	Option: Yes
@@ -65,7 +65,7 @@ freeTextVote: `Domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
-	Type: vote
+	Type: Vote
 	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 	Option: keep the money
 `,
@@ -73,8 +73,7 @@ rating:`Domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Content:
-	Type: trustworthiness rating
-	Description: Based on doing business with the following organisation we give the following rating.
+	Type: Rating
 	Organisation name: AMBOSS GmbH
 	Organisation domain: amboss.com
 	Our rating: 5/5 Stars
@@ -89,7 +88,7 @@ export const statementTypes = {
     vote: 'vote',
     response: 'response',
     dispute: 'dispute statement',
-    trustworthinessRating: 'trustworthiness rating'
+    rating: 'rating'
 }
 export const buildStatement = ({domain, author, time, tags, content}) => {
 	tags = tags || []
@@ -115,13 +114,13 @@ export const parseStatement = (s) => {
 		time: m[3],
 		tags: m[4],
 		content: m[5] || m[7],
-		type: m[6],
+		type: m[6] ? m[6].toLowerCase() : undefined,
 	} : {}
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
 	const content = "\n" +
-	"\t" + "Type: poll" + "\n" +
-	"\t" + "Poll type: majority vote wins" + "\n" +
+	"\t" + "Type: Poll" + "\n" +
+	"\t" + "Poll type: Majority vote wins" + "\n" +
 	(country ? "\t" + "Country scope: " + country + "\n" : "") +
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
@@ -139,7 +138,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, nodes
 }
 export const parsePoll = (s) => {
 	const pollRegex= new RegExp(''
-	+ /^\n\tType: poll\n/.source
+	+ /^\n\tType: Poll\n/.source
 	+ /\tPoll type: (?<pollType>[^\n]+?)\n/.source
 	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
@@ -174,7 +173,7 @@ export const parsePoll = (s) => {
 
 export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain}) => {
 	const content = "\n" +
-	"\t" + "Type: domain verification" + "\n" +
+	"\t" + "Type: Domain verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
 	"\t" + "Organisation name: " + verifyName + "\n" +
 	"\t" + "Headquarter country: " + country + "\n" +
@@ -187,7 +186,7 @@ export const buildDomainVerificationContent = ({verifyName, country, city, provi
 }
 export const parseDomainVerification = (s) => {
 	const domainVerificationRegex= new RegExp(''
-	+ /^\n\tType: domain verification\n/.source
+	+ /^\n\tType: Domain verification\n/.source
 	+ /\tDescription: We verified the following information about an organisation.\n/.source
 	+ /\tOrganisation name: (?<name>[^\n]+?)\n/.source
 	+ /\tHeadquarter country: (?<country>[^\n]+?)\n/.source
@@ -209,7 +208,7 @@ export const parseDomainVerification = (s) => {
 }
 export const buildVoteContent = ({hash_b64, poll, vote}) => {
 	const content = "\n" +
-	"\t" + "Type: vote" + "\n" +
+	"\t" + "Type: Vote" + "\n" +
 	"\t" + "Poll id: " + hash_b64 + "\n" +
 	"\t" + "Poll: " + poll + "\n" +
 	"\t" + "Option: " + vote + "\n" +
@@ -218,7 +217,7 @@ export const buildVoteContent = ({hash_b64, poll, vote}) => {
 }
 export const parseVote = (s) => {
 	const voteRegex= new RegExp(''
-	+ /^\n\tType: vote\n/.source
+	+ /^\n\tType: Vote\n/.source
 	+ /\tPoll id: (?<pollHash>[^\n]+?)\n/.source
 	+ /\tPoll: (?<poll>[^\n]+?)\n/.source
 	+ /\tOption: (?<option>[^\n]+?)\n/.source
@@ -233,16 +232,16 @@ export const parseVote = (s) => {
 }
 export const buildDisputeContent = ({hash_b64}) => {
 	const content = "\n" +
-	"\t" + "Type: dispute statement" + "\n" +
-	"\tDescription: We are convinced that the referenced statement is false.\n" +
+	"\t" + "Type: Dispute statement" + "\n" +
+	"\t" + "Description: We are convinced that the referenced statement is not authentic.\n" +
 	"\t" + "Hash of referenced statement: " + hash_b64 + "\n" +
 	""
 	return content
 }
 export const parseDispute = (s) => {
 	const voteRegex= new RegExp(''
-	+ /^\n\tType: dispute statement\n/.source
-	+ /\tDescription: We are convinced that the referenced statement is false.\n/.source
+	+ /^\n\tType: Dispute statement\n/.source
+	+ /\tDescription: We are convinced that the referenced statement is not authentic.\n/.source
 	+ /\tHash of referenced statement: (?<hash_b64>[^\n]+?)\n/.source
 	+ /$/.source
 	);
@@ -254,8 +253,7 @@ export const parseDispute = (s) => {
 
 export const buildRating = ({organisation, domain, rating, comment}) => {
 	const content = "\n" +
-	"\t" + "Type: dispute statement" + "\n" +
-	"\t" + "Description: Based on doing business with the following organisation we give the following rating.\n" +
+	"\t" + "Type: Rating" + "\n" +
 	"\t" + "Organisation name: " + organisation + "\n" +
 	"\t" + "Organisation domain: " + domain + "\n" +
 	"\t" + "Our rating: " + rating + "\n" +
@@ -265,12 +263,11 @@ export const buildRating = ({organisation, domain, rating, comment}) => {
 }
 export const parseRating = (s) => {
 	const voteRegex= new RegExp(''
-	+ /^\n\tType: dispute statement\n/.source
-	+ /\tDescription: Based on doing business with the following organisation we give the following rating.\n/.source
-	+ /\tOrganisation name: (?<organisation>[^\n]+?)\n/.source
-	+ /\tOrganisation domain: (?<domain>[^\n]+?)\n/.source
-	+ /\tOur rating: (?<rating>[^\n]+?)\n/.source
-	+ /\tComment: (?<comment>[^\n]+?)\n/.source
+	+ /^\n\tType: Rating\n/.source
+	+ /\tOrganisation name: (?<organisation>[^\n]*?)\n/.source
+	+ /\tOrganisation domain: (?<domain>[^\n]*?)\n/.source
+	+ /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
+	+ /\tComment: (?<comment>[^\n]*?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(voteRegex)

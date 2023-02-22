@@ -2,7 +2,7 @@
 import db from './db.js'
 import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification.js'
 
-const log = false
+const log = true
 
 const verificationRetryScheduleHours = [0, 0.1, 0.2, 1, 10, 24, 336]
 

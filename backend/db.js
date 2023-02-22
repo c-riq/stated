@@ -85,7 +85,7 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                     CAST($1 AS INTEGER) as input1,
                     $2 as input2
                 FROM statements 
-                WHERE (type = 'statement' OR type = 'poll')
+                WHERE (type = 'statement' OR type = 'poll' OR type = 'rating')
                 ${minId ? 'AND id > $1 ' : ''}
                 ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
                 GROUP BY 1
@@ -162,7 +162,7 @@ const getStatements = ({ minId, onlyStatementsWithMissingEntities }) => (new Pro
                 FROM statements 
                 WHERE id > $1 ${onlyStatementsWithMissingEntities ? 
                   ' AND derived_entity_created IS FALSE ' + 
-                  ' AND derived_entity_creation_retry_count < 6 ' + 
+                  ' AND derived_entity_creation_retry_count < 7 ' + 
                   ' AND type <> \'statement\' '
                   : ''}
             `,[minId || 0]
@@ -395,6 +395,31 @@ const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) =>
               ($1, $2, $3, $4, $5)
             RETURNING *`,
       [statement_hash, poll_hash, option, domain, qualified], (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          resolve({error})
+        } else {
+          resolve(results)
+        }
+      })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+const createRating = ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve, reject) => {
+  try {
+    log && console.log('create rating', [statement_hash, organisation, domain, rating, comment])
+    pool.query(`
+            INSERT INTO ratings 
+              (statement_hash, organisation, domain, rating, comment) 
+            VALUES 
+              ($1, $2, $3, $4, $5)
+            RETURNING *`,
+      [statement_hash, organisation || '', domain || '', rating, comment || ''], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -913,6 +938,7 @@ export default {
   createPoll: s(createPoll),
   getPoll: s(getPoll),
   createVote: s(createVote),
+  createRating: s(createRating),
   getVerifications: s(getVerificationsForDomain),
   getVerificationsForStatement: s(getVerificationsForStatement),
   getAllVerifications: s(getAllVerifications),

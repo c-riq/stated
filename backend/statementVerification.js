@@ -5,6 +5,7 @@ import db from './db.js'
 import * as hashUtils from './hash.js'
 import {createVerification} from './domainVerification.js'
 import {createVote, createPoll} from './poll.js'
+import {createRating} from './rating.js'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats.js'
 
@@ -51,7 +52,7 @@ const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
     }
     let result = {content, domain, tags, type, content_hash_b64: hashUtils.sha256Hash(content), proclaimed_publication_time}
     if (type) {
-        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote ].includes(type)) {
+        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote, statementTypes.rating ].includes(type)) {
             return result
         } else {
             return {error: 'invalid type: ' + type}
@@ -288,6 +289,9 @@ export const createDerivedEntity =
             }
             if (type === statementTypes.vote) {
                 dbResult = await createVote({statement_hash, domain, content, proclaimed_publication_time})
+            }
+            if (type === statementTypes.rating) {
+                dbResult = await createRating({statement_hash, domain, content})
             }
             if((!dbResult.error) && dbResult.entityCreated === true){
                 dbResult = await db.updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
