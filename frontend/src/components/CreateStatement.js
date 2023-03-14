@@ -11,7 +11,6 @@ import Portal from '@mui/material/Portal';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
-import Chip from '@mui/material/Chip';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
@@ -19,19 +18,16 @@ import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
 import RatingForm from './RatingForm.js';
-import GenerateStatement from './GenerateStatement.js'
 import {VoteForm} from './VoteForm.js';
 
 import { submitStatement, checkDomainVerification, getDomainSuggestions } from '../api.js'
-import { digest } from '../utils/hash.js';
 
-import { parseStatement, forbiddenStrings, buildStatement } from '../constants/statementFormats.js'
+import StatementForm from './StatementForm.js';
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
     const [type, setType] = React.useState(props.poll ? "vote" : "statement");
     const [statement, setStatement] = React.useState("");
-    const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
@@ -41,7 +37,6 @@ const CreateStatement = props => {
     const [statementHash, setStatementHash] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
-    const [tagInput, setTagInput] = React.useState("")
 
     const [domainOptions, setDomainOptions] = React.useState([]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
@@ -51,41 +46,6 @@ const CreateStatement = props => {
             setDomainOptions(res ? (res.result || []) : [])
         })
     },[domainInputValue])
-
-    function tagHandleKeyDown(event) {
-        if (event.key === "Enter") {
-            const input = event.target.value.trim().replace(',','')
-            if (!input.length){return}
-            if (tags.indexOf(input) != -1) {
-                setTagInput("")
-            } else {
-                setTags([...tags, input])
-                setTagInput("")
-            }
-        }
-        if (tags.length && !tagInput.length && event.key === "Backspace") {
-        setTags(tags.slice(0, tags.length - 1))
-        }
-    }
-    const tagOnBlur = () => {
-        if (!tagInput){return}
-        const input = tagInput.trim().replace(',','')
-        if (!input.length){return}
-        if (tags.indexOf(input) != -1) {
-            setTagInput("")
-        } else {
-            setTags([...tags, input])
-            setTagInput("")
-        }
-    }
-    const handleDelete = item => () => {
-        const updatedTags = [...tags]
-        updatedTags.splice(updatedTags.indexOf(item), 1)
-        setTags(updatedTags)
-    }
-    function tagHandleInputChange(event) {
-        setTagInput(event.target.value)
-    }
 
 
     const checkDomainVerificationAPI = () => {
@@ -116,22 +76,6 @@ const CreateStatement = props => {
         })
     }    
 
-    const generateHash = ({viaAPI}) => {
-        setViaAPI(viaAPI)
-        if(type == "statement"){
-            const statement = buildStatement({domain: domainInputValue, author, time: props.serverTime, tags, content})
-            const parsedResult = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
-                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
-                setisError(true)
-                return
-            }
-
-            setStatement(statement)
-            digest(statement).then((value) => {setStatementHash(value)})
-        }
-    }
-
     return (
         <div style={{ padding: "7%", backgroundColor: "white", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center' }}>
@@ -155,40 +99,10 @@ const CreateStatement = props => {
                         <MenuItem value={"vote"}>Vote</MenuItem>
                         <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
-            {type == "statement" &&(
-                <div>
-                <TextField
-                    id="content"
-                    variant="outlined"
-                    multiline
-                    rows={4}
-                    placeholder='hello world'
-                    label="Statement"
-                    onChange={e => { setContent(e.target.value) }}
-                    margin="normal"
-                    value={content}
-                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
-                />
-                <TextField
-                    id="tags"
-                    variant="outlined"
-                    placeholder=''
-                    label="Tags (optional)"
-
-                    InputProps={{ 
-                        startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
-                    onChange={tagHandleInputChange}
-                    onBlur={tagOnBlur}
-                    onKeyDown={tagHandleKeyDown}
-                    value={tagInput}
-                    sx={{marginTop: "24px", marginBottom: "24px", width: "50vw", maxWidth: "500px"}}
-                />
-                </div>
-            )}
             <Autocomplete
                 freeSolo
                 disableClearable
-                id="asynchronous-demo"
+                id="domain"
                 isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
@@ -201,7 +115,7 @@ const CreateStatement = props => {
                     setDomainInputValue(newValue)
                     setDomain(newValue)
                 }}
-                renderInput={(params) => <TextField {...params} label="domain" />}
+                renderInput={(params) => <TextField {...params} label="domain used for publishing" placeholder='google.com' />}
                 />
             <TextField
                 id="author"
@@ -227,9 +141,9 @@ const CreateStatement = props => {
             {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
-            {type == "statement" && (
-                <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
-            )}
+            {type == "statement" &&(<StatementForm domain={domain} author={author} statementToJoin={props.statementToJoin}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
             {statement && (
                 <div>
                     <div>Full statement:</div>

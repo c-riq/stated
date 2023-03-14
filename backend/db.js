@@ -19,7 +19,7 @@ const pool = new Pool({
 
 const log = false
 
-let migrationsDone = false
+let migrationsDone = true
 setInterval(
 async () => {
   if(!migrationsDone){

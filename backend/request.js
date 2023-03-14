@@ -3,7 +3,7 @@ import https from 'https'
 const ownDomain = process.env.DOMAIN
 const log = false
 
-export const get = ({hostname, path}) => new Promise((resolve, reject) => {
+export const get = ({hostname, path, cache}) => new Promise((resolve, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -17,21 +17,22 @@ export const get = ({hostname, path}) => new Promise((resolve, reject) => {
             protocol: 'https:',
             path: path,
             method: 'GET',
+            ...(cache === false ? {'agent': false /*https.Agent(1)*/} : {})
         }
         const req = https.request(options, res => {  
-            let data = ''
+            let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
                 cert = res.req.socket.getPeerCertificate()
                 ip = res.req.socket.remoteAddress
-                data += chunk
+                rawData += chunk
             })
             res.on('end', () => {
                 try {
-                    data = JSON.parse(data)
+                    data = JSON.parse(rawData)
                     resolve({data, cert, ip})
                 } catch(error) {
-                    resolve({error})
+                    resolve({error, data: rawData, cert, ip})
                 }
             })
         })
