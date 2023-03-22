@@ -44,6 +44,7 @@ const DisputeStatementForm = props => {
             margin="normal"
             sx={{marginBottom: "24px"}}
         />
+        {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )

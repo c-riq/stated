@@ -137,6 +137,7 @@ const DomainVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
+        {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )

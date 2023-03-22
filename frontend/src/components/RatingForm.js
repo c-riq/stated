@@ -81,6 +81,7 @@ export const RatingForm = props => {
                     value={comment}
                     sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
                 />
+        {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )

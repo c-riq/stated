@@ -179,6 +179,7 @@ const PollForm = props => {
             margin="normal"
             sx={{marginTop: '24px'}}
         />
+        {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )

@@ -67,39 +67,34 @@ const StatementForm = props => {
 
     return (
         <FormControl sx={{width: "100%"}}>
-   
-                <TextField
-                    id="content"
-                    variant="outlined"
-                    multiline
-                    rows={4}
-                    placeholder='hello world'
-                    label="Statement"
-                    onChange={e => { setContent(e.target.value) }}
-                    margin="normal"
-                    value={content}
-                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
-                />
-                <TextField
-                    id="tags"
-                    variant="outlined"
-                    placeholder=''
-                    label="Tags (optional)"
+            <TextField
+                id="content"
+                variant="outlined"
+                multiline
+                rows={4}
+                placeholder='hello world'
+                label="Statement"
+                onChange={e => { setContent(e.target.value) }}
+                margin="normal"
+                value={content}
+                sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+            />
+            <TextField
+                id="tags"
+                variant="outlined"
+                placeholder=''
+                label="Tags (optional)"
 
-                    InputProps={{ 
-                        startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
-                    onChange={tagHandleInputChange}
-                    onBlur={tagOnBlur}
-                    onKeyDown={tagHandleKeyDown}
-                    value={tagInput}
-                    sx={{marginTop: "24px", marginBottom: "24px", width: "50vw", maxWidth: "500px"}}
-                />
-            
-
+                InputProps={{ 
+                    startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
+                onChange={tagHandleInputChange}
+                onBlur={tagOnBlur}
+                onKeyDown={tagHandleKeyDown}
+                value={tagInput}
+                sx={{marginTop: "24px", marginBottom: "24px", width: "50vw", maxWidth: "500px"}}
+            />
+            {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
-
-
-
         </FormControl>
     )
 }

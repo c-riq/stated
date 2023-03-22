@@ -74,31 +74,10 @@ const CreateStatement = props => {
             setAlertMessage("Error: could not submit statement! " + error)
             setisError(true)
         })
-    }    
-
-    return (
-        <div style={{ padding: "7%", backgroundColor: "white", borderRadius: 8, display:'flex',
-         flexDirection:'row', justifyContent: 'center' }}>
-            <div>
-            <h3 style={{marginBottom: "50px"}}>{props.statementToJoin ? "Join Statement" : "Create Statement"}</h3>
-
-            <FormControl style={{ width: "50vw", maxWidth: "500px" }}>
-                <InputLabel id="statement-type-label">Type</InputLabel>
-                <Select
-                        labelId="statement-type-label"
-                        id="statement-type"
-                        value={type}
-                        label="Type"
-                        onChange={(e)=>setType(e.target.value)}
-                        style={{marginBottom: "16px"}}
-                    >
-                        <MenuItem value={"statement"}>Statement</MenuItem>
-                        <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
-                        <MenuItem value={"rating"}>Rating</MenuItem>
-                        <MenuItem value={"poll"}>Poll</MenuItem>
-                        <MenuItem value={"vote"}>Vote</MenuItem>
-                        <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
-                </Select>
+    }
+    
+    const authorFields = () => (
+        <div style={{backgroundColor: '#cccccc'}}>
             <Autocomplete
                 freeSolo
                 disableClearable
@@ -126,24 +105,58 @@ const CreateStatement = props => {
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
             />
-            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} f
+        </div>
+    )
+
+    return (
+        <div style={{ padding: "7%", backgroundColor: "white", borderRadius: 8, display:'flex',
+         flexDirection:'row', justifyContent: 'center' }}>
+            <div>
+            <h3 style={{marginBottom: "50px"}}>{props.statementToJoin ? "Join Statement" : "Create Statement"}</h3>
+
+            <FormControl style={{ width: "50vw", maxWidth: "500px" }}>
+                <InputLabel id="statement-type-label">Type</InputLabel>
+                <Select
+                    labelId="statement-type-label"
+                    id="statement-type"
+                    value={type}
+                    label="Type"
+                    onChange={(e)=>setType(e.target.value)}
+                    style={{marginBottom: "16px"}}
+                >
+                    <MenuItem value={"statement"}>Statement</MenuItem>
+                    <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
+                    <MenuItem value={"rating"}>Rating</MenuItem>
+                    <MenuItem value={"poll"}>Poll</MenuItem>
+                    <MenuItem value={"vote"}>Vote</MenuItem>
+                    <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
+                </Select>
+            {type == "domain_verification" &&(<DomainVerificationForm domain={domain}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</DomainVerificationForm>)}
             {type == "poll" &&(<PollForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
+                {authorFields()}</PollForm>)}
             {type == "rating" &&(<RatingForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
+                {authorFields()}</RatingForm>)}
             {type == "vote" &&(<VoteForm domain={domain} poll={props.poll} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</VoteForm>)}
             {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</DisputeStatementForm>)}
             {type == "statement" &&(<StatementForm domain={domain} author={author} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                {authorFields()}</StatementForm>)}
+
+
             {statement && (
                 <div>
                     <div>Full statement:</div>

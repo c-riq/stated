@@ -57,6 +57,7 @@ export const VoteForm = props => {
             {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
         ))}
         </RadioGroup>
+        {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
