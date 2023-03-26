@@ -11,7 +11,7 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
         }
         const {cert} = res
         const subject = cert && cert.subject 
-        resolve({subject, domain})
+        resolve({...subject, domain})
     }
     
     catch (error){

@@ -897,13 +897,14 @@ const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => 
             with regex AS ( SELECT '.*' || $1 || '.*' pattern)
             SELECT 
               host domain,
-              "subject.O" AS orgnaization,
+              "subject.O" AS organization,
               "subject.C" AS country,
               "subject.ST" AS state,
               "subject.L" AS city,
               index
             FROM ssl_certificates
               JOIN regex ON host ~ regex.pattern
+            WHERE LOWER("subject.O") NOT LIKE '%cloudflare%'
             ORDER BY index ASC LIMIT 20
             ;
             `,[domain_substring || ''], (error, results) => {

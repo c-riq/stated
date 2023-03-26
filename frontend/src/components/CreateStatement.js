@@ -20,7 +20,8 @@ import DisputeStatementForm from './DisputeStatementForm.js';
 import RatingForm from './RatingForm.js';
 import {VoteForm} from './VoteForm.js';
 
-import { submitStatement, checkDomainVerification, getDomainSuggestions } from '../api.js'
+import { submitStatement, checkDomainVerification, 
+    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo } from '../api.js'
 
 import StatementForm from './StatementForm.js';
 
@@ -29,6 +30,8 @@ const CreateStatement = props => {
     const [type, setType] = React.useState(props.poll ? "vote" : "statement");
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
+    const [OVInfo, setOVInfo] = React.useState([]);
+    const [DNSSECInfo, setDNSSECInfo] = React.useState({});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
@@ -46,6 +49,15 @@ const CreateStatement = props => {
             setDomainOptions(res ? (res.result || []) : [])
         })
     },[domainInputValue])
+
+    React.useEffect(()=>{
+        getSSLOVInfo(domain, res  => {
+            setOVInfo(res ? (res.result || []) : [])
+        })
+        getDNSSECInfo(domain, res  => {
+            setDNSSECInfo(res)
+        })
+    },[domain])
 
 
     const checkDomainVerificationAPI = () => {
@@ -77,7 +89,7 @@ const CreateStatement = props => {
     }
     
     const authorFields = () => (
-        <div style={{backgroundColor: '#cccccc'}}>
+        <React.Fragment>
             <Autocomplete
                 freeSolo
                 disableClearable
@@ -88,14 +100,34 @@ const CreateStatement = props => {
                 onChange={(event, newInputValue) => {
                     setDomainIdendity(newInputValue)
                     setDomain(newInputValue.domain)
-                    setAuthor(newInputValue.orgnaization)
+                    setAuthor(newInputValue.organization)
                 }}
                 onInputChange={(event, newValue) => {
                     setDomainInputValue(newValue)
                     setDomain(newValue)
                 }}
-                renderInput={(params) => <TextField {...params} label="domain used for publishing" placeholder='google.com' />}
+                renderInput={(params) => <TextField {...params} 
+                  label="domain used for publishing" placeholder='google.com' />}
+                style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
                 />
+                { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
+                     (  OVInfo.reduce((acc, i) => acc || i.O, false) 
+                        ?
+                        OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
+                            Verified via SSL certificate {i.domain +": "+ i.O}</Alert>))
+                        : 
+                        (<Alert severity="warning" style={{marginTop: "10px"}}>
+                            Organisation not verified via SSL certificate.</Alert>)
+                     )
+                }
+                { (DNSSECInfo && DNSSECInfo.domain === domain) &&
+                     (  DNSSECInfo.validated
+                        ? (<Alert severity="success" style={{marginTop: "10px"}}>
+                            DNSSEC enabled for {DNSSECInfo.domain}</Alert>)
+                        : (<Alert severity="warning" style={{marginTop: "10px"}}>
+                            DNSSEC not enabled for {DNSSECInfo.domain}</Alert>)
+                     )
+                }
             <TextField
                 id="author"
                 variant="outlined"
@@ -104,8 +136,9 @@ const CreateStatement = props => {
                 value={author}
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
+                style={{backgroundColor: '#eeeeee'}}
             />
-        </div>
+        </React.Fragment>
     )
 
     return (
@@ -131,7 +164,7 @@ const CreateStatement = props => {
                     <MenuItem value={"vote"}>Vote</MenuItem>
                     <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
-            {type == "domain_verification" &&(<DomainVerificationForm domain={domain}
+            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</DomainVerificationForm>)}
@@ -155,7 +188,6 @@ const CreateStatement = props => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</StatementForm>)}
-
 
             {statement && (
                 <div>
@@ -208,16 +240,16 @@ const CreateStatement = props => {
                 }
                 {!viaAPI && (dnsResponse.length > 0) && (
                     <div width="100%" style={{ paddingTop: "20px" }}>
-                        <span > TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</span>
                         {dnsResponse.includes(statementHash) ?
                             (<div>
-                                <div style={{backgroundColor: "#aaffaa"}}>Domain ownership verified.</div>
+                                <Alert severity='success' style={{marginTop: "10px", marginBottom: "10px"}}>Domain ownership verified.</Alert>
                                 <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
                             </div>)
                             :
                             (<div>
-                                <div style={{backgroundColor: "#ffaaaa"}}>Error: TXT records should include {statementHash}</div>
-                                <Button fullWidth variant="contained" margin="normal" disabled>Post</Button>    
+                                <Alert severity='error' style={{marginTop: "10px", marginBottom: "10px"}}>Error: TXT records should include {statementHash}</Alert>
+                                <div style={{fontSize: "8pt", marginBottom: "10px"}}> TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</div>
+                                <Button fullWidth variant="contained" margin="normal" disabled>Submit</Button>    
                             </div>)
                         }
                     </div>)

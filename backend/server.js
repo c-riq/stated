@@ -72,9 +72,9 @@ if (prod) {
             ca: ca
         }
     } else {
-        let privateKey = fs.readFileSync('/etc/letsencrypt/live/stated.rixdata.net/privkey.pem', 'utf8');
-        let certificate = fs.readFileSync('/etc/letsencrypt/live/stated.rixdata.net/cert.pem', 'utf8');
-        let ca = fs.readFileSync('/etc/letsencrypt/live/stated.rixdata.net/fullchain.pem', 'utf8');
+        let privateKey = fs.readFileSync('/etc/sectigo/privkey.pem', 'utf8');
+        let certificate = fs.readFileSync('/etc/sectigo/cert.pem', 'utf8');
+        let ca = fs.readFileSync('/etc/sectigo/fullchain.pem', 'utf8');
         credentials = {
             key: privateKey,
             cert: certificate,

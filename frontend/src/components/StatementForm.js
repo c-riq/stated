@@ -91,7 +91,7 @@ const StatementForm = props => {
                 onBlur={tagOnBlur}
                 onKeyDown={tagHandleKeyDown}
                 value={tagInput}
-                sx={{marginTop: "24px", marginBottom: "24px", width: "50vw", maxWidth: "500px"}}
+                sx={{marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
             />
             {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>

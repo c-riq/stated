@@ -172,6 +172,7 @@ export const parsePoll = (s) => {
 }
 
 export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain}) => {
+	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	const content = "\n" +
 	"\t" + "Type: Domain verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
@@ -182,6 +183,7 @@ export const buildDomainVerificationContent = ({verifyName, country, city, provi
 	(province ? "\t" + "Headquarter province or state: " + province + "\n" : "") +
 	(city ? "\t" + "Headquarter city: " + city + "\n" : "") +
 	""
+	console.log(content)
 	return content
 }
 export const parseDomainVerification = (s) => {
@@ -196,6 +198,7 @@ export const parseDomainVerification = (s) => {
 	+ /(?:\tHeadquarter city: (?<city>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
+	console.log(s)
 	const m = s.match(domainVerificationRegex)
 	return m ? {
 		name: m[1],

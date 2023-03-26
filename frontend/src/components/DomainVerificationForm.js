@@ -40,6 +40,7 @@ const DomainVerificationForm = props => {
         props.setViaAPI(viaAPI)
         const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, legalEntity: legalForm})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+        console.log(statement)
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
@@ -63,7 +64,7 @@ const DomainVerificationForm = props => {
             id="domain to be verified"
             variant="outlined"
             placeholder='walmart.com'
-            label="Primary website domain of organisation to be verified"
+            label="Domain owned by organisation"
             onChange={e => { setVerifyDomain(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "24px"}}
@@ -72,7 +73,7 @@ const DomainVerificationForm = props => {
             id="organisation name"
             variant="outlined"
             placeholder='Walmart Inc.'
-            label="Official name of organisation"
+            label="Name of organisation (as in Business register)"
             onChange={e => { setVerifyName(e.target.value) }}
             margin="normal"
             sx={{marginTop: "0px"}}
