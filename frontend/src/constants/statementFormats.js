@@ -171,7 +171,7 @@ export const parsePoll = (s) => {
 	} : {}
 }
 
-export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain}) => {
+export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain, serialNumber}) => {
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	const content = "\n" +
 	"\t" + "Type: Domain verification" + "\n" +
@@ -181,6 +181,7 @@ export const buildDomainVerificationContent = ({verifyName, country, city, provi
 	"\t" + "Legal entity: " + legalEntity + "\n" +
 	"\t" + "Domain of primary website: " + verifyDomain + "\n" +
 	(province ? "\t" + "Headquarter province or state: " + province + "\n" : "") +
+	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
 	(city ? "\t" + "Headquarter city: " + city + "\n" : "") +
 	""
 	console.log(content)
@@ -195,6 +196,7 @@ export const parseDomainVerification = (s) => {
 	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
 	+ /\tDomain of primary website: (?<domain>[^\n]+?)\n/.source
 	+ /(?:\tHeadquarter province or state: (?<province>[^\n]+?)\n)?/.source
+	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tHeadquarter city: (?<city>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
@@ -206,7 +208,8 @@ export const parseDomainVerification = (s) => {
 		legalForm: m[3],
 		domain: m[4],
 		province: m[5],
-		city: m[6]
+		serialNumber: m[6],
+		city: m[7]
 	} : {}
 }
 export const buildVoteContent = ({hash_b64, poll, vote}) => {
