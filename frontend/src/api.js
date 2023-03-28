@@ -50,6 +50,24 @@ export const getDomainSuggestions = (searchQuery, cb) => {
         cb(json)
     }, e => {return})
 }
+export const getSSLOVInfo = (domain, cb) => {
+    if (!domain || domain.length < 1) {
+        cb([])
+        return
+    }
+    req('GET',(domain ? 'get_ssl_ov_info?domain=' + domain : 'get_ssl_ov_info'), {}, (json) => {
+        cb(json)
+    }, e => {return})
+}
+export const getDNSSECInfo = (domain, cb) => {
+    if (!domain || domain.length < 1) {
+        cb([])
+        return
+    }
+    req('GET',(domain ? 'check_dnssec?domain=' + domain : 'check_dnssec'), {}, (json) => {
+        cb(json)
+    }, e => {return})
+}
 export const getJoiningStatements = (hash_b64, cb) => {
     req('POST', 'joining_statements', {hash_b64}, (json) => {
         if ("statements" in json) {

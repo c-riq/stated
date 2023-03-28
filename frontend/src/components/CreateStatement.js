@@ -11,7 +11,6 @@ import Portal from '@mui/material/Portal';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
-import Chip from '@mui/material/Chip';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
@@ -19,20 +18,20 @@ import DomainVerificationForm from './DomainVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
 import RatingForm from './RatingForm.js';
-import GenerateStatement from './GenerateStatement.js'
 import {VoteForm} from './VoteForm.js';
 
-import { submitStatement, checkDomainVerification, getDomainSuggestions } from '../api.js'
-import { digest } from '../utils/hash.js';
+import { submitStatement, checkDomainVerification, 
+    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo } from '../api.js'
 
-import { parseStatement, forbiddenStrings, buildStatement } from '../constants/statementFormats.js'
+import StatementForm from './StatementForm.js';
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin || "");
     const [type, setType] = React.useState(props.poll ? "vote" : "statement");
     const [statement, setStatement] = React.useState("");
-    const [tags, setTags] = React.useState([]);
     const [domain, setDomain] = React.useState("");
+    const [OVInfo, setOVInfo] = React.useState([]);
+    const [DNSSECInfo, setDNSSECInfo] = React.useState({});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
@@ -41,7 +40,6 @@ const CreateStatement = props => {
     const [statementHash, setStatementHash] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
-    const [tagInput, setTagInput] = React.useState("")
 
     const [domainOptions, setDomainOptions] = React.useState([]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
@@ -52,40 +50,14 @@ const CreateStatement = props => {
         })
     },[domainInputValue])
 
-    function tagHandleKeyDown(event) {
-        if (event.key === "Enter") {
-            const input = event.target.value.trim().replace(',','')
-            if (!input.length){return}
-            if (tags.indexOf(input) != -1) {
-                setTagInput("")
-            } else {
-                setTags([...tags, input])
-                setTagInput("")
-            }
-        }
-        if (tags.length && !tagInput.length && event.key === "Backspace") {
-        setTags(tags.slice(0, tags.length - 1))
-        }
-    }
-    const tagOnBlur = () => {
-        if (!tagInput){return}
-        const input = tagInput.trim().replace(',','')
-        if (!input.length){return}
-        if (tags.indexOf(input) != -1) {
-            setTagInput("")
-        } else {
-            setTags([...tags, input])
-            setTagInput("")
-        }
-    }
-    const handleDelete = item => () => {
-        const updatedTags = [...tags]
-        updatedTags.splice(updatedTags.indexOf(item), 1)
-        setTags(updatedTags)
-    }
-    function tagHandleInputChange(event) {
-        setTagInput(event.target.value)
-    }
+    React.useEffect(()=>{
+        getSSLOVInfo(domain, res  => {
+            setOVInfo(res ? (res.result || []) : [])
+        })
+        getDNSSECInfo(domain, res  => {
+            setDNSSECInfo(res)
+        })
+    },[domain])
 
 
     const checkDomainVerificationAPI = () => {
@@ -114,23 +86,60 @@ const CreateStatement = props => {
             setAlertMessage("Error: could not submit statement! " + error)
             setisError(true)
         })
-    }    
-
-    const generateHash = ({viaAPI}) => {
-        setViaAPI(viaAPI)
-        if(type == "statement"){
-            const statement = buildStatement({domain: domainInputValue, author, time: props.serverTime, tags, content})
-            const parsedResult = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
-                setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
-                setisError(true)
-                return
-            }
-
-            setStatement(statement)
-            digest(statement).then((value) => {setStatementHash(value)})
-        }
     }
+    
+    const authorFields = () => (
+        <React.Fragment>
+            <Autocomplete
+                freeSolo
+                disableClearable
+                id="domain"
+                isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
+                getOptionLabel={(option) => option ? option.domain || '' : ''}
+                options={domainOptions}
+                onChange={(event, newInputValue) => {
+                    setDomainIdendity(newInputValue)
+                    setDomain(newInputValue.domain)
+                    setAuthor(newInputValue.organization)
+                }}
+                onInputChange={(event, newValue) => {
+                    setDomainInputValue(newValue)
+                    setDomain(newValue)
+                }}
+                renderInput={(params) => <TextField {...params} 
+                  label="domain used for publishing" placeholder='google.com' />}
+                style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
+                />
+                { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
+                     (  OVInfo.reduce((acc, i) => acc || i.O, false) 
+                        ?
+                        OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
+                            Verified via SSL certificate {i.domain +": "+ i.O}</Alert>))
+                        : 
+                        (<Alert severity="warning" style={{marginTop: "10px"}}>
+                            Organisation not verified via SSL certificate.</Alert>)
+                     )
+                }
+                { (DNSSECInfo && DNSSECInfo.domain === domain) &&
+                     (  DNSSECInfo.validated
+                        ? (<Alert severity="success" style={{marginTop: "10px"}}>
+                            DNSSEC enabled for {DNSSECInfo.domain}</Alert>)
+                        : (<Alert severity="warning" style={{marginTop: "10px"}}>
+                            DNSSEC not enabled for {DNSSECInfo.domain}</Alert>)
+                     )
+                }
+            <TextField
+                id="author"
+                variant="outlined"
+                placeholder='Example Inc.'
+                label="Author of the content"
+                value={author}
+                onChange={e => { setAuthor(e.target.value) }}
+                margin="normal"
+                style={{backgroundColor: '#eeeeee'}}
+            />
+        </React.Fragment>
+    )
 
     return (
         <div style={{ padding: "7%", backgroundColor: "white", borderRadius: 8, display:'flex',
@@ -141,95 +150,45 @@ const CreateStatement = props => {
             <FormControl style={{ width: "50vw", maxWidth: "500px" }}>
                 <InputLabel id="statement-type-label">Type</InputLabel>
                 <Select
-                        labelId="statement-type-label"
-                        id="statement-type"
-                        value={type}
-                        label="Type"
-                        onChange={(e)=>setType(e.target.value)}
-                        style={{marginBottom: "16px"}}
-                    >
-                        <MenuItem value={"statement"}>Statement</MenuItem>
-                        <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
-                        <MenuItem value={"rating"}>Rating</MenuItem>
-                        <MenuItem value={"poll"}>Poll</MenuItem>
-                        <MenuItem value={"vote"}>Vote</MenuItem>
-                        <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
+                    labelId="statement-type-label"
+                    id="statement-type"
+                    value={type}
+                    label="Type"
+                    onChange={(e)=>setType(e.target.value)}
+                    style={{marginBottom: "16px"}}
+                >
+                    <MenuItem value={"statement"}>Statement</MenuItem>
+                    <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
+                    <MenuItem value={"rating"}>Rating</MenuItem>
+                    <MenuItem value={"poll"}>Poll</MenuItem>
+                    <MenuItem value={"vote"}>Vote</MenuItem>
+                    <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
-            {type == "statement" &&(
-                <div>
-                <TextField
-                    id="content"
-                    variant="outlined"
-                    multiline
-                    rows={4}
-                    placeholder='hello world'
-                    label="Statement"
-                    onChange={e => { setContent(e.target.value) }}
-                    margin="normal"
-                    value={content}
-                    sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
-                />
-                <TextField
-                    id="tags"
-                    variant="outlined"
-                    placeholder=''
-                    label="Tags (optional)"
-
-                    InputProps={{ 
-                        startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={handleDelete(item)} style={{marginRight: "5px"}}/>))}}
-                    onChange={tagHandleInputChange}
-                    onBlur={tagOnBlur}
-                    onKeyDown={tagHandleKeyDown}
-                    value={tagInput}
-                    sx={{marginTop: "24px", marginBottom: "24px", width: "50vw", maxWidth: "500px"}}
-                />
-                </div>
-            )}
-            <Autocomplete
-                freeSolo
-                disableClearable
-                id="asynchronous-demo"
-                isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
-                getOptionLabel={(option) => option ? option.domain || '' : ''}
-                options={domainOptions}
-                onChange={(event, newInputValue) => {
-                    setDomainIdendity(newInputValue)
-                    setDomain(newInputValue.domain)
-                    setAuthor(newInputValue.orgnaization)
-                }}
-                onInputChange={(event, newValue) => {
-                    setDomainInputValue(newValue)
-                    setDomain(newValue)
-                }}
-                renderInput={(params) => <TextField {...params} label="domain" />}
-                />
-            <TextField
-                id="author"
-                variant="outlined"
-                placeholder='Example Inc.'
-                label="Author of the content"
-                value={author}
-                onChange={e => { setAuthor(e.target.value) }}
-                margin="normal"
-            />
-            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} f
+            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</DomainVerificationForm>)}
             {type == "poll" &&(<PollForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
+                {authorFields()}</PollForm>)}
             {type == "rating" &&(<RatingForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
+                {authorFields()}</RatingForm>)}
             {type == "vote" &&(<VoteForm domain={domain} poll={props.poll} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</VoteForm>)}
             {type == "dispute_statement" &&(<DisputeStatementForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} />)}
-            {type == "statement" && (
-                <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
-            )}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</DisputeStatementForm>)}
+            {type == "statement" &&(<StatementForm domain={domain} author={author} statementToJoin={props.statementToJoin}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                {authorFields()}</StatementForm>)}
+
             {statement && (
                 <div>
                     <div>Full statement:</div>
@@ -281,16 +240,16 @@ const CreateStatement = props => {
                 }
                 {!viaAPI && (dnsResponse.length > 0) && (
                     <div width="100%" style={{ paddingTop: "20px" }}>
-                        <span > TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</span>
                         {dnsResponse.includes(statementHash) ?
                             (<div>
-                                <div style={{backgroundColor: "#aaffaa"}}>Domain ownership verified.</div>
+                                <Alert severity='success' style={{marginTop: "10px", marginBottom: "10px"}}>Domain ownership verified.</Alert>
                                 <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
                             </div>)
                             :
                             (<div>
-                                <div style={{backgroundColor: "#ffaaaa"}}>Error: TXT records should include {statementHash}</div>
-                                <Button fullWidth variant="contained" margin="normal" disabled>Post</Button>    
+                                <Alert severity='error' style={{marginTop: "10px", marginBottom: "10px"}}>Error: TXT records should include {statementHash}</Alert>
+                                <div style={{fontSize: "8pt", marginBottom: "10px"}}> TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</div>
+                                <Button fullWidth variant="contained" margin="normal" disabled>Submit</Button>    
                             </div>)
                         }
                     </div>)

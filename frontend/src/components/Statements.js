@@ -59,7 +59,7 @@ const Statements = props => {
                                     votes[o] = 0
                                 }
                             }
-                            const totalVotes = Object.values(votes).reduce((a,b)=>a+b)
+                            const totalVotes = Object.values((votes || [0])).reduce((a,b)=>a+b, 0)
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>

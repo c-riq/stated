@@ -3,7 +3,9 @@ import express from 'express'
 
 import db from './db.js'
 import p2p from './p2p.js'
+import ssl from './ssl.js'
 import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification.js'
+import {getTXTEntriesDNSSEC} from './dnssec.js'
 
 const log = false
 
@@ -145,6 +147,34 @@ api.get("/domain_ownership_beliefs", async (req, res, next) => {
         next(dbResult.error)
     } else {
         res.end(JSON.stringify({result: dbResult.rows}))       
+    }
+})
+
+api.get("/get_ssl_ov_info", async (req, res, next) => {
+    let domain = req.query && req.query.domain
+    if(!domain || domain.length == 0){
+        next({error: "missing parameter: domain"})
+        return
+    }
+    const result = await ssl.getOVInfoForSubdomains({domain})
+    if(result?.error){
+        next(result.error)
+    } else {
+        res.end(JSON.stringify({result}))       
+    }
+})
+
+api.get("/check_dnssec", async (req, res, next) => {
+    let domain = req.query && req.query.domain
+    if(!domain || domain.length == 0){
+        next({error: "missing parameter: domain"})
+        return
+    }
+    const result = await getTXTEntriesDNSSEC({domain, strict: false})
+    if(result?.error){
+        next(result.error)
+    } else {
+        res.end(JSON.stringify({validated: result.validated, trust: result.trust, domain}))       
     }
 })
 

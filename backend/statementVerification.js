@@ -156,6 +156,25 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
     }
     return false
 }
+const verifyViaStaticTextFile = async (domain, statement) => {
+    let url = 'https://static.stated.' + domain + '/statements.txt'
+    let result = {}
+    try {
+        result = await axios({
+            method: "GET",
+            url})
+    } catch(e) {
+        console.log(e)
+        return false
+    }
+    if (result && result.length > 0){
+        console.log(result.substring(0.100), 'result from ', domain)
+        if (result.match(statement)){
+            return true
+        }
+    }
+    return false
+}
 
 const verifyViaAPIKey = async ({domain, api_key}) => {
     log && console.log('verifyViaAPIKey', domain, ownDomain, api_key, ownAPIKey)
@@ -201,6 +220,10 @@ export const validateAndAddStatementIfMissing =
             } else {
                 log && console.log('validate via api', hash_b64)
                 verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
+                if (!verified){
+                    log && console.log('validate via static text file', hash_b64)
+                    verified = await verifyViaStaticTextFile(validationResult.domain, statement)
+                }
                 verifiedByAPI = true
             }
         } else { 

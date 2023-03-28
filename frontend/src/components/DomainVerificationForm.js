@@ -17,13 +17,14 @@ import GenerateStatement from './GenerateStatement';
 
 
 const DomainVerificationForm = props => {
-    const province = ''
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
     const [legalForm, setLegalForm] = React.useState("");
     const [legalFormObject, setLegalFormObject] = React.useState("");
     const [city, setCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState("");
+    const [province, setProvince] = React.useState("");
+    const [serialNumber, setSerialNumber] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
@@ -38,8 +39,9 @@ const DomainVerificationForm = props => {
     }
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-        const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, legalEntity: legalForm})
+        const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+        console.log(statement)
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
@@ -63,7 +65,7 @@ const DomainVerificationForm = props => {
             id="domain to be verified"
             variant="outlined"
             placeholder='walmart.com'
-            label="Primary website domain of organisation to be verified"
+            label="Domain owned by organisation"
             onChange={e => { setVerifyDomain(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "24px"}}
@@ -72,7 +74,7 @@ const DomainVerificationForm = props => {
             id="organisation name"
             variant="outlined"
             placeholder='Walmart Inc.'
-            label="Official name of organisation"
+            label="Name of organisation (as in business register)"
             onChange={e => { setVerifyName(e.target.value) }}
             margin="normal"
             sx={{marginTop: "0px"}}
@@ -137,6 +139,23 @@ const DomainVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
+        <TextField
+            id="province"
+            variant="outlined"
+            placeholder='Bavaria'
+            label="Province"
+            onChange={e => { setProvince(e.target.value) }}
+            sx={{marginTop: "20px"}}
+        />
+        <TextField
+            id="serial number"
+            variant="outlined"
+            placeholder='12345'
+            label="Business register serial number"
+            onChange={e => { setSerialNumber(e.target.value) }}
+            sx={{marginTop: "20px"}}
+        />
+        {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
         </FormControl>
     )
