@@ -114,6 +114,7 @@ api.get("/nodes", async (req, res, next) => {
 })
 
 api.post("/join_network", async (req, res, next) => {
+    log && console.log('join_network request', req.body)
     try {
         const r = await p2p.validateAndAddNode({domain: req.body.domain})
         if(r?.error){

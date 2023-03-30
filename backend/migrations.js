@@ -159,7 +159,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             certificate_authority VARCHAR(100),
             fingerprint VARCHAR(100)
         );
-        INSERT INTO p2p_nodes (domain) VALUES ('stated.rixdata.net');
+        --INSERT INTO p2p_nodes (domain) VALUES ('stated.rixdata.net');
         DROP TABLE IF EXISTS migrations;
         CREATE TABLE IF NOT EXISTS migrations (
             id SERIAL PRIMARY KEY,
@@ -185,7 +185,16 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             linkedin_id TEXT,
             grid_id TEXT           
         );
-        `
+
+        -- TODO: add all fields, rename to ssl_cert_cache
+        CREATE TABLE IF NOT EXISTS ssl_certificates (
+            host TEXT,
+            "subject.O" TEXT,
+            "subject.C" TEXT,
+            "subject.ST" TEXT,
+            "subject.L" TEXT,
+            index INT         
+        );`
     }
 }
 

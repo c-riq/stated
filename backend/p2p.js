@@ -9,18 +9,25 @@ import { get, post } from './request.js'
 const log = false
 
 const ownDomain = process.env.DOMAIN
+const seedNodesFromEnv = (process.env.SEED_NODES || '').split(',').filter(Boolean)
+const test = process.env.TEST || false
+
+console.log('seedNodesFromEnv', seedNodesFromEnv, 'p2p_seed', p2p_seed)
+
+const sample = (arr,n) => arr.map(a => [a,Math.random()]).sort((a,b) => {return a[1] < b[1] ? -1 : 1;}).slice(0,n).map(a => a[0])
 
 const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => {
-    if (! /^[a-zA-Z\.-]{7,260}$/.test(domain)) {
+    log && console.log('validateAndAddNode ',  domain)
+    if (!test && ! /^[a-zA-Z\.-_:]{7,260}$/.test(domain)) {
+        console.log('invalid domain ' + domain)
         resolve({error: 'invalid domain'})
         return
     }
-    if (domain === 'stated.' + ownDomain) {
+    if (domain === 'stated.' + ownDomain || domain === ownDomain) {
         resolve({error: 'skip validatin of own domain ' + domain})
         return
     }
     const res = await get({hostname: domain, path: '/api/health'})
-    // log && console.log(res, 'validateAndAddNode')
     if(res && res.data && res.data.application == 'stated'){
         const res = await db.addNode({domain})
         if (res.error){
@@ -30,6 +37,7 @@ const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => 
             resolve(res)
         }
     } else {
+        console.log('health check failed on ' + domain + res.error)
         resolve({error: 'health check failed on ' + domain})
     }
     resolve({res})
@@ -46,19 +54,26 @@ const addNodesOfPeer = ({domain}) => new Promise(async (resolve, reject) => {
 
 const addNodesOfPeers = async () => {
     const dbResult = await db.getAllNodes()
-    const domains = (dbResult.rows || []).map(row => row.domain)
-    const result = await Promise.all(domains.map(domain => addNodesOfPeer({domain})))
+    let nodes = (dbResult.rows || []).map(row => row.domain)
+    if (nodes.length > 10) {
+        nodes = sample(nodes, 10)
+    }
+    const result = await Promise.all(nodes.map(domain => addNodesOfPeer({domain})))
     return result
 }
 
 const sendJoinRequest = ({domain}) => new Promise(async (resolve, reject) => {
-    if ( !domain.match(/stated\./) || (domain.match(/\./g).length > 4) || domain.match(/[\/&\?]/g) || forbiddenChars(domain)) { 
+    if (
+        !test && 
+            (!domain.match(/stated.|/) || (domain.match(/\./g).length > 4) || 
+            domain.match(/[\/&\?]/g) || forbiddenChars(domain))) { 
+        console.log('invalid domain, should be analogous to stated.example.com', domain)
         resolve({error: 'invalid domain, should be analogous to stated.example.com'})
         return
     }
     
     log && console.log('sendJoinRequest to ', domain)
-    const res = await post({ hostname: domain, path: '/api/join_network/', data: { domain: 'stated.' + ownDomain }})
+    const res = await post({ hostname: domain, path: '/api/join_network/', data: { domain: (!test ? 'stated.' : '') + ownDomain }})
     resolve(res)
 })
 const joinNetwork = async () => {
@@ -77,8 +92,8 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
         if (domain === 'stated.' + ownDomain) { resolve(); return }
         const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0)})
         if (res.error){
-            console.log(domain, res.error)
-            console.trace()
+            log && console.log(domain, res.error)
+            log && console.trace()
         }
         const {cert, ip} = res
         const certificateAuthority = cert && cert.infoAccess && cert.infoAccess['OCSP - URI'] && ''+cert.infoAccess['OCSP - URI'][0]
@@ -123,7 +138,7 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
 const addSeedNodes = async () => {
     console.log(p2p_seed, 'p2p_seed')
     try {
-        const res = await Promise.all(p2p_seed.map(domain => validateAndAddNode({domain})))
+        const res = await Promise.all([...p2p_seed, ...seedNodesFromEnv].filter(i=>i).map(domain => validateAndAddNode({domain})))
     } catch (error) {
         console.log(error)
         console.trace()
@@ -132,42 +147,36 @@ const addSeedNodes = async () => {
 
 const fetchMissingStatementsFromNodes = async () => {
     const dbResult = await db.getAllNodes()
-    const nodes = dbResult.rows
+    let nodes = dbResult.rows
+    if (nodes.length > 10) {
+        nodes = sample(nodes, 10)
+    }
     const res = await Promise.all(nodes.map(node => 
         fetchMissingStatementsFromNode({domain: node.domain, id: node.id, last_received_statement_id: node.last_received_statement_id})))
     return res
 }
 
-setTimeout(async () => {
-    try {
-        const seedRes = await addSeedNodes()
-        const addNodesRes = await addNodesOfPeers()
-        const joinNetworkRes = await joinNetwork()
-        const fetchStatmentsRes = await fetchMissingStatementsFromNodes();
-        [seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes].map(i => {
-            if(i && i.error){
-                console.log(i.error)
-                console.trace()
-            }
-            if(i && i.length > 0){
-                for(let j of i){
-                    if(j && j.error){
-                        console.log(j.error)
-                        console.trace()
+const setupSchedule = () => {
+    setTimeout(async () => {
+        try {
+            const seedRes = await addSeedNodes()
+            const addNodesRes = await addNodesOfPeers()
+            const joinNetworkRes = await joinNetwork()
+            const fetchStatmentsRes = await fetchMissingStatementsFromNodes();
+            [seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes].map(i => {
+                if(i && i.error){
+                    console.log(i.error)
+                    console.trace()
+                }
+                if(i && i.length > 0){
+                    for(let j of i){
+                        if(j && j.error){
+                            console.log(j.error)
+                            console.trace()
+                        }
                     }
                 }
-            }
-        })
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
-}, 3000)
-
-const setupSchedule = () => {
-    setInterval(async () => {
-        try {
-            await fetchMissingStatementsFromNodes()
+            })
         } catch (error) {
             console.log(error)
             console.trace()

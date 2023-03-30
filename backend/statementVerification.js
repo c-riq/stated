@@ -12,8 +12,9 @@ import {parseStatement, statementTypes} from './statementFormats.js'
 const log = true
 const ownAPIKey = process.env.API_KEY
 const ownDomain = process.env.DOMAIN
+const test = process.env.TEST || false
 
-const validateStatementMetadata = ({statement, hash_b64, source_node_id }) => {
+const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
     if (!parsedStatement) {
         return({error: "invalid verification"})
@@ -87,7 +88,7 @@ const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
 export const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {
         log && console.log('getTXTEntries', d)
-        if (! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
+        if (!test && ! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
             console.log('invalid domain', d)
             resolve({error: 'invalid domain '+ d})
         }
@@ -136,7 +137,7 @@ export const verifyTXTRecord = async (domain, record) => {
 }
 
 const verifyViaStatedApi = async (domain, hash_b64) => {
-    let url = 'https://stated.' + domain + '/api/statement/'
+    let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement/'
     log && console.log('verifyViaStatedApi', url, hash_b64)
     let result = {}
     try {
