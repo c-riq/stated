@@ -1,3 +1,9 @@
+/* 
+If an author node is temporarily unavailable,
+statements are added to the unverified_statements table
+and will be retried according to the schedule below 
+and deleted afterwards.
+*/
 
 import db from './db.js'
 import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification.js'
@@ -71,7 +77,7 @@ const tryAddMissingDerivedEntitiesFromStatements = async () => {
 
 const setupSchedule = () => {
     setInterval(async () => {
-        console.log('retry verification started')
+        log && console.log('retry verification started')
         try {
             await tryVerifyUnverifiedStatements()
             await db.cleanUpUnverifiedStatements({max_age_hours: Math.max(...verificationRetryScheduleHours) | 1,

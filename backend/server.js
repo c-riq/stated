@@ -22,6 +22,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN
+const port = parseInt(process.env.PORT || 7766)
 
 const app = express.Application = express();
 
@@ -88,5 +89,5 @@ if (prod) {
     httpsServer.on('error', function (err) { console.log(err) });
 } else {
     const httpServer = http.createServer(app);
-    httpServer.listen(7766);
+    httpServer.listen(port);
 }

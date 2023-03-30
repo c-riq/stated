@@ -1,0 +1,226 @@
+# docker-compose build --no-cache && docker-compose up
+
+services:
+  db_1:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume_1:/data/postgres
+       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5441:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_1: 
+    environment:
+      - PORT=7001
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_1
+      - API_KEY=XXX
+      - DOMAIN=stated_1:7001
+      - TEST=true
+    build: ..
+    ports:
+      - '7001:7001'
+    networks:
+      - postgres
+    depends_on:
+      - db_1
+    restart: unless-stopped
+
+# node 2
+
+  db_2:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume_2:/data/postgres
+       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5442:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_2: 
+    environment:
+      - PORT=7002
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_2
+      - API_KEY=XXX
+      - DOMAIN=stated_2:7002
+      - SEED_NODES=stated_1:7001
+      - TEST=true
+    build: ..
+    ports:
+      - '7002:7002'
+    networks:
+      - postgres
+    depends_on:
+      - db_2
+      - stated_1
+    restart: unless-stopped
+
+# node 3
+
+  db_3:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume_3:/data/postgres
+       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5443:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_3: 
+    environment:
+      - PORT=7003
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_3
+      - API_KEY=XXX
+      - DOMAIN=stated_3:7003
+      - SEED_NODES=stated_1:7001,stated_2:7002
+      - TEST=true
+    build: ..
+    ports:
+      - '7003:7003'
+    networks:
+      - postgres
+    depends_on:
+      - db_3
+      - stated_1
+      - stated_2
+    restart: unless-stopped
+  
+# node 4
+
+  db_4:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume_4:/data/postgres
+       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5444:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_4: 
+    environment:
+      - PORT=7004
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_4
+      - API_KEY=XXX
+      - DOMAIN=stated_4:7004
+      - TEST=true
+    build: ..
+    ports:
+      - '7004:7004'
+    networks:
+      - postgres
+    depends_on:
+      - db_4
+    restart: unless-stopped
+
+# node 5
+
+  db_5:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume_5:/data/postgres
+       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5445:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_5: 
+    environment:
+      - PORT=7005
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_5
+      - API_KEY=XXX
+      - DOMAIN=stated_5:7005
+      - SEED_NODES=stated_4:7004
+      - TEST=true
+    build: ..
+    ports:
+      - '7005:7005'
+    networks:
+      - postgres
+    depends_on:
+      - db_5
+      - stated_4
+    restart: unless-stopped
+
+# node 6
+
+  db_6:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - postgres_volume_6:/data/postgres
+       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5446:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_6: 
+    environment:
+      - PORT=7006
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_6
+      - API_KEY=XXX
+      - DOMAIN=stated_6:7006
+      - SEED_NODES=stated_4:7004,stated_5:7005,stated_1:7001
+      - TEST=true
+    build: ..
+    ports:
+      - '7006:7006'
+    networks:
+      - postgres
+    depends_on:
+      - db_6
+      - stated_4
+      - stated_5
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    postgres_volume_1:
+    postgres_volume_2:
+    postgres_volume_3:
+    postgres_volume_4:
+    postgres_volume_5:
+    postgres_volume_6:

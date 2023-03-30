@@ -1,7 +1,15 @@
+import http from 'http'
 import https from 'https'
 
 const ownDomain = process.env.DOMAIN
-const log = false
+const test = process.env.TEST || false
+const log = true
+
+let _https = https
+
+if (test) {
+    _https = http
+}
 
 export const get = ({hostname, path, cache}) => new Promise((resolve, reject) => {
     log && console.log('get request', hostname, path)
@@ -12,18 +20,18 @@ export const get = ({hostname, path, cache}) => new Promise((resolve, reject) =>
         }
         let cert = {}
         let ip = ''
+        let data = ''
         const options = {
-            hostname: hostname,
-            protocol: 'https:',
             path: path,
             method: 'GET',
-            ...(cache === false ? {'agent': false /*https.Agent(1)*/} : {})
+            headers: { 'Content-Type': 'application/json' },
+            ...(cache && { 'agent': false })
         }
-        const req = https.request(options, res => {  
+        const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {  
             let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
-                cert = res.req.socket.getPeerCertificate()
+                cert = !test && res.req.socket.getPeerCertificate()
                 ip = res.req.socket.remoteAddress
                 rawData += chunk
             })
@@ -50,22 +58,20 @@ export const post = ({hostname, path, data}) => new Promise((resolve, reject) =>
         return
     }
     const options = {
-        hostname: hostname,
-        protocol: 'https:',
         path: path,
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
     }
-    const req = https.request(options, res => {  
-        let data = ''
+    let ip = ''
+    let responseData = ''
+    const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {
+        let rawData = ''
         res.setEncoding('utf8')
-        res.on('data', chunk => data += chunk)
+        res.on('data', chunk => rawData += chunk)
         res.on('end', () => {
             try {
-                data = JSON.parse(data)
-                resolve({data, cert, ip})
+                responseData = JSON.parse(rawData)
+                resolve({data: responseData, ip})
             } catch(error) {
                 resolve({error})
             }

@@ -8,18 +8,19 @@ const pgHost = process.env.POSTGRES_HOST || "localhost"
 const pgDatabase = process.env.POSTGRES_DB || "dev"
 const pgUser = process.env.POSTGRES_USER || "sdf"
 const pgPassword = process.env.POSTGRES_PW || "sdf"
+const pgPort = parseInt(process.env.POSTGRES_PORT || 5432)
 
 const pool = new Pool({
   user: pgUser,
   host: pgHost,
   database: pgDatabase,
   password: pgPassword,
-  port: 5432,
+  port: pgPort,
 })
 
 const log = false
 
-let migrationsDone = true
+let migrationsDone = false
 setInterval(
 async () => {
   if(!migrationsDone){

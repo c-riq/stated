@@ -1,3 +1,5 @@
+const test = process.env.TEST || false
+
 export const p2p_seed = [
-    'stated.rixdata.net'
+    !test ?? 'stated.rixdata.net'
 ]
