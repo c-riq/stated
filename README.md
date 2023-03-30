@@ -23,6 +23,7 @@ However hosting a new stated instances will make the P2P network more resillient
 ### Plain statement example
 ```
 Domain: mit.edu
+Author: Massachusetts Institute of Technology
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement: hello world
 ```
@@ -54,6 +55,18 @@ Content:
 	Option: Yes
 ```
 See [source code](https://github.com/c-riq/stated/blob/master/frontend/src/constants/statementFormats.js) for more details and examples.
+
+### Design principles
+#### Everyone should be able to inspect how the system works
+- The statement format needs to be understandable by non-technical audience
+- The verification steps should be described in non-technical language where possible
+#### Many should be able to contribute
+- The code should be easy to read (Use more common programming languages)
+- The project should be easy to run (Small number of commands to set it up)
+
+#### Simplicity to increase security
+- Third party dependency count should be kept small
+- Complex applications building on top of the stated system should be in a separate repository
 
 ### Run locally with docker compose
 build the frontend files
