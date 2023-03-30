@@ -161,6 +161,7 @@ const CreateStatement = props => {
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={"statement"}>Statement</MenuItem>
+                    <MenuItem value={"sign_pdf"}>Sign PDF</MenuItem>
                     <MenuItem value={"organisation_verification"}>Verify an organisation</MenuItem>
                     <MenuItem value={"person_verification"}>Verify a person</MenuItem>
                     <MenuItem value={"rating"}>Rating</MenuItem>
