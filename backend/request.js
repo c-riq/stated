@@ -5,8 +5,10 @@ const ownDomain = process.env.DOMAIN
 const test = process.env.TEST || false
 const log = true
 
-if (!test) {
-    http = https
+let _https = https
+
+if (test) {
+    _https = http
 }
 
 export const get = ({hostname, path, cache}) => new Promise((resolve, reject) => {
@@ -25,7 +27,7 @@ export const get = ({hostname, path, cache}) => new Promise((resolve, reject) =>
             headers: { 'Content-Type': 'application/json' },
             ...(cache && { 'agent': false })
         }
-        const req = http.request(`http${test ? '' : 's'}://` + hostname, options, res => {  
+        const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {  
             let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
@@ -62,7 +64,7 @@ export const post = ({hostname, path, data}) => new Promise((resolve, reject) =>
     }
     let ip = ''
     let responseData = ''
-    const req = http.request(`http${test ? '' : 's'}://` + hostname, options, res => {
+    const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {
         let rawData = ''
         res.setEncoding('utf8')
         res.on('data', chunk => rawData += chunk)
