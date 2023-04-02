@@ -1,8 +1,15 @@
 import { get } from './request.js'
+import { validateDomainFormat } from './domainNames/validateDomainFormat.js'
+import { getCertCache, setCertCache } from './db'
 
 
 const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
+    const cached = await getCertCache({domain})
+    if (cached && cached.rows && cached.result[0] && cached.result[0].O){
+        const {O, L, ST, C} = cached.result[0]
+        return resolve({subject: {O, L, ST, C}, domain})
+    }
     try {
         const res = await get({hostname: domain, path: '', cache: false})
         if (res.error){
@@ -11,9 +18,11 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
         }
         const {cert} = res
         const subject = cert && cert.subject 
+        if (subject && subject.O && subject.C){
+            setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C})
+        }
         resolve({...subject, domain})
     }
-    
     catch (error){
         console.log(error)
         console.trace()
@@ -22,6 +31,10 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
 })
 
 const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject) => {
+    if(!validateDomainFormat(domain)){
+        resolve({error: 'invalid domain format'})
+        return
+}
     console.log('get SSL OV info for ', domain)
     if (domain.match(/^stated\./)){
         domain = domain.replace(/^stated\./, '')

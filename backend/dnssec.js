@@ -1,9 +1,14 @@
 
 import * as cp from 'child_process'
+import {validateDomainFormat} from './domainNames/validateDomainFormat.js'
 
 const log = true
 
 export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve, reject) => {
+    if(!validateDomainFormat(domain)){
+        resolve({error: 'invalid domain format'})
+        return
+    }
     try {
         log && console.log('getTXTEntriesDNSSEC', domain)
         if (! /^[a-zA-Z\.-]{7,260}$/.test(domain)) {

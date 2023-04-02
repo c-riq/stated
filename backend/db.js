@@ -924,6 +924,62 @@ const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => 
   }
 }))
 
+const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
+  try {
+    pool.query(`INSERT INTO ssl_certificates (domain, "subject.O", "subject.C", "subject.ST", "subject.L", sha256, valid_from, valid_to, first_seen, last_seen) 
+VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (sha256) DO NOTHING
+RETURNING *;`,
+[domain, O, C, ST, L, sha256, validFrom, validTo], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
+  if (!domain) return resolve({ error: 'no domain' })
+  try {
+    pool.query(`
+            SELECT 
+              host domain,
+              O AS organization,
+              C AS country,
+              ST AS state,
+              L AS city,
+              row_number() over(order by valid_from desc) AS rnk
+            FROM ssl_certificates
+              where domain=$1
+              AND valid_from < CURRENT_TIMESTAMP
+              AND CURRENT_TIMESTAMP < valid_to
+            AND LOWER(O) NOT LIKE '%cloudflare%'
+            having rnk = 1
+            ;
+            `,[domain], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
 
 export default {
   createUnverifiedStatement: s(createUnverifiedStatement),
@@ -953,5 +1009,7 @@ export default {
   updateNode: s(updateNode),
   statementExists: s(statementExists),
   getDomainOwnershipBeliefs: s(getDomainOwnershipBeliefs),
-  matchDomain: s(matchDomain)
+  matchDomain: s(matchDomain),
+  getCertCache: s(getCertCache),
+  setCertCache: s(setCertCache)
 }
