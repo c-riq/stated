@@ -1,13 +1,29 @@
 ### Stated
-Stated is an open source tool set for decentral realtime decision making.<br/>
-It enables groups of organisations to issue joint statements and make collective decisions.<br/>
+Stated is an open source tool for decentral realtime decision making and generating polls.<br/>
+It enables groups of organisations to issue joint statements, sign open letters and make collective decisions.<br/>
 The core challenge is to enable any internet user to independently verify the authenticity of a joint statement or poll result.<br/>
 This requires all participating organisations to have verifiable online identity and that their statements can also be linked to their online identity.<br/>
 Stated uses the website domain of organisations as their online identity. <br/>
 Evidence for identities is comprised of SSL OV(Organization Validation) certificates issued by certificate authorities and cross verifications among oranizations creating a web of trust.
-For publishing statements organisations make them accessible on their domain under a standardized URL path (such as https://stated.rixdata.net/own/statements.txt) in a standardized human and machine readable format.<br/>
-Verifications made by one organisation to associate another organisation with their primary website domain are also included in the list of statements.
-To allow for fast aggregation of joint statements, they are propagated though a peer to peer network of participating organisations.
+For publishing statements and enabling independent verification organisations can:
+- publish them in full on their domain in a standardized human and machine readable format under a standardized URL path, such as https://stated.rixdata.net/own/statements.txt
+- Make sure individual statements can be retrieved by the hash via a stated node running under their domain:
+```bash
+curl 'https://stated.rixdata.net/api/statement' -H 'Content-Type: application/json' \
+--data'{"hash_b64":"ZQBx2ImuMYkL2vwkiOp/1YCWwJxNPUAK6k1ecLXvjBk="}'
+```
+- Add the statement's hash as a TXT record for the subdomain stated in their DNS domain records and publish the full statement through another organizations stated node:
+```bash
+dig -t txt stated.rixdata.net +short | grep ZQBx2ImuMYkL2vwkiOp/1YCWwJxNPUAK6k1ecLXvjBk=
+```
+<br/>
+Statements can either be plain text messages or a strucutured message such as:
+- Domain Verification: for associating another domain with a organisation (to supplement SSL OV verifications)
+- Poll: To define a poll
+- Vote: For casting a vote to a referenced poll
+- Rating: To rate the trustworthiness of another organization
+- Dispute statement: To express the conviction that a referenced statement is not authentic
+To allow for fast aggregation of polls and joint statements, all statements are propagated though a peer to peer network of participating organisations. And each node validates the authors intention to publish a statement before relaying them.
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/diagram.png?raw=true)
 
