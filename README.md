@@ -23,8 +23,7 @@ Statements can either be plain text messages or a strucutured message such as:
 - Vote: For casting a vote to a referenced poll
 - Rating: To rate the trustworthiness of another organization
 - Dispute statement: To express the conviction that a referenced statement is not authentic
-Verifications made by one organisation to associate another organisation with their primary website domain are also included in the list of statements.
-To allow for fast aggregation of joint statements, they are propagated though a peer to peer network of participating organisations.
+To allow for fast aggregation of polls and joint statements, all statements are propagated though a peer to peer network of participating organisations. And each node validates the authors intention to publish a statement before relaying them.
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/diagram.png?raw=true)
 
