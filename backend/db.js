@@ -86,7 +86,7 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
                     CAST($1 AS INTEGER) as input1,
                     $2 as input2
                 FROM statements 
-                WHERE (type = 'statement' OR type = 'poll' OR type = 'rating')
+                WHERE (type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'domain verification')
                 ${minId ? 'AND id > $1 ' : ''}
                 ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
                 GROUP BY 1

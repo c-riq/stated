@@ -21,7 +21,7 @@ const Statements = props => {
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {props.posts && props.posts.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
                     {props.posts && props.posts.length > 0 && props.posts.map((s,i) => {
-                        if (s.type == statementTypes.statement || s.type == statementTypes.rating){
+                        if (s.type == statementTypes.statement || s.type == statementTypes.rating || s.type == statementTypes.domainVerification){
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>

@@ -44,14 +44,18 @@ export const VerificationGraph = () => {
             "text-rotation": "autorotate",
             "text-margin-y": "-10px",
             "color": "#0000ee",
+            'line-style': 'data(style)'
           },
         },
       ],
       elements: {
         nodes: [
-          { data: { id: "Sectigo", name: "Sectigo Limited" }, position: { x: 0, y: 0 } },
+          { data: { id: "root", name: "", shape: "circle" }, position: { x: 0, y: 0 } },
+          { data: { id: "CA", name: "" } },
+          { data: { id: "Sectigo", name: "Sectigo Limited" , parent: "CA" }},
+          { data: { id: "Certificate Authority", name: "Certificate Authority" , parent: "CA" }},
           {
-            data: { id: "SSL" , name: "SSL certificate"},
+            data: { id: "SSL" , name: "SSL OV certificate"},
             href: "https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D",
           },
           { data: { id: "Statement", name: "Statement" } },
@@ -59,10 +63,13 @@ export const VerificationGraph = () => {
             data: { id: "Rix Data NL B.V.", name: "Rix Data NL B.V.", parent: "SSL" },
           },
           {
+            data: { id: "location", name: "North-Holland, NL", parent: "SSL" },
+          },
+          {
             data: { id: "stated.rixdata.nl", name: "stated.rixdata.nl", parent: "SSL" },
           },
           {
-            data: { id: "guest", name: "guest", parent: "Statement" },
+            data: { id: "author", name: "Rix Data NL B.V.", parent: "Statement" },
           },
           {
             data: { id: "Statement Content", name: "Statement Content", parent: "Statement" },
@@ -71,11 +78,21 @@ export const VerificationGraph = () => {
         edges: [
           {
             data: {
+              id: "1",
+              source: "root",
+              target: "CA",
+              href: "https://crt.sh/?caid=105487",
+              name: "Root cert lists",
+              style: "dashed"
+            },
+          },
+          {
+            data: {
               id: "2",
-              source: "Sectigo",
+              source: "CA",
               target: "SSL",
               href: "https://crt.sh/?q=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D",
-              name: "SSL"
+              name: "SSL OV"
             },
           },
           {
@@ -98,11 +115,11 @@ export const VerificationGraph = () => {
         rankDir: "LR",
         spacingFactor: 1.5,
         padding: 20,
-        roots: "#Sectigo",
+        //roots: "#CA",
         elk: {
           algorithm: "layered",
           "elk.direction": "RIGHT",
-          'spacing.nodeNodeBetweenLayers': 150,
+          'spacing.nodeNodeBetweenLayers': 80,
         },
       },
     });
