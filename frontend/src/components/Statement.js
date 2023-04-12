@@ -7,6 +7,8 @@ import Button from '@mui/material/Button';
 import { getStatement, getJoiningStatements, getVerifications, getVotes } from '../api.js'
 import { statementTypes } from '../constants/statementFormats.js';
 
+import {VerificationGraph} from './VerificationGraph.js'
+
 
 const Statement = props => {
     const [joiningStatements, setJoiningStatements] = React.useState([]);
@@ -48,6 +50,8 @@ const Statement = props => {
                     Vote
                 </Button>
             </Link>)}
+
+            {statement.domain === 'rixdata.net' && statement.hash_b64 === "ZQBx2ImuMYkL2vwkiOp/1YCWwJxNPUAK6k1ecLXvjBk=" && <VerificationGraph/>}
             <h3>Verify the statement's authenticity</h3>
             <div>
                 <h4>1. generate the statement hash</h4>

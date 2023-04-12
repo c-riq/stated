@@ -107,7 +107,7 @@ const CreateStatement = props => {
                     setDomain(newValue)
                 }}
                 renderInput={(params) => <TextField {...params} 
-                  label="domain used for publishing" placeholder='google.com' />}
+                  label="your domain used for publishing" placeholder='google.com' />}
                 style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
                 />
                 { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
