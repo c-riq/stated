@@ -12,11 +12,11 @@ import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 import { parseStatement, buildStatement, forbiddenStrings, 
-    buildDomainVerificationContent, parseDomainVerification } from '../constants/statementFormats.js'
+    buildOrganisationVerificationContent, parseOrganisationVerification } from '../constants/statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 
 
-const DomainVerificationForm = props => {
+const OrganisationVerificationForm = props => {
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
     const [legalForm, setLegalForm] = React.useState("");
@@ -39,7 +39,7 @@ const DomainVerificationForm = props => {
     }
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-        const content = buildDomainVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm})
+        const content = buildOrganisationVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
         console.log(statement)
 
@@ -49,8 +49,8 @@ const DomainVerificationForm = props => {
                 props.setisError(true)
                 return
             }
-            const parsedDomainVerification = parseDomainVerification(parsedStatement.content)
-            if(!parsedDomainVerification){
+            const parsedOrganisationVerification = parseOrganisationVerification(parsedStatement.content)
+            if(!parsedOrganisationVerification){
                 props.setAlertMessage('Invalid domain verification (missing values)')
                 props.setisError(true)
                 return
@@ -161,4 +161,4 @@ const DomainVerificationForm = props => {
     )
 }
 
-export default DomainVerificationForm
+export default OrganisationVerificationForm

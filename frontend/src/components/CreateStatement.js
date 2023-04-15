@@ -14,7 +14,8 @@ import InputLabel from '@mui/material/InputLabel';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
-import DomainVerificationForm from './DomainVerificationForm.js';
+import OrganisationVerificationForm from './OrganisationVerificationForm.js';
+import PersonVerificationForm from './PersonVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
 import RatingForm from './RatingForm.js';
@@ -132,7 +133,7 @@ const CreateStatement = props => {
                 id="author"
                 variant="outlined"
                 placeholder='Example Inc.'
-                label="Author of the content"
+                label="Author of the content (you/ your organisation)"
                 value={author}
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
@@ -158,16 +159,21 @@ const CreateStatement = props => {
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={"statement"}>Statement</MenuItem>
-                    <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
+                    <MenuItem value={"organisation_verification"}>Verify an organisation</MenuItem>
+                    <MenuItem value={"person_verification"}>Verify a person</MenuItem>
                     <MenuItem value={"rating"}>Rating</MenuItem>
                     <MenuItem value={"poll"}>Poll</MenuItem>
                     <MenuItem value={"vote"}>Vote</MenuItem>
                     <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
-            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} author={author}
+            {type == "organisation_verification" &&(<OrganisationVerificationForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
-                {authorFields()}</DomainVerificationForm>)}
+                {authorFields()}</OrganisationVerificationForm>)}
+            {type == "person_verification" &&(<PersonVerificationForm domain={domain} author={author}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</PersonVerificationForm>)}
             {type == "poll" &&(<PollForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
