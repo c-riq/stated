@@ -1,11 +1,11 @@
 import { get } from './request.js'
 import { validateDomainFormat } from './domainNames/validateDomainFormat.js'
-import db from './db.js'
+import {getCertCache} from './db.js'
 
 
 const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
-    const cached = await db.getCertCache({domain})
+    const cached = await getCertCache({domain})
     if (cached && cached.rows && cached.result[0] && cached.result[0].O){
         const {O, L, ST, C} = cached.result[0]
         return resolve({subject: {O, L, ST, C}, domain})
@@ -19,7 +19,7 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
         const {cert} = res
         const subject = cert && cert.subject 
         if (subject && subject.O && subject.C){
-            db.setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C})
+           setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C})
         }
         resolve({...subject, domain})
     }

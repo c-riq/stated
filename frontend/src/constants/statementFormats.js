@@ -226,17 +226,15 @@ export const parseOrganisationVerification = (s) => {
 }
 
 export const buildPersonVerificationContent = (
-		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain,
-		birthDate, birthCity, birthCountry, job, employer, verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
-	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
-	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
-	let content = ""
-	if (legalEntity === "person"){
-		content = "\n" +
+		{verifyName, birthCountry, birthCity, verifyDomain, foreignDomain,
+		birthDate, job, employer, verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
+	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
+	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	let content = "\n" +
 		"\t" + "Type: Person verification" + "\n" +
 		"\t" + "Description: We verified the following information about a person." + "\n" +
 		"\t" + "Name: " + verifyName + "\n" +
-		"\t" + "Date of birth: " + birthDate + "\n" +
+		"\t" + "Date of birth: " + new Date(birthDate).toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ') + "\n" +
 		"\t" + "City of birth: " + birthCity + "\n" +
 		"\t" + "Country of birth: " + birthCountry + "\n" +
 		(job ? "\t" + "Job title: " + job + "\n" : "") +
@@ -248,7 +246,6 @@ export const buildPersonVerificationContent = (
 		(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
 		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
 		""
-	}
 	console.log(content)
 	return content
 }

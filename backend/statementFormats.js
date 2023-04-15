@@ -171,33 +171,44 @@ export const parsePoll = (s) => {
 	} : {}
 }
 
-export const buildDomainVerificationContent = ({verifyName, country, city, province, legalEntity, verifyDomain, serialNumber}) => {
+export const buildOrganisationVerificationContent = (
+		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
+		verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
-	const content = "\n" +
-	"\t" + "Type: Domain verification" + "\n" +
-	"\t" + "Description: We verified the following information about an organisation." + "\n" +
-	"\t" + "Organisation name: " + verifyName + "\n" +
-	"\t" + "Headquarter country: " + country + "\n" +
-	"\t" + "Legal entity: " + legalEntity + "\n" +
-	"\t" + "Domain of primary website: " + verifyDomain + "\n" +
-	(province ? "\t" + "Headquarter province or state: " + province + "\n" : "") +
-	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
-	(city ? "\t" + "Headquarter city: " + city + "\n" : "") +
-	""
-	console.log(content)
-	return content
+	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	let content = ""
+	if (["limited liability corporation","local government","state government","national government"].includes(legalEntity)){
+		content = "\n" +
+		"\t" + "Type: Organisation verification" + "\n" +
+		"\t" + "Description: We verified the following information about an organisation." + "\n" +
+		"\t" + "Name: " + verifyName + "\n" +
+		"\t" + "Country: " + country + "\n" +
+		"\t" + "Legal entity: " + legalEntity + "\n" +
+		(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
+		(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
+		(province ? "\t" + "Province or state: " + province + "\n" : "") +
+		(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
+		(city ? "\t" + "City: " + city + "\n" : "") +
+		(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
+		(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
+		(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
+		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+		""
+	} 
 }
-export const parseDomainVerification = (s) => {
+
+export const parseOrganisationVerification = (s) => {
 	const domainVerificationRegex= new RegExp(''
-	+ /^\n\tType: Domain verification\n/.source
+	+ /^\n\tType: Verification\n/.source
 	+ /\tDescription: We verified the following information about an organisation.\n/.source
-	+ /\tOrganisation name: (?<name>[^\n]+?)\n/.source
-	+ /\tHeadquarter country: (?<country>[^\n]+?)\n/.source
+	+ /\tName: (?<name>[^\n]+?)\n/.source
+	+ /\tCountry: (?<country>[^\n]+?)\n/.source
 	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
-	+ /\tDomain of primary website: (?<domain>[^\n]+?)\n/.source
-	+ /(?:\tHeadquarter province or state: (?<province>[^\n]+?)\n)?/.source
+	+ /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
+	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
+	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
-	+ /(?:\tHeadquarter city: (?<city>[^\n]+?)\n)?/.source
+	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
 	console.log(s)
@@ -207,11 +218,66 @@ export const parseDomainVerification = (s) => {
 		country: m[2],
 		legalForm: m[3],
 		domain: m[4],
-		province: m[5],
-		serialNumber: m[6],
-		city: m[7]
+		foreignDomain: m[5],
+		province: m[6],
+		serialNumber: m[7],
+		city: m[8]
 	} : {}
 }
+
+export const buildPersonVerificationContent = (
+		{verifyName, birthCountry, birthCity, verifyDomain, foreignDomain,
+		birthDate, job, employer, verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
+	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
+	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	let content = "\n" +
+		"\t" + "Type: Person verification" + "\n" +
+		"\t" + "Description: We verified the following information about a person." + "\n" +
+		"\t" + "Name: " + verifyName + "\n" +
+		"\t" + "Date of birth: " + new Date(birthDate).toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ') + "\n" +
+		"\t" + "City of birth: " + birthCity + "\n" +
+		"\t" + "Country of birth: " + birthCountry + "\n" +
+		(job ? "\t" + "Job title: " + job + "\n" : "") +
+		(employer ? "\t" + "Employer: " + employer + "\n" : "") +
+		(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
+		(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
+		(pictureHash ? "\t" + "Picture: " + pictureHash + "\n" : "") +
+		(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
+		(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
+		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+		""
+	console.log(content)
+	return content
+}
+
+export const parsePersonVerification = (s) => {
+	const domainVerificationRegex= new RegExp(''
+	+ /^\n\tType: Verification\n/.source
+	+ /\tDescription: We verified the following information about an organisation.\n/.source
+	+ /\tName: (?<name>[^\n]+?)\n/.source
+	+ /\tCountry: (?<country>[^\n]+?)\n/.source
+	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
+	+ /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
+	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
+	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
+	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
+	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
+	+ /$/.source
+	);
+	console.log(s)
+	const m = s.match(domainVerificationRegex)
+	return m ? {
+		name: m[1],
+		country: m[2],
+		legalForm: m[3],
+		domain: m[4],
+		foreignDomain: m[5],
+		province: m[6],
+		serialNumber: m[7],
+		city: m[8]
+	} : {}
+}
+
 export const buildVoteContent = ({hash_b64, poll, vote}) => {
 	const content = "\n" +
 	"\t" + "Type: Vote" + "\n" +
@@ -293,7 +359,7 @@ for (let e of Object.values(examples) ){
 		const {content, type} = parseStatement(e)
 		console.log(content)
 		if(content && type == statementTypes.domainVerification){
-			console.log(parseDomainVerification(content))
+			console.log(parseOrganisationVerification(content))
 		}
 	} catch (e) {
 		console.log(e)

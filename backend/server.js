@@ -16,15 +16,15 @@ import updateIdentityBeliefs from './updateIdentityBeliefs.js'
 
 p2p.setupSchedule()
 retryAndCleanUp.setupSchedule()
-updateIdentityBeliefs.setupSchedule()
+//updateIdentityBeliefs.setupSchedule()
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN
-const port = parseInt(process.env.PORT || 7766)
+const port = parseInt(process.env.PORT || '7766')
 
-const app = express.Application = express();
+const app = express();
 
 app.disable('x-powered-by')
 

@@ -1,12 +1,12 @@
 
-import db from './db.js'
+import {getHighConfidenceVerifications, createOrganisationIDBelief} from './db.js'
 
 const log = false
 
 const updateBasedOnVerifications = async () => {
     let dbResult = {} 
     try {
-        dbResult = await db.getHighConfidenceVerifications({max_inactive_verifier_node_days: 1, min_primary_domain_confidence: 0.9})
+        dbResult = await getHighConfidenceVerifications({max_inactive_verifier_node_days: 1, min_primary_domain_confidence: 0.9})
     } catch (error) {
         console.log(error)
         console.trace()
@@ -34,7 +34,7 @@ const updateBasedOnVerifications = async () => {
         }
         return( new Promise(async (resolve, reject) => {
             try {
-                dbResult = await db.createOrganisationIDBelief({domain1: verified_domain, domain1_confidence: 0})
+                dbResult = await createOrganisationIDBelief({domain1: verified_domain, domain1_confidence: 0})
             } catch (error) {
                 console.log(error)
                 console.trace()

@@ -1,11 +1,11 @@
 
 
-import db from './db.js'
+import {createPoll, getVerificationsForDomain, getPoll, createVote} from './db.js'
 import {parseVote, parsePoll} from './statementFormats.js'
 
 const log = true
 
-export const createPoll = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
     log && console.log('createPoll', statement_hash, domain, content)
     try {
         const parsedPoll = parsePoll(content)
@@ -15,7 +15,7 @@ export const createPoll = ({statement_hash, domain, content }) => (new Promise(a
             resolve({error: "Missing required fields"})
             return
         }
-        const dbResult = await db.createPoll({ statement_hash, participants_entity_type: legalEntity, 
+        const dbResult = await createPoll({ statement_hash, participants_entity_type: legalEntity, 
             participants_country: country, participants_city: city, deadline })   
         if(dbResult.error){
             console.log(dbResult.error)
@@ -35,7 +35,7 @@ export const createPoll = ({statement_hash, domain, content }) => (new Promise(a
 }))
 
 
-export const createVote = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+export const parseAndCreateVote = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
     log && console.log('createVote', content)
     try {
         const parsedVote = parseVote(content)
@@ -46,7 +46,7 @@ export const createVote = ({statement_hash, domain, content }) => (new Promise(a
             resolve({error: "Missing required fields"})
             return
         }
-        let dbResult = await db.getVerifications({domain})
+        let dbResult = await getVerificationsForDomain({domain})
         if(dbResult.error){
             console.log(dbResult)
             resolve(dbResult)
@@ -59,7 +59,7 @@ export const createVote = ({statement_hash, domain, content }) => (new Promise(a
         }
         const verification = dbResult.rows[0]
         
-        dbResult = await db.getPoll({statement_hash: pollHash})
+        dbResult = await getPoll({statement_hash: pollHash})
         if(dbResult.rows.length == 0){
             log && console.log("Poll does not exist")
             resolve({error: "Poll does not exist"})
@@ -87,7 +87,7 @@ export const createVote = ({statement_hash, domain, content }) => (new Promise(a
             votingEntityQualified = true
         }
         if(voteTimeQualified && votingEntityQualified){
-            dbResult = await db.createVote({statement_hash, poll_hash: pollHash, option, domain, qualified })
+            dbResult = await createVote({statement_hash, poll_hash: pollHash, option, domain, qualified })
             if(dbResult.error){
                 console.log(dbResult.error)
                 console.trace()

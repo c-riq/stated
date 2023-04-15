@@ -2,13 +2,14 @@ import * as pg from 'pg'
 import {forbiddenStrings} from './statementFormats.js'
 import {performMigrations} from './migrations.js'
 
+// @ts-ignore
 const { Pool } = pg.default
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
 const pgDatabase = process.env.POSTGRES_DB || "dev"
 const pgUser = process.env.POSTGRES_USER || "sdf"
 const pgPassword = process.env.POSTGRES_PW || "sdf"
-const pgPort = parseInt(process.env.POSTGRES_PORT || 5432)
+const pgPort = parseInt(process.env.POSTGRES_PORT || '5432')
 
 const pool = new Pool({
   user: pgUser,
@@ -28,26 +29,20 @@ async () => {
   }
 }, 500)
 
-const s = (f) => {
+const s = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
-  return (o) => {
-    if (!migrationsDone){
-      return {error: 'database migrations not finished'}
+    if (typeof o != 'undefined') {
+      if(forbiddenStrings(Object.values(o)).length > 0) {
+        throw { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
+      }
     }
-    if (typeof o == 'undefined') {
-      return f()
-    }
-    if(forbiddenStrings(Object.values(o)).length > 0) {
-      return { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
-    } else {
-      return f(o)
-    }
-  }
 }
 
-const createStatement = ({ type, domain, statement, proclaimed_publication_time, hash_b64, 
-  tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+export const createStatement = (o) => (new Promise((resolve, reject) => {
   try {
+    s(o)
+    const { type, domain, statement, proclaimed_publication_time, hash_b64, 
+      tags, content, content_hash_b64, verification_method, source_node_id } = o
     log && console.log(type, domain, statement, proclaimed_publication_time, hash_b64, 
       tags, content, content_hash_b64, verification_method, source_node_id)
     pool.query(`INSERT INTO statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
@@ -75,8 +70,9 @@ const createStatement = ({ type, domain, statement, proclaimed_publication_time,
   }
 }))
 
-const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
+export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
   try {
+    s({minId, searchQuery})
     pool.query(`
             WITH reposts as(
                 SELECT 
@@ -148,8 +144,9 @@ const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolv
   }
 }))
 
-const getStatements = ({ minId, onlyStatementsWithMissingEntities }) => (new Promise((resolve, reject) => {
+export const getStatements = ({ minId, onlyStatementsWithMissingEntities = false }) => (new Promise((resolve, reject) => {
   try {
+    s({minId, onlyStatementsWithMissingEntities})
     pool.query(`
               SELECT 
                   id,
@@ -183,8 +180,10 @@ const getStatements = ({ minId, onlyStatementsWithMissingEntities }) => (new Pro
   }
 }))
 
-const updateStatement = ({ hash_b64, derived_entity_created, 
+export const updateStatement = ({ hash_b64, derived_entity_created, 
   increment_derived_entity_creation_retry_count }) => (new Promise((resolve, reject) => {
+  s({ hash_b64, derived_entity_created, 
+      increment_derived_entity_creation_retry_count })
   if (!hash_b64 || !(derived_entity_created || increment_derived_entity_creation_retry_count)){
     resolve({error: 'missing parameters for updateStatement'})
   }
@@ -229,8 +228,9 @@ const updateStatement = ({ hash_b64, derived_entity_created,
   }
 }))
 
-const createUnverifiedStatement = ({ statement, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve, reject) => {
+export const createUnverifiedStatement = ({ statement, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve, reject) => {
   try {
+    s({statement, hash_b64, source_node_id, source_verification_method})
     log && console.log(statement, hash_b64, source_node_id, source_verification_method)
     pool.query(`INSERT INTO unverified_statements (statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count) 
                       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 0)
@@ -252,7 +252,7 @@ const createUnverifiedStatement = ({ statement, hash_b64, source_node_id, source
   }
 }))
 
-const getUnverifiedStatements = () => (new Promise((resolve, reject) => {
+export const getUnverifiedStatements = () => (new Promise((resolve, reject) => {
   try {
     pool.query(`
               SELECT 
@@ -275,8 +275,9 @@ const getUnverifiedStatements = () => (new Promise((resolve, reject) => {
   }
 }))
 
-const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_count }) => (new Promise((resolve, reject) => {
+export const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_count }) => (new Promise((resolve, reject) => {
   try {
+      s({hash_b64, increment_verification_retry_count})
       if(hash_b64 && increment_verification_retry_count){
         pool.query(`
         UPDATE unverified_statements SET 
@@ -304,8 +305,9 @@ const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_coun
   }
 ))
 
-const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_count}) => (new Promise((resolve, reject) => {
+export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_count}) => (new Promise((resolve, reject) => {
   try {
+    s({max_age_hours, max_verification_retry_count})
     pool.query(`
               DELETE FROM 
                 unverified_statements
@@ -332,11 +334,13 @@ const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_coun
   }
 }))
 
-const createVerification = ({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city }) => (new Promise((resolve, reject) => {
+export const createOrganisationVerification = (o) => (new Promise((resolve, reject) => {
   try {
+    s(o)
+    const { statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city } = o
     log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
     pool.query(`
-            INSERT INTO verifications 
+            INSERT INTO organisation_verifications 
               (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
                 country, province, city) 
             VALUES 
@@ -359,9 +363,40 @@ const createVerification = ({ statement_hash, verifier_domain, verified_domain, 
   }
 }))
 
-const createPoll = ({ statement_hash, participants_entity_type, participants_country, participants_city, deadline }) => 
+export const createPersonVerification = (o) => (new Promise((resolve, reject) => {
+  try {
+    s(o)
+    const { statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city } = o
+    log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
+    pool.query(`
+            INSERT INTO person_verifications 
+              (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
+                country, province, city) 
+            VALUES 
+              ($1, $2, $3, $4, $5, 
+                $6, $7, $8)
+            RETURNING *`,
+      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          resolve({ error })
+        } else {
+          resolve(results)
+        }
+      })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}))
+
+export const createPoll = (o) => 
 (new Promise((resolve, reject) => {
   try {
+    s(o)
+    const { statement_hash, participants_entity_type, participants_country, participants_city, deadline } = o
     log && console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
     pool.query(`
             INSERT INTO polls 
@@ -386,8 +421,9 @@ const createPoll = ({ statement_hash, participants_entity_type, participants_cou
   }
 }))
 
-const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve, reject) => {
+export const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve, reject) => {
   try {
+    s({ statement_hash, poll_hash, option, domain, qualified })
     log && console.log('createVote', [statement_hash, poll_hash, option, domain, qualified])
     pool.query(`
             INSERT INTO votes 
@@ -411,8 +447,9 @@ const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) =>
   }
 }))
 
-const createRating = ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve, reject) => {
+export const createRating = ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve, reject) => {
   try {
+    s({ statement_hash, organisation, domain, rating, comment })
     log && console.log('create rating', [statement_hash, organisation, domain, rating, comment])
     pool.query(`
             INSERT INTO ratings 
@@ -436,8 +473,9 @@ const createRating = ({ statement_hash, organisation, domain, rating, comment })
   }
 }))
 
-const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
+    s({ hash_b64 })
     pool.query(`
             WITH domains AS (
               SELECT domain 
@@ -467,8 +505,9 @@ const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, re
   }
 }));
 
-const getVerificationsForDomain = ({ domain }) => (new Promise((resolve, reject) => {
+export const getVerificationsForDomain = ({ domain }) => (new Promise((resolve, reject) => {
   try {
+    s({ domain })
     pool.query(`
             SELECT 
                 *
@@ -490,7 +529,7 @@ const getVerificationsForDomain = ({ domain }) => (new Promise((resolve, reject)
   }
 }))
 
-const getAllVerifications = () => (new Promise((resolve, reject) => {
+export const getAllVerifications = () => (new Promise((resolve, reject) => {
   try {
     pool.query(`
             SELECT 
@@ -514,24 +553,23 @@ const getAllVerifications = () => (new Promise((resolve, reject) => {
   }
 }));
 
-const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_primary_domain_confidence}) => (new Promise((resolve, reject) => {
+export const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_primary_domain_confidence}) => (new Promise((resolve, reject) => {
   try {
+    s({max_inactive_verifier_node_days, min_primary_domain_confidence})
     pool.query(`
             SELECT 
                 v.*,
-                b.primary_domain1_confidence verifier_domain_confidence,
-                b.name1 verifier_domain_name,
+                b.name verifier_domain_name,
                 n.last_seen verifier_node_last_seen
             FROM verifications v
-              JOIN identiy_beliefs_organisations b 
-                ON v.verifier_domain=b.primary_domain1
-                AND b.primary_domain1_confidence > $1
-                AND b.name1_confidence > $1
+              JOIN domain_ownsership_beliefs b 
+                ON v.verifier_domain=b.domain
+                AND b.name_confidence > $1
               JOIN p2p_nodes n 
-                ON ('stated.' || b.primary_domain1)=n.domain
-                AND n.last_seen > (now() - ($2 * INTERVAL '1 day'))
+                ON ('stated.' || b.domain)=n.domain
+                AND n.last_seen > (now() - ($1 * INTERVAL '1 day'))
               ;
-            `,[min_primary_domain_confidence || 0.9, max_inactive_verifier_node_days || 1], (error, results) => {
+            `,[max_inactive_verifier_node_days || 1], (error, results) => {
       if (error) {
         console.log(error)
         console.trace()
@@ -547,39 +585,38 @@ const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_pr
   }
 }));
 
-const createOrganisationIDBelief = ({ primary_domain1,
-                                      primary_domain1_confidence,
-                                      name1,
-                                      name1_confidence,
-                                      legal_entity_type1,
-                                      legal_entity_type1_confidence,
-                                      country1,
-                                      country1_confidence,
-                                      province1,
-                                      province1_confidence,
-                                      city1,
-                                      city1_confidence }) => (new Promise((resolve, reject) => {
+export const createOrganisationIDBelief = (o) => (new Promise((resolve, reject) => {
   try {
+    s(o)
+    const { primary_domain1,
+      name1,
+      name1_confidence,
+      legal_entity_type1,
+      legal_entity_type1_confidence,
+      country1,
+      country1_confidence,
+      province1,
+      province1_confidence,
+      city1,
+      city1_confidence } = o
     pool.query(`
-            INSERT INTO identiy_beliefs_organisations (
-              primary_domain1,
-              primary_domain1_confidence,
-              name1,
-              name1_confidence,
-              legal_entity_type1,
-              legal_entity_type1_confidence,
-              country1,
-              country1_confidence,
-              province1,
-              province1_confidence,
-              city1,
-              city1_confidence
+            INSERT INTO domain_ownsership_beliefs (
+              domain,
+              name,
+              name_confidence,
+              legal_entity_type,
+              legal_entity_type_confidence,
+              country,
+              country_confidence,
+              province,
+              province_confidence,
+              city,
+              city_confidence
             ) VALUES
-                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            ON CONFLICT (primary_domain1) DO NOTHING
+                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            ON CONFLICT (domain) DO NOTHING
             RETURNING *
             `,[primary_domain1,
-              primary_domain1_confidence,
               name1,
               name1_confidence,
               legal_entity_type1,
@@ -606,9 +643,10 @@ const createOrganisationIDBelief = ({ primary_domain1,
 }));
 
 
-const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
+export const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
   console.log('getPoll', statement_hash)
   try {
+    s({ statement_hash })
     pool.query(`
             SELECT 
                 *
@@ -633,7 +671,7 @@ const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
 }))
 
 
-const getAllNodes = () => (new Promise((resolve, reject) => {
+export const getAllNodes = () => (new Promise((resolve, reject) => {
   try {
     pool.query(`
             SELECT 
@@ -657,8 +695,9 @@ const getAllNodes = () => (new Promise((resolve, reject) => {
   }
 }));
 
-const addNode = ({ domain }) => (new Promise((resolve, reject) => {
+export const addNode = ({ domain }) => (new Promise((resolve, reject) => {
   try {
+    s({ domain })
     pool.query(`
             INSERT INTO p2p_nodes (domain, first_seen, last_seen) VALUES
                 ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -680,8 +719,9 @@ const addNode = ({ domain }) => (new Promise((resolve, reject) => {
   }
 }));
 
-const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
+    s({ hash_b64 })
     pool.query(`
             WITH content_hashes AS(
               SELECT content_hash
@@ -718,8 +758,9 @@ const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) =>
   }
 }))
 
-const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
+    s({ hash_b64 })
     pool.query(`
       SELECT 
         *
@@ -744,9 +785,10 @@ const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   log && console.log('getStatement', hash_b64)
   try {
+    s({ hash_b64 })
     pool.query(`
             SELECT 
                 s.*,
@@ -772,8 +814,9 @@ const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve, reject) => {
+export const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve, reject) => {
   try {
+    s({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip })
     pool.query(`
             UPDATE p2p_nodes
             SET 
@@ -808,8 +851,9 @@ const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fin
   }
 }))
 
-const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
+    s({ hash_b64 })
     log && console.log(hash_b64, 'check')
     pool.query(`
             SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
@@ -830,8 +874,9 @@ const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   }
 }))
 
-const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reject) => {
+export const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reject) => {
   try {
+    s({ hash_b64, ownDomain })
     pool.query(`
             SELECT 
               *,
@@ -856,8 +901,9 @@ const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reje
   }
 }))
 
-const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject) => {
+export const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject) => {
   try {
+    s({ domain })
     pool.query(`
             WITH regex AS (
               SELECT '^(http:\/\/|https:\/\/)?(www\.)?' || $1 || '\..*$' as pattern
@@ -892,18 +938,18 @@ const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject)
 
 
 
-const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => {
+export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => {
   try {
+    s({ domain_substring })
     pool.query(`
             with regex AS ( SELECT '.*' || $1 || '.*' pattern)
             SELECT 
               host domain,
-              "subject.O" AS organization,
-              "subject.C" AS country,
-              "subject.ST" AS state,
-              "subject.L" AS city,
-              index
-            FROM ssl_certificates
+              subject_O AS organization,
+              subject_C AS country,
+              subject_ST AS state,
+              subject_L AS city,
+            FROM ssl_cert_cache
               JOIN regex ON host ~ regex.pattern
             WHERE LOWER("subject.O") NOT LIKE '%cloudflare%'
             ORDER BY index ASC LIMIT 20
@@ -924,9 +970,10 @@ const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => 
   }
 }))
 
-const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
+export const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
   try {
-    pool.query(`INSERT INTO ssl_certificates (domain, "subject.O", "subject.C", "subject.ST", "subject.L", sha256, valid_from, valid_to, first_seen, last_seen) 
+    s({ domain, O, C, ST, L, sha256, validFrom, validTo })
+    pool.query(`INSERT INTO ssl_cert_cache (domain, subject_O, subject_C, subject_ST, subject_L, sha256, valid_from, valid_to, first_seen, last_seen) 
 VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (sha256) DO NOTHING
 RETURNING *;`,
@@ -946,18 +993,19 @@ RETURNING *;`,
   }
 }))
 
-const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
+export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
   if (!domain) return resolve({ error: 'no domain' })
   try {
+    s({ domain })
     pool.query(`
             SELECT 
               host domain,
-              O AS organization,
-              C AS country,
-              ST AS state,
-              L AS city,
-              row_number() over(order by valid_from desc) AS rnk
-            FROM ssl_certificates
+              subject_O AS organization,
+              subject_C AS country,
+              subject_ST AS state,
+              subject_L AS city,
+              row_number() over(partition by host order by valid_from desc) AS rnk
+            FROM ssl_cert_cache
               where domain=$1
               AND valid_from < CURRENT_TIMESTAMP
               AND CURRENT_TIMESTAMP < valid_to
@@ -979,37 +1027,3 @@ const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
     resolve({ error })
   }
 }))
-
-
-export default {
-  createUnverifiedStatement: s(createUnverifiedStatement),
-  getUnverifiedStatements: s(getUnverifiedStatements),
-  updateUnverifiedStatement: s(updateUnverifiedStatement),
-  cleanUpUnverifiedStatements: s(cleanUpUnverifiedStatements),
-  createStatement: s(createStatement),
-  updateStatement: s(updateStatement),
-  getStatements: s(getStatements),
-  getStatementsWithDetail: s(getStatementsWithDetail),
-  getStatement: s(getStatement),
-  getOwnStatement: s(getOwnStatement),
-  createVerification: s(createVerification),
-  createPoll: s(createPoll),
-  getPoll: s(getPoll),
-  createVote: s(createVote),
-  createRating: s(createRating),
-  getVerifications: s(getVerificationsForDomain),
-  getVerificationsForStatement: s(getVerificationsForStatement),
-  getAllVerifications: s(getAllVerifications),
-  getHighConfidenceVerifications:  s(getHighConfidenceVerifications),
-  createOrganisationIDBelief: s(createOrganisationIDBelief),
-  getAllNodes: s(getAllNodes),
-  addNode: s(addNode),
-  getJoiningStatements: s(getJoiningStatements),
-  getVotes: s(getVotes),
-  updateNode: s(updateNode),
-  statementExists: s(statementExists),
-  getDomainOwnershipBeliefs: s(getDomainOwnershipBeliefs),
-  matchDomain: s(matchDomain),
-  getCertCache: s(getCertCache),
-  setCertCache: s(setCertCache)
-}

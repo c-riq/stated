@@ -5,8 +5,9 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         sql: `
         DROP TYPE IF EXISTS statement_type CASCADE;
         CREATE TYPE statement_type AS ENUM 
-            ('statement', 'dispute statement', 'response',
-            'domain verification', 'poll', 'vote', 'rating');
+            ('statement', 'dispute_statement', 'response',
+            'organisation_verification', 'person_verification', 
+            'poll', 'vote', 'rating');
         DROP TYPE IF EXISTS verification_method CASCADE;
         CREATE TYPE verification_method AS ENUM 
             ('api', 'dns');
@@ -39,79 +40,55 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             derived_entity_created BOOLEAN NOT NULL,
             derived_entity_creation_retry_count int
         );
-        DROP TABLE IF EXISTS verifications;
-        CREATE TABLE IF NOT EXISTS verifications (
+        DROP TABLE IF EXISTS organisation_verifications;
+        CREATE TABLE IF NOT EXISTS organisation_verifications (
             id SERIAL PRIMARY KEY,
             statement_hash VARCHAR(500) UNIQUE NOT NULL,
             verifier_domain VARCHAR(100) NOT NULL,
-            verified_domain VARCHAR(100) NOT NULL,
+            verified_domain VARCHAR(100),
+            foreign_domain VARCHAR(100),
             name VARCHAR(100) NOT NULL,
             legal_entity_type VARCHAR(100) NOT NULL,
+            serial_number VARCHAR(100),
             country VARCHAR(100) NOT NULL,-- ISO 3166 country name
             province VARCHAR(100),
             city VARCHAR(100)
         );
-        DROP TABLE IF EXISTS identiy_beliefs_organisations;
-        CREATE TABLE IF NOT EXISTS identiy_beliefs_organisations (
+        DROP TABLE IF EXISTS person_verifications;
+        CREATE TABLE IF NOT EXISTS person_verifications (
             id SERIAL PRIMARY KEY,
-            primary_domain1 VARCHAR(100) UNIQUE NOT NULL,
-            primary_domain1_confidence DOUBLE PRECISION NOT NULL,
-            primary_domain2 VARCHAR(100),
-            primary_domain2_confidence DOUBLE PRECISION,
-            name1 VARCHAR(100) NOT NULL,
-            name1_confidence DOUBLE PRECISION NOT NULL,
-            name2 VARCHAR(100),
-            name2_confidence DOUBLE PRECISION,
-            legal_entity_type1 VARCHAR(100) NOT NULL,
-            legal_entity_type1_confidence DOUBLE PRECISION NOT NULL,
-            legal_entity_type2 VARCHAR(100),
-            legal_entity_type2_confidence DOUBLE PRECISION,
-            country1 VARCHAR(100) NOT NULL,
-            country1_confidence DOUBLE PRECISION NOT NULL,
-            country2 VARCHAR(100),
-            country2_confidence DOUBLE PRECISION,
-            province1 VARCHAR(100),
-            province1_confidence DOUBLE PRECISION,
-            province2 VARCHAR(100),
-            province2_confidence DOUBLE PRECISION,
-            city1 VARCHAR(100),
-            city1_confidence DOUBLE PRECISION,
-            city2 VARCHAR(100),
-            city2_confidence DOUBLE PRECISION
+            statement_hash VARCHAR(500) UNIQUE NOT NULL,
+            verifier_domain VARCHAR(100) NOT NULL,
+            verified_domain VARCHAR(100),
+            foreign_domain VARCHAR(100),
+            name VARCHAR(100) NOT NULL,
+            birth_country VARCHAR(100) NOT NULL,
+            birth_city VARCHAR(100),
+            birth_date VARCHAR(100)
         );
-        INSERT INTO identiy_beliefs_organisations (
-            primary_domain1, primary_domain1_confidence, name1, name1_confidence, 
-            legal_entity_type1, legal_entity_type1_confidence, country1, country1_confidence,
-            city1, city1_confidence) 
-        VALUES ('rixdata.net', 1.0, 'Rix Data UG (haftungsbeschränkt)', 1.0,
+        DROP TABLE IF EXISTS domain_ownership_beliefs;
+        CREATE TABLE IF NOT EXISTS domain_ownership_beliefs (
+            id SERIAL PRIMARY KEY,
+            domain VARCHAR(100) UNIQUE NOT NULL,
+            name VARCHAR(100) NOT NULL,
+            name_confidence DOUBLE PRECISION NOT NULL,
+            legal_entity_type VARCHAR(100) NOT NULL,
+            legal_entity_type_confidence DOUBLE PRECISION NOT NULL,
+            country VARCHAR(100) NOT NULL,
+            country_confidence DOUBLE PRECISION NOT NULL,
+            province VARCHAR(100),
+            province_confidence DOUBLE PRECISION,
+            city VARCHAR(100),
+            city_confidence DOUBLE PRECISION,
+            reputation DOUBLE PRECISION,
+        );
+        INSERT INTO domain_ownership_beliefs (
+            domain, name, name_confidence, legal_entity_type,
+            legal_entity_type_confidence, country, country_confidence,
+            city, city_confidence) 
+        VALUES ('rixdata.net', 'Rix Data UG (haftungsbeschränkt)', 1.0,
             'limited liability corporation', 1.0, 'DE', 1.0, 
             'Bamberg', 1.0);
-        DROP TABLE IF EXISTS identiy_beliefs_people;
-        CREATE TABLE IF NOT EXISTS identiy_beliefs_people (
-            id SERIAL PRIMARY KEY,
-            name1 VARCHAR(100) NOT NULL,
-            name1_confidence DOUBLE PRECISION NOT NULL,
-            name2 VARCHAR(100),
-            name2_confidence DOUBLE PRECISION,
-            birth_city VARCHAR(100),
-            birth_date VARCHAR(100),
-            country1 VARCHAR(100) NOT NULL,
-            country1_confidence DOUBLE PRECISION NOT NULL,
-            country2 VARCHAR(100),
-            country2_confidence DOUBLE PRECISION,
-            province1 VARCHAR(100),
-            province1_confidence DOUBLE PRECISION,
-            province2 VARCHAR(100),
-            province2_confidence DOUBLE PRECISION,
-            city1 VARCHAR(100),
-            city1_confidence DOUBLE PRECISION,
-            city2 VARCHAR(100),
-            city2_confidence DOUBLE PRECISION,
-            current_domain1 VARCHAR(100) NOT NULL,
-            current_domain1_confidence DOUBLE PRECISION NOT NULL,
-            current_domain2 VARCHAR(100),
-            current_domain2_confidence DOUBLE PRECISION
-        );
         DROP TABLE IF EXISTS votes;
         CREATE TABLE IF NOT EXISTS votes (
             id SERIAL PRIMARY KEY,
@@ -169,31 +146,19 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         );
         INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, 1);
         --INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, ${currentCodeVersion});
-        CREATE TABLE IF NOT EXISTS wikidata_org_domains (
-            type_id TEXT,
-            english_label TEXT,
-            official_website TEXT,
-            lat DOUBLE PRECISION,
-            lon DOUBLE PRECISION,
-            country_id TEXT,
-            city_id TEXT,
-            employees DOUBLE PRECISION,
-            twitter_id TEXT,
-            twitter_name TEXT,
-            crunchbase_id TEXT,
-            facebook_id TEXT,
-            linkedin_id TEXT,
-            grid_id TEXT           
-        );
 
         -- TODO: add all fields, rename to ssl_cert_cache
-        CREATE TABLE IF NOT EXISTS ssl_certificates (
+        CREATE TABLE IF NOT EXISTS ssl_cert_cache (
+            sha256 TEXT PRIMARY KEY,
             host TEXT,
-            "subject.O" TEXT,
-            "subject.C" TEXT,
-            "subject.ST" TEXT,
-            "subject.L" TEXT,
-            index INT         
+            subject_O TEXT,
+            subject_C TEXT,
+            subject_ST TEXT,
+            subject_L TEXT,
+            valid_from timestamp, 
+            valid_to timestamp,
+            first_seen timestamp,
+            last_seen timestamp
         );`
     }
 }

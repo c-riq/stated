@@ -1,11 +1,11 @@
 import express from 'express'
-import db from './db.js'
+import {getStatements, getAllVerifications, getAllNodes} from './db.js'
 
 const router = express.Router();
 
 router.get("/statements|statements.txt", async (req, res, next) => {
     try {
-        const dbResult = await db.getStatements({minId: 0})
+        const dbResult = await getStatements({minId: 0})
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -21,7 +21,7 @@ router.get("/statement/:hex", async (req, res, next) => {
         const hex = req.params.hex
         const hash_b64 = hashUtils.hexToB64(hex)
         console.log(hash_b64, ownDomain)
-        const dbResult = await db.getOwnStatement({hash_b64, ownDomain})
+        const dbResult = await getOwnStatement({hash_b64, ownDomain})
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -33,7 +33,7 @@ router.get("/statement/:hex", async (req, res, next) => {
 });
 router.get("/verifications|verifications.txt", async (req, res, next) => {
     try {
-        const dbResult = await db.getAllVerifications()
+        const dbResult = await getAllVerifications()
         if(dbResult?.error){
             throw dbResult?.error
         }
@@ -45,7 +45,7 @@ router.get("/verifications|verifications.txt", async (req, res, next) => {
 });
 router.get("/nodes|nodes.txt", async (req, res, next) => {
     try {
-        const dbResult = await db.getAllNodes()
+        const dbResult = await getAllNodes()
         if(dbResult?.error){
             throw dbResult?.error
         }

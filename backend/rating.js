@@ -1,9 +1,9 @@
-import db from './db.js'
+import {createRating} from './db.js'
 import {parseRating} from './statementFormats.js'
 
 const log = true
 
-export const createRating = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+export const parseAndCreateRating = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
     log && console.log('createRating', statement_hash, domain, content)
     try {
         const parsedRating = parseRating(content)
@@ -13,7 +13,7 @@ export const createRating = ({statement_hash, domain, content }) => (new Promise
             resolve({error: "Missing required fields"})
             return
         }
-        const dbResult = await db.createRating({ statement_hash, organisation, domain, rating: parseInt(rating), comment})   
+        const dbResult = await createRating({ statement_hash, organisation, domain, rating: parseInt(rating), comment})   
         if(dbResult.error){
             console.log(dbResult.error)
             console.trace()

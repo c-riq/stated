@@ -134,6 +134,7 @@ function App() {
             <div style={{ flexGrow: 1 }}></div>
             <div>
               <TextField id="search-field" label="" variant="outlined" size='small'
+                placeholder='search'
                 onChange={e => { setSearchQuery(e.target.value) }}
                 onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
                 onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
@@ -186,7 +187,7 @@ function App() {
         </div>
       </div>
     </div>
-    <Dialog
+    <Dialog /* TODO: fix rerendering deleting state */
         open={dialogOpen}
         onClose={()=>setDialogOpen(false)}
         aria-labelledby="alert-dialog-title"
