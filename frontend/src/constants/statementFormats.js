@@ -321,6 +321,26 @@ export const parseDispute = (s) => {
 		hash_b64: m[1]
 	} : {}
 }
+export const buildPDFSigningContent = ({hash_b64}) => {
+	const content = "\n" +
+	"\t" + "Type: Sign PDF" + "\n" +
+	"\t" + "Description: We hereby digitally sign the referenced PDF file.\n" +
+	"\t" + "Hash of PDF file: " + hash_b64 + "\n" +
+	""
+	return content
+}
+export const parsePDFSigning = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\n\tType: Sign PDF\n/.source
+	+ /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
+	+ /\tHash of PDF file: (?<hash_b64>[^\n]+?)\n/.source
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		hash_b64: m[1]
+	} : {}
+}
 
 export const buildRating = ({organisation, domain, rating, comment}) => {
 	const content = "\n" +
