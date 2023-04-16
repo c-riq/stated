@@ -33,7 +33,7 @@ api.post("/get_txt_records", async (req, res, next) => {
 
 api.post("/submit_statement", async (req, res, next) => {
     const { statement, hash_b64, api_key } = req.body
-    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, verification_source_node_id: null, 
+    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, 
         verification_method: api_key ? 'api' : 'dns', api_key})
     if(dbResult?.error){
         next(dbResult.error)

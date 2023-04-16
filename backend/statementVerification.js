@@ -1,7 +1,7 @@
 
 
 import axios from 'axios'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, updateStatement} from './db.js'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './db.js'
 import * as hashUtils from './hash.js'
 import {createOrgVerification, createPersVerification} from './domainVerification.js'
 import {parseAndCreatePoll, parseAndCreateVote} from './poll.js'
@@ -188,7 +188,7 @@ const verifyViaAPIKey = async ({domain, api_key}) => {
 }
 
 export const validateAndAddStatementIfMissing = 
-    ({statement, hash_b64, source_node_id, verification_method, api_key }) => 
+    ({statement, hash_b64, source_node_id = null, verification_method, api_key }) => 
     (new Promise(async (resolve, reject) => {
     let existsOrCreated = false
     try {
@@ -312,7 +312,7 @@ export const createDerivedEntity =
                 dbResult = await parseAndCreatePoll({statement_hash, domain, content})
             }
             if (type === statementTypes.vote) {
-                dbResult = await parseAndCreatePoll({statement_hash, domain, content, proclaimed_publication_time})
+                dbResult = await parseAndCreateVote({statement_hash, domain, content, proclaimed_publication_time})
             }
             if (type === statementTypes.rating) {
                 dbResult = await parseAndCreateRating({statement_hash, domain, content})
@@ -320,7 +320,7 @@ export const createDerivedEntity =
             if((!dbResult.error) && dbResult.entityCreated === true){
                 dbResult = await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
             } else {
-                dbResult = await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: 1 })
+                dbResult = await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
             }
             if(dbResult.error){
                 console.log(dbResult.error)

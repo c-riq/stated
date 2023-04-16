@@ -80,7 +80,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             province_confidence DOUBLE PRECISION,
             city VARCHAR(100),
             city_confidence DOUBLE PRECISION,
-            reputation DOUBLE PRECISION,
+            reputation DOUBLE PRECISION
         );
         INSERT INTO domain_ownership_beliefs (
             domain, name, name_confidence, legal_entity_type,
@@ -147,7 +147,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, 1);
         --INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, ${currentCodeVersion});
 
-        -- TODO: add all fields, rename to ssl_cert_cache
+        DROP TABLE IF EXISTS ssl_cert_cache;
         CREATE TABLE IF NOT EXISTS ssl_cert_cache (
             sha256 TEXT PRIMARY KEY,
             host TEXT,
@@ -158,7 +158,8 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             valid_from timestamp, 
             valid_to timestamp,
             first_seen timestamp,
-            last_seen timestamp
+            last_seen timestamp,
+            _rank int
         );`
     }
 }

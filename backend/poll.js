@@ -35,7 +35,7 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
 }))
 
 
-export const parseAndCreateVote = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+export const parseAndCreateVote = ({statement_hash, domain, content, proclaimed_publication_time }) => (new Promise(async (resolve, reject)=>{
     log && console.log('createVote', content)
     try {
         const parsedVote = parseVote(content)
@@ -69,10 +69,10 @@ export const parseAndCreateVote = ({statement_hash, domain, content }) => (new P
         
         log && console.log("poll.deadline", poll.deadline, poll.participants_entity_type, poll.participants_country, poll.participants_city)
         log && console.log("verification.legal_entity_type", verification.legal_entity_type, verification.country, verification.city)
-        log && console.log("verification.proclaimed_publication_time", parsedVote.proclaimed_publication_time)
+        log && console.log("proclaimed_publication_time", proclaimed_publication_time)
 
         let voteTimeQualified = false
-        if(parsedVote.proclaimed_publication_time <= poll.deadline) {
+        if(proclaimed_publication_time <= poll.deadline) {
             voteTimeQualified = true
         }
         // TODO: if ownDomain == poll judge, then compare against current time
@@ -87,7 +87,7 @@ export const parseAndCreateVote = ({statement_hash, domain, content }) => (new P
             votingEntityQualified = true
         }
         if(voteTimeQualified && votingEntityQualified){
-            dbResult = await createVote({statement_hash, poll_hash: pollHash, option, domain, qualified })
+            dbResult = await createVote({statement_hash, poll_hash: pollHash, option, domain, qualified: true })
             if(dbResult.error){
                 console.log(dbResult.error)
                 console.trace()

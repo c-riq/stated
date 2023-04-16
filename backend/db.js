@@ -180,8 +180,8 @@ export const getStatements = ({ minId, onlyStatementsWithMissingEntities = false
   }
 }))
 
-export const updateStatement = ({ hash_b64, derived_entity_created, 
-  increment_derived_entity_creation_retry_count }) => (new Promise((resolve, reject) => {
+export const updateStatement = ({ hash_b64, derived_entity_created = false, 
+  increment_derived_entity_creation_retry_count = false }) => (new Promise((resolve, reject) => {
   s({ hash_b64, derived_entity_created, 
       increment_derived_entity_creation_retry_count })
   if (!hash_b64 || !(derived_entity_created || increment_derived_entity_creation_retry_count)){
@@ -207,9 +207,9 @@ export const updateStatement = ({ hash_b64, derived_entity_created,
     if(hash_b64 && increment_derived_entity_creation_retry_count){
       pool.query(`
       UPDATE statements 
-      SET derived_entity_creation_retry_count = derived_entity_creation_retry_count + $2
+      SET derived_entity_creation_retry_count = derived_entity_creation_retry_count + 1
         WHERE hash_b64 = $1 
-    `,[hash_b64, increment_derived_entity_creation_retry_count]
+    `,[hash_b64]
     , (error, results) => {
       if (error) {
         console.log(error)
@@ -949,10 +949,11 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
               subject_C AS country,
               subject_ST AS state,
               subject_L AS city,
+              _rank
             FROM ssl_cert_cache
               JOIN regex ON host ~ regex.pattern
-            WHERE LOWER("subject.O") NOT LIKE '%cloudflare%'
-            ORDER BY index ASC LIMIT 20
+            WHERE LOWER('subject_O') NOT LIKE '%cloudflare%'
+            ORDER BY _rank ASC LIMIT 20
             ;
             `,[domain_substring || ''], (error, results) => {
       if (error) {
@@ -973,8 +974,8 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
 export const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
   try {
     s({ domain, O, C, ST, L, sha256, validFrom, validTo })
-    pool.query(`INSERT INTO ssl_cert_cache (domain, subject_O, subject_C, subject_ST, subject_L, sha256, valid_from, valid_to, first_seen, last_seen) 
-VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    pool.query(`INSERT INTO ssl_cert_cache (host, subject_O, subject_C, subject_ST, subject_L, sha256, valid_from, valid_to, first_seen, last_seen) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (sha256) DO NOTHING
 RETURNING *;`,
 [domain, O, C, ST, L, sha256, validFrom, validTo], (error, results) => {
@@ -998,19 +999,21 @@ export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
   try {
     s({ domain })
     pool.query(`
+            WITH certs AS(
             SELECT 
-              host domain,
+              host AS domain,
               subject_O AS organization,
               subject_C AS country,
               subject_ST AS state,
               subject_L AS city,
               row_number() over(partition by host order by valid_from desc) AS rnk
             FROM ssl_cert_cache
-              where domain=$1
+              where host=$1
               AND valid_from < CURRENT_TIMESTAMP
               AND CURRENT_TIMESTAMP < valid_to
-            AND LOWER(O) NOT LIKE '%cloudflare%'
-            having rnk = 1
+            AND LOWER(subject_O) NOT LIKE '%cloudflare%'
+            )
+            SELECT * FROM certs WHERE rnk = 1
             ;
             `,[domain], (error, results) => {
       if (error) {

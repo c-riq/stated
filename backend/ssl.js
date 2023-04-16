@@ -1,14 +1,14 @@
 import { get } from './request.js'
 import { validateDomainFormat } from './domainNames/validateDomainFormat.js'
-import {getCertCache} from './db.js'
+import {getCertCache, setCertCache} from './db.js'
 
 
 const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
     const cached = await getCertCache({domain})
-    if (cached && cached.rows && cached.result[0] && cached.result[0].O){
-        const {O, L, ST, C} = cached.result[0]
-        return resolve({subject: {O, L, ST, C}, domain})
+    if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_O){
+        const {subject_O, subject_L, subject_ST, subject_C} = cached.rows[0]
+        return resolve({subject: {O: subject_O, L: subject_L, ST: subject_ST, C: subject_C}, domain})
     }
     try {
         const res = await get({hostname: domain, path: '', cache: false})
@@ -19,7 +19,8 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
         const {cert} = res
         const subject = cert && cert.subject 
         if (subject && subject.O && subject.C){
-           setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C})
+           setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C, 
+            sha256: cert.fingerprint256.replace(/:/g,""), validFrom: cert.valid_from, validTo: cert.valid_to})
         }
         resolve({...subject, domain})
     }
@@ -34,7 +35,7 @@ const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject)
     if(!validateDomainFormat(domain)){
         resolve({error: 'invalid domain format'})
         return
-}
+    }
     console.log('get SSL OV info for ', domain)
     if (domain.match(/^stated\./)){
         domain = domain.replace(/^stated\./, '')
@@ -42,18 +43,16 @@ const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject)
     try {
         const promises = [domain, 'www.' + domain, 'stated.' + domain].map(domain => getOVInfo({domain}))
         const results = await Promise.all(promises)
-        if (results.error) {
-            console.log(results.error)
+        if (results.filter(r=>r.error).length) {
+            console.log(results.filter(r=>r.error).map(r=>r.error))
             console.trace()
-        } else {
-            resolve(results)
         }
-        return
+        return resolve(results)
     }
     catch (error){
         console.log(error)
         console.trace()
-        resolve({error})
+        return resolve({error})
     }
 })
 
