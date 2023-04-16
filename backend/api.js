@@ -1,7 +1,10 @@
 import express from 'express'
 
 
-import db from './db.js'
+import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
+    getVerificationsForStatement, getJoiningStatements, getAllNodes, getDomainOwnershipBeliefs,
+    getVotes
+} from './db.js'
 import p2p from './p2p.js'
 import ssl from './ssl.js'
 import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification.js'
@@ -30,7 +33,8 @@ api.post("/get_txt_records", async (req, res, next) => {
 
 api.post("/submit_statement", async (req, res, next) => {
     const { statement, hash_b64, api_key } = req.body
-    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, verification_method: api_key ? 'api' : 'dns', api_key})
+    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, 
+        verification_method: api_key ? 'api' : 'dns', api_key})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -40,13 +44,15 @@ api.post("/submit_statement", async (req, res, next) => {
 })
 
 api.get("/statements_with_details", async (req, res, next) => {
-    let minId = req.query && req.query.min_id
-    if(minId && minId.length > 0){
-        minId = parseInt(minId)
+    const minIdStr = req.query && req.query.min_id
+    let minId = '0'
+    // @ts-ignore
+    if(minIdStr && minIdStr.length > 0){
+        minId = '' + parseInt(minId)
     }
     log && console.log('minid', minId, typeof minId)
     const searchQuery = req.query && req.query.search_query
-    const dbResult = await db.getStatementsWithDetail({minId, searchQuery})
+    const dbResult = await getStatementsWithDetail({minId, searchQuery})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -55,11 +61,16 @@ api.get("/statements_with_details", async (req, res, next) => {
 })
 
 api.get("/statements", async (req, res, next) => {
-    let minId = req.query && req.query.min_id
-    if(minId && minId.length > 0){
-        minId = parseInt(minId)
-    }
-    const dbResult = await db.getStatements({minId})
+    let minId = '0'
+    try { 
+        // @ts-ignore
+        if ((req.query.min_id && req.query.min_id.length) > 0){
+            // @ts-ignore
+            minId = '' + (parseInt(req.query.min_id) || 0)
+        }
+    } catch {}
+    // @ts-ignore
+    const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -69,7 +80,7 @@ api.get("/statements", async (req, res, next) => {
 })
 
 api.post("/statement", async (req, res, next) => {
-    const dbResult = await db.getStatement({hash_b64: req.body.hash_b64})
+    const dbResult = await getStatement({hash_b64: req.body.hash_b64})
     if(dbResult?.error){
         next(dbResult?.error)
     } else {
@@ -78,7 +89,7 @@ api.post("/statement", async (req, res, next) => {
 })
 
 api.post("/verifications", async (req, res, next) => {
-    const dbResult = await db.getVerificationsForStatement({hash_b64: req.body.hash_b64})
+    const dbResult = await getVerificationsForStatement({hash_b64: req.body.hash_b64})
     if(dbResult?.error){
         next(dbResult?.error)
     } else {
@@ -87,7 +98,7 @@ api.post("/verifications", async (req, res, next) => {
 })
 
 api.post("/joining_statements", async (req, res, next) => {
-    const dbResult = await db.getJoiningStatements({hash_b64: req.body.hash_b64})
+    const dbResult = await getJoiningStatements({hash_b64: req.body.hash_b64})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -96,7 +107,7 @@ api.post("/joining_statements", async (req, res, next) => {
 })
 
 api.post("/votes", async (req, res, next) => {
-    const dbResult = await db.getVotes({hash_b64: req.body.hash_b64})
+    const dbResult = await getVotes({hash_b64: req.body.hash_b64})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -105,7 +116,7 @@ api.post("/votes", async (req, res, next) => {
 })
 
 api.get("/nodes", async (req, res, next) => {
-    const dbResult = await db.getAllNodes()
+    const dbResult = await getAllNodes()
     if(dbResult?.error){
         next(dbResult?.error)
     } else {
@@ -129,7 +140,7 @@ api.post("/join_network", async (req, res, next) => {
 })
 
 api.get("/health", async (req, res, next) => {
-    const dbResult = await db.getAllNodes()
+    const dbResult = await getAllNodes()
     if(dbResult?.error){
         next(dbResult?.error)
     } else {
@@ -143,7 +154,7 @@ api.get("/domain_ownership_beliefs", async (req, res, next) => {
         next({error: "missing parameter: domain"})
         return
     }
-    const dbResult = await db.getDomainOwnershipBeliefs({domain})
+    const dbResult = await getDomainOwnershipBeliefs({domain})
     if(dbResult?.error){
         next(dbResult.error)
     } else {
@@ -185,7 +196,7 @@ api.get("/match_domain", async (req, res, next) => {
         next({error: "missing parameter: domain"})
         return
     }
-    const dbResult = await db.matchDomain({domain_substring})
+    const dbResult = await matchDomain({domain_substring})
     if(dbResult?.error){
         next(dbResult.error)
     } else {

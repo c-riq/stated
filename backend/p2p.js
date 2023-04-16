@@ -1,6 +1,6 @@
 
 import { p2p_seed } from './p2p_seed.js'
-import db from './db.js'
+import { getAllNodes, updateNode, addNode } from './db.js'
 import { validateAndAddStatementIfMissing } from './statementVerification.js'
 import { forbiddenChars } from './statementFormats.js'
 
@@ -27,9 +27,9 @@ const validateAndAddNode = ({domain}) => new Promise(async (resolve, reject) => 
         resolve({error: 'skip validatin of own domain ' + domain})
         return
     }
-    const res = await get({hostname: domain, path: '/api/health'})
+    const res = await get({hostname: domain, path: '/api/health', cache: false})
     if(res && res.data && res.data.application == 'stated'){
-        const res = await db.addNode({domain})
+        const res = await addNode({domain})
         if (res.error){
             console.log(res.error)
             resolve({res})
@@ -53,7 +53,7 @@ const addNodesOfPeer = ({domain}) => new Promise(async (resolve, reject) => {
 })
 
 const addNodesOfPeers = async () => {
-    const dbResult = await db.getAllNodes()
+    const dbResult = await getAllNodes()
     let nodes = (dbResult.rows || []).map(row => row.domain)
     if (nodes.length > 10) {
         nodes = sample(nodes, 10)
@@ -80,7 +80,7 @@ const joinNetwork = async () => {
     if (!ownDomain && ownDomain !== 'localhost') {
         return
     }
-    const dbResult = await db.getAllNodes()
+    const dbResult = await getAllNodes()
     const domains = dbResult.rows.map(row => row.domain)
     const result = await Promise.all(domains.map(domain => sendJoinRequest({domain})))
     return result
@@ -89,7 +89,7 @@ const joinNetwork = async () => {
 const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}) => new Promise(async (resolve, reject) => {
     console.log('fetch statements from ', domain)
     try {
-        if (domain === 'stated.' + ownDomain) { resolve(); return }
+        if (domain === 'stated.' + ownDomain) { resolve({}); return }
         const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0)})
         if (res.error){
             log && console.log(domain, res.error)
@@ -120,7 +120,7 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
         // TODO: check if all statements were added already before updating last_received_statement_id
         let lastReceivedStatementId = Math.max(...res.data.statements.map(s => s.id), last_received_statement_id)
         if (lastReceivedStatementId >= 0) {
-            let dbResult = await db.updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
+            let dbResult = await updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
             if(dbResult.error) {
                 console.log(dbResult)
                 console.trace()
@@ -146,7 +146,7 @@ const addSeedNodes = async () => {
 }
 
 const fetchMissingStatementsFromNodes = async () => {
-    const dbResult = await db.getAllNodes()
+    const dbResult = await getAllNodes()
     let nodes = dbResult.rows
     if (nodes.length > 10) {
         nodes = sample(nodes, 10)
@@ -164,7 +164,9 @@ const setupSchedule = () => {
             const joinNetworkRes = await joinNetwork()
             const fetchStatmentsRes = await fetchMissingStatementsFromNodes();
             [seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes].map(i => {
+                // @ts-ignore
                 if(i && i.error){
+                    // @ts-ignore
                     console.log(i.error)
                     console.trace()
                 }

@@ -3,7 +3,7 @@ export const legalForms =
 {
   'legalForms':
   [ 
-      ['all', 'Q5', 'human'],
+      ['all', 'Q5', 'person'],
       ['all', 'Q6501447', 'local government'],
       ['all', 'Q1802419', 'state government'],
       ['all', 'Q10926884', 'national government'],

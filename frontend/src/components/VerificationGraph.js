@@ -23,7 +23,9 @@ export const VerificationGraph = () => {
             "text-wrap": "wrap",
             "text-valign": "center",
             "text-halign": "center",
-            width: "100px",
+            "background-color": "rgba(42,74,103,1)",
+            "color": "rgba(255,255,255,1)",
+            width: "150px",
             height: "50px",
           },
         },
@@ -32,6 +34,9 @@ export const VerificationGraph = () => {
           css: {
             "text-valign": "top",
             "text-halign": "center",
+            "border-style": "none",
+            "border-color": "#eeeeee",
+            "background-color": "#eeeeee",
             // width: 300
           },
         },

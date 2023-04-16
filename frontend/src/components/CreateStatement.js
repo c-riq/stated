@@ -14,7 +14,8 @@ import InputLabel from '@mui/material/InputLabel';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
-import DomainVerificationForm from './DomainVerificationForm.js';
+import OrganisationVerificationForm from './OrganisationVerificationForm.js';
+import PersonVerificationForm from './PersonVerificationForm.js';
 import PollForm from './PollForm.js';
 import DisputeStatementForm from './DisputeStatementForm.js';
 import RatingForm from './RatingForm.js';
@@ -30,8 +31,8 @@ const CreateStatement = props => {
     const [type, setType] = React.useState(props.poll ? "vote" : "statement");
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
-    const [OVInfo, setOVInfo] = React.useState([]);
-    const [DNSSECInfo, setDNSSECInfo] = React.useState({});
+    const [OVInfo, setOVInfo] = React.useState([{domain: null, O: null}]);
+    const [DNSSECInfo, setDNSSECInfo] = React.useState({domain: null, validated: null});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
@@ -41,11 +42,13 @@ const CreateStatement = props => {
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
 
-    const [domainOptions, setDomainOptions] = React.useState([]);
+    const [domainOptions, setDomainOptions] = React.useState([{domain: null, organization: null}]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
 
     React.useEffect(()=>{
         getDomainSuggestions(domainInputValue, res  => {
+            if(!res || !res.result) {return}
+            res.result = res.result.map(r=>({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
             setDomainOptions(res ? (res.result || []) : [])
         })
     },[domainInputValue])
@@ -94,7 +97,7 @@ const CreateStatement = props => {
                 freeSolo
                 disableClearable
                 id="domain"
-                isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
+                isOptionEqualToValue={(option, value) => !!(option.domain && option.domain === value.domain)}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
                 onChange={(event, newInputValue) => {
@@ -107,7 +110,7 @@ const CreateStatement = props => {
                     setDomain(newValue)
                 }}
                 renderInput={(params) => <TextField {...params} 
-                  label="your domain used for publishing" placeholder='google.com' />}
+                  label="Your domain used for publishing/ authenticating" placeholder='google.com' />}
                 style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
                 />
                 { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
@@ -132,7 +135,7 @@ const CreateStatement = props => {
                 id="author"
                 variant="outlined"
                 placeholder='Example Inc.'
-                label="Author of the content"
+                label="Author of the content (you/ your organisation)"
                 value={author}
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
@@ -158,16 +161,21 @@ const CreateStatement = props => {
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={"statement"}>Statement</MenuItem>
-                    <MenuItem value={"domain_verification"}>Verify another domain</MenuItem>
+                    <MenuItem value={"organisation_verification"}>Verify an organisation</MenuItem>
+                    <MenuItem value={"person_verification"}>Verify a person</MenuItem>
                     <MenuItem value={"rating"}>Rating</MenuItem>
                     <MenuItem value={"poll"}>Poll</MenuItem>
                     <MenuItem value={"vote"}>Vote</MenuItem>
                     <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
                 </Select>
-            {type == "domain_verification" &&(<DomainVerificationForm domain={domain} author={author}
+            {type == "organisation_verification" &&(<OrganisationVerificationForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
-                {authorFields()}</DomainVerificationForm>)}
+                {authorFields()}</OrganisationVerificationForm>)}
+            {type == "person_verification" &&(<PersonVerificationForm domain={domain} author={author}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</PersonVerificationForm>)}
             {type == "poll" &&(<PollForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
@@ -200,7 +208,7 @@ const CreateStatement = props => {
                         label=""
                         multiline
                         value={statement}
-                        readOnly
+                        readOnly={true}
                         sx={{width: "100%", overflowX: "scroll"}}
                             />
                     </div>

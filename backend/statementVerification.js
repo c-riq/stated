@@ -1,11 +1,11 @@
 
 
 import axios from 'axios'
-import db from './db.js'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './db.js'
 import * as hashUtils from './hash.js'
-import {createVerification} from './domainVerification.js'
-import {createVote, createPoll} from './poll.js'
-import {createRating} from './rating.js'
+import {createOrgVerification, createPersVerification} from './domainVerification.js'
+import {parseAndCreatePoll, parseAndCreateVote} from './poll.js'
+import {parseAndCreateRating} from './rating.js'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats.js'
 
@@ -38,7 +38,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
         (typeof source_node_id == 'undefined')
         ) 
     ){
-        return({error: "invalid sourceNodeId: " + sourceNodeId})
+        return({error: "invalid sourceNodeId: " + source_node_id})
     }
     let proclaimed_publication_time = -1
     try {
@@ -188,7 +188,7 @@ const verifyViaAPIKey = async ({domain, api_key}) => {
 }
 
 export const validateAndAddStatementIfMissing = 
-    ({statement, hash_b64, source_node_id, verification_method, api_key }) => 
+    ({statement, hash_b64, source_node_id = null, verification_method, api_key }) => 
     (new Promise(async (resolve, reject) => {
     let existsOrCreated = false
     try {
@@ -199,7 +199,7 @@ export const validateAndAddStatementIfMissing =
             resolve(validationResult)
         }
         log && console.log('check if exsits', hash_b64)
-        const result = await db.statementExists({hash_b64})
+        const result = await statementExists({hash_b64})
         if (result.error){
             console.log(result.error)
             console.trace()
@@ -239,7 +239,7 @@ export const validateAndAddStatementIfMissing =
         let dbResult = {error: 'no entity created'}
         if (verified) {
             console.log('verified', verified, verifiedByAPI)
-            dbResult = await db.createStatement({type: type || statementTypes.statement,
+            dbResult = await createStatement({type: type || statementTypes.statement,
                 domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                 verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
             if(dbResult.error){
@@ -261,7 +261,7 @@ export const validateAndAddStatementIfMissing =
                 }
             }
             if(dbResult.error){
-                console.log(error)
+                console.log(dbResult.error)
                 console.trace()
                 resolve(dbResult)
                 return
@@ -271,10 +271,10 @@ export const validateAndAddStatementIfMissing =
                 resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
                 return
             } else {
-                dbResult = await db.createUnverifiedStatement({statement, hash_b64, source_node_id, 
+                dbResult = await createUnverifiedStatement({statement, hash_b64, source_node_id, 
                     source_verification_method: verification_method})
                 if(dbResult.error){
-                    console.log(error)
+                    console.log(dbResult.error)
                     console.trace()
                     resolve(dbResult)
                     return
@@ -283,9 +283,9 @@ export const validateAndAddStatementIfMissing =
                         existsOrCreated = true
                     }
                 }
-                dbResult = await db.updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
+                dbResult = await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
                 if(dbResult.error){
-                    console.log(error)
+                    console.log(dbResult.error)
                     console.trace()
                     resolve(dbResult)
                     return
@@ -306,21 +306,21 @@ export const createDerivedEntity =
         let dbResult = {error: 'no entity created'}
         try {
             if(type === statementTypes.domainVerification){
-                dbResult = await createVerification({statement_hash, domain, content})
+                dbResult = await createOrgVerification({statement_hash, domain, content})
             }
             if(type === statementTypes.poll){
-                dbResult = await createPoll({statement_hash, domain, content})
+                dbResult = await parseAndCreatePoll({statement_hash, domain, content})
             }
             if (type === statementTypes.vote) {
-                dbResult = await createVote({statement_hash, domain, content, proclaimed_publication_time})
+                dbResult = await parseAndCreateVote({statement_hash, domain, content, proclaimed_publication_time})
             }
             if (type === statementTypes.rating) {
-                dbResult = await createRating({statement_hash, domain, content})
+                dbResult = await parseAndCreateRating({statement_hash, domain, content})
             }
             if((!dbResult.error) && dbResult.entityCreated === true){
-                dbResult = await db.updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
+                dbResult = await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
             } else {
-                dbResult = await db.updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: 1 })
+                dbResult = await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
             }
             if(dbResult.error){
                 console.log(dbResult.error)

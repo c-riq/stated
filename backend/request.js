@@ -8,10 +8,12 @@ const log = true
 let _https = https
 
 if (test) {
+    // @ts-ignore
     _https = http
 }
 
-export const get = ({hostname, path, cache}) => new Promise((resolve, reject) => {
+// @ts-ignore
+export const get = ({hostname, path, cache=false}) => new Promise((resolve, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -31,7 +33,9 @@ export const get = ({hostname, path, cache}) => new Promise((resolve, reject) =>
             let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
+                // @ts-ignore
                 cert = !test && res.req.socket.getPeerCertificate()
+                // @ts-ignore
                 ip = res.req.socket.remoteAddress
                 rawData += chunk
             })

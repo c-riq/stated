@@ -5,7 +5,7 @@ and will be retried according to the schedule below
 and deleted afterwards.
 */
 
-import db from './db.js'
+import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, } from './db.js'
 import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification.js'
 
 const log = true
@@ -15,7 +15,7 @@ const verificationRetryScheduleHours = [0, 0.1, 0.2, 1, 10, 24, 336]
 const tryVerifyUnverifiedStatements = async () => {
     let dbResult = {} 
     try {
-        dbResult = await db.getUnverifiedStatements()
+        dbResult = await getUnverifiedStatements()
     } catch (error) {
         console.log(error)
         console.trace()
@@ -46,7 +46,7 @@ const tryAddMissingDerivedEntitiesFromStatements = async () => {
     /* Use cases: Poll might arrive after votes; version upgrades may be necessary. */
     let dbResult = {} 
     try {
-        dbResult = await db.getStatements({onlyStatementsWithMissingEntities : true})
+        dbResult = await getStatements({onlyStatementsWithMissingEntities : true})
     } catch (error) {
         console.log(error)
         console.trace()
@@ -80,7 +80,7 @@ const setupSchedule = () => {
         log && console.log('retry verification started')
         try {
             await tryVerifyUnverifiedStatements()
-            await db.cleanUpUnverifiedStatements({max_age_hours: Math.max(...verificationRetryScheduleHours) | 1,
+            await cleanUpUnverifiedStatements({max_age_hours: Math.max(...verificationRetryScheduleHours) | 1,
                  max_verification_retry_count: verificationRetryScheduleHours.length | 1})
             await tryAddMissingDerivedEntitiesFromStatements()
         } catch (error) {
