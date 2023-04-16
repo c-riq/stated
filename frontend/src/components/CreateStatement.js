@@ -31,8 +31,8 @@ const CreateStatement = props => {
     const [type, setType] = React.useState(props.poll ? "vote" : "statement");
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
-    const [OVInfo, setOVInfo] = React.useState([]);
-    const [DNSSECInfo, setDNSSECInfo] = React.useState({});
+    const [OVInfo, setOVInfo] = React.useState([{domain: null, O: null}]);
+    const [DNSSECInfo, setDNSSECInfo] = React.useState({domain: null, validated: null});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
@@ -42,12 +42,12 @@ const CreateStatement = props => {
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
 
-    const [domainOptions, setDomainOptions] = React.useState([]);
+    const [domainOptions, setDomainOptions] = React.useState([{domain: null, organization: null}]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
 
     React.useEffect(()=>{
         getDomainSuggestions(domainInputValue, res  => {
-            if(!res || !res.result) return
+            if(!res || !res.result) {return}
             res.result = res.result.map(r=>({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
             setDomainOptions(res ? (res.result || []) : [])
         })
@@ -97,7 +97,7 @@ const CreateStatement = props => {
                 freeSolo
                 disableClearable
                 id="domain"
-                isOptionEqualToValue={(option, value) => option.domain && option.domain === value.domain}
+                isOptionEqualToValue={(option, value) => !!(option.domain && option.domain === value.domain)}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
                 onChange={(event, newInputValue) => {
@@ -208,7 +208,7 @@ const CreateStatement = props => {
                         label=""
                         multiline
                         value={statement}
-                        readOnly
+                        readOnly={true}
                         sx={{width: "100%", overflowX: "scroll"}}
                             />
                     </div>

@@ -44,7 +44,8 @@ const PersonVerificationForm = props => {
     }
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-        const content = buildPersonVerificationContent({verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), birthCity, birthCountry, birthDate})
+        const content = buildPersonVerificationContent({verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
+            birthCity, birthCountry, birthDate})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
         console.log(statement)
 
@@ -142,7 +143,7 @@ const PersonVerificationForm = props => {
         />
         <Autocomplete
             id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] == countryObject[4] ) : []}
+            options={countryObject ? cities.cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo

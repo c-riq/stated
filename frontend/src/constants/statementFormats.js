@@ -90,8 +90,7 @@ export const statementTypes = {
     dispute: 'dispute statement',
     rating: 'rating'
 }
-export const buildStatement = ({domain, author, time, tags, content}) => {
-	tags = tags || []
+export const buildStatement = ({domain, author, time, tags = [], content}) => {
 	const statement = "Domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" +
 			"Time: " + time + "\n" +
@@ -226,8 +225,8 @@ export const parseOrganisationVerification = (s) => {
 }
 
 export const buildPersonVerificationContent = (
-		{verifyName, birthCountry, birthCity, verifyDomain, foreignDomain,
-		birthDate, job, employer, verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
+		{verifyName, birthCountry, birthCity, verifyDomain = null, foreignDomain = null,
+		birthDate, job = null, employer = null, verificationMethod = null, confidence = null, supersededVerificationHash = null, pictureHash = null}) => {
 	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
 	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
 	let content = "\n" +

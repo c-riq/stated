@@ -1,7 +1,7 @@
 
 const req = (method, path, body, cb, reject) => {
     const url = `${(
-        process.env.NODE_ENV == 'development' || window.location.host.match(/^localhost.*/) ? (
+        process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
             window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
          ) : 'https://'+ window.location.host 
         )}/api/${path}`
@@ -63,11 +63,12 @@ export const getSSLOVInfo = (domain, cb) => {
 }
 export const getDNSSECInfo = (domain, cb) => {
     if (!domain || domain.length < 1) {
-        cb([])
+        cb({})
         return
     }
     req('GET',(domain ? 'check_dnssec?domain=' + domain : 'check_dnssec'), {}, (json) => {
-        cb(json)
+        const {validated, domain} = json
+        cb({validated, domain})
     }, e => {return})
 }
 export const getJoiningStatements = (hash_b64, cb) => {
