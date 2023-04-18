@@ -1,6 +1,4 @@
 import React from 'react'
-import {Buffer} from 'buffer';
-
 
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
@@ -17,6 +15,7 @@ import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 import GenerateStatement from './GenerateStatement.js'
+import { sha256 } from '../utils/hash.js'
 
 import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../constants/statementFormats.js'
 
@@ -35,15 +34,6 @@ const PollForm = props => {
     const [votingDeadline, setVotingDeadline] = React.useState(moment());
     const [poll, setPoll] = React.useState("");
 
-
-    const digest = async (input) => {
-        var enc = new TextEncoder(); // utf-8
-        const buf = enc.encode(input)
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buf)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const hashHex = Buffer.from(hashArray).toString('base64');
-        return hashHex
-    }
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, nodes, votingDeadline, poll, options})
@@ -58,12 +48,12 @@ const PollForm = props => {
             }
             const parsedDomainVerification = parsePoll(parsedStatement.content)
             if(!parsedDomainVerification){
-                props.setAlertMessage('Invalid domain verification (missing values)')
+                props.setAlertMessage('Invalid poll data (missing values)')
                 props.setisError(true)
                 return
             }
             props.setStatement(statement)
-            digest(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((value) => { props.setStatementHash(value); });
         }
 
     return (

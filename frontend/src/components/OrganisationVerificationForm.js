@@ -14,6 +14,7 @@ import {cities} from '../constants/cities'
 import { parseStatement, buildStatement, forbiddenStrings, 
     buildOrganisationVerificationContent, parseOrganisationVerification } from '../constants/statementFormats.js'
 import GenerateStatement from './GenerateStatement';
+import { sha256 } from '../utils/hash';
 
 
 const OrganisationVerificationForm = props => {
@@ -28,15 +29,6 @@ const OrganisationVerificationForm = props => {
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
-
-    const digest = async (input) => {
-        var enc = new TextEncoder(); // utf-8
-        const buf = enc.encode(input)
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buf)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const hashHex = Buffer.from(hashArray).toString('base64');
-        return hashHex
-    }
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         const content = buildOrganisationVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm})
@@ -51,12 +43,12 @@ const OrganisationVerificationForm = props => {
             }
             const parsedOrganisationVerification = parseOrganisationVerification(parsedStatement.content)
             if(!parsedOrganisationVerification){
-                props.setAlertMessage('Invalid domain verification (missing values)')
+                props.setAlertMessage('Invalid organisation verification (missing values)')
                 props.setisError(true)
                 return
             }
             props.setStatement(statement)
-            digest(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((value) => { props.setStatementHash(value); });
         }
 
     return (

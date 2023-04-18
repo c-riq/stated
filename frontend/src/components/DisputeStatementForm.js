@@ -3,7 +3,7 @@ import React from 'react'
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
-import { digest } from '../utils/hash';
+import { sha256 } from '../utils/hash';
 import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forbiddenStrings } from '../constants/statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 
@@ -29,7 +29,7 @@ const DisputeStatementForm = props => {
                 return
             }
             props.setStatement(statement)
-            digest(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((value) => { props.setStatementHash(value); });
         }
 
     return (

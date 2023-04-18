@@ -1,6 +1,4 @@
-import React from 'react'
-import {Buffer} from 'buffer';
-
+import React from 'react';
 
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
@@ -20,6 +18,7 @@ import {cities} from '../constants/cities'
 import { parseStatement, buildStatement, forbiddenStrings, 
     parsePersonVerification, buildPersonVerificationContent } from '../constants/statementFormats.js'
 import GenerateStatement from './GenerateStatement';
+import { sha256 } from '../utils/hash';
 
 
 const PersonVerificationForm = props => {
@@ -33,15 +32,6 @@ const PersonVerificationForm = props => {
     const [foreignDomain, setForeignDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
-
-    const digest = async (input) => {
-        var enc = new TextEncoder(); // utf-8
-        const buf = enc.encode(input)
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buf)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const hashHex = Buffer.from(hashArray).toString('base64');
-        return hashHex
-    }
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         const content = buildPersonVerificationContent({verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
@@ -57,12 +47,12 @@ const PersonVerificationForm = props => {
             }
             const parsedPersonVerification = parsePersonVerification(parsedStatement.content)
             if(!parsedPersonVerification){
-                props.setAlertMessage('Invalid domain verification (missing values)')
+                props.setAlertMessage('Invalid person verification (missing values)')
                 props.setisError(true)
                 return
             }
             props.setStatement(statement)
-            digest(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((value) => { props.setStatementHash(value); });
         }
 
     return (

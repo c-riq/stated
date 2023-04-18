@@ -5,9 +5,11 @@ import { Buffer } from 'buffer';
 import Button from '@mui/material/Button';
 
 import { getStatement, getJoiningStatements, getVerifications, getVotes } from '../api.js'
-import { statementTypes } from '../constants/statementFormats.js';
+import { statementTypes, parsePDFSigning } from '../constants/statementFormats.js';
 
 import {VerificationGraph} from './VerificationGraph.js'
+
+import {filePath} from './SignPDFForm.js'
 
 
 const Statement = props => {
@@ -17,8 +19,7 @@ const Statement = props => {
     const [verifications, setVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
 
-    const hash_b16 = useParams().statementId || '';
-    const hash_b64 = Buffer.from(hash_b16, 'hex').toString('base64')
+    const hash_b64 = useParams().statementId || '';
 
 
     React.useEffect(() => { if(!dataFetched) {
@@ -34,6 +35,12 @@ const Statement = props => {
         setDataFetched(false)
     }, [location])
 
+    let fileURL = ""
+    if (statement && (statement.type === statementTypes.signPdf)) {
+        const parsedSigning = parsePDFSigning(statement.content)
+        fileURL = filePath(parsedSigning.hash_b64)
+    }
+
     console.log('verifications',verifications)
     return (
         <div style={{ maxWidth: "90vw", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
@@ -44,14 +51,17 @@ const Statement = props => {
                 statement.statement.match(/\n/g) ? (40 + statement.statement.match(/\n/g).length * 18) + 'px' : "250px"), 
                 overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement && statement.statement} />
 
-            {statement && statement.type == statementTypes.poll && (<Link to="/create-statement">
+            {statement && (statement.type == statementTypes.poll && (<Link to="/create-statement">
                 <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
                 sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                     Vote
                 </Button>
-            </Link>)}
+            </Link>))}
 
-            {statement.domain === 'rixdata.net' && statement.hash_b64 === "ZQBx2ImuMYkL2vwkiOp/1YCWwJxNPUAK6k1ecLXvjBk=" && <VerificationGraph/>}
+            {statement.domain === 'rixdata.net' && statement.hash_b64 === "ZQBx2ImuMYkL2vwkiOp_1YCWwJxNPUAK6k1ecLXvjBk" && <VerificationGraph/>}
+            {statement.type === statementTypes.signPdf && 
+            (<Button href={fileURL} target="blank">View PDF File</Button>)
+        }
             <h3>Verify the statement's authenticity</h3>
             <div>
                 <h4>1. generate the statement hash</h4>
@@ -59,7 +69,7 @@ const Statement = props => {
                     Due to its limited length and small set of characters it can be more easily stored and shared than the full text of the statement. 
                     Running the following command in the mac terminal allows you to independently verify the hash:</p>
                 <div>
-                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 -"} />
+                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 | tr -d '=' | tr '/+' '_-' "} />
                 </div>
                 <h4>2. check the domain owners intention to publish statement via the DNS records</h4>
                 <p>Only a owner of a website domain can change the DNS records. If the hash representing the statement was added there, 

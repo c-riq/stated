@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { digest } from '../utils/hash';
+import { sha256 } from '../utils/hash';
 
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -33,7 +33,7 @@ export const RatingForm = props => {
                 return
             }
             props.setStatement(statement)
-            digest(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((value) => { props.setStatementHash(value); });
         }
         const handleChange = (event) => {
             setRating(event.target.value)

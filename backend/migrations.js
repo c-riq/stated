@@ -7,7 +7,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         CREATE TYPE statement_type AS ENUM 
             ('statement', 'dispute_statement', 'response',
             'organisation_verification', 'person_verification', 
-            'poll', 'vote', 'rating');
+            'poll', 'vote', 'rating', 'sign_pdf');
         DROP TYPE IF EXISTS verification_method CASCADE;
         CREATE TYPE verification_method AS ENUM 
             ('api', 'dns');
@@ -15,6 +15,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
         CREATE TABLE IF NOT EXISTS unverified_statements (
             id SERIAL PRIMARY KEY,
             statement VARCHAR(1500) NOT NULL, 
+            author VARCHAR(100) NOT NULL, 
             hash_b64 VARCHAR(500) UNIQUE NOT NULL,
             source_node_id int,
             received_time TIMESTAMP NOT NULL,
@@ -26,6 +27,7 @@ const migrationsFromDBVersionToCurrentCodeVersion = {
             id SERIAL PRIMARY KEY,
             type statement_type NOT NULL,
             domain VARCHAR(100) NOT NULL,
+            author VARCHAR(100) NOT NULL, 
             statement VARCHAR(1500) NOT NULL, 
             proclaimed_publication_time TIMESTAMP,
             hash_b64 VARCHAR(500) UNIQUE NOT NULL,

@@ -83,12 +83,14 @@ Content:
 
 export const statementTypes = {
     statement: 'statement',
-    domainVerification: 'domain verification',
+    organisationVerification: 'organisation_verification',
+    personVerification: 'person_verification',
     poll: 'poll',
     vote: 'vote',
     response: 'response',
-    dispute: 'dispute statement',
-    rating: 'rating'
+    dispute: 'dispute_statement',
+    rating: 'rating',
+	signPdf: "sign_pdf"
 }
 export const buildStatement = ({domain, author, time, tags = [], content}) => {
 	const statement = "Domain: " + domain + "\n" +
@@ -113,7 +115,7 @@ export const parseStatement = (s) => {
 		time: m[3],
 		tags: m[4],
 		content: m[5] || m[7],
-		type: m[6] ? m[6].toLowerCase() : undefined,
+		type: m[6] ? m[6].toLowerCase().replace(' ','_') : undefined,
 	} : {}
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
@@ -175,25 +177,24 @@ export const buildOrganisationVerificationContent = (
 		verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
-	let content = ""
-	if (["limited liability corporation","local government","state government","national government"].includes(legalEntity)){
-		content = "\n" +
-		"\t" + "Type: Organisation verification" + "\n" +
-		"\t" + "Description: We verified the following information about an organisation." + "\n" +
-		"\t" + "Name: " + verifyName + "\n" +
-		"\t" + "Country: " + country + "\n" +
-		"\t" + "Legal entity: " + legalEntity + "\n" +
-		(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
-		(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
-		(province ? "\t" + "Province or state: " + province + "\n" : "") +
-		(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
-		(city ? "\t" + "City: " + city + "\n" : "") +
-		(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
-		(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
-		(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
-		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
-		""
-	} 
+	if (!["limited liability corporation","local government","state government","national government"].includes(legalEntity)) 
+			throw new Error("Invalid legal entity type")
+	return "\n" +
+	"\t" + "Type: Organisation verification" + "\n" +
+	"\t" + "Description: We verified the following information about an organisation." + "\n" +
+	"\t" + "Name: " + verifyName + "\n" +
+	"\t" + "Country: " + country + "\n" +
+	"\t" + "Legal entity: " + legalEntity + "\n" +
+	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
+	(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
+	(province ? "\t" + "Province or state: " + province + "\n" : "") +
+	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
+	(city ? "\t" + "City: " + city + "\n" : "") +
+	(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
+	(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
+	(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
+	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	""
 }
 
 export const parseOrganisationVerification = (s) => {
@@ -314,6 +315,26 @@ export const parseDispute = (s) => {
 	+ /^\n\tType: Dispute statement\n/.source
 	+ /\tDescription: We are convinced that the referenced statement is not authentic.\n/.source
 	+ /\tHash of referenced statement: (?<hash_b64>[^\n]+?)\n/.source
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		hash_b64: m[1]
+	} : {}
+}
+export const buildPDFSigningContent = ({hash_b64}) => {
+	const content = "\n" +
+	"\t" + "Type: Sign PDF" + "\n" +
+	"\t" + "Description: We hereby digitally sign the referenced PDF file.\n" +
+	"\t" + "Hash of PDF file: " + hash_b64 + "\n" +
+	""
+	return content
+}
+export const parsePDFSigning = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\n\tType: Sign PDF\n/.source
+	+ /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
+	+ /\tHash of PDF file: (?<hash_b64>[^\n]+?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(voteRegex)

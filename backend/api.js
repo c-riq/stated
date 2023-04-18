@@ -10,6 +10,8 @@ import ssl from './ssl.js'
 import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification.js'
 import {getTXTEntriesDNSSEC} from './dnssec.js'
 
+import {saveFile} from './upload.js'
+
 const log = false
 
 var api = express.Router();
@@ -201,6 +203,15 @@ api.get("/match_domain", async (req, res, next) => {
         next(dbResult.error)
     } else {
         res.end(JSON.stringify({result: dbResult.rows}))       
+    }
+})
+
+api.post("/upload_pdf", async (req, res, next) => {
+    const result = await saveFile(req)
+    if (!result || !result.error){
+        res.send(result)
+    } else {
+        next(result)
     }
 })
 

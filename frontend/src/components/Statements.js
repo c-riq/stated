@@ -1,4 +1,3 @@
-import { flexbox } from '@mui/system';
 import React from 'react'
 import PlusOneIcon from '@mui/icons-material/PlusOne';
 import PollIcon from '@mui/icons-material/Poll';
@@ -7,7 +6,6 @@ import Stack from '@mui/material/Stack';
 
 import { Link } from 'react-router-dom';
 
-import { b64ToHex } from '../utils/hash.js';
 import { parsePoll, statementTypes } from '../constants/statementFormats.js'
 
 
@@ -21,7 +19,8 @@ const Statements = props => {
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {props.posts && props.posts.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
                     {props.posts && props.posts.length > 0 && props.posts.map((s,i) => {
-                        if (s.type == statementTypes.statement || s.type == statementTypes.rating || s.type == statementTypes.domainVerification){
+                        if ([statementTypes.statement,statementTypes.organisationVerification,
+                        statementTypes.signPdf, statementTypes.rating].includes(s.type)){
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>
@@ -32,7 +31,7 @@ const Statements = props => {
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + b64ToHex(s.hash_b64)} style={{flexGrow: 1}}>
+                            <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}}>
                                 <div className="statement" 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
                                     {s.content.split("\n").map((s,i)=>(<div key={i}>{s}</div>))}
@@ -70,7 +69,7 @@ const Statements = props => {
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + b64ToHex(s.hash_b64)} style={{flexGrow: 1}}>
+                            <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}}>
                                 <div className="statement" 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
                                     <div>{parsedPoll.poll}</div>
