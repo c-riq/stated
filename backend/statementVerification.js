@@ -19,7 +19,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     if (!parsedStatement) {
         return({error: "invalid verification"})
     }
-    const {domain, time, content, tags, type} = parsedStatement
+    const {domain, author, time, content, tags, type} = parsedStatement
     if (!domain) {
         return({error: "domain missing"})
     }
@@ -35,7 +35,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     if (! (
         (typeof source_node_id == 'number')
             ||
-        (typeof source_node_id == 'undefined')
+        (source_node_id === undefined || source_node_id === null)
         ) 
     ){
         return({error: "invalid sourceNodeId: " + source_node_id})
@@ -51,9 +51,9 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     if (!(proclaimed_publication_time > 0)){
         return({error: "invalid publication timestamp (unix epoch):" + proclaimed_publication_time})
     }
-    let result = {content, domain, tags, type, content_hash_b64: hashUtils.sha256Hash(content), proclaimed_publication_time}
+    let result = {content, domain, author, tags, type, content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time}
     if (type) {
-        if([ statementTypes.domainVerification, statementTypes.poll, statementTypes.vote, statementTypes.rating ].includes(type)) {
+        if([ statementTypes.organisationVerification, statementTypes.poll, statementTypes.vote, statementTypes.rating, statementTypes.signPdf ].includes(type)) {
             return result
         } else {
             return {error: 'invalid type: ' + type}
@@ -193,7 +193,7 @@ export const validateAndAddStatementIfMissing =
     let existsOrCreated = false
     try {
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
-        const {domain, proclaimed_publication_time, tags, content_hash_b64, type, content } = validationResult
+        const {domain, author, proclaimed_publication_time, tags, content_hash_b64, type, content } = validationResult
         log && console.log('proclaimed_publication_time', proclaimed_publication_time)
         if (validationResult.error) {
             resolve(validationResult)
@@ -240,7 +240,7 @@ export const validateAndAddStatementIfMissing =
         if (verified) {
             console.log('verified', verified, verifiedByAPI)
             dbResult = await createStatement({type: type || statementTypes.statement,
-                domain, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
+                domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                 verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
             if(dbResult.error){
                 console.log(dbResult.error)
@@ -271,7 +271,7 @@ export const validateAndAddStatementIfMissing =
                 resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
                 return
             } else {
-                dbResult = await createUnverifiedStatement({statement, hash_b64, source_node_id, 
+                dbResult = await createUnverifiedStatement({statement, author, hash_b64, source_node_id, 
                     source_verification_method: verification_method})
                 if(dbResult.error){
                     console.log(dbResult.error)

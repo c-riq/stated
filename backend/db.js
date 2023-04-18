@@ -6,7 +6,7 @@ import {performMigrations} from './migrations.js'
 const { Pool } = pg.default
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
-const pgDatabase = process.env.POSTGRES_DB || "dev"
+const pgDatabase = process.env.POSTGRES_DB || "stated"
 const pgUser = process.env.POSTGRES_USER || "sdf"
 const pgPassword = process.env.POSTGRES_PW || "sdf"
 const pgPort = parseInt(process.env.POSTGRES_PORT || '5432')
@@ -38,23 +38,22 @@ const s = (o) => {
     }
 }
 
-export const createStatement = (o) => (new Promise((resolve, reject) => {
+export const createStatement = ({ type, domain, author, statement, proclaimed_publication_time, hash_b64, 
+  tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
   try {
-    s(o)
-    const { type, domain, statement, proclaimed_publication_time, hash_b64, 
-      tags, content, content_hash_b64, verification_method, source_node_id } = o
-    log && console.log(type, domain, statement, proclaimed_publication_time, hash_b64, 
-      tags, content, content_hash_b64, verification_method, source_node_id)
+    s({ type, domain, author, statement, proclaimed_publication_time, hash_b64, 
+      tags, content, content_hash_b64, verification_method, source_node_id })
     pool.query(`INSERT INTO statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
                                         tags,                  content,                content_hash,           verification_method,               source_node_id,
-                                        first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count) 
+                                        first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count, author) 
                       VALUES ($1, $2, $3, TO_TIMESTAMP($4), $5,
                               $6, $7, $8, $9, $10, 
-                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0)
+                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0, $11)
                     ON CONFLICT (hash_b64) DO NOTHING
                     RETURNING *`,
       [ type, domain,  statement,        proclaimed_publication_time, hash_b64, 
-        tags, content, content_hash_b64, verification_method,         source_node_id], (error, results) => {
+        tags, content, content_hash_b64, verification_method,         source_node_id,
+        author], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -82,7 +81,8 @@ export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise(
                     CAST($1 AS INTEGER) as input1,
                     $2 as input2
                 FROM statements 
-                WHERE (type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'domain verification')
+                WHERE (type = 'statement' OR type = 'poll' OR type = 'rating' 
+                OR type = 'organisation_verification' OR type='sign_pdf')
                 ${minId ? 'AND id > $1 ' : ''}
                 ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
                 GROUP BY 1
@@ -119,7 +119,7 @@ export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise(
                 FROM statements s
                     JOIN reposts r
                         ON id=first_id
-                    LEFT JOIN verifications v 
+                    LEFT JOIN organisation_verifications v 
                         ON s.domain=v.verified_domain 
                         AND v.verifier_domain='rixdata.net'
                     LEFT JOIN statements verification_statement
@@ -228,15 +228,15 @@ export const updateStatement = ({ hash_b64, derived_entity_created = false,
   }
 }))
 
-export const createUnverifiedStatement = ({ statement, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve, reject) => {
+export const createUnverifiedStatement = ({ statement, author, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve, reject) => {
   try {
     s({statement, hash_b64, source_node_id, source_verification_method})
     log && console.log(statement, hash_b64, source_node_id, source_verification_method)
-    pool.query(`INSERT INTO unverified_statements (statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count) 
-                      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 0)
+    pool.query(`INSERT INTO unverified_statements (statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count, author) 
+                      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 0, $5)
                     ON CONFLICT (hash_b64) DO NOTHING
                     RETURNING *`,
-      [statement, hash_b64, source_node_id, source_verification_method], (error, results) => {
+      [statement, hash_b64, source_node_id, source_verification_method, author], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -486,7 +486,7 @@ export const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((reso
             SELECT 
                 v.*,
                 s.*
-            FROM verifications v
+            FROM organisation_verifications v
               JOIN statements s ON v.statement_hash=s.hash_b64
             WHERE v.verified_domain IN (SELECT domain FROM domains);
             `,[hash_b64], (error, results) => {
@@ -535,7 +535,7 @@ export const getAllVerifications = () => (new Promise((resolve, reject) => {
             SELECT 
                 v.*,
                 s.*
-            FROM verifications v
+            FROM organisation_verifications v
               JOIN statements s ON v.statement_hash=s.hash_b64;
             `, (error, results) => {
       if (error) {
@@ -561,7 +561,7 @@ export const getHighConfidenceVerifications = ({max_inactive_verifier_node_days,
                 v.*,
                 b.name verifier_domain_name,
                 n.last_seen verifier_node_last_seen
-            FROM verifications v
+            FROM organisation_verifications v
               JOIN domain_ownsership_beliefs b 
                 ON v.verifier_domain=b.domain
                 AND b.name_confidence > $1
@@ -734,7 +734,7 @@ export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, rej
                   v.name,
                   rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
               FROM statements s        
-                LEFT JOIN verifications v 
+                LEFT JOIN organisation_verifications v 
                   ON s.domain=v.verified_domain 
                   AND v.verifier_domain='rixdata.net'
                 LEFT JOIN statements verification_statement
@@ -794,7 +794,7 @@ export const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => 
                 s.*,
                 v.name
             FROM statements s        
-              LEFT JOIN verifications v 
+              LEFT JOIN organisation_verifications v 
                 ON s.domain=v.verified_domain 
                 --AND v.verifier_domain='rixdata.net'
             WHERE hash_b64=$1;

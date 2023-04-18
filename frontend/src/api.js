@@ -1,10 +1,10 @@
 
+export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
+    window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
+ ) : 'https://'+ window.location.host 
+
 const req = (method, path, body, cb, reject) => {
-    const url = `${(
-        process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
-            window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
-         ) : 'https://'+ window.location.host 
-        )}/api/${path}`
+    const url = `${backendHost}/api/${path}`
     const opts = {
         headers: {
             'accept': `application/json`,
@@ -101,5 +101,9 @@ export const checkDomainVerification = (domain, cb, reject) => {
 }
 export const submitStatement = (body, cb, reject) => {
     req('POST', 'submit_statement', body, cb, reject)
+}
+
+export const uploadPdf = (body, cb, reject) => {
+    req('POST', 'upload_pdf', body, cb, reject)
 }
 

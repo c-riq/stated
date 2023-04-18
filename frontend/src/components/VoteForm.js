@@ -1,13 +1,12 @@
 import React from 'react'
 
-import { digest } from '../utils/hash';
+import { sha256 } from '../utils/hash';
 
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import { b64ToHex } from '../utils/hash';
 
 import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../constants/statementFormats.js'
 import GenerateStatement from './GenerateStatement';
@@ -40,7 +39,7 @@ export const VoteForm = props => {
                 return
             }
             props.setStatement(statement)
-            digest(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((value) => {props.setStatementHash(value)})
         }
         const handleChange = (event) => {
             setVote(event.target.value)
@@ -49,7 +48,7 @@ export const VoteForm = props => {
     return (
         <FormControl sx={{width: "100%"}}>
         <div style={{marginTop: "12px", marginBottom:"24px"}}> <h5>Referenced poll: </h5>
-            <a target="blank" href={'/statement/'+b64ToHex(props.poll.hash_b64)}>{props.poll.hash_b64}</a></div>
+            <a target="blank" href={'/statement/'+props.poll.hash_b64}>{props.poll.hash_b64}</a></div>
         <FormLabel id="polllabel">{pollParsed.poll}</FormLabel>
         <RadioGroup
         value={vote}
