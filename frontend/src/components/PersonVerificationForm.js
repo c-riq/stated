@@ -46,6 +46,7 @@ const PersonVerificationForm = props => {
                 return
             }
             const parsedPersonVerification = parsePersonVerification(parsedStatement.content)
+            console.log(parsedPersonVerification)
             if(!parsedPersonVerification){
                 props.setAlertMessage('Invalid person verification (missing values)')
                 props.setisError(true)
