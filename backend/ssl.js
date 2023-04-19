@@ -6,9 +6,9 @@ import {getCertCache, setCertCache} from './db.js'
 const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
     const cached = await getCertCache({domain})
-    if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_O){
-        const {subject_O, subject_L, subject_ST, subject_C} = cached.rows[0]
-        return resolve({subject: {O: subject_O, L: subject_L, ST: subject_ST, C: subject_C}, domain})
+    if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_o){
+        const {subject_o, subject_l, subject_st, subject_c} = cached.rows[0]
+        return resolve({domain, O: subject_o, L: subject_l, ST: subject_st, C: subject_c})
     }
     try {
         const res = await get({hostname: domain, path: '', cache: false})

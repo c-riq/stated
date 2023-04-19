@@ -1002,10 +1002,10 @@ export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
             WITH certs AS(
             SELECT 
               host AS domain,
-              subject_O AS organization,
-              subject_C AS country,
-              subject_ST AS state,
-              subject_L AS city,
+              subject_o,
+              subject_c,
+              subject_st,
+              subject_l,
               row_number() over(partition by host order by valid_from desc) AS rnk
             FROM ssl_cert_cache
               where host=$1

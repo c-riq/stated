@@ -57,6 +57,13 @@ const CreateStatement = props => {
     React.useEffect(()=>{
         getSSLOVInfo(domain, res  => {
             setOVInfo(res ? (res.result || []) : [])
+            const matchingOV = res.result && res.result.find(r => (r.domain === domain ||
+                r.domain === 'stated.' + domain ||
+                r.domain === 'www.' + domain) && r.O)
+            if(matchingOV) { 
+                console.log(matchingOV, matchingOV.O)
+                setAuthor(matchingOV.O)
+            }
         })
         getDNSSECInfo(domain, res  => {
             setDNSSECInfo(res)

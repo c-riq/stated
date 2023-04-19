@@ -15,7 +15,7 @@ export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve, r
             console.log('invalid domain', domain)
             resolve({error: 'invalid domain '+ domain})
         }
-        const dig = cp.spawn('delv', ['@8.8.8.8', 'TXT', `${domain}`, '+short', '+trust'])
+        const dig = cp.spawn('delv', ['@1.1.1.1', 'TXT', `${domain}`, '+short', '+trust'])
         dig.stdout.on('data', (data) => {
             try {
                 log && console.log('data',data)
