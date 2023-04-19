@@ -2,85 +2,6 @@
 
 // TODO: use named matching groups, (did not work in the js bundle)
 
-const examples = {
-normalStatementWithTags: `Domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Tags: hashtag1, hashtag2
-Content: Hello world
-`,
-domainVerification: `Domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content:
-	Type: domain verification
-	Description: We verified the following information about an organisation.
-	Organisation name: Walmart Inc.
-	Headquarter country: United States of America
-	Legal entity: U.S. corporation
-	Domain of primary website: walmart.com
-	Headquarter province or state: Arkansas
-	Headquarter city: Bentonville
-`,
-response: `Domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content:
-	Type: Response
-	To: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-	Response: No, we don't want that.
-`,
-dispute: `Domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content:
-	Type: Dispute statement
-	Description: We are convinced that the referenced statement is not authentic.
-	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-`,
-poll:`Domain: rixdata.net
-Author: Example Inc.
-Time: Thu, 17 Nov 2022 13:38:20 GMT
-Content:
-	Type: Poll
-	Poll type: majority vote wins
-	Country scope: United Kingdom of Great Britain and Northern Ireland (the)
-	Legal entity scope: limited liability corporation
-	Decision is finalized when the following nodes agree: rixdata.net
-	Voting deadline: Thu, 01 Dec 2022 13:38:26 GMT
-	Poll: Should the UK join the EU
-	Option 1: Yes
-	Option 2: No
-`,
-voteReferencingOption: `Domain: rixdata.net
-Author: Example Inc.
-Time: Thu, 17 Nov 2022 20:13:46 GMT
-Content:
-	Type: Vote
-	Poll id: ia46YWbESPsqPalWu/cAkpH7BVT9lJb5GR1wKRsz9gI=
-	Poll: Should the UK join the EU
-	Option: Yes
-`,
-freeTextVote: `Domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content:
-	Type: Vote
-	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
-	Option: keep the money
-`,
-rating:`Domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content:
-	Type: Rating
-	Organisation name: AMBOSS GmbH
-	Organisation domain: amboss.com
-	Our rating: 5/5 Stars
-	Comment:
-`
-}
-
 export const statementTypes = {
     statement: 'statement',
     organisationVerification: 'organisation_verification',
@@ -198,8 +119,8 @@ export const buildOrganisationVerificationContent = (
 }
 
 export const parseOrganisationVerification = (s) => {
-	const domainVerificationRegex= new RegExp(''
-	+ /^\n\tType: Verification\n/.source
+	const organisationVerificationRegex= new RegExp(''
+	+ /^\n\tType: Organisation verification\n/.source
 	+ /\tDescription: We verified the following information about an organisation.\n/.source
 	+ /\tName: (?<name>[^\n]+?)\n/.source
 	+ /\tCountry: (?<country>[^\n]+?)\n/.source
@@ -212,7 +133,7 @@ export const parseOrganisationVerification = (s) => {
 	+ /$/.source
 	);
 	console.log(s)
-	const m = s.match(domainVerificationRegex)
+	const m = s.match(organisationVerificationRegex)
 	return m ? {
 		name: m[1],
 		country: m[2],
@@ -319,13 +240,13 @@ export const buildDisputeContent = ({hash_b64}) => {
 	return content
 }
 export const parseDispute = (s) => {
-	const voteRegex= new RegExp(''
+	const disputeRegex= new RegExp(''
 	+ /^\n\tType: Dispute statement\n/.source
 	+ /\tDescription: We are convinced that the referenced statement is not authentic.\n/.source
 	+ /\tHash of referenced statement: (?<hash_b64>[^\n]+?)\n/.source
 	+ /$/.source
 	);
-	const m = s.match(voteRegex)
+	const m = s.match(disputeRegex)
 	return m ? {
 		hash_b64: m[1]
 	} : {error: "Invalid dispute format"}
@@ -339,13 +260,13 @@ export const buildPDFSigningContent = ({hash_b64}) => {
 	return content
 }
 export const parsePDFSigning = (s) => {
-	const voteRegex= new RegExp(''
+	const signingRegex= new RegExp(''
 	+ /^\n\tType: Sign PDF\n/.source
 	+ /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
 	+ /\tHash of PDF file: (?<hash_b64>[^\n]+?)\n/.source
 	+ /$/.source
 	);
-	const m = s.match(voteRegex)
+	const m = s.match(signingRegex)
 	return m ? {
 		hash_b64: m[1]
 	} : {error: "Invalid PDF signing format"}
@@ -357,41 +278,26 @@ export const buildRating = ({organisation, domain, rating, comment}) => {
 	"\t" + "Organisation name: " + organisation + "\n" +
 	"\t" + "Organisation domain: " + domain + "\n" +
 	"\t" + "Our rating: " + rating + "\n" +
-	"\t" + "Comment: " + comment + "\n" +
+	(comment ? "\t" + "Comment: " + comment + "\n" : "") +
 	""
 	return content
 }
 export const parseRating = (s) => {
-	const voteRegex= new RegExp(''
+	const ratingRegex= new RegExp(''
 	+ /^\n\tType: Rating\n/.source
 	+ /\tOrganisation name: (?<organisation>[^\n]*?)\n/.source
 	+ /\tOrganisation domain: (?<domain>[^\n]*?)\n/.source
 	+ /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
-	+ /\tComment: (?<comment>[^\n]*?)\n/.source
+	+ /(?:\tComment: (?<comment>[^\n]*?)\n)?/.source
 	+ /$/.source
 	);
-	const m = s.match(voteRegex)
+	const m = s.match(ratingRegex)
 	return m ? {
 		organisation: m[1],
 		domain: m[2],
 		rating: m[3],
 		comment: m[4]
 	} : {error: "Invalid rating format"}
-}
-
-for (let e of Object.values(examples) ){
-    continue
-	// TODO: add to tests
-	console.log(e)
-	try{
-		const {content, type} = parseStatement(e)
-		console.log(content)
-		if(content && type == statementTypes.domainVerification){
-			console.log(parseOrganisationVerification(content))
-		}
-	} catch (e) {
-		console.log(e)
-	}
 }
 
 export const forbiddenChars = s => /;|>|<|"|'|’|\\/.test(s)
