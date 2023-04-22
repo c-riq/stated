@@ -53,6 +53,7 @@ export const getDomainSuggestions = (searchQuery, cb) => {
     }, e => {console.log(e); return})
 }
 export const getSSLOVInfo = (domain, cb) => {
+    console.log("getSSLOVInfo", domain)
     if (!domain || domain.length < 1) {
         cb([])
         return

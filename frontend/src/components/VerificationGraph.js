@@ -2,58 +2,126 @@ import React, { Fragment, useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import elk from "cytoscape-elk";
 
+import { getSSLOVInfo } from "../api.js";
+
 cytoscape.use(elk);
 
-export const VerificationGraph = props => {
+export const VerificationGraph = (props) => {
   const graphRef = useRef(null);
+  const [sslCerts, setSslCerts] = React.useState([]);
+  const [fetchedSslCerts, setFetchedSslCerts] = React.useState(false);
 
   useEffect(() => {
     const { organisationVerifications, personVerifications, statement } = props;
     let nodes = [];
     let edges = [];
-    [...organisationVerifications,
-      ...personVerifications].forEach(({verified_domain, foreign_domain, verifier_domain, author, name, hash_b64}, i) => {
-      const sourceParentId = ((verifier_domain||foreign_domain)+':'+author).replace(/ /g, '_')
-      const targetParentId = ((verified_domain||foreign_domain)+':'+name).replace(/ /g, '_')
-      if (!(nodes.map(n=>n.id).includes(sourceParentId))) {
-        nodes.push({ data: { id: sourceParentId, name: 
-          (author.length > 20 ? author.substring(0,17) + '...' : author) } });
+    let domains = [];
+    [...organisationVerifications, ...personVerifications].forEach(
+      (
+        {
+          verified_domain,
+          foreign_domain,
+          verifier_domain,
+          author,
+          name,
+          hash_b64,
+        },
+        i
+      ) => {
+        const sourceParentId = (
+          (verifier_domain) +
+          ":" +
+          author
+        ).replace(/ /g, "_");
+        const targetParentId = (
+          (verified_domain || foreign_domain) +
+          ":" +
+          name
+        ).replace(/ /g, "_");
+        if (!nodes.map((n) => n.id).includes(sourceParentId)) {
+          domains.push(verifier_domain);
+          nodes.push({
+            data: {
+              id: sourceParentId,
+              name:
+                author.length > 20 ? author.substring(0, 17) + "..." : author,
+            },
+          });
+        }
+        if (!nodes.map((n) => n.id).includes(targetParentId)) {
+          domains.push(verified_domain || foreign_domain);
+          nodes.push({
+            data: {
+              id: targetParentId,
+              name: name.length > 20 ? name.substring(0, 17) + "..." : name,
+            },
+          });
+        }
+        edges.push({
+          data: {
+            id: sourceParentId + "-" + targetParentId,
+            source: sourceParentId,
+            target: targetParentId,
+            name: "stated:" + hash_b64.substring(0, 5),
+            href: "http://localhost:3000/statement/" + hash_b64,
+          },
+        });
       }
-      if (!(nodes.map(n=>n.id).includes(targetParentId))) {
-        nodes.push({ data: { id: targetParentId, name: 
-          (name.length > 20 ? name.substring(0,17) + '...' : name) } });
-      }
-      edges.push({
+    );
+
+    const sourceParentId = (statement.domain + ":" + statement.author).replace(
+      / /g,
+      "_"
+    );
+    const targetParentId = ("statement:" + statement.hash_b64).replace(
+      / /g,
+      "_"
+    );
+    if (!nodes.map((n) => n.id).includes(sourceParentId)) {
+      domains.push(statement.domain);
+      nodes.push({
         data: {
-          id: sourceParentId + "-" + targetParentId,
-          source: sourceParentId,
-          target: targetParentId,
-          name: 'stated:' + hash_b64.substring(0, 5),
-          href: "http://localhost:3000/statement/" + hash_b64,
+          id: sourceParentId,
+          name:
+            statement.author?.length > 20
+              ? statement.author?.substring(0, 17) + "..."
+              : statement.author,
         },
       });
-    });
-
-    const sourceParentId = ((statement.domain)+':'+statement.author).replace(/ /g, '_')
-    const targetParentId = ('statement:'+statement.content).replace(/ /g, '_')
-    if (!(nodes.map(n=>n.id).includes(sourceParentId))) {
-      nodes.push({ data: { id: sourceParentId, name: 
-        (statement.author?.length > 20 ? statement.author?.substring(0,17) + '...' : statement.author) } });
-    }
-    if (!(nodes.map(n=>n.id).includes(targetParentId))) {
-      nodes.push({ data: { id: targetParentId, name: 
-        (statement.content?.length > 20 ? statement.content?.substring(0,17) + '...' : statement.content) } });
+    };
+    if (!nodes.map((n) => n.id).includes(targetParentId)) {
+      nodes.push({
+        data: {
+          id: targetParentId,
+          name:
+            statement.content?.length > 20
+              ? statement.content?.substring(0, 17) + "..."
+              : statement.content,
+        },
+      });
     }
     edges.push({
       data: {
         id: sourceParentId + "-" + targetParentId,
         source: sourceParentId,
         target: targetParentId,
-        name: 'stated:' + statement.hash_b64?.substring(0, 5),
+        name: "stated:" + statement.hash_b64?.substring(0, 5),
         href: "http://localhost:3000/statement/" + statement.hash_b64,
       },
     });
-    console.log(nodes, edges);
+    console.log(nodes, edges, domains, sslCerts);
+    if(!fetchedSslCerts){
+      const uniqueDomains = [...new Set(domains)];
+      uniqueDomains.forEach((domain) => {
+        getSSLOVInfo(domain, res  => {
+          if (res.result) {
+            console.log(res);
+            setSslCerts((sslCerts) => [...sslCerts, ...res.result]);
+          }
+      });});
+      setFetchedSslCerts(true);
+    }
+
     const cy = cytoscape({
       container: graphRef.current,
       boxSelectionEnabled: false,
@@ -70,7 +138,7 @@ export const VerificationGraph = props => {
             "text-valign": "center",
             "text-halign": "center",
             "background-color": "rgba(42,74,103,1)",
-            "color": "rgba(255,255,255,1)",
+            color: "rgba(255,255,255,1)",
             width: "150px",
             height: "50px",
           },
@@ -94,19 +162,19 @@ export const VerificationGraph = props => {
             label: "data(name)",
             "text-rotation": "autorotate",
             "text-margin-y": "-10px",
-            "color": "#0000ee",
-            'line-style': 'data(style)'
+            color: "#0000ee",
+            "line-style": "data(style)",
           },
-        }, 
+        },
         {
-          selector: 'loop',
-          style: {            
-            'loop-direction': '180deg', 
-            'loop-sweep': '200deg',
-            'target-endpoint': '-90deg',
-            'source-endpoint': '90deg', 
-            'control-point-step-size': 160,
-          }
+          selector: "loop",
+          style: {
+            "loop-direction": "180deg",
+            "loop-sweep": "200deg",
+            "target-endpoint": "-90deg",
+            "source-endpoint": "90deg",
+            "control-point-step-size": 160,
+          },
         },
       ],
       elements: {
@@ -123,7 +191,7 @@ export const VerificationGraph = props => {
         elk: {
           algorithm: "layered",
           "elk.direction": "RIGHT",
-          'spacing.nodeNodeBetweenLayers': 80,
+          "spacing.nodeNodeBetweenLayers": 80,
         },
       },
     });
@@ -146,9 +214,13 @@ export const VerificationGraph = props => {
         window.location.href = this.data("href");
       }
     });
-    cy.on('mouseover', 'edge', () => document.body.setAttribute('style', 'cursor: pointer;') );
-    cy.on('mouseout', 'edge', () => document.body.setAttribute('style', 'cursor: auto;') );
-  }, [props]);
+    cy.on("mouseover", "edge", () =>
+      document.body.setAttribute("style", "cursor: pointer;")
+    );
+    cy.on("mouseout", "edge", () =>
+      document.body.setAttribute("style", "cursor: auto;")
+    );
+  }, [props, sslCerts]);
   return (
     <Fragment>
       <h2>Verification Graph</h2>
