@@ -475,12 +475,14 @@ export const createRating = ({ statement_hash, organisation, domain, rating, com
   }
 }))
 
-export const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
     s({ hash_b64 })
     pool.query(`
             WITH domains AS (
-              SELECT domain 
+              SELECT 
+               domain,
+               author
               FROM statements
               WHERE hash_b64=$1
               LIMIT 1
@@ -490,7 +492,54 @@ export const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((reso
                 s.*
             FROM organisation_verifications v
               JOIN statements s ON v.statement_hash=s.hash_b64
-            WHERE v.verified_domain IN (SELECT domain FROM domains);
+            WHERE (
+              v.verified_domain IN (SELECT domain FROM domains)
+              OR
+              v.foreign_domain IN (SELECT domain FROM domains)
+            )
+            AND LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
+            `,[hash_b64], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}));
+
+
+export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+  try {
+    s({ hash_b64 })
+    pool.query(`
+            WITH domains AS (
+              SELECT 
+               domain,
+               author
+              FROM statements
+              WHERE hash_b64=$1
+              LIMIT 1
+            )
+            SELECT 
+                v.*,
+                s.*
+            FROM person_verifications v
+              JOIN statements s ON v.statement_hash=s.hash_b64
+            WHERE 
+            (
+              v.verified_domain IN (SELECT domain FROM domains)
+              OR
+              v.foreign_domain IN (SELECT domain FROM domains)
+            )
+            AND 
+              LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
             `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
@@ -947,14 +996,14 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
             with regex AS ( SELECT '.*' || $1 || '.*' pattern)
             SELECT 
               host domain,
-              subject_O AS organization,
-              subject_C AS country,
-              subject_ST AS state,
-              subject_L AS city,
+              subject_o AS organization,
+              subject_c AS country,
+              subject_st AS state,
+              subject_l AS city,
               _rank
             FROM ssl_cert_cache
               JOIN regex ON host ~ regex.pattern
-            WHERE LOWER('subject_O') NOT LIKE '%cloudflare%'
+            WHERE LOWER(subject_l) NOT LIKE '%cloudflare%'
             ORDER BY _rank ASC LIMIT 20
             ;
             `,[domain_substring || ''], (error, results) => {
@@ -976,7 +1025,7 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
 export const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
   try {
     s({ domain, O, C, ST, L, sha256, validFrom, validTo })
-    pool.query(`INSERT INTO ssl_cert_cache (host, subject_O, subject_C, subject_ST, subject_L, sha256, valid_from, valid_to, first_seen, last_seen) 
+    pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, sha256, valid_from, valid_to, first_seen, last_seen) 
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (sha256) DO NOTHING
 RETURNING *;`,

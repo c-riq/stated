@@ -87,8 +87,16 @@ export const getVotes = (hash_b64, cb) => {
         } 
     }, e => {console.log(e); return})
 }
-export const getVerifications = (hash_b64, cb) => {
-    req('POST', 'verifications', {hash_b64}, (json) => {
+export const getOrganisationVerifications = (hash_b64, cb) => {
+    req('POST', 'organisation_verifications', {hash_b64}, (json) => {
+        if ("statements" in json) {
+            cb(json.statements)
+            window.scrollTo(0,0)
+        } 
+    }, e => {console.log(e); return})
+}
+export const getPersonVerifications = (hash_b64, cb) => {
+    req('POST', 'person_verifications', {hash_b64}, (json) => {
         if ("statements" in json) {
             cb(json.statements)
             window.scrollTo(0,0)

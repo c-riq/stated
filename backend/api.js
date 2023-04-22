@@ -2,7 +2,8 @@ import express from 'express'
 
 
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
-    getVerificationsForStatement, getJoiningStatements, getAllNodes, getDomainOwnershipBeliefs,
+    getOrganisationVerificationsForStatement,
+    getPersonVerificationsForStatement, getJoiningStatements, getAllNodes, getDomainOwnershipBeliefs,
     getVotes
 } from './db.js'
 import p2p from './p2p.js'
@@ -90,8 +91,17 @@ api.post("/statement", async (req, res, next) => {
     }
 })
 
-api.post("/verifications", async (req, res, next) => {
-    const dbResult = await getVerificationsForStatement({hash_b64: req.body.hash_b64})
+api.post("/organisation_verifications", async (req, res, next) => {
+    const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.body.hash_b64})
+    if(dbResult?.error){
+        next(dbResult?.error)
+    } else {
+        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    }
+})
+
+api.post("/person_verifications", async (req, res, next) => {
+    const dbResult = await getPersonVerificationsForStatement({hash_b64: req.body.hash_b64})
     if(dbResult?.error){
         next(dbResult?.error)
     } else {

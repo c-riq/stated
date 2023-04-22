@@ -4,10 +4,56 @@ import elk from "cytoscape-elk";
 
 cytoscape.use(elk);
 
-export const VerificationGraph = () => {
+export const VerificationGraph = props => {
   const graphRef = useRef(null);
 
-  const drawGraph = () => {
+  useEffect(() => {
+    const { organisationVerifications, personVerifications, statement } = props;
+    let nodes = [];
+    let edges = [];
+    [...organisationVerifications,
+      ...personVerifications].forEach(({verified_domain, foreign_domain, verifier_domain, author, name, hash_b64}, i) => {
+      const sourceParentId = ((verifier_domain||foreign_domain)+':'+author).replace(/ /g, '_')
+      const targetParentId = ((verified_domain||foreign_domain)+':'+name).replace(/ /g, '_')
+      if (!(nodes.map(n=>n.id).includes(sourceParentId))) {
+        nodes.push({ data: { id: sourceParentId, name: 
+          (author.length > 20 ? author.substring(0,17) + '...' : author) } });
+      }
+      if (!(nodes.map(n=>n.id).includes(targetParentId))) {
+        nodes.push({ data: { id: targetParentId, name: 
+          (name.length > 20 ? name.substring(0,17) + '...' : name) } });
+      }
+      edges.push({
+        data: {
+          id: sourceParentId + "-" + targetParentId,
+          source: sourceParentId,
+          target: targetParentId,
+          name: 'stated:' + hash_b64.substring(0, 5),
+          href: "http://localhost:3000/statement/" + hash_b64,
+        },
+      });
+    });
+
+    const sourceParentId = ((statement.domain)+':'+statement.author).replace(/ /g, '_')
+    const targetParentId = ('statement:'+statement.content).replace(/ /g, '_')
+    if (!(nodes.map(n=>n.id).includes(sourceParentId))) {
+      nodes.push({ data: { id: sourceParentId, name: 
+        (statement.author?.length > 20 ? statement.author?.substring(0,17) + '...' : statement.author) } });
+    }
+    if (!(nodes.map(n=>n.id).includes(targetParentId))) {
+      nodes.push({ data: { id: targetParentId, name: 
+        (statement.content?.length > 20 ? statement.content?.substring(0,17) + '...' : statement.content) } });
+    }
+    edges.push({
+      data: {
+        id: sourceParentId + "-" + targetParentId,
+        source: sourceParentId,
+        target: targetParentId,
+        name: 'stated:' + statement.hash_b64?.substring(0, 5),
+        href: "http://localhost:3000/statement/" + statement.hash_b64,
+      },
+    });
+    console.log(nodes, edges);
     const cy = cytoscape({
       container: graphRef.current,
       boxSelectionEnabled: false,
@@ -51,68 +97,21 @@ export const VerificationGraph = () => {
             "color": "#0000ee",
             'line-style': 'data(style)'
           },
+        }, 
+        {
+          selector: 'loop',
+          style: {            
+            'loop-direction': '180deg', 
+            'loop-sweep': '200deg',
+            'target-endpoint': '-90deg',
+            'source-endpoint': '90deg', 
+            'control-point-step-size': 160,
+          }
         },
       ],
       elements: {
-        nodes: [
-          { data: { id: "root", name: "", shape: "circle" }, position: { x: 0, y: 0 } },
-          { data: { id: "CA", name: "" } },
-          { data: { id: "Sectigo", name: "Sectigo Limited" , parent: "CA" }},
-          { data: { id: "Certificate Authority", name: "Certificate Authority" , parent: "CA" }},
-          {
-            data: { id: "SSL" , name: "SSL OV certificate"},
-            href: "https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D",
-          },
-          { data: { id: "Statement", name: "Statement" } },
-          {
-            data: { id: "Rix Data NL B.V.", name: "Rix Data NL B.V.", parent: "SSL" },
-          },
-          {
-            data: { id: "location", name: "North-Holland, NL", parent: "SSL" },
-          },
-          {
-            data: { id: "stated.rixdata.nl", name: "stated.rixdata.nl", parent: "SSL" },
-          },
-          {
-            data: { id: "author", name: "Rix Data NL B.V.", parent: "Statement" },
-          },
-          {
-            data: { id: "Statement Content", name: "Statement Content", parent: "Statement" },
-          },
-        ],
-        edges: [
-          {
-            data: {
-              id: "1",
-              source: "root",
-              target: "CA",
-              href: "https://crt.sh/?caid=105487",
-              name: "Root cert lists",
-              style: "dashed"
-            },
-          },
-          {
-            data: {
-              id: "2",
-              source: "CA",
-              target: "SSL",
-              href: "https://crt.sh/?q=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D",
-              name: "SSL OV"
-            },
-          },
-          {
-            data: { id: "7", source: "SSL", target: "Statement",
-            href: "https://stated.rixdata.net/statement/650071d889ae31890bdafc2488ea7fd58096c09c4d3d400aea4d5e70b5ef8c19", name:"stated API" },
-          },
-          {
-            data: { id: "8", source: "stated.rixdata.nl", target: "Statement",
-            href: "https://dns.google/query?name=stated.rixdata.net&rr_type=TXT&ecs=", name:"stated DNS" },
-          },
-        //   {
-        //     data: { id: "9", source: "SSL", target: "Statement",
-        //     href: "https://dns.google/query?name=stated.rixdata.net&rr_type=TXT&ecs=", name:"stated static" },
-        //   },
-        ],
+        nodes: nodes,
+        edges: edges,
       },
       layout: {
         directed: true,
@@ -147,14 +146,9 @@ export const VerificationGraph = () => {
         window.location.href = this.data("href");
       }
     });
-    cy.on('mouseover', 'edge', () => document.body.setAttribute('style', 'cursor:' + 'pointer'  + ';') );
-    cy.on('mouseout', 'edge', () => document.body.setAttribute('style', 'cursor:' + 'auto'  + ';') );
-  };
-
-  useEffect(() => {
-    drawGraph();
-  }, []);
-
+    cy.on('mouseover', 'edge', () => document.body.setAttribute('style', 'cursor: pointer;') );
+    cy.on('mouseout', 'edge', () => document.body.setAttribute('style', 'cursor: auto;') );
+  }, [props]);
   return (
     <Fragment>
       <h2>Verification Graph</h2>
