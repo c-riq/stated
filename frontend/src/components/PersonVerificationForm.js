@@ -20,13 +20,13 @@ import { parseStatement, buildStatement, forbiddenStrings,
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 
-
 const PersonVerificationForm = props => {
     const [birthCountry, setBirthCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
     const [birthCity, setBirthCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState("");
-    const [birthDate, setBirthDate] = React.useState(moment('1990-01-01'));
+    const [birthDate, setBirthDate] = React.useState(
+        moment.parseZone("1990-01-01T00:00:00Z"))
     const [ownsDomain, setOwnsDomain] = React.useState(true);
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [foreignDomain, setForeignDomain] = React.useState("");
@@ -34,8 +34,10 @@ const PersonVerificationForm = props => {
 
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
+        let date = birthDate.toDate()
+        date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
         const content = buildPersonVerificationContent({verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
-            birthCity, birthCountry, birthDate})
+            birthCity, birthCountry, birthDate: date})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
         console.log(statement)
 

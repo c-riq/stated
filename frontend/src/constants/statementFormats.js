@@ -148,7 +148,8 @@ export const parseOrganisationVerification = (s) => {
 
 export const buildPersonVerificationContent = (
 		{verifyName, birthCountry, birthCity, verifyDomain = null, foreignDomain = null,
-		birthDate, job = null, employer = null, verificationMethod = null, confidence = null, supersededVerificationHash = null, pictureHash = null}) => {
+		birthDate, job = null, employer = null, verificationMethod = null, confidence = null,
+		supersededVerificationHash = null, pictureHash = null}) => {
 	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
 	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
 	let content = "\n" +
@@ -255,7 +256,7 @@ export const buildPDFSigningContent = ({hash_b64}) => {
 	const content = "\n" +
 	"\t" + "Type: Sign PDF" + "\n" +
 	"\t" + "Description: We hereby digitally sign the referenced PDF file.\n" +
-	"\t" + "Hash of PDF file: " + hash_b64 + "\n" +
+	"\t" + "PDF file hash: " + hash_b64 + "\n" +
 	""
 	return content
 }
@@ -263,7 +264,7 @@ export const parsePDFSigning = (s) => {
 	const signingRegex= new RegExp(''
 	+ /^\n\tType: Sign PDF\n/.source
 	+ /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
-	+ /\tHash of PDF file: (?<hash_b64>[^\n]+?)\n/.source
+	+ /\tPDF file hash: (?<hash_b64>[^\n]+?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(signingRegex)
