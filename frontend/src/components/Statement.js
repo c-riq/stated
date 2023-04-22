@@ -1,7 +1,6 @@
 import React from 'react'
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { Buffer } from 'buffer';
 import Button from '@mui/material/Button';
 
 import { getStatement, getJoiningStatements, getVerifications, getVotes } from '../api.js'
@@ -15,7 +14,9 @@ import {filePath} from './SignPDFForm.js'
 const Statement = props => {
     const [joiningStatements, setJoiningStatements] = React.useState([]);
     const [votes, setVotes] = React.useState([]);
-    const [statement, setStatement] = React.useState({});
+    const [statement, setStatement] = React.useState({statement: undefined, 
+        type: undefined, domain: undefined, 
+        hash_b64: undefined, content: undefined});
     const [verifications, setVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
 
@@ -47,9 +48,9 @@ const Statement = props => {
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
-            <TextareaAutosize style={{width:"100%", height:(statement && statement.statement && 
-                statement.statement.match(/\n/g) ? (40 + statement.statement.match(/\n/g).length * 18) + 'px' : "250px"), 
-                overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement && statement.statement} />
+            <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
+            (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
+                overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement?.statement} />
 
             {statement && (statement.type == statementTypes.poll && (<Link to="/create-statement">
                 <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
@@ -86,20 +87,20 @@ const Statement = props => {
 
             {verifications.length > 0 && (<div>
                 <h5>Verifications of {statement.domain}</h5>
-                    {verifications.map((v,i)=>(
+                    {verifications.map(({verifier_domain=null, name= null},i)=>(
                         <div key={i}>
-                            <Link onClick={()=>setDataFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                                {v.verifier_domain}{v.name ? " | " + v.name + " ✅":  ""}
+                            <Link onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                                {verifier_domain}{name ? " | " + name + " ✅":  ""}
                             </Link>
                         </div>))}
             </div>)}
             
-            {joiningStatements.length > 0 && statement && statement.type == statementTypes.statement && 
+            {joiningStatements.length > 0 && statement && statement.type === statementTypes.statement && 
             (<div><h3>Organisations that joined the statemet</h3>
-                {joiningStatements.map((v,i)=>(
+                {joiningStatements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
-                        <Link key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                            {v.domain + " | " + (new Date(parseInt(v.time)).toUTCString())}{v.name ? " | " + v.name + " ✅":  ""}
+                        <Link key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                            {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </Link>
                     </div>
                     )
@@ -109,10 +110,10 @@ const Statement = props => {
 
             
             {votes.length > 0 && (<div><h3>Qualified votes</h3>
-                {votes.map((v,i)=>(
+                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, name},i)=>(
                     <div key={i}>
-                        <Link key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+Buffer.from(v.hash_b64, 'base64').toString('hex')}>
-                            {v.option + " | " + v.domain + " | " + (new Date(parseInt(v.time)).toUTCString())}{v.name ? " | " + v.name + " ✅":  ""}
+                        <Link key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                            {option + " | " + domain + " | " + (new Date(parseInt(proclaimed_publication_time)).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </Link>
                     </div>
                     )
