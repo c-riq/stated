@@ -334,20 +334,20 @@ export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_ret
   }
 }))
 
-export const createOrganisationVerification = (o) => (new Promise((resolve, reject) => {
+export const createOrganisationVerification = ({ statement_hash, verifier_domain, verified_domain, 
+  name, legal_entity_type, country, province, city, serialNumber, foreignDomain }) => (new Promise((resolve, reject) => {
   try {
-    s(o)
-    const { statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city } = o
-    log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
+    s({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain })
     pool.query(`
             INSERT INTO organisation_verifications 
               (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
-                country, province, city) 
+                country, province, city, serial_number, foreign_domain) 
             VALUES 
               ($1, $2, $3, $4, $5, 
-                $6, $7, $8)
+                $6, $7, $8, $9, $10)
+            ON CONFLICT (statement_hash) DO NOTHING
             RETURNING *`,
-      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, serialNumber, foreignDomain], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -363,20 +363,22 @@ export const createOrganisationVerification = (o) => (new Promise((resolve, reje
   }
 }))
 
-export const createPersonVerification = (o) => (new Promise((resolve, reject) => {
+export const createPersonVerification = ({ statement_hash, verifier_domain, verified_domain,
+   name,
+   countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve, reject) => {
   try {
-    s(o)
-    const { statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city } = o
-    log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
+    s({ statement_hash, verifier_domain, verified_domain, name,
+      countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})
     pool.query(`
             INSERT INTO person_verifications 
-              (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
-                country, province, city) 
+              (statement_hash, verifier_domain, verified_domain, name, 
+                birth_country, birth_city, birth_date, foreign_domain) 
             VALUES 
               ($1, $2, $3, $4, $5, 
                 $6, $7, $8)
             RETURNING *`,
-      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+      [statement_hash, verifier_domain, verified_domain, name,
+        countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
