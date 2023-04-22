@@ -27,7 +27,7 @@ export const get = ({hostname, path, cache=false}) => new Promise((resolve, reje
             path: path,
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            ...(cache && { 'agent': false })
+            ...(!cache && { 'agent': false })
         }
         const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {  
             let rawData = ''

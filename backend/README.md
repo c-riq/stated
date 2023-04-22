@@ -30,7 +30,7 @@ CREATE USER sdf WITH SUPERUSER PASSWORD 'sdf';
 \q
 exit
 
-sudo apt-get install nodejs
+sudo apt-get install -y nodejs qpdf
 npm install
 sudo npm install -g nodemon
 ```

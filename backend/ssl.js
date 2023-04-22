@@ -7,8 +7,8 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
     const cached = await getCertCache({domain})
     if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_o){
-        const {subject_o, subject_l, subject_st, subject_c} = cached.rows[0]
-        return resolve({domain, O: subject_o, L: subject_l, ST: subject_st, C: subject_c})
+        const {subject_o, subject_l, subject_st, subject_c, sha256} = cached.rows[0]
+        return resolve({domain, O: subject_o, L: subject_l, ST: subject_st, C: subject_c, sha256})
     }
     try {
         const res = await get({hostname: domain, path: '', cache: false})
@@ -22,7 +22,7 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
            setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C, 
             sha256: cert.fingerprint256.replace(/:/g,""), validFrom: cert.valid_from, validTo: cert.valid_to})
         }
-        resolve({...subject, domain})
+        resolve({...subject, domain, sha256: cert.fingerprint256.replace(/:/g,"")})
     }
     catch (error){
         console.log(error)

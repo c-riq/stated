@@ -32,13 +32,13 @@ export const VerificationGraph = (props) => {
           (verifier_domain) +
           ":" +
           author
-        ).replace(/ /g, "_");
+        ).replace(/ /g, "_").toLowerCase();
         const targetParentId = (
           (verified_domain || foreign_domain) +
           ":" +
           name
-        ).replace(/ /g, "_");
-        if (!nodes.map((n) => n.id).includes(sourceParentId)) {
+        ).replace(/ /g, "_").toLowerCase();
+        if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
           domains.push(verifier_domain);
           nodes.push({
             data: {
@@ -48,7 +48,7 @@ export const VerificationGraph = (props) => {
             },
           });
         }
-        if (!nodes.map((n) => n.id).includes(targetParentId)) {
+        if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
           domains.push(verified_domain || foreign_domain);
           nodes.push({
             data: {
@@ -72,12 +72,12 @@ export const VerificationGraph = (props) => {
     const sourceParentId = (statement.domain + ":" + statement.author).replace(
       / /g,
       "_"
-    );
+    ).toLowerCase();
     const targetParentId = ("statement:" + statement.hash_b64).replace(
       / /g,
       "_"
-    );
-    if (!nodes.map((n) => n.id).includes(sourceParentId)) {
+    ).toLowerCase();
+    if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
       domains.push(statement.domain);
       nodes.push({
         data: {
@@ -89,7 +89,7 @@ export const VerificationGraph = (props) => {
         },
       });
     };
-    if (!nodes.map((n) => n.id).includes(targetParentId)) {
+    if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
       nodes.push({
         data: {
           id: targetParentId,
@@ -109,18 +109,46 @@ export const VerificationGraph = (props) => {
         href: "http://localhost:3000/statement/" + statement.hash_b64,
       },
     });
-    console.log(nodes, edges, domains, sslCerts);
-    if(!fetchedSslCerts){
+
+    [...new Set(sslCerts)].filter(d=>d?.domain && d?.O).forEach((d) => {
+      console.log(d,"domaindomain");
+      const sourceParentId = "CA"
+      const {O, domain} = d
+      const baseDomain = domain.replace(/^stated.|^www./,'')
+      const targetParentId = (baseDomain + ":" + O).replace(/ /g, "_").toLowerCase();
+      console.log(baseDomain, 'baseDomain', domain, O, targetParentId, nodes.map((n) => n?.data?.id))
+      if (nodes.map((n) => n?.data?.id).includes(targetParentId)) {
+      if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
+        nodes.push({
+          data: {
+            id: sourceParentId,
+            name: "CA",
+          }})
+        }
+
+      edges.push({
+        data: {
+          id: sourceParentId + "-" + targetParentId,
+          source: sourceParentId,
+          target: targetParentId,
+          name: "SSL:" + d.sha256?.substring(0, 5),
+          href: "https://crt.sh/?sha256=" + d.sha256,
+        },
+      });
+      }
+    });
+
+    if(!fetchedSslCerts && domains.length > 0 && domains[0]){
       const uniqueDomains = [...new Set(domains)];
       uniqueDomains.forEach((domain) => {
         getSSLOVInfo(domain, res  => {
-          if (res.result) {
-            console.log(res);
-            setSslCerts((sslCerts) => [...sslCerts, ...res.result]);
+          if (res?.result?.length > 0) {
+            setSslCerts([...sslCerts, ...res.result]);
           }
       });});
       setFetchedSslCerts(true);
     }
+    console.log(nodes, edges, domains, sslCerts);
 
     const cy = cytoscape({
       container: graphRef.current,
@@ -220,7 +248,7 @@ export const VerificationGraph = (props) => {
     cy.on("mouseout", "edge", () =>
       document.body.setAttribute("style", "cursor: auto;")
     );
-  }, [props, sslCerts]);
+  }, [props, sslCerts, setSslCerts, fetchedSslCerts]);
   return (
     <Fragment>
       <h2>Verification Graph</h2>

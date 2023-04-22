@@ -157,7 +157,7 @@ const fetchMissingStatementsFromNodes = async () => {
 }
 
 const setupSchedule = () => {
-    setTimeout(async () => {
+    setInterval(async () => {
         try {
             const seedRes = await addSeedNodes()
             const addNodesRes = await addNodesOfPeers()

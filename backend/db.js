@@ -1057,6 +1057,7 @@ export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
               subject_c,
               subject_st,
               subject_l,
+              sha256,
               row_number() over(partition by host order by valid_from desc) AS rnk
             FROM ssl_cert_cache
               where host=$1
