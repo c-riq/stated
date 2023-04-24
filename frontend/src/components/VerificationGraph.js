@@ -47,6 +47,22 @@ export const VerificationGraph = (props) => {
                 author.length > 20 ? author.substring(0, 17) + "..." : author,
             },
           });
+          nodes.push({
+            data: {
+              id: sourceParentId + ":" + verifier_domain,
+              name:
+              verifier_domain.length > 20 ? verifier_domain.substring(0, 17) + "..." : verifier_domain,
+              parent: sourceParentId,
+            },
+          });
+          nodes.push({
+            data: {
+              id: sourceParentId + ":" + author,
+              name:
+                author.length > 20 ? author.substring(0, 17) + "..." : author,
+              parent: sourceParentId,
+            },
+          });
         }
         if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
           domains.push(verified_domain || foreign_domain);
@@ -54,6 +70,22 @@ export const VerificationGraph = (props) => {
             data: {
               id: targetParentId,
               name: name.length > 20 ? name.substring(0, 17) + "..." : name,
+            },
+          });
+          nodes.push({
+            data: {
+              id: targetParentId + ":" + verified_domain,
+              name:
+              verified_domain.length > 20 ? verified_domain.substring(0, 17) + "..." : verified_domain,
+              parent: targetParentId,
+            },
+          });
+          nodes.push({
+            data: {
+              id: targetParentId + ":" + author,
+              name:
+                name.length > 20 ? name.substring(0, 17) + "..." : name,
+              parent: targetParentId,
             },
           });
         }
