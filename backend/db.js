@@ -1,6 +1,10 @@
 import * as pg from 'pg'
 import {forbiddenStrings} from './statementFormats.js'
-import {performMigrations} from './migrations.js'
+import {performMigrations} from './database/migrations.js'
+import * as cp from 'child_process'
+
+import {fileURLToPath} from 'url'
+import {dirname} from 'path'
 
 // @ts-ignore
 const { Pool } = pg.default
@@ -18,6 +22,42 @@ const pool = new Pool({
   password: pgPassword,
   port: pgPort,
 })
+
+export const backup = () => {return new Promise((resolve, reject) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+
+    const fileName = __dirname + `/database/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
+    try {
+        const pgdump = cp.spawn(`pg_dump`,[`-h`,`${pgHost}`,`-U`,`${pgUser}`,`-d`,`${pgDatabase}`,`-a`,`-f`,`${fileName}`], 
+        {env: {PGPASSWORD: `${pgPassword}`, ...process.env}})
+        pgdump.stdout.on('data', (data) => {
+            try {
+                log && console.log('data',data)
+                return resolve({error: null})
+            }
+            catch(error) {
+                return resolve({error})
+            }
+        })
+        pgdump.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`); 
+            return resolve({error: data})
+        })
+        pgdump.on('error', (error) => { 
+            return resolve({error: 'pgdump process error: ' + error}) 
+        })
+        pgdump.on('close', (code) => {
+          if(code === 0) {
+            return resolve({error: null})
+          }
+            return resolve({error: 'pgdump process exited with code ' + code})
+        });
+    } catch (error){
+        return resolve({error})
+    }
+})
+};
 
 const log = false
 
@@ -1022,14 +1062,17 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
   }
 }))
 
-export const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
+export const setCertCache = ({ domain, O, C, ST, L,
+  issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
   try {
-    s({ domain, O, C, ST, L, sha256, validFrom, validTo })
-    pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, sha256, valid_from, valid_to, first_seen, last_seen) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    s({ domain, O, C, ST, L, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
+    pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, 
+      sha256, valid_from, valid_to, first_seen, last_seen,
+      issuer_o, issuer_c, issuer_cn) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $9 , $10, $11)
 ON CONFLICT (sha256) DO NOTHING
 RETURNING *;`,
-[domain, O, C, ST, L, sha256, validFrom, validTo], (error, results) => {
+[domain, O, C, ST, L, sha256, validFrom, validTo, issuer_o, issuer_c, issuer_cn], (error, results) => {
       if (error) {
         console.log(error)
         console.trace()
@@ -1057,6 +1100,7 @@ export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
               subject_c,
               subject_st,
               subject_l,
+              issuer_o, issuer_c, issuer_cn,
               sha256,
               row_number() over(partition by host order by valid_from desc) AS rnk
             FROM ssl_cert_cache

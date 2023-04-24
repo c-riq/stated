@@ -2,8 +2,8 @@
 ## dev
 
 ```sh
-docker-compose -f postgres/docker-compose.yml up
-# to reapply init.sql: docker-compose -f postgres/docker-compose.yml up --build
+docker-compose -f database/docker-compose.yml up
+# to reapply init.sql: docker-compose -f database/docker-compose.yml up --build
  API_KEY=XXX DOMAIN=localhost nodemon server.js
 ```
 ## production

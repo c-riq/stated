@@ -9,7 +9,7 @@ services:
       PGDATA: /data/postgres
     volumes:
        - postgres_volume_1:/data/postgres
-       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5441:5432"
     networks:
@@ -43,7 +43,7 @@ services:
       PGDATA: /data/postgres
     volumes:
        - postgres_volume_2:/data/postgres
-       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5442:5432"
     networks:
@@ -79,7 +79,7 @@ services:
       PGDATA: /data/postgres
     volumes:
        - postgres_volume_3:/data/postgres
-       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5443:5432"
     networks:
@@ -116,7 +116,7 @@ services:
       PGDATA: /data/postgres
     volumes:
        - postgres_volume_4:/data/postgres
-       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5444:5432"
     networks:
@@ -150,7 +150,7 @@ services:
       PGDATA: /data/postgres
     volumes:
        - postgres_volume_5:/data/postgres
-       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5445:5432"
     networks:
@@ -186,7 +186,7 @@ services:
       PGDATA: /data/postgres
     volumes:
        - postgres_volume_6:/data/postgres
-       - ../backend/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5446:5432"
     networks:

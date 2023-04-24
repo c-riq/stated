@@ -109,42 +109,63 @@ export const VerificationGraph = (props) => {
       / /g,
       "_"
     ).toLowerCase();
-    if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
-      domains.push(statement.domain);
-      nodes.push({
+    if (statement.domain && statement.author){
+        if(!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
+        domains.push(statement.domain);
+        nodes.push({
+          data: {
+            id: sourceParentId,
+            name:
+              statement.author?.length > 20
+                ? statement.author?.substring(0, 17) + "..."
+                : statement.author,
+          },
+        });
+        nodes.push({
+          data: {
+            id: sourceParentId + ":" + statement.domain,
+            name: statement.domain.length > 20 ? statement.domain.substring(0, 17) + "..." : statement.domain,
+            parent: sourceParentId,
+          },
+        });
+        nodes.push({
+          data: {
+            id: sourceParentId + ":" + statement.author.replace(
+              / /g,
+              "_"
+            ).toLowerCase(),
+            name:
+            statement.author.length > 20 ? statement.author.substring(0, 17) + "..." : statement.author,
+            parent: sourceParentId,
+          },
+        });
+      };
+      if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
+        nodes.push({
+          data: {
+            id: targetParentId,
+            name:
+              statement.content?.length > 20
+                ? statement.content?.substring(0, 17) + "..."
+                : statement.content,
+          },
+        });
+      }
+      edges.push({
         data: {
-          id: sourceParentId,
-          name:
-            statement.author?.length > 20
-              ? statement.author?.substring(0, 17) + "..."
-              : statement.author,
-        },
-      });
-    };
-    if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
-      nodes.push({
-        data: {
-          id: targetParentId,
-          name:
-            statement.content?.length > 20
-              ? statement.content?.substring(0, 17) + "..."
-              : statement.content,
+          id: sourceParentId + "-" + targetParentId,
+          source: sourceParentId,
+          target: targetParentId,
+          name: "stated:" + statement.hash_b64?.substring(0, 5),
+          href: "http://localhost:3000/statement/" + statement.hash_b64,
         },
       });
     }
-    edges.push({
-      data: {
-        id: sourceParentId + "-" + targetParentId,
-        source: sourceParentId,
-        target: targetParentId,
-        name: "stated:" + statement.hash_b64?.substring(0, 5),
-        href: "http://localhost:3000/statement/" + statement.hash_b64,
-      },
-    });
 
     [...new Set(sslCerts)].filter(d=>d?.domain && d?.O).forEach((d) => {
       console.log(d,"domaindomain");
-      const sourceParentId = "CA"
+      const issuer = d.issuer_o || d.issuer_cn
+      const sourceParentId = "CA:" + issuer.replace(/ /g, "_").toLowerCase();
       const {O, domain} = d
       const baseDomain = domain.replace(/^stated.|^www./,'')
       const targetParentId = (baseDomain + ":" + O).replace(/ /g, "_").toLowerCase();
@@ -154,7 +175,7 @@ export const VerificationGraph = (props) => {
         nodes.push({
           data: {
             id: sourceParentId,
-            name: "CA",
+            name: issuer?.length > 20 ? issuer?.substring(0, 17) + "..." : issuer
           }})
         }
 
