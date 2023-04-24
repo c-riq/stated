@@ -150,6 +150,26 @@ export const VerificationGraph = (props) => {
                 : statement.content,
           },
         });
+        nodes.push({
+          data: {
+            id: "author",
+            name:
+              statement.author?.length > 20
+                ? statement.author?.substring(0, 17) + "..."
+                : statement.author,
+                parent: targetParentId,
+          },
+        });
+        nodes.push({
+          data: {
+            id: "content",
+            name:
+              statement.content?.length > 20
+                ? statement.content?.substring(0, 17) + "..."
+                : statement.content,
+                parent: targetParentId,
+          },
+        });
       }
       edges.push({
         data: {
