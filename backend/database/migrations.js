@@ -65,6 +65,12 @@ export const performMigrations = async (pool, cb) => {
             const dbVersion = parseInt(maxVersion)
             const targetVersion = dbVersion + 1;
             if (targetVersion > 1 && migrateToVersion[targetVersion]) {
+              const backupResult = await backup();
+              if (backupResult.error) {
+                console.log(backupResult.error);
+                console.trace();
+                return;
+              }
               const sql = migrateToVersion[targetVersion]["sql"];
               const res = await pool.query(sql);
               console.log(

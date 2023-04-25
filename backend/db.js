@@ -61,13 +61,14 @@ export const backup = () => {return new Promise((resolve, reject) => {
 
 const log = false
 
-let migrationsDone = false
-setInterval(
-async () => {
-  if(!migrationsDone){
-    performMigrations(pool, ()=>migrationsDone=true)
-  }
-}, 500)
+let migrationsDone = false;
+([500, 5000]).map(ms => setTimeout(
+  async () => {
+    if(!migrationsDone){
+      performMigrations(pool, ()=>migrationsDone=true)
+    }
+  }, ms
+))
 
 const s = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
