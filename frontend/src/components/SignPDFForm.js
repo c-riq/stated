@@ -61,7 +61,7 @@ const SignPDFForm = (props) => {
           { file: e.target.result },
           (s) => {
             console.log("success ", s);
-            setFileURL(s.filePath);
+            setFileURL(backendHost + '/' + s.filePath);
             setFileHash(s.sha256sum);
           },
           (e) => {

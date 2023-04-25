@@ -1,8 +1,24 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
+import { BrowserRouter } from "react-router-dom";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+describe("Test", () => {
+  test("renders learn react link", () => {
+    window.matchMedia = jest.fn().mockImplementation((query) => ({
+      matches: query !== "(min-width: 240px) and (max-width: 767px)",
+      media: "",
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+    }));
+
+    render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    );
+    const header = screen.getByText(/statements/i, { selector: "h3" });
+    expect(header).toBeInTheDocument();
+  });
 });

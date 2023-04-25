@@ -36,12 +36,12 @@ export const getStatement = (hash_b64, cb) => {
             cb(json.statements[0])
             window.scrollTo(0,0)
         } 
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
 export const getStatements = (searchQuery, cb) => {
     req('GET',(searchQuery ? 'statements_with_details?search_query=' + searchQuery : 'statements_with_details'), {}, (json) => {
         cb(json)
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
 export const getDomainSuggestions = (searchQuery, cb) => {
     if (searchQuery.length < 1) {
@@ -50,16 +50,17 @@ export const getDomainSuggestions = (searchQuery, cb) => {
     }
     req('GET',(searchQuery ? 'match_domain?domain_substring=' + searchQuery : 'match_domain'), {}, (json) => {
         cb(json)
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
 export const getSSLOVInfo = (domain, cb) => {
+    console.log("getSSLOVInfo", domain)
     if (!domain || domain.length < 1) {
         cb([])
         return
     }
     req('GET',(domain ? 'get_ssl_ov_info?domain=' + domain : 'get_ssl_ov_info'), {}, (json) => {
         cb(json)
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
 export const getDNSSECInfo = (domain, cb) => {
     if (!domain || domain.length < 1) {
@@ -69,7 +70,7 @@ export const getDNSSECInfo = (domain, cb) => {
     req('GET',(domain ? 'check_dnssec?domain=' + domain : 'check_dnssec'), {}, (json) => {
         const {validated, domain} = json
         cb({validated, domain})
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
 export const getJoiningStatements = (hash_b64, cb) => {
     req('POST', 'joining_statements', {hash_b64}, (json) => {
@@ -77,7 +78,7 @@ export const getJoiningStatements = (hash_b64, cb) => {
             cb(json.statements)
             window.scrollTo(0,0)
         } 
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
 export const getVotes = (hash_b64, cb) => {
     req('POST', 'votes', {hash_b64}, (json) => {
@@ -85,15 +86,23 @@ export const getVotes = (hash_b64, cb) => {
             cb(json.statements)
             window.scrollTo(0,0)
         } 
-    }, e => {return})
+    }, e => {console.log(e); return})
 }
-export const getVerifications = (hash_b64, cb) => {
-    req('POST', 'verifications', {hash_b64}, (json) => {
+export const getOrganisationVerifications = (hash_b64, cb) => {
+    req('POST', 'organisation_verifications', {hash_b64}, (json) => {
         if ("statements" in json) {
             cb(json.statements)
             window.scrollTo(0,0)
         } 
-    })
+    }, e => {console.log(e); return})
+}
+export const getPersonVerifications = (hash_b64, cb) => {
+    req('POST', 'person_verifications', {hash_b64}, (json) => {
+        if ("statements" in json) {
+            cb(json.statements)
+            window.scrollTo(0,0)
+        } 
+    }, e => {console.log(e); return})
 }
 
 export const checkDomainVerification = (domain, cb, reject) => {

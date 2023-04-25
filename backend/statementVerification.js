@@ -53,7 +53,9 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     }
     let result = {content, domain, author, tags, type, content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time}
     if (type) {
-        if([ statementTypes.organisationVerification, statementTypes.poll, statementTypes.vote, statementTypes.rating, statementTypes.signPdf ].includes(type)) {
+        if([ statementTypes.organisationVerification, statementTypes.personVerification,
+            statementTypes.poll, statementTypes.vote, 
+            statementTypes.rating, statementTypes.signPdf ].includes(type)) {
             return result
         } else {
             return {error: 'invalid type: ' + type}
@@ -305,8 +307,11 @@ export const createDerivedEntity =
     (new Promise(async (resolve, reject) => {
         let dbResult = {error: 'no entity created'}
         try {
-            if(type === statementTypes.domainVerification){
+            if(type === statementTypes.organisationVerification){
                 dbResult = await createOrgVerification({statement_hash, domain, content})
+            }
+            if(type === statementTypes.personVerification){
+                dbResult = await createPersVerification({statement_hash, domain, content})
             }
             if(type === statementTypes.poll){
                 dbResult = await parseAndCreatePoll({statement_hash, domain, content})

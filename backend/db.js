@@ -1,6 +1,10 @@
 import * as pg from 'pg'
 import {forbiddenStrings} from './statementFormats.js'
-import {performMigrations} from './migrations.js'
+import {performMigrations} from './database/migrations.js'
+import * as cp from 'child_process'
+
+import {fileURLToPath} from 'url'
+import {dirname} from 'path'
 
 // @ts-ignore
 const { Pool } = pg.default
@@ -19,15 +23,52 @@ const pool = new Pool({
   port: pgPort,
 })
 
+export const backup = () => {return new Promise((resolve, reject) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+
+    const fileName = __dirname + `/database/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
+    try {
+        const pgdump = cp.spawn(`pg_dump`,[`-h`,`${pgHost}`,`-U`,`${pgUser}`,`-d`,`${pgDatabase}`,`-a`,`-f`,`${fileName}`], 
+        {env: {PGPASSWORD: `${pgPassword}`, ...process.env}})
+        pgdump.stdout.on('data', (data) => {
+            try {
+                log && console.log('data',data)
+                return resolve({error: null})
+            }
+            catch(error) {
+                return resolve({error})
+            }
+        })
+        pgdump.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`); 
+            return resolve({error: data})
+        })
+        pgdump.on('error', (error) => { 
+            return resolve({error: 'pgdump process error: ' + error}) 
+        })
+        pgdump.on('close', (code) => {
+          if(code === 0) {
+            return resolve({error: null})
+          }
+            return resolve({error: 'pgdump process exited with code ' + code})
+        });
+    } catch (error){
+        return resolve({error})
+    }
+})
+};
+
 const log = false
 
-let migrationsDone = false
-setInterval(
-async () => {
-  if(!migrationsDone){
-    performMigrations(pool, ()=>migrationsDone=true)
-  }
-}, 500)
+let migrationsDone = false;
+([500, 5000]).map(ms => setTimeout(
+  async () => {
+    if(!migrationsDone){
+      performMigrations(pool, ()=>migrationsDone=true)
+    }
+  }, ms
+))
 
 const s = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
@@ -334,20 +375,20 @@ export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_ret
   }
 }))
 
-export const createOrganisationVerification = (o) => (new Promise((resolve, reject) => {
+export const createOrganisationVerification = ({ statement_hash, verifier_domain, verified_domain, 
+  name, legal_entity_type, country, province, city, serialNumber, foreignDomain }) => (new Promise((resolve, reject) => {
   try {
-    s(o)
-    const { statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city } = o
-    log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
+    s({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain })
     pool.query(`
             INSERT INTO organisation_verifications 
               (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
-                country, province, city) 
+                country, province, city, serial_number, foreign_domain) 
             VALUES 
               ($1, $2, $3, $4, $5, 
-                $6, $7, $8)
+                $6, $7, $8, $9, $10)
+            ON CONFLICT (statement_hash) DO NOTHING
             RETURNING *`,
-      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, serialNumber, foreignDomain], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -363,20 +404,22 @@ export const createOrganisationVerification = (o) => (new Promise((resolve, reje
   }
 }))
 
-export const createPersonVerification = (o) => (new Promise((resolve, reject) => {
+export const createPersonVerification = ({ statement_hash, verifier_domain, verified_domain,
+   name,
+   countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve, reject) => {
   try {
-    s(o)
-    const { statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city } = o
-    log && console.log([statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city])
+    s({ statement_hash, verifier_domain, verified_domain, name,
+      countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})
     pool.query(`
             INSERT INTO person_verifications 
-              (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
-                country, province, city) 
+              (statement_hash, verifier_domain, verified_domain, name, 
+                birth_country, birth_city, birth_date, foreign_domain) 
             VALUES 
               ($1, $2, $3, $4, $5, 
                 $6, $7, $8)
             RETURNING *`,
-      [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city], (error, results) => {
+      [statement_hash, verifier_domain, verified_domain, name,
+        countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -473,12 +516,14 @@ export const createRating = ({ statement_hash, organisation, domain, rating, com
   }
 }))
 
-export const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
   try {
     s({ hash_b64 })
     pool.query(`
             WITH domains AS (
-              SELECT domain 
+              SELECT 
+               domain,
+               author
               FROM statements
               WHERE hash_b64=$1
               LIMIT 1
@@ -488,7 +533,54 @@ export const getVerificationsForStatement = ({ hash_b64 }) => (new Promise((reso
                 s.*
             FROM organisation_verifications v
               JOIN statements s ON v.statement_hash=s.hash_b64
-            WHERE v.verified_domain IN (SELECT domain FROM domains);
+            WHERE (
+              v.verified_domain IN (SELECT domain FROM domains)
+              OR
+              v.foreign_domain IN (SELECT domain FROM domains)
+            )
+            AND LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
+            `,[hash_b64], (error, results) => {
+      if (error) {
+        console.log(error)
+        console.trace()
+        resolve({ error })
+      } else {
+        resolve(results)
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    console.trace()
+    resolve({ error })
+  }
+}));
+
+
+export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+  try {
+    s({ hash_b64 })
+    pool.query(`
+            WITH domains AS (
+              SELECT 
+               domain,
+               author
+              FROM statements
+              WHERE hash_b64=$1
+              LIMIT 1
+            )
+            SELECT 
+                v.*,
+                s.*
+            FROM person_verifications v
+              JOIN statements s ON v.statement_hash=s.hash_b64
+            WHERE 
+            (
+              v.verified_domain IN (SELECT domain FROM domains)
+              OR
+              v.foreign_domain IN (SELECT domain FROM domains)
+            )
+            AND 
+              LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
             `,[hash_b64], (error, results) => {
       if (error) {
         console.log(error)
@@ -945,14 +1037,14 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
             with regex AS ( SELECT '.*' || $1 || '.*' pattern)
             SELECT 
               host domain,
-              subject_O AS organization,
-              subject_C AS country,
-              subject_ST AS state,
-              subject_L AS city,
+              subject_o AS organization,
+              subject_c AS country,
+              subject_st AS state,
+              subject_l AS city,
               _rank
             FROM ssl_cert_cache
               JOIN regex ON host ~ regex.pattern
-            WHERE LOWER('subject_O') NOT LIKE '%cloudflare%'
+            WHERE LOWER(subject_l) NOT LIKE '%cloudflare%'
             ORDER BY _rank ASC LIMIT 20
             ;
             `,[domain_substring || ''], (error, results) => {
@@ -971,14 +1063,17 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
   }
 }))
 
-export const setCertCache = ({ domain, O, C, ST, L, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
+export const setCertCache = ({ domain, O, C, ST, L,
+  issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
   try {
-    s({ domain, O, C, ST, L, sha256, validFrom, validTo })
-    pool.query(`INSERT INTO ssl_cert_cache (host, subject_O, subject_C, subject_ST, subject_L, sha256, valid_from, valid_to, first_seen, last_seen) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    s({ domain, O, C, ST, L, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
+    pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, 
+      sha256, valid_from, valid_to, first_seen, last_seen,
+      issuer_o, issuer_c, issuer_cn) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $9 , $10, $11)
 ON CONFLICT (sha256) DO NOTHING
 RETURNING *;`,
-[domain, O, C, ST, L, sha256, validFrom, validTo], (error, results) => {
+[domain, O, C, ST, L, sha256, validFrom, validTo, issuer_o, issuer_c, issuer_cn], (error, results) => {
       if (error) {
         console.log(error)
         console.trace()
@@ -1002,10 +1097,12 @@ export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
             WITH certs AS(
             SELECT 
               host AS domain,
-              subject_O AS organization,
-              subject_C AS country,
-              subject_ST AS state,
-              subject_L AS city,
+              subject_o,
+              subject_c,
+              subject_st,
+              subject_l,
+              issuer_o, issuer_c, issuer_cn,
+              sha256,
               row_number() over(partition by host order by valid_from desc) AS rnk
             FROM ssl_cert_cache
               where host=$1
