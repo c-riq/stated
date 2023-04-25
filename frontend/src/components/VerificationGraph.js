@@ -65,7 +65,8 @@ export const VerificationGraph = (props) => {
           });
         }
         if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
-          domains.push(verified_domain || foreign_domain);
+          const domain = verified_domain || foreign_domain;
+          domains.push(domain);
           nodes.push({
             data: {
               id: targetParentId,
@@ -74,9 +75,9 @@ export const VerificationGraph = (props) => {
           });
           nodes.push({
             data: {
-              id: targetParentId + ":" + verified_domain,
+              id: targetParentId + ":" + domain,
               name:
-              verified_domain.length > 20 ? verified_domain.substring(0, 17) + "..." : verified_domain,
+              domain.length > 20 ? domain.substring(0, 17) + "..." : domain,
               parent: targetParentId,
             },
           });
@@ -182,7 +183,7 @@ export const VerificationGraph = (props) => {
       });
     }
 
-    [...new Set(sslCerts)].filter(d=>d?.domain && d?.O).forEach((d) => {
+    [...new Set(sslCerts)].filter(d=>d?.domain && d?.O && (d.issuer_o || d.issuer_cn)).forEach((d) => {
       console.log(d,"domaindomain");
       const issuer = d.issuer_o || d.issuer_cn
       const sourceParentId = "CA:" + issuer.replace(/ /g, "_").toLowerCase();
