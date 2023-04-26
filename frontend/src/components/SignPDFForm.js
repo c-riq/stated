@@ -14,7 +14,7 @@ import {
 import GenerateStatement from "./GenerateStatement";
 import { uploadPdf, backendHost } from "../api";
 
-export const filePath = (hash) => backendHost + "/files/" + hash + ".pdf"
+export const filePath = ({hash, host}) => (host || backendHost) + "/files/" + hash + ".pdf"
 
 const SignPDFForm = (props) => {
   const [fileHash, setFileHash] = React.useState("");
@@ -100,7 +100,7 @@ const SignPDFForm = (props) => {
       {fileHash ? (
         <embed
           src={
-            (fileURL ? fileURL : filePath(fileHash))
+            (fileURL ? fileURL : filePath({hash: fileHash, host: backendHost}))
           }
           width="100%"
           height="300px"
@@ -147,7 +147,7 @@ const SignPDFForm = (props) => {
         onChange={(e) => {
             setFileHash(e.target.value);
             if (! fileURL.match('/'+e.target.value+'.pdf')){
-                setFileURL(filePath(e.target.value))
+                setFileURL(filePath({hash: e.target.value, host: backendHost}))
             }
         }}
         value={fileHash}

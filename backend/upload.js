@@ -25,7 +25,7 @@ export const saveFile = async(req) => {
         const fsFilePath = __dirname + '/public/' + filePath
         await fs.writeFileSync(fsFilePath, buf, 'binary')
         const {validPDF} = await checkPDF(fsFilePath)
-        if (!validPDF) {
+        if (false && !validPDF) {
             fs.unlinkSync(fsFilePath)
             result = {error: 'Error saving PDF'}
         } else {

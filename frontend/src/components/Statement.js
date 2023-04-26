@@ -2,6 +2,12 @@ import React from 'react'
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
+import Collapse from '@mui/material/Collapse';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import IconButton from '@mui/material/IconButton';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications, 
     getPersonVerifications, getVotes } from '../api.js'
@@ -19,6 +25,7 @@ const Statement = props => {
         type: undefined, domain: undefined, 
         hash_b64: undefined, content: undefined});
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
+    const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
 
@@ -42,60 +49,90 @@ const Statement = props => {
     let fileURL = ""
     if (statement && (statement.type === statementTypes.signPdf)) {
         const parsedSigning = parsePDFSigning(statement.content)
-        fileURL = filePath(parsedSigning.hash_b64)
+        fileURL = filePath({hash: parsedSigning.hash_b64, host: null})
     }
 
     console.log('verifications',organisationVerifications, personVerifications)
     return (
-        <div style={{ maxWidth: "90vw", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
+        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
+            <p>Raw statement</p>
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
                 overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement?.statement} />
-
-            {statement && (statement.type == statementTypes.poll && (<Link to="/create-statement">
+            {statement.type === statementTypes.signPdf && (
+                <div style={{border: "1px solid rgba(0,0,0,0.1)"}}>
+                    <embed
+                    src={
+                        (parsePDFSigning(statement.content) && filePath({hash: parsePDFSigning(statement.content).hash_b64, host: 'https://stated.' + statement.domain}))
+                    }
+                    style={{minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}
+                    height="300px"
+                    type="application/pdf"
+                    />
+                </div>
+            )}
+            {statement && (statement.type === statementTypes.poll && (<Link to="/create-statement">
                 <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
                 sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                     Vote
                 </Button>
             </Link>))}
-            <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement}/>
-            {statement.type === statementTypes.signPdf && 
-            (<Button href={fileURL} target="blank">View PDF File</Button>)
-        }
-            <h3>Verify the statement's authenticity</h3>
-            <div>
-                <h4>1. generate the statement hash</h4>
-                <p>The SHA256 hash (in base 64 representation) is a transformed version of the above statement text. 
-                    Due to its limited length and small set of characters it can be more easily stored and shared than the full text of the statement. 
-                    Running the following command in the mac terminal allows you to independently verify the hash:</p>
+            <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
+        <Card style={{
+                width: "100%",
+                minWidth: !props.lt850px ? "50vw": "70vw",
+                border: "1px solid rgba(0,0,0,0.1)",
+            }}>
+        <CardHeader
+                    title="Verify the statement's authenticity"
+                    style={{fontSize: "14px"}}
+                    action={
+                        <IconButton
+                            onClick={() => setDetailsOpen(!detailsOpen)}
+                            aria-label="expand"
+                            size="small"
+                        >
+                            {detailsOpen ? <KeyboardArrowUpIcon />
+                                : <KeyboardArrowDownIcon />}
+                        </IconButton>
+                    }
+            ></CardHeader>
+            <Collapse in={detailsOpen} timeout="auto" unmountOnExit style={{padding: "20px"}}>
+                <h4>1. Check the domain owners intention to publish the statement</h4>
+                <h4>1.1 Via the domain owners website</h4>
+                <p>Check if the domain owner also published the domain under this URL: <a href={`https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
+                    {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</a></p>
+                <h4>1.2 Via the domain DNS records</h4>
+                <h4>1.2.1 Generate the statement hash</h4>
+                <p>The SHA256 hash (in URL compatible base 64 representation) is a transformed version of the above statement text. 
+                    Due to its limited length and set of characters it can be more easily stored and shared than the full text of the statement. 
+                    Running the following command in the mac terminal allows you to independently verify that the statement generates this hash:</p>
                 <div>
                     <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 | tr -d '=' | tr '/+' '_-' "} />
                 </div>
-                <h4>2. check the domain owners intention to publish statement via the DNS records</h4>
-                <p>Only a owner of a website domain can change the DNS records. If the hash representing the statement was added there, 
+                <h4>1.2.2 via DNS records </h4>
+                <p>Only the owner of a website domain should be able change the DNS records. If the hash representing the statement was added there, 
                     this implies that the domain owner is also the author of the statement. Running the following command in the mac terminal 
-                    allows you to verify that the statement hash is published in the domain's DNS records:</p>
+                    allows you to verify that the statement hash <span style={{backgroundColor:"#cccccc"}}>{statement.hash_b64}</span> is published in the domain's DNS records:</p>
                 <div>
-                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"dig -t txt stated."+statement.domain+" +short | grep " + statement.hash_b64}/>
+                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"delv @1.1.1.1 TXT stated."+statement.domain+" +short +trust"}/>
                 </div>
-                <p>Or check if the domain owner runs a stated node and verify the intention to publish by running the following command and verifying that the response object also contains the above statement:</p>
-                <div>
-                    <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"curl 'https://stated." + statement.domain + `/api/statement/' --data '{"hash_b64": "` + statement.hash_b64 + `"}' --header 'Content-Type: application/json'`}/>
-                </div>
-            </div>
+                <p>DNS responses are only secure if they are DNSSEC validated, which is indicated by <span style={{backgroundColor:"#cccccc"}}>; fully validated</span> at the beginnig of the output of the delv command.
+                    You can also inspect the DNSSEC verification chain here: <a href={`https://dnsviz.net/d/stated.${statement.domain}/dnssec/`}>{`https://dnsviz.net/d/stated.${statement.domain}/dnssec/`}</a></p>
+                
+                <h4>2. Check who owns the domain</h4>
+                <p>Inspect the steps in the verification graph. By clicking on the arrows you can view the details at each step. The graph includes: </p>
+                <ul>
+                    <li>Verifications within the stated network, where an organisation associates another organisation or persons with a domains</li>
+                    <li>SSL Organisation Validation certificates issued by audited Certificate Authorities. (These certificates are also used for establishing secure connections via HTTPS)</li>
+                </ul>
+                <p></p>
+            </Collapse>
+            </Card>
 
-            {organisationVerifications.length > 0 && (<div>
-                <h5>Verifications of {statement.domain}</h5>
-                    {organisationVerifications.map(({verifier_domain=null, name= null},i)=>(
-                        <div key={i}>
-                            <Link onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
-                                {verifier_domain}{name ? " | " + name + " ✅":  ""}
-                            </Link>
-                        </div>))}
-            </div>)}
             
             {joiningStatements.length > 0 && statement && statement.type === statementTypes.statement && 
             (<div><h3>Organisations that joined the statemet</h3>
@@ -122,9 +159,9 @@ const Statement = props => {
                 )}
             </div>
             )}
-
             </div>
         </div>
+        
     )
 }
 
