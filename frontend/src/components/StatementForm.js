@@ -10,7 +10,7 @@ import GenerateStatement from './GenerateStatement';
 
 
 const StatementForm = props => {
-    const [content, setContent] = React.useState(props.statementToJoin || "");
+    const [content, setContent] = React.useState(props.statementToJoin?.content || "");
     const [tags, setTags] = React.useState([]);
     const [tagInput, setTagInput] = React.useState("")
 

@@ -25,7 +25,7 @@ const Statements = props => {
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>
                                 <Link to="/create-statement">
-                                    <Button onClick={()=>{props.setStatementToJoin(s.content)}} variant='contained' 
+                                    <Button onClick={()=>{props.setStatementToJoin(s)}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                                         <PlusOneIcon variant='contained'/>
                                     </Button>

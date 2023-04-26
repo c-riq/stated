@@ -17,7 +17,13 @@ import { uploadPdf, backendHost } from "../api";
 export const filePath = ({hash, host}) => (host || backendHost) + "/files/" + hash + ".pdf"
 
 const SignPDFForm = (props) => {
-  const [fileHash, setFileHash] = React.useState("");
+  const content = props.statementToJoin?.content
+  let originalHost = props.statementToJoin?.domain
+  if (originalHost) {
+    originalHost = 'https://' + originalHost
+  }
+  const statementToJoinHash = content && parsePDFSigning(content)?.hash_b64
+  const [fileHash, setFileHash] = React.useState(statementToJoinHash || "");
   const [fileURL, setFileURL] = React.useState("");
   const [dragActive, setDragActive] = React.useState(false);
 
@@ -100,7 +106,7 @@ const SignPDFForm = (props) => {
       {fileHash ? (
         <embed
           src={
-            (fileURL ? fileURL : filePath({hash: fileHash, host: backendHost}))
+            (fileURL ? fileURL : filePath({hash: fileHash, host: originalHost || backendHost}))
           }
           width="100%"
           height="300px"

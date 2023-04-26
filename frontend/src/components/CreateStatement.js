@@ -28,8 +28,8 @@ import { submitStatement, checkDomainVerification,
 import StatementForm from './StatementForm.js';
 
 const CreateStatement = props => {
-    const [content, setContent] = React.useState(props.statementToJoin || "");
-    const [type, setType] = React.useState(props.poll ? "vote" : "statement");
+    const [content, setContent] = React.useState(props.statementToJoin?.content || "");
+    const [type, setType] = React.useState(props.poll ? "vote" : (props.statementToJoin?.type ? props.statementToJoin?.type : "statement"));
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([{domain: null, O: null}]);
