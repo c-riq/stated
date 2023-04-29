@@ -20,7 +20,7 @@ const SignPDFForm = (props) => {
   const content = props.statementToJoin?.content
   let originalHost = props.statementToJoin?.domain
   if (originalHost) {
-    originalHost = 'https://' + originalHost
+    originalHost = 'https://stated.' + originalHost
   }
   const statementToJoinHash = content && parsePDFSigning(content)?.hash_b64
   const [fileHash, setFileHash] = React.useState(statementToJoinHash || "");

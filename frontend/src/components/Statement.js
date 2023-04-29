@@ -1,8 +1,9 @@
 import React from 'react'
 import TextareaAutosize from '@mui/material/TextareaAutosize';
-import { Link, useParams, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useParams, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
+import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -74,12 +75,12 @@ const Statement = props => {
                     />
                 </div>
             )}
-            {statement && (statement.type === statementTypes.poll && (<Link to="/create-statement">
+            {statement && (statement.type === statementTypes.poll && (<RouterLink to="/create-statement">
                 <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
                 sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                     Vote
                 </Button>
-            </Link>))}
+            </RouterLink>))}
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
         <Card style={{
                 width: "100%",
@@ -101,14 +102,17 @@ const Statement = props => {
                     }
             ></CardHeader>
             <Collapse in={detailsOpen} timeout="auto" unmountOnExit style={{padding: "20px"}}>
+                <p>A statements authenticity should be independently verifiable by following the steps below.</p>
                 <h4>1. Check the domain owners intention to publish the statement</h4>
+                <p>There are 2 supported methods for this: via a running stated server application on the authors website domain (1.1) and via DNS TXT entries of the authors domain (1.2).</p>
                 <h4>1.1 Via the domain owners website</h4>
-                <p>Check if the domain owner also published the domain under this URL: <a href={`https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
-                    {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</a></p>
+                <p>Check if the domain owner also published the domain under this URL: <Link href={`https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
+                    {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</Link> or as part of a text file under this URL: <br />
+                    <Link href={`https://stated.${statement.domain}/own/statements.txt`}>{`https://stated.${statement.domain}/own/statements.txt`}</Link></p>
                 <h4>1.2 Via the domain DNS records</h4>
                 <h4>1.2.1 Generate the statement hash</h4>
                 <p>The SHA256 hash (in URL compatible base 64 representation) is a transformed version of the above statement text. 
-                    Due to its limited length and set of characters it can be more easily stored and shared than the full text of the statement. 
+                    Due to its limited length and limited set of characters it can be more easily stored and shared than the full text of the statement. 
                     Running the following command in the mac terminal allows you to independently verify that the statement generates this hash:</p>
                 <div>
                     <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"echo -n \""+ statement.statement +"\"| openssl sha256 -binary | base64 | tr -d '=' | tr '/+' '_-' "} />
@@ -121,7 +125,7 @@ const Statement = props => {
                     <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"delv @1.1.1.1 TXT stated."+statement.domain+" +short +trust"}/>
                 </div>
                 <p>DNS responses are only secure if they are DNSSEC validated, which is indicated by <span style={{backgroundColor:"#cccccc"}}>; fully validated</span> at the beginnig of the output of the delv command.
-                    You can also inspect the DNSSEC verification chain here: <a href={`https://dnsviz.net/d/stated.${statement.domain}/dnssec/`}>{`https://dnsviz.net/d/stated.${statement.domain}/dnssec/`}</a></p>
+                    You can also inspect the DNSSEC verification chain here: <Link href={`https://dnsviz.net/d/stated.${statement.domain}/dnssec/`}>{`https://dnsviz.net/d/stated.${statement.domain}/dnssec/`}</Link></p>
                 
                 <h4>2. Check who owns the domain</h4>
                 <p>Inspect the steps in the verification graph. By clicking on the arrows you can view the details at each step. The graph includes: </p>
@@ -138,9 +142,9 @@ const Statement = props => {
             (<div><h3>Organisations that joined the statemet</h3>
                 {joiningStatements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
-                        <Link key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
                             {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
-                        </Link>
+                        </RouterLink>
                     </div>
                     )
                 )}
@@ -151,9 +155,9 @@ const Statement = props => {
             {votes.length > 0 && (<div><h3>Qualified votes</h3>
                 {votes.map(({proclaimed_publication_time, domain, option, hash_b64, name},i)=>(
                     <div key={i}>
-                        <Link key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
                             {option + " | " + domain + " | " + (new Date(parseInt(proclaimed_publication_time)).toUTCString())}{name ? " | " + name + " ✅":  ""}
-                        </Link>
+                        </RouterLink>
                     </div>
                     )
                 )}
