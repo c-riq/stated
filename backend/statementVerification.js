@@ -219,6 +219,9 @@ export const validateAndAddStatementIfMissing =
             if (api_key) {
                 log && console.log('verifiy via api key', hash_b64)
                 verified = await verifyViaAPIKey({domain, api_key})
+                if(!verified){
+                    return resolve({error: 'invalid api key'})
+                }
                 verifiedByAPI = true
             } else {
                 log && console.log('validate via api', hash_b64)

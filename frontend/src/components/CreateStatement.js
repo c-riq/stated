@@ -237,7 +237,8 @@ const CreateStatement = props => {
                         onChange={e => { setApiKey(e.target.value) }}
                         margin="normal"
                     />
-                    <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>
+                    <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}
+                    disabled={!apiKey}>
                         Submit</Button>
                 </React.Fragment>
                 )
