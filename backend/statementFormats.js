@@ -97,9 +97,9 @@ export const buildOrganisationVerificationContent = (
 		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
 		verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
-	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) return ""
 	if (!["limited liability corporation","local government","state government","national government"].includes(legalEntity)) 
-			throw new Error("Invalid legal entity type")
+			return ""
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
@@ -151,7 +151,7 @@ export const buildPersonVerificationContent = (
 		birthDate, job = null, employer = null, verificationMethod = null, confidence = null,
 		supersededVerificationHash = null, pictureHash = null}) => {
 	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
-	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) return ""
 	let content = "\n" +
 		"\t" + "Type: Person verification" + "\n" +
 		"\t" + "Description: We verified the following information about a person." + "\n" +

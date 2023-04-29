@@ -55,7 +55,7 @@ const CenterModal = (props) => {
     {!lt850px&&(<div style={{height: 50, padding: '16px 16px 16px 16px'}}>
       <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
     </div>)}
-    <div style={{...(lt850px?{padding: '30px'}:{padding: '20px 200px 200px 200px'}), overflowY: 'scroll'}}>
+    <div style={{...(lt850px?{padding: '30px'}:{padding: '30px 50px 50px 50px'}), overflowY: 'scroll'}}>
       {
         props.children
       }
@@ -121,7 +121,7 @@ function App() {
     navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)
   }
   return (
-    <div className="App">
+    <div className="App" style={{overflow: modalOpen ? 'hidden': 'scroll'}}>
     <CssBaseline />
     <div className='App-main'>
       <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
@@ -166,12 +166,12 @@ function App() {
           <Route path='/' exact />
           <Route path='/statement/:statementId' element={(
             <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-              <Statement hash_b64={useParams().statementId || ''} voteOnPoll={voteOnPoll} />
+              <Statement hash_b64={useParams().statementId || ''} voteOnPoll={voteOnPoll} lt850px={lt850px}/>
             </CenterModal>)} 
           />
           <Route path='/create-statement' element={
             <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}) => {warning ? setDialogOpen(true) : resetState() }}>
-              <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} />
+              <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} lt850px={lt850px}/>
             </CenterModal>} 
           />
       </Routes>

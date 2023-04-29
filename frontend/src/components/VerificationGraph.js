@@ -325,7 +325,7 @@ export const VerificationGraph = (props) => {
   }, [props, sslCerts, setSslCerts, fetchedSslCerts]);
   return (
     <Fragment>
-      <h2>Verification Graph</h2>
+      <h3>Verification Graph</h3>
       <div ref={graphRef} style={{ width: "100%", height: "30vh" }}></div>
     </Fragment>
   );
