@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import elk from "cytoscape-elk";
 
-import { getSSLOVInfo } from "../api.js";
+import { getSSLOVInfo, backendHost } from "../api.js";
 
 cytoscape.use(elk);
 
@@ -96,7 +96,7 @@ export const VerificationGraph = (props) => {
             source: sourceParentId,
             target: targetParentId,
             name: "stated:" + hash_b64.substring(0, 5),
-            href: "http://localhost:3000/statement/" + hash_b64,
+            href: `${backendHost}/statement/${hash_b64}`,
           },
         });
       }
@@ -178,7 +178,7 @@ export const VerificationGraph = (props) => {
           source: sourceParentId,
           target: targetParentId,
           name: "stated:" + statement.hash_b64?.substring(0, 5),
-          href: "http://localhost:3000/statement/" + statement.hash_b64,
+          href: `${backendHost}/statement/${statement.hash_b64}`,
         },
       });
     }

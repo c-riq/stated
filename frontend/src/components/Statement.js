@@ -138,7 +138,9 @@ const Statement = props => {
             </Card>
 
             
-            {joiningStatements.length > 0 && statement && statement.type === statementTypes.statement && 
+            {joiningStatements.length > 0 && statement?.type && 
+                [statementTypes.statement, statementTypes.signPdf, statementTypes.personVerification, 
+                    statementTypes.organisationVerification].includes(statement.type) && 
             (<div><h3>Organisations that joined the statemet</h3>
                 {joiningStatements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
