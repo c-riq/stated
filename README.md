@@ -25,7 +25,7 @@ Statements can either be plain text messages or a strucutured message such as:
 - Dispute statement: To express the conviction that a referenced statement is not authentic
 To allow for fast aggregation of polls and joint statements, all statements are propagated though a peer to peer network of participating organisations. And each node validates the authors intention to publish a statement before relaying them.
 
-![visualisatiuon](https://github.com/c-riq/stated/blob/master/diagram.png?raw=true)
+![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/diagram.png?raw=true)
 
 ## Publishing statements of other organisations
 Currently another verification method is supported to make initial adoption and experimentation easier.<br/>
