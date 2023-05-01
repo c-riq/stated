@@ -109,6 +109,12 @@ check frontend/README.md
 #### Node.js express PostreSQL 
 check backend/README.md
 
+### Generate PDFs
+```bash
+npm i -g md-to-pdf
+md-to-pdf documents/*.md
+```
+
 ### Analysis 
 #### Python scripts extracting domain ownership hints from wikidata and other sources
 check analysis/README.md

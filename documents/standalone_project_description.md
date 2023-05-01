@@ -39,7 +39,7 @@ Other statement types include:
 
 Participating entities are currently classified into limited liability corporations (companies, universities, NGOs…), local governments, national governments and individual people.
 
-![visualisatiuon](https://github.com/c-riq/stated/blob/add-project-descpription-and-baseline-contract/documents/example_verification_graph.png?raw=true)<br />
+![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/example_verification_graph.png?raw=true)<br />
 <b>Fig.1: Example of a verification graph</b> Certificate Authority Sectigo issued a SSL OV certificate, validating that Rix Data NL B.V. owns rixdata.net. Rix Data NL B.V. verified that Rix Data UG owns gritapp.info, which published a PDF signature statement using their domain.  Rix Data UG also verified their own identity, represented by the loop, which is useful for reducing naming inconsistencies.
 
 ### Simplified statement publishing
