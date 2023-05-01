@@ -31,3 +31,5 @@ backend/database/backups/*
 # data
 analysis/data/*
 analysis/stated_analysis
+
+documents/*.pdf
