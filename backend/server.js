@@ -23,6 +23,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN
 const port = parseInt(process.env.PORT || '7766')
+const certPath = process.env.SSL_CERT_PATH
 
 const app = express();
 
@@ -67,25 +68,13 @@ http.createServer(function (req, res) {
 }).listen(80);
 
 if (prod) {
-    let credentials = {}
-    if (ownDomain == 'gritapp.info') {
-        let privateKey = fs.readFileSync('/etc/letsencrypt/live/stated.gritapp.info/privkey.pem', 'utf8');
-        let certificate = fs.readFileSync('/etc/letsencrypt/live/stated.gritapp.info/cert.pem', 'utf8');
-        let ca = fs.readFileSync('/etc/letsencrypt/live/stated.gritapp.info/fullchain.pem', 'utf8');
-        credentials = {
-            key: privateKey,
-            cert: certificate,
-            ca: ca
-        }
-    } else {
-        let privateKey = fs.readFileSync('/etc/sectigo/privkey.pem', 'utf8');
-        let certificate = fs.readFileSync('/etc/sectigo/cert.pem', 'utf8');
-        let ca = fs.readFileSync('/etc/sectigo/fullchain.pem', 'utf8');
-        credentials = {
-            key: privateKey,
-            cert: certificate,
-            ca: ca
-        }
+    const privateKey = fs.readFileSync(certPath + 'privkey.pem', 'utf8');
+    const certificate = fs.readFileSync(certPath + 'cert.pem', 'utf8');
+    const ca = fs.readFileSync(certPath + 'fullchain.pem', 'utf8');
+    const credentials = {
+        key: privateKey,
+        cert: certificate,
+        ca: ca
     }
     const httpsServer = https.createServer(credentials, app);
     httpsServer.listen(443, () => {

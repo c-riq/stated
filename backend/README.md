@@ -1,49 +1,39 @@
 
-## dev
+## Local development
 
 ```sh
 docker-compose -f database/docker-compose.yml up
 # to reapply init.sql: docker-compose -f database/docker-compose.yml up --build
  API_KEY=XXX DOMAIN=localhost nodemon server.js
 ```
-## production
+## Installation on Ubuntu
 
- - Update the domain name in ../src/api.js and build the front end files according to ../README.md.<br/>
- - Update the SSL cert paths in backend/server.js according to your domain name.<br/>
- - Modify backend/deploy.sh script with your server's IP/ domain name and run it to copy source files into the server.<br/>
- - Install dependencies and initialize database on the server (Ubuntu):<br/>
-
-
-```
+```bash
 curl -sL https://deb.nodesource.com/setup_16.x -o /tmp/nodesource_setup.sh
 sudo bash /tmp/nodesource_setup.sh
 sudo apt-get update
-
-sudo apt-get install postgresql 
+sudo apt-get install -y postgresql nodejs qpdf
 sudo su - postgres
 psql
-CREATE USER sdf WITH SUPERUSER PASSWORD 'sdf';
---run commands from init.sql
---CREATE DATABASE dev
---\c dev
-\dt
-\q
-exit
 
-sudo apt-get install -y nodejs qpdf
-npm install
-sudo npm install -g nodemon
+CREATE USER sdf WITH SUPERUSER PASSWORD 'sdf';
 ```
-Copy files using the script in scp.sh with your server details. <br />
-Use tmux (or something similar) for runinng to the node server
-```
-sudo NODE_ENV=production DOMAIN=rixdata.net API_KEY=XXX nodemon --ignore 'log/*' server.js 
-# sudo NODE_ENV=production DOMAIN=gritapp.info nodemon --ignore 'log/*' server.js
+Run all SQL commands from init.sql in the psql prompt. <br />
+Exit the sql promt with `exit`, and exit the postgres user shell session by running `exit` again. <br />
+```bash
+git clone https://github.com/c-riq/stated.git
+cd stated/backend
+npm install 
+# for testing
+sudo NODE_ENV=development DOMAIN=XXX API_KEY=XXX node server.js
+# for production replace XXX, SSL certificate required
+tmux
+sudo NODE_ENV=production DOMAIN=XXX API_KEY=XXX SSL_CERT_PATH=/etc/letsencrypt/live/XXX/ node server.js 
 ```
 
 ## Create lets encrypt SSL certificate
-```
-sudo apt install certbot
+```bash
+sudo apt install -y certbot
 sudo certbot certonly --standalone
 ```
 ## Renew lets encrypt certificate
@@ -51,15 +41,6 @@ sudo certbot certonly --standalone
 quit node server
 <br /> <br />
 sudo certbot renew --standalone<br />
-<br />
-Stop NginX or Apache if they were used for the cert renewal</br>
-sudo nginx stop <br />
-sudo nginx -s quit <br />
-<br /> <br />
-or<br />
-sudo service apache2 stop<br />
-sudo lsof -i :443<br />
-sudo kill -9 <br />
 <br />
 restart node server
 
