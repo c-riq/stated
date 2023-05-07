@@ -62,12 +62,15 @@ app.use((err, req, res, next) => {
     res.send("Server Error." + err)
 });
 
-http.createServer(function (req, res) {
-    res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-    res.end();
-}).listen(80);
+
 
 if (prod) {
+    
+    http.createServer(function (req, res) {
+        res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+        res.end();
+    }).listen(80);
+
     const privateKey = fs.readFileSync(certPath + 'privkey.pem', 'utf8');
     const certificate = fs.readFileSync(certPath + 'cert.pem', 'utf8');
     const ca = fs.readFileSync(certPath + 'fullchain.pem', 'utf8');

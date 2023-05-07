@@ -25,7 +25,7 @@ git clone https://github.com/c-riq/stated.git
 cd stated/backend
 npm install 
 # for testing
-sudo NODE_ENV=development DOMAIN=XXX API_KEY=XXX node server.js
+sudo NODE_ENV=development DOMAIN=XXX API_KEY=XXX PORT=80 node server.js
 # for production replace XXX, SSL certificate required
 tmux
 sudo NODE_ENV=production DOMAIN=XXX API_KEY=XXX SSL_CERT_PATH=/etc/letsencrypt/live/XXX/ node server.js 
