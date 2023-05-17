@@ -69,13 +69,16 @@ let migrationsDone = false;
 ([500, 2500, 5000]).map(ms => setTimeout(
   async () => {
     if(!migrationsDone){
-      performMigrations(pool, ()=>migrationsDone=true)
+      performMigrations({pool, cb: ()=>migrationsDone=true})
     }
   }, ms
 ))
 
 const s = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
+    if (!migrationsDone){
+      throw { error: 'Migrations not done yet'}
+    }
     if (typeof o != 'undefined') {
       if(forbiddenStrings(Object.values(o)).length > 0) {
         throw { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
