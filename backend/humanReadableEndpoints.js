@@ -1,11 +1,13 @@
 import express from 'express'
-import {getStatements, getAllVerifications, getAllNodes} from './db.js'
+import {getStatements, getAllVerifications, getAllNodes, getOwnStatement} from './db.js'
+
+const ownDomain = process.env.DOMAIN
 
 const router = express.Router();
 
 router.get("/statements|statements.txt", async (req, res, next) => {
     try {
-        const dbResult = await getStatements({minId: 0})
+        const dbResult = await getStatements({minId: 0, domain: ownDomain})
         if(dbResult?.error){
             throw dbResult?.error
         }
