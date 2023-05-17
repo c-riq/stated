@@ -1,3 +1,4 @@
+# docker compose rm
 # docker-compose build --no-cache && docker-compose up
 
 services:
@@ -8,8 +9,8 @@ services:
       POSTGRES_PASSWORD: sdf
       PGDATA: /data/postgres
     volumes:
-       - postgres_volume_1:/data/postgres
-       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - vol_db_1:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5441:5432"
     networks:
@@ -24,7 +25,7 @@ services:
       - API_KEY=XXX
       - DOMAIN=stated_1:7001
       - TEST=true
-    build: ..
+    build: ../../..
     ports:
       - '7001:7001'
     networks:
@@ -42,8 +43,8 @@ services:
       POSTGRES_PASSWORD: sdf
       PGDATA: /data/postgres
     volumes:
-       - postgres_volume_2:/data/postgres
-       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - vol_db_2:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5442:5432"
     networks:
@@ -59,7 +60,7 @@ services:
       - DOMAIN=stated_2:7002
       - SEED_NODES=stated_1:7001
       - TEST=true
-    build: ..
+    build: ../../..
     ports:
       - '7002:7002'
     networks:
@@ -78,8 +79,8 @@ services:
       POSTGRES_PASSWORD: sdf
       PGDATA: /data/postgres
     volumes:
-       - postgres_volume_3:/data/postgres
-       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - vol_db_3:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5443:5432"
     networks:
@@ -95,7 +96,7 @@ services:
       - DOMAIN=stated_3:7003
       - SEED_NODES=stated_1:7001,stated_2:7002
       - TEST=true
-    build: ..
+    build: ../../..
     ports:
       - '7003:7003'
     networks:
@@ -115,8 +116,8 @@ services:
       POSTGRES_PASSWORD: sdf
       PGDATA: /data/postgres
     volumes:
-       - postgres_volume_4:/data/postgres
-       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - vol_db_4:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5444:5432"
     networks:
@@ -131,7 +132,7 @@ services:
       - API_KEY=XXX
       - DOMAIN=stated_4:7004
       - TEST=true
-    build: ..
+    build: ../../..
     ports:
       - '7004:7004'
     networks:
@@ -149,8 +150,8 @@ services:
       POSTGRES_PASSWORD: sdf
       PGDATA: /data/postgres
     volumes:
-       - postgres_volume_5:/data/postgres
-       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - vol_db_5:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5445:5432"
     networks:
@@ -166,7 +167,7 @@ services:
       - DOMAIN=stated_5:7005
       - SEED_NODES=stated_4:7004
       - TEST=true
-    build: ..
+    build: ../../..
     ports:
       - '7005:7005'
     networks:
@@ -185,8 +186,8 @@ services:
       POSTGRES_PASSWORD: sdf
       PGDATA: /data/postgres
     volumes:
-       - postgres_volume_6:/data/postgres
-       - ../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+       - vol_db_6:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5446:5432"
     networks:
@@ -202,7 +203,7 @@ services:
       - DOMAIN=stated_6:7006
       - SEED_NODES=stated_4:7004,stated_5:7005,stated_1:7001
       - TEST=true
-    build: ..
+    build: ../../..
     ports:
       - '7006:7006'
     networks:
@@ -218,9 +219,9 @@ networks:
     driver: bridge
 
 volumes:
-    postgres_volume_1:
-    postgres_volume_2:
-    postgres_volume_3:
-    postgres_volume_4:
-    postgres_volume_5:
-    postgres_volume_6:
+    vol_db_1:
+    vol_db_2:
+    vol_db_3:
+    vol_db_4:
+    vol_db_5:
+    vol_db_6:
