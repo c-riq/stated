@@ -185,10 +185,11 @@ export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise(
   }
 }))
 
-export const getStatements = ({ minId, onlyStatementsWithMissingEntities = false }) => (new Promise((resolve, reject) => {
+export const getStatements = ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = '' }) => (new Promise((resolve, reject) => {
   try {
     s({minId, onlyStatementsWithMissingEntities})
     pool.query(`
+              WITH _ AS (SELECT $1 + 0 _, $2 __) -- use all input parameters
               SELECT 
                   id,
                   statement,
@@ -199,12 +200,16 @@ export const getStatements = ({ minId, onlyStatementsWithMissingEntities = false
                   first_verification_time,
                   derived_entity_creation_retry_count
                 FROM statements 
-                WHERE id > $1 ${onlyStatementsWithMissingEntities ? 
+                WHERE id > $1 
+                ${onlyStatementsWithMissingEntities ? 
                   ' AND derived_entity_created IS FALSE ' + 
                   ' AND derived_entity_creation_retry_count < 7 ' + 
                   ' AND type <> \'statement\' '
                   : ''}
-            `,[minId || 0]
+                ${domain ? 
+                  ' AND domain = $2 ' 
+                  : ''}
+            `,[minId, domain]
             , (error, results) => {
       if (error) {
         console.log(error)
