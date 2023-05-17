@@ -12,7 +12,7 @@ backend/node_modules
 
 # production
 frontend/build
-backend/public
+#backend/public
 
 # misc
 .DS_Store
