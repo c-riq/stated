@@ -5,6 +5,8 @@ import { dirname } from "path";
 
 import { backup } from "../db.js";
 
+import { transaction } from "./transactions.ts";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
