@@ -14,6 +14,7 @@ const pgDatabase = process.env.POSTGRES_DB || "stated"
 const pgUser = process.env.POSTGRES_USER || "sdf"
 const pgPassword = process.env.POSTGRES_PW || "sdf"
 const pgPort = parseInt(process.env.POSTGRES_PORT || '5432')
+const test = process.env.TEST || false
 
 const pool = new Pool({
   user: pgUser,
@@ -24,6 +25,9 @@ const pool = new Pool({
 })
 
 export const backup = () => {return new Promise((resolve, reject) => {
+    if(test) {
+        return resolve({error: null})
+    }
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
 
@@ -62,7 +66,7 @@ export const backup = () => {return new Promise((resolve, reject) => {
 const log = false
 
 let migrationsDone = false;
-([500, 5000]).map(ms => setTimeout(
+([500, 2500, 5000]).map(ms => setTimeout(
   async () => {
     if(!migrationsDone){
       performMigrations(pool, ()=>migrationsDone=true)
