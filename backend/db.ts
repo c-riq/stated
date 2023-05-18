@@ -1,13 +1,10 @@
-import * as pg from 'pg'
+import { Pool } from 'pg'
 import {forbiddenStrings} from './statementFormats.js'
 import {performMigrations} from './database/migrations.js'
 import * as cp from 'child_process'
 
 import {fileURLToPath} from 'url'
 import {dirname} from 'path'
-
-// @ts-ignore
-const { Pool } = pg.default
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
 const pgDatabase = process.env.POSTGRES_DB || "stated"
@@ -69,7 +66,7 @@ let migrationsDone = false;
 ([500, 2500, 5000]).map(ms => setTimeout(
   async () => {
     if(!migrationsDone){
-      performMigrations({pool, cb: ()=>migrationsDone=true})
+      performMigrations(pool, ()=>migrationsDone=true)
     }
   }, ms
 ))

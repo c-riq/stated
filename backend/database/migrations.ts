@@ -5,7 +5,9 @@ import { dirname } from "path";
 
 import { backup } from "../db.js";
 
-import { transaction } from "./transactions.ts";
+import { transaction } from "./transaction";
+
+import { Pool } from "pg";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,7 +26,7 @@ const migrateToVersion = {
   2: { sql: migration2 },
 };
 
-const testMigrationTableExistence = async ({ pool }) => {
+const testMigrationTableExistence = (pool: Pool) => new Promise((resolve, reject) => {
   const sql = `
             SELECT EXISTS (
                 SELECT 
@@ -32,40 +34,42 @@ const testMigrationTableExistence = async ({ pool }) => {
                 WHERE table_schema = 'public'
                     AND table_name = 'migrations'
             );`;
-  const res = await pool.query(sql);
-  if (res.error) {
-    console.log(res.error);
-    console.trace();
-    return;
-  }
-  if (res.rows && res.rows[0]) {
-    if (!(res.rows[0].exists === true)) {
-      // migrations table does not exist yet
-      return false;
-    }
-  } else {
-    console.log("Could not query stated database for migrations table.");
-    console.trace();
-  }
+  pool.query(sql, (error, res) => {
+    if (error) {
+      console.log(error)
+      console.trace()
+      resolve({ error })
+    } else {
+      if (res.rows && res.rows[0]) {
+        if (!(res.rows[0].exists === true)) {
+          // migrations table does not exist yet
+          return resolve(false);
+        }
+      } else {
+        console.log("Could not query stated database for migrations table.");
+        console.trace();
+      }
+  }})
 };
 
-const getLatestMigrationVersion = async ({ pool }) => {
+const getLatestMigrationVersion = (pool: Pool) => new Promise((resolve, reject) => {
   const sql = `SELECT MAX(to_version) max_version FROM migrations`;
-  const res = await pool.query(sql);
-  if (res.error) {
-    console.log("res error", res.error);
+  const res = await pool.query(sql, (error, res) => {
+  if (error) {
+    console.log("res error", error);
     console.trace();
   } else {
     const maxVersion = res.rows[0].max_version;
-    if (/^[0-9]+$/.test("" + maxVersion)) { // positive integer
+    if (/^[0-9]+$/.test("" + maxVersion)) {
+      // positive integer
       return maxVersion;
     }
   }
   return;
-};
+}};
 
-const _performMigrations = async ({ pool, cb }) => {
-  const migrationsTableExists = await testMigrationTableExistence({ pool });
+const _performMigrations = async (pool: Pool, cb: () => any) => {
+  const migrationsTableExists = await testMigrationTableExistence(pool);
   if (!migrationsTableExists) {
     const backupResult = await backup();
     if (backupResult.error) {
@@ -73,18 +77,17 @@ const _performMigrations = async ({ pool, cb }) => {
       console.trace();
       return;
     }
-    const targetVersion = 1;
-    const sql = migrateToVersion[targetVersion]["sql"];
-    const migrationResult = await pool.query(sql);
-    console.log("migration from 0 to " + targetVersion, migrationResult);
-    const trackMigration = `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`;
-    const res = await pool.query(trackMigration, ["0", targetVersion]);
-    if (res.error) {
-      console.log(res.error);
-      return;
-    }
+    transaction(async (client) => {
+      const targetVersion = 1;
+      const sql = migrateToVersion[targetVersion]["sql"];
+      console.log("migrating from 0 to version " + targetVersion);
+      const res = await client.query(
+        sql +
+          `;INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, $1)`
+      , [targetVersion]);
+    }, pool);
   } else {
-    const maxVersion = await getLatestMigrationVersion({ pool });
+    const maxVersion = await getLatestMigrationVersion(pool);
     if (maxVersion === "" + currentCodeVersion) {
       cb();
     } else {
@@ -97,30 +100,23 @@ const _performMigrations = async ({ pool, cb }) => {
           console.trace();
           return;
         }
-        const sql = migrateToVersion[targetVersion]["sql"];
-        const res = await pool.query(sql);
-        console.log(
-          "migration from " + dbVersion + " to " + targetVersion,
-          res
-        );
-        if (res.error) {
-          return;
-        } else {
-          const sql = `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`;
-          const res = await pool.query(sql, [dbVersion, targetVersion]);
-          if (res.error) {
-            console.log(res.error);
-            return;
-          }
-        }
+        transaction(async (client) => {
+          const targetVersion = 1;
+          const sql = migrateToVersion[targetVersion]["sql"];
+          console.log(`migrating from ${dbVersion} to version ${targetVersion}`);
+          const res = await client.query(
+            sql +
+              `;INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`
+          , [dbVersion, targetVersion]);
+        }, pool);
       }
     }
   }
 };
 
-export const performMigrations = async ({ pool, cb }) => {
+export const performMigrations = async (pool: Pool, cb: () => any) => {
   try {
-    _performMigrations({ pool, cb });
+    _performMigrations(pool, cb);
   } catch (error) {
     console.log(error);
     console.trace();

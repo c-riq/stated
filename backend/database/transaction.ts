@@ -8,7 +8,9 @@ export const transaction = async (cb: (client: PoolClient) => void, pool: Pool) 
     try {
       await cb(client);
       await client.query("COMMIT");
-    } catch (e) {
+    } catch (error) {
+      console.log(error);
+      console.trace();
       await client.query("ROLLBACK");
     }
   } finally {

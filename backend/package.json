@@ -2,11 +2,10 @@
   "name": "stated-node",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec ts-node index.js"
+    "start": "nodemon --exec ts-node ./index.ts"
   },
   "author": "Christopher Rieckmann",
   "license": "MIT",
