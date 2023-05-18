@@ -1,6 +1,6 @@
 import { Pool, QueryResult } from 'pg'
-import {forbiddenStrings} from './statementFormats'
-import {performMigrations} from './database/migrations'
+import {forbiddenStrings} from '../statementFormats'
+import {performMigrations} from './migrations'
 import * as cp from 'child_process'
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
@@ -18,8 +18,8 @@ const pool = new Pool({
   port: pgPort,
 })
 
-type DBCallback = (result?: QueryResult) => void
-type DBErrorCallback = (error: Error) => void
+export type DBCallback = (result?: QueryResult) => void
+export type DBErrorCallback = (error: Error) => void
 
 export const backup = () => {return new Promise((resolve: DBCallback, reject: DBErrorCallback) => {
     if(test) {
@@ -68,7 +68,7 @@ let migrationsDone = false;
   }, ms
 ))
 
-const s = (o) => {
+export const sanitize = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
     if (!migrationsDone){
       throw { error: 'Migrations not done yet'}
@@ -80,325 +80,23 @@ const s = (o) => {
     }
 }
 
-type statement = {
-  type: string,
-  domain: string,
-  author: string,
-  statement: string,
-  proclaimed_publication_time: number,
-  hash_b64: string,
-  tags?: string[],
-  content: string,
-  content_hash_b64: string,
-  verification_method?: string,
-  source_node_id?: string
-}
+import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFactory, 
+  getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
+  createUnverifiedStatementFactory } from './statements'
 
-export const createStatement = ({type, domain, author, statement, proclaimed_publication_time, hash_b64, 
-  tags, content, content_hash_b64, verification_method, source_node_id}: statement) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s({ type, domain, author, statement, proclaimed_publication_time, hash_b64, 
-      tags, content, content_hash_b64, verification_method, source_node_id })
-    pool.query(`INSERT INTO statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
-                                        tags,                  content,                content_hash,           verification_method,               source_node_id,
-                                        first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count, author) 
-                      VALUES ($1, $2, $3, TO_TIMESTAMP($4), $5,
-                              $6, $7, $8, $9, $10, 
-                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0, $11)
-                    ON CONFLICT (hash_b64) DO NOTHING
-                    RETURNING *`,
-      [ type, domain,  statement,        proclaimed_publication_time, hash_b64, 
-        tags, content, content_hash_b64, verification_method,         source_node_id,
-        author], (error, results) => {
-        if (error) {
-          console.log(error)
-          console.trace()
-          return reject(error)
-        } else {
-          return resolve(results)
-        }
-      })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}))
+export const createStatement = createStatementFactory(pool)
+export const getStatements = getStatementsFactory(pool)
+export const getStatementsWithDetail = getStatementsWithDetailFactory(pool)
+export const getUnverifiedStatements = getUnverifiedStatementsFactory(pool)
+export const updateStatement = updateStatementFactory(pool)
+export const createUnverifiedStatement = createUnverifiedStatementFactory(pool)
+export const cleanUpUnverifiedStatements = cleanUpUnverifiedStatementsFactory(pool)
 
-export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s({minId, searchQuery})
-    pool.query(`
-            WITH reposts as(
-                SELECT 
-                    content as _content, 
-                    count(distinct domain) as repost_count, 
-                    first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
-                    CAST($1 AS INTEGER) as input1,
-                    $2 as input2
-                FROM statements 
-                WHERE (type = 'statement' OR type = 'poll' OR type = 'rating' 
-                OR type = 'organisation_verification' OR type='sign_pdf')
-                ${minId ? 'AND id > $1 ' : ''}
-                ${searchQuery ? 'AND (content LIKE \'%\'||$2||\'%\' OR tags LIKE \'%\'||$2||\'%\')' : ''}
-                GROUP BY 1
-                ORDER BY repost_count DESC
-                LIMIT 20
-            )
-            ,votes as (
-              SELECT 
-                poll_hash,
-                json_object_agg(option, cnt) AS votes 
-              FROM ( SELECT 
-                    poll_hash,
-                    option,
-                    count(*) as cnt
-                FROM votes 
-                WHERE qualified = TRUE
-                GROUP BY 1,2
-              ) AS counts GROUP BY 1
-            )
-            SELECT * FROM (
-              SELECT 
-                  s.id,
-                  s.type,
-                  s.domain,
-                  v.name,
-                  s.statement,
-                  r.repost_count,
-                  s.proclaimed_publication_time,
-                  s.hash_b64,
-                  s.tags,
-                  s.content,
-                  s.content_hash,
-                  rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
-                FROM statements s
-                    JOIN reposts r
-                        ON id=first_id
-                    LEFT JOIN organisation_verifications v 
-                        ON s.domain=v.verified_domain 
-                        AND v.verifier_domain='rixdata.net'
-                    LEFT JOIN statements verification_statement
-                        ON v.statement_hash = verification_statement.hash_b64
-                ) AS results 
-                LEFT JOIN votes on results.hash_b64=votes.poll_hash
-              WHERE _rank=1;
-            `,[minId || 0, searchQuery || 'searchQuery']
-            , (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}))
-
-export const getStatements = ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = '' }) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s({minId, onlyStatementsWithMissingEntities})
-    pool.query(`
-              WITH _ AS (SELECT $1 + 0 _, $2 __) -- use all input parameters
-              SELECT 
-                  id,
-                  statement,
-                  type,
-                  content,
-                  domain,
-                  hash_b64,
-                  first_verification_time,
-                  derived_entity_creation_retry_count
-                FROM statements 
-                WHERE id > $1 
-                ${onlyStatementsWithMissingEntities ? 
-                  ' AND derived_entity_created IS FALSE ' + 
-                  ' AND derived_entity_creation_retry_count < 7 ' + 
-                  ' AND type <> \'statement\' '
-                  : ''}
-                ${domain ? 
-                  ' AND domain = $2 ' 
-                  : ''}
-            `,[minId, domain]
-            , (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}))
-
-export const updateStatement = ({ hash_b64, derived_entity_created = false, 
-  increment_derived_entity_creation_retry_count = false }) => (new Promise((resolve: DBCallback, reject) => {
-  s({ hash_b64, derived_entity_created, 
-      increment_derived_entity_creation_retry_count })
-  if (!hash_b64 || !(derived_entity_created || increment_derived_entity_creation_retry_count)){
-    return reject(Error('missing parameters for updateStatement'))
-  }
-  try {
-    if(hash_b64 && derived_entity_created){
-      pool.query(`
-      UPDATE statements SET 
-        derived_entity_created = $2
-        WHERE hash_b64 = $1 
-    `,[hash_b64, derived_entity_created]
-    , (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-      })
-    } 
-    if(hash_b64 && increment_derived_entity_creation_retry_count){
-      pool.query(`
-      UPDATE statements 
-      SET derived_entity_creation_retry_count = derived_entity_creation_retry_count + 1
-        WHERE hash_b64 = $1 
-    `,[hash_b64]
-    , (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-      })
-    }
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-    return
-  }
-}))
-
-export const createUnverifiedStatement = ({ statement, author, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s({statement, hash_b64, source_node_id, source_verification_method})
-    log && console.log(statement, hash_b64, source_node_id, source_verification_method)
-    pool.query(`INSERT INTO unverified_statements (statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count, author) 
-                      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 0, $5)
-                    ON CONFLICT (hash_b64) DO NOTHING
-                    RETURNING *`,
-      [statement, hash_b64, source_node_id, source_verification_method, author], (error, results) => {
-        if (error) {
-          console.log(error)
-          console.trace()
-          return reject(error)
-        } else {
-          return resolve(results)
-        }
-      })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}))
-
-export const getUnverifiedStatements = () => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    pool.query(`
-              SELECT 
-                statement, hash_b64, source_node_id, source_verification_method, received_time, verification_retry_count
-              FROM 
-                unverified_statements 
-            `, (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}))
-
-export const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_count }) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-      s({hash_b64, increment_verification_retry_count})
-      if(hash_b64 && increment_verification_retry_count){
-        pool.query(`
-        UPDATE unverified_statements SET 
-          verification_retry_count = verification_retry_count + $2
-          WHERE hash_b64 = $1 
-      `,[hash_b64, increment_verification_retry_count]
-      , (error, results) => {
-        if (error) {
-          console.log(error)
-          console.trace()
-          return reject(error)
-        } else {
-          return resolve(results)
-        }
-        })
-      } else {
-        return reject(Error('missing values'))
-      }
-    } catch (error) {
-      console.log(error)
-      console.trace()
-      return reject(error)
-      return
-    }
-  }
-))
-
-export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_count}) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s({max_age_hours, max_verification_retry_count})
-    pool.query(`
-              DELETE FROM 
-                unverified_statements
-              WHERE 
-                  (
-                    received_time < CURRENT_TIMESTAMP + ($1 * INTERVAL '1 hour')
-                    AND verification_retry_count > $2
-                  )
-                  OR hash_b64 IN (SELECT hash_b64 from statements)
-            `,[max_age_hours, max_verification_retry_count]
-            , (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}))
 
 export const createOrganisationVerification = ({ statement_hash, verifier_domain, verified_domain, 
   name, legal_entity_type, country, province, city, serialNumber, foreignDomain }) => (new Promise((resolve, reject) => {
   try {
-    s({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain })
+    sanitize({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain })
     pool.query(`
             INSERT INTO organisation_verifications 
               (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
@@ -428,7 +126,7 @@ export const createPersonVerification = ({ statement_hash, verifier_domain, veri
    name,
    countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ statement_hash, verifier_domain, verified_domain, name,
+    sanitize({ statement_hash, verifier_domain, verified_domain, name,
       countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})
     pool.query(`
             INSERT INTO person_verifications 
@@ -458,7 +156,7 @@ export const createPersonVerification = ({ statement_hash, verifier_domain, veri
 export const createPoll = (o) => 
 (new Promise((resolve: DBCallback, reject) => {
   try {
-    s(o)
+    sanitize(o)
     const { statement_hash, participants_entity_type, participants_country, participants_city, deadline } = o
     log && console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
     pool.query(`
@@ -486,7 +184,7 @@ export const createPoll = (o) =>
 
 export const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ statement_hash, poll_hash, option, domain, qualified })
+    sanitize({ statement_hash, poll_hash, option, domain, qualified })
     log && console.log('createVote', [statement_hash, poll_hash, option, domain, qualified])
     pool.query(`
             INSERT INTO votes 
@@ -512,7 +210,7 @@ export const createVote = ({ statement_hash, poll_hash, option, domain, qualifie
 
 export const createRating = ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ statement_hash, organisation, domain, rating, comment })
+    sanitize({ statement_hash, organisation, domain, rating, comment })
     log && console.log('create rating', [statement_hash, organisation, domain, rating, comment])
     pool.query(`
             INSERT INTO ratings 
@@ -538,7 +236,7 @@ export const createRating = ({ statement_hash, organisation, domain, rating, com
 
 export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ hash_b64 })
+    sanitize({ hash_b64 })
     pool.query(`
             WITH domains AS (
               SELECT 
@@ -578,7 +276,7 @@ export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new P
 
 export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ hash_b64 })
+    sanitize({ hash_b64 })
     pool.query(`
             WITH domains AS (
               SELECT 
@@ -619,7 +317,7 @@ export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise
 
 export const getVerificationsForDomain = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ domain })
+    sanitize({ domain })
     pool.query(`
             SELECT 
                 *
@@ -665,100 +363,10 @@ export const getAllVerifications = () => (new Promise((resolve: DBCallback, reje
   }
 }));
 
-export const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_primary_domain_confidence}) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s({max_inactive_verifier_node_days, min_primary_domain_confidence})
-    pool.query(`
-            SELECT 
-                v.*,
-                b.name verifier_domain_name,
-                n.last_seen verifier_node_last_seen
-            FROM organisation_verifications v
-              JOIN domain_ownsership_beliefs b 
-                ON v.verifier_domain=b.domain
-                AND b.name_confidence > $1
-              JOIN p2p_nodes n 
-                ON ('stated.' || b.domain)=n.domain
-                AND n.last_seen > (now() - ($1 * INTERVAL '1 day'))
-              ;
-            `,[max_inactive_verifier_node_days || 1], (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}));
-
-export const createOrganisationIDBelief = (o) => (new Promise((resolve: DBCallback, reject) => {
-  try {
-    s(o)
-    const { primary_domain1,
-      name1,
-      name1_confidence,
-      legal_entity_type1,
-      legal_entity_type1_confidence,
-      country1,
-      country1_confidence,
-      province1,
-      province1_confidence,
-      city1,
-      city1_confidence } = o
-    pool.query(`
-            INSERT INTO domain_ownsership_beliefs (
-              domain,
-              name,
-              name_confidence,
-              legal_entity_type,
-              legal_entity_type_confidence,
-              country,
-              country_confidence,
-              province,
-              province_confidence,
-              city,
-              city_confidence
-            ) VALUES
-                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            ON CONFLICT (domain) DO NOTHING
-            RETURNING *
-            `,[primary_domain1,
-              name1,
-              name1_confidence,
-              legal_entity_type1,
-              legal_entity_type1_confidence,
-              country1,
-              country1_confidence,
-              province1,
-              province1_confidence,
-              city1,
-              city1_confidence], (error, results) => {
-      if (error) {
-        console.log(error)
-        console.trace()
-        return reject(error)
-      } else {
-        return resolve(results)
-      }
-    })
-  } catch (error) {
-    console.log(error)
-    console.trace()
-    return reject(error)
-  }
-}));
-
-
 export const getPoll = ({ statement_hash }) => (new Promise((resolve: DBCallback, reject) => {
   console.log('getPoll', statement_hash)
   try {
-    s({ statement_hash })
+    sanitize({ statement_hash })
     pool.query(`
             SELECT 
                 *
@@ -809,7 +417,7 @@ export const getAllNodes = () => (new Promise((resolve: DBCallback, reject) => {
 
 export const addNode = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ domain })
+    sanitize({ domain })
     pool.query(`
             INSERT INTO p2p_nodes (domain, first_seen, last_seen) VALUES
                 ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -833,7 +441,7 @@ export const addNode = ({ domain }) => (new Promise((resolve: DBCallback, reject
 
 export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ hash_b64 })
+    sanitize({ hash_b64 })
     pool.query(`
             WITH content_hashes AS(
               SELECT content_hash
@@ -872,7 +480,7 @@ export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve: DBC
 
 export const getVotes = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ hash_b64 })
+    sanitize({ hash_b64 })
     pool.query(`
       SELECT 
         *
@@ -900,7 +508,7 @@ export const getVotes = ({ hash_b64 }) => (new Promise((resolve: DBCallback, rej
 export const getStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   log && console.log('getStatement', hash_b64)
   try {
-    s({ hash_b64 })
+    sanitize({ hash_b64 })
     pool.query(`
             SELECT 
                 s.*,
@@ -928,7 +536,7 @@ export const getStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback,
 
 export const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip })
+    sanitize({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip })
     pool.query(`
             UPDATE p2p_nodes
             SET 
@@ -965,7 +573,7 @@ export const updateNode = ({ domain, lastReceivedStatementId, certificateAuthori
 
 export const statementExists = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ hash_b64 })
+    sanitize({ hash_b64 })
     log && console.log(hash_b64, 'check')
     pool.query(`
             SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
@@ -988,7 +596,7 @@ export const statementExists = ({ hash_b64 }) => (new Promise((resolve: DBCallba
 
 export const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ hash_b64, ownDomain })
+    sanitize({ hash_b64, ownDomain })
     pool.query(`
             SELECT 
               *,
@@ -1015,7 +623,7 @@ export const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolv
 
 export const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ domain })
+    sanitize({ domain })
     pool.query(`
             WITH regex AS (
               SELECT '^(http:\/\/|https:\/\/)?(www\.)?' || $1 || '\..*$' as pattern
@@ -1052,7 +660,7 @@ export const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve: 
 
 export const matchDomain = ({ domain_substring }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ domain_substring })
+    sanitize({ domain_substring })
     pool.query(`
             with regex AS ( SELECT '.*' || $1 || '.*' pattern)
             SELECT 
@@ -1086,7 +694,7 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve: DBCa
 export const setCertCache = ({ domain, O, C, ST, L,
   issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    s({ domain, O, C, ST, L, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
+    sanitize({ domain, O, C, ST, L, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
     pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, 
       sha256, valid_from, valid_to, first_seen, last_seen,
       issuer_o, issuer_c, issuer_cn) 
@@ -1112,7 +720,7 @@ RETURNING *;`,
 export const getCertCache = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   if (!domain) return reject(Error('no domain'))
   try {
-    s({ domain })
+    sanitize({ domain })
     pool.query(`
             WITH certs AS(
             SELECT 

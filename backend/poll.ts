@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import {createPoll, getVerificationsForDomain, getPoll, createVote} from './db'
+import {createPoll, getVerificationsForDomain, getPoll, createVote} from './database'
 import {parseVote, parsePoll} from './statementFormats'
 
 const log = true

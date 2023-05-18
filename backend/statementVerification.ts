@@ -1,6 +1,6 @@
 
 import axios from 'axios'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './db'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './database'
 import * as hashUtils from './hash'
 import {createOrgVerification, createPersVerification} from './domainVerification'
 import {parseAndCreatePoll, parseAndCreateVote} from './poll'
@@ -184,7 +184,7 @@ export const validateAndAddStatementIfMissing =
                 log && console.log('verifiy via api key', hash_b64)
                 verified = await verifyViaAPIKey({domain, api_key})
                 if(!verified){
-                    return resolve({error: 'invalid api key'})
+                    return reject(Error('invalid api key'))
                 }
                 verifiedByAPI = true
             } else {

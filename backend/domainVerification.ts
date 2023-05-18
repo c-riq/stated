@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import {createPersonVerification, createOrganisationVerification} from './db'
+import {createPersonVerification, createOrganisationVerification} from './database'
 import {parsePersonVerification, parseOrganisationVerification} from './statementFormats'
 
 const log = true

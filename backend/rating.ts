@@ -1,4 +1,4 @@
-import {createRating} from './db'
+import {createRating} from './database'
 import {parseRating} from './statementFormats'
 
 const log = true

@@ -1,5 +1,5 @@
 import express from 'express'
-import {getStatements, getAllVerifications, getAllNodes, getOwnStatement} from './db'
+import {getStatements, getAllVerifications, getAllNodes, getOwnStatement} from './database'
 
 const ownDomain = process.env.DOMAIN
 

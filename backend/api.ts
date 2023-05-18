@@ -1,13 +1,10 @@
-// @ts-nocheck
-
 import express from 'express'
-
 
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
     getVotes
-} from './db'
+} from './database'
 import p2p from './p2p'
 import ssl from './ssl'
 import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification'
@@ -27,24 +24,25 @@ api.use((req, res, next) => {
 })
 
 api.post("/get_txt_records", async (req, res, next) => {
-    const records = await getTXTEntries(req.body.domain)
-    if(records.error){
-        next(records.error)
-    } else {
+    try {
+        const records = await getTXTEntries(req.body.domain)
         res.end(JSON.stringify({ records: records }))
+    } catch (error) {
+        next(error)
     }
 })
 
 
 api.post("/submit_statement", async (req, res, next) => {
-    const { statement, hash_b64, api_key } = req.body
-    const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, 
-        verification_method: api_key ? 'api' : 'dns', api_key})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
-        log && console.log(dbResult)
-        res.end(JSON.stringify({ insertedData: dbResult && dbResult.rows && dbResult.rows[0] }));
+    try {
+        const { statement, hash_b64, api_key } = req.body
+        const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, 
+            verification_method: api_key ? 'api' : 'dns', api_key})
+            log && console.log(dbResult)
+            res.end(JSON.stringify(dbResult));
+        }
+    catch (error) {
+        next(error)
     }
 })
 

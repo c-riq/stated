@@ -1,8 +1,6 @@
-// @ts-nocheck
-
 import { get } from './request'
 import { validateDomainFormat } from './domainNames/validateDomainFormat'
-import {getCertCache, setCertCache} from './db'
+import {getCertCache, setCertCache} from './database'
 
 
 const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
@@ -15,10 +13,6 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     }
     try {
         const res = await get({hostname: domain, path: '', cache: false})
-        if (res.error){
-            console.log(domain, res.error)
-            console.trace()
-        }
         const {cert} = res
         const subject = cert && cert.subject 
         const issuer = cert && cert.issuer 
@@ -33,9 +27,7 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
         }
     }
     catch (error){
-        console.log(error)
-        console.trace()
-        resolve({error})
+        reject(error)
     }
 })
 
@@ -50,17 +42,16 @@ const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject)
     }
     try {
         const promises = [domain, 'www.' + domain, 'stated.' + domain].map(domain => getOVInfo({domain}))
-        const results = await Promise.all(promises)
-        if (results.filter(r=>r.error).length) {
-            console.log(results.filter(r=>r.error).map(r=>r.error))
+        const results = await Promise.allSettled(promises)
+        results.filter(r=>r.status == 'rejected').map(r=>{
+            // @ts-ignore
+            console.log('' + r.reason)
             console.trace()
-        }
+        })
         return resolve(results)
     }
     catch (error){
-        console.log(error)
-        console.trace()
-        return resolve({error})
+        reject(error)
     }
 })
 

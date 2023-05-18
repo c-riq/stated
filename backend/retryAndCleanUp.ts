@@ -7,7 +7,7 @@ and will be retried according to the schedule below
 and deleted afterwards.
 */
 
-import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, } from './db'
+import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, } from './database'
 import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification'
 
 const log = true
@@ -34,7 +34,7 @@ const tryVerifyUnverifiedStatements = async () => {
     })
     log && console.log('unverifiedStatements up for retry ', unverifiedStatements.length)
     try {
-        const res = await Promise.all(unverifiedStatements.map(({statement, hash_b64, source_node_id, verification_method}) =>
+        const res = await Promise.allSettled(unverifiedStatements.map(({statement, hash_b64, source_node_id, verification_method}) =>
             validateAndAddStatementIfMissing({statement, hash_b64, source_node_id, source_verification_method: verification_method, api_key: undefined })
         ))
         return res
@@ -67,7 +67,7 @@ const tryAddMissingDerivedEntitiesFromStatements = async () => {
     })
     log && console.log('statements without entity up for retry ', statements.length)
     try {
-        const res = await Promise.all(statements.map(({type, domain, content, hash_b64}) => 
+        const res = await Promise.allSettled(statements.map(({type, domain, content, hash_b64}) => 
             createDerivedEntity({statement_hash: hash_b64, domain, content, type})
         ))
         return res
