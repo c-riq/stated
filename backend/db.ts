@@ -1,10 +1,7 @@
-import { Pool } from 'pg'
-import {forbiddenStrings} from './statementFormats.js'
-import {performMigrations} from './database/migrations.js'
+import { Pool, QueryResult } from 'pg'
+import {forbiddenStrings} from './statementFormats'
+import {performMigrations} from './database/migrations'
 import * as cp from 'child_process'
-
-import {fileURLToPath} from 'url'
-import {dirname} from 'path'
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
 const pgDatabase = process.env.POSTGRES_DB || "stated"
@@ -21,12 +18,13 @@ const pool = new Pool({
   port: pgPort,
 })
 
-export const backup = () => {return new Promise((resolve, reject) => {
+type DBCallback = (result?: QueryResult) => void
+type DBErrorCallback = (error: Error) => void
+
+export const backup = () => {return new Promise((resolve: DBCallback, reject: DBErrorCallback) => {
     if(test) {
-        return resolve({error: null})
+        return resolve()
     }
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
 
     const fileName = __dirname + `/database/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
     try {
@@ -35,27 +33,27 @@ export const backup = () => {return new Promise((resolve, reject) => {
         pgdump.stdout.on('data', (data) => {
             try {
                 log && console.log('data',data)
-                return resolve({error: null})
+                return resolve()
             }
             catch(error) {
-                return resolve({error})
+                return reject(error)
             }
         })
         pgdump.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`); 
-            return resolve({error: data})
+            return reject(data)
         })
         pgdump.on('error', (error) => { 
-            return resolve({error: 'pgdump process error: ' + error}) 
+            return reject(Error('pgdump process error: ' + error))
         })
         pgdump.on('close', (code) => {
           if(code === 0) {
-            return resolve({error: null})
+            return resolve()
           }
-            return resolve({error: 'pgdump process exited with code ' + code})
+            return reject(Error('pgdump process exited with code ' + code))
         });
     } catch (error){
-        return resolve({error})
+        return reject(Error(error))
     }
 })
 };
@@ -83,8 +81,8 @@ const s = (o) => {
     }
 }
 
-export const createStatement = ({ type, domain, author, statement, proclaimed_publication_time, hash_b64, 
-  tags, content, content_hash_b64, verification_method, source_node_id }) => (new Promise((resolve, reject) => {
+export const createStatement = (type: String, domain: String, author: String, statement: String, proclaimed_publication_time: String, hash_b64: String, 
+  tags: [String], content: String, content_hash_b64: String, verification_method?: String, source_node_id?: String) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ type, domain, author, statement, proclaimed_publication_time, hash_b64, 
       tags, content, content_hash_b64, verification_method, source_node_id })
@@ -102,19 +100,19 @@ export const createStatement = ({ type, domain, author, statement, proclaimed_pu
         if (error) {
           console.log(error)
           console.trace()
-          resolve({ error })
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve, reject) => {
+export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({minId, searchQuery})
     pool.query(`
@@ -177,19 +175,19 @@ export const getStatementsWithDetail = ({ minId, searchQuery }) => (new Promise(
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getStatements = ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = '' }) => (new Promise((resolve, reject) => {
+export const getStatements = ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = '' }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({minId, onlyStatementsWithMissingEntities})
     pool.query(`
@@ -218,24 +216,24 @@ export const getStatements = ({ minId = 0, onlyStatementsWithMissingEntities = f
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
 export const updateStatement = ({ hash_b64, derived_entity_created = false, 
-  increment_derived_entity_creation_retry_count = false }) => (new Promise((resolve, reject) => {
+  increment_derived_entity_creation_retry_count = false }) => (new Promise((resolve: DBCallback, reject) => {
   s({ hash_b64, derived_entity_created, 
       increment_derived_entity_creation_retry_count })
   if (!hash_b64 || !(derived_entity_created || increment_derived_entity_creation_retry_count)){
-    resolve({error: 'missing parameters for updateStatement'})
+    return reject(Error('missing parameters for updateStatement'))
   }
   try {
     if(hash_b64 && derived_entity_created){
@@ -248,9 +246,9 @@ export const updateStatement = ({ hash_b64, derived_entity_created = false,
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
       })
     } 
@@ -264,21 +262,21 @@ export const updateStatement = ({ hash_b64, derived_entity_created = false,
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
       })
     }
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
     return
   }
 }))
 
-export const createUnverifiedStatement = ({ statement, author, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve, reject) => {
+export const createUnverifiedStatement = ({ statement, author, hash_b64, source_node_id, source_verification_method }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({statement, hash_b64, source_node_id, source_verification_method})
     log && console.log(statement, hash_b64, source_node_id, source_verification_method)
@@ -290,19 +288,19 @@ export const createUnverifiedStatement = ({ statement, author, hash_b64, source_
         if (error) {
           console.log(error)
           console.trace()
-          resolve({ error })
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getUnverifiedStatements = () => (new Promise((resolve, reject) => {
+export const getUnverifiedStatements = () => (new Promise((resolve: DBCallback, reject) => {
   try {
     pool.query(`
               SELECT 
@@ -313,19 +311,19 @@ export const getUnverifiedStatements = () => (new Promise((resolve, reject) => {
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_count }) => (new Promise((resolve, reject) => {
+export const updateUnverifiedStatement = ({ hash_b64, increment_verification_retry_count }) => (new Promise((resolve: DBCallback, reject) => {
   try {
       s({hash_b64, increment_verification_retry_count})
       if(hash_b64 && increment_verification_retry_count){
@@ -338,24 +336,24 @@ export const updateUnverifiedStatement = ({ hash_b64, increment_verification_ret
         if (error) {
           console.log(error)
           console.trace()
-          resolve({ error })
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
         })
       } else {
-        resolve({error: 'missing values'})
+        return reject(Error('missing values'))
       }
     } catch (error) {
       console.log(error)
       console.trace()
-      resolve({ error })
+      return reject(error)
       return
     }
   }
 ))
 
-export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_count}) => (new Promise((resolve, reject) => {
+export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_retry_count}) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({max_age_hours, max_verification_retry_count})
     pool.query(`
@@ -372,15 +370,15 @@ export const cleanUpUnverifiedStatements = ({max_age_hours, max_verification_ret
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
@@ -401,21 +399,21 @@ export const createOrganisationVerification = ({ statement_hash, verifier_domain
         if (error) {
           console.log(error)
           console.trace()
-          resolve({ error })
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
 export const createPersonVerification = ({ statement_hash, verifier_domain, verified_domain,
    name,
-   countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve, reject) => {
+   countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ statement_hash, verifier_domain, verified_domain, name,
       countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})
@@ -432,20 +430,20 @@ export const createPersonVerification = ({ statement_hash, verifier_domain, veri
         if (error) {
           console.log(error)
           console.trace()
-          resolve({ error })
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
 export const createPoll = (o) => 
-(new Promise((resolve, reject) => {
+(new Promise((resolve: DBCallback, reject) => {
   try {
     s(o)
     const { statement_hash, participants_entity_type, participants_country, participants_city, deadline } = o
@@ -461,19 +459,19 @@ export const createPoll = (o) =>
         if (error) {
           console.log(error)
           console.trace()
-          resolve({ error })
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve, reject) => {
+export const createVote = ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ statement_hash, poll_hash, option, domain, qualified })
     log && console.log('createVote', [statement_hash, poll_hash, option, domain, qualified])
@@ -487,19 +485,19 @@ export const createVote = ({ statement_hash, poll_hash, option, domain, qualifie
         if (error) {
           console.log(error)
           console.trace()
-          resolve({error})
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const createRating = ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve, reject) => {
+export const createRating = ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ statement_hash, organisation, domain, rating, comment })
     log && console.log('create rating', [statement_hash, organisation, domain, rating, comment])
@@ -513,19 +511,19 @@ export const createRating = ({ statement_hash, organisation, domain, rating, com
         if (error) {
           console.log(error)
           console.trace()
-          resolve({error})
+          return reject(error)
         } else {
-          resolve(results)
+          return resolve(results)
         }
       })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ hash_b64 })
     pool.query(`
@@ -552,20 +550,20 @@ export const getOrganisationVerificationsForStatement = ({ hash_b64 }) => (new P
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
 
-export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ hash_b64 })
     pool.query(`
@@ -594,19 +592,19 @@ export const getPersonVerificationsForStatement = ({ hash_b64 }) => (new Promise
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
-export const getVerificationsForDomain = ({ domain }) => (new Promise((resolve, reject) => {
+export const getVerificationsForDomain = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ domain })
     pool.query(`
@@ -618,19 +616,19 @@ export const getVerificationsForDomain = ({ domain }) => (new Promise((resolve, 
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getAllVerifications = () => (new Promise((resolve, reject) => {
+export const getAllVerifications = () => (new Promise((resolve: DBCallback, reject) => {
   try {
     pool.query(`
             SELECT 
@@ -642,19 +640,19 @@ export const getAllVerifications = () => (new Promise((resolve, reject) => {
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
-export const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_primary_domain_confidence}) => (new Promise((resolve, reject) => {
+export const getHighConfidenceVerifications = ({max_inactive_verifier_node_days, min_primary_domain_confidence}) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({max_inactive_verifier_node_days, min_primary_domain_confidence})
     pool.query(`
@@ -674,19 +672,19 @@ export const getHighConfidenceVerifications = ({max_inactive_verifier_node_days,
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
-export const createOrganisationIDBelief = (o) => (new Promise((resolve, reject) => {
+export const createOrganisationIDBelief = (o) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s(o)
     const { primary_domain1,
@@ -731,20 +729,20 @@ export const createOrganisationIDBelief = (o) => (new Promise((resolve, reject) 
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
 
-export const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) => {
+export const getPoll = ({ statement_hash }) => (new Promise((resolve: DBCallback, reject) => {
   console.log('getPoll', statement_hash)
   try {
     s({ statement_hash })
@@ -759,20 +757,20 @@ export const getPoll = ({ statement_hash }) => (new Promise((resolve, reject) =>
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
 
-export const getAllNodes = () => (new Promise((resolve, reject) => {
+export const getAllNodes = () => (new Promise((resolve: DBCallback, reject) => {
   try {
     pool.query(`
             SELECT 
@@ -784,19 +782,19 @@ export const getAllNodes = () => (new Promise((resolve, reject) => {
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
-export const addNode = ({ domain }) => (new Promise((resolve, reject) => {
+export const addNode = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ domain })
     pool.query(`
@@ -808,19 +806,19 @@ export const addNode = ({ domain }) => (new Promise((resolve, reject) => {
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }));
 
-export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ hash_b64 })
     pool.query(`
@@ -847,19 +845,19 @@ export const getJoiningStatements = ({ hash_b64 }) => (new Promise((resolve, rej
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getVotes = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ hash_b64 })
     pool.query(`
@@ -874,19 +872,19 @@ export const getVotes = ({ hash_b64 }) => (new Promise((resolve, reject) => {
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const getStatement = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   log && console.log('getStatement', hash_b64)
   try {
     s({ hash_b64 })
@@ -903,19 +901,19 @@ export const getStatement = ({ hash_b64 }) => (new Promise((resolve, reject) => 
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve, reject) => {
+export const updateNode = ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip })
     pool.query(`
@@ -940,19 +938,19 @@ export const updateNode = ({ domain, lastReceivedStatementId, certificateAuthori
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) => {
+export const statementExists = ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ hash_b64 })
     log && console.log(hash_b64, 'check')
@@ -963,19 +961,19 @@ export const statementExists = ({ hash_b64 }) => (new Promise((resolve, reject) 
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve, reject) => {
+export const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ hash_b64, ownDomain })
     pool.query(`
@@ -990,19 +988,19 @@ export const getOwnStatement = ({ hash_b64, ownDomain }) => (new Promise((resolv
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, reject) => {
+export const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ domain })
     pool.query(`
@@ -1025,21 +1023,21 @@ export const getDomainOwnershipBeliefs = ({ domain }) => (new Promise((resolve, 
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
 
 
-export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reject) => {
+export const matchDomain = ({ domain_substring }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ domain_substring })
     pool.query(`
@@ -1060,20 +1058,20 @@ export const matchDomain = ({ domain_substring }) => (new Promise((resolve, reje
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
 export const setCertCache = ({ domain, O, C, ST, L,
-  issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve, reject) => {
+  issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ domain, O, C, ST, L, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
     pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, 
@@ -1086,20 +1084,20 @@ RETURNING *;`,
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))
 
-export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
-  if (!domain) return resolve({ error: 'no domain' })
+export const getCertCache = ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
+  if (!domain) return reject(Error('no domain'))
   try {
     s({ domain })
     pool.query(`
@@ -1125,14 +1123,14 @@ export const getCertCache = ({ domain }) => (new Promise((resolve, reject) => {
       if (error) {
         console.log(error)
         console.trace()
-        resolve({ error })
+        return reject(error)
       } else {
-        resolve(results)
+        return resolve(results)
       }
     })
   } catch (error) {
     console.log(error)
     console.trace()
-    resolve({ error })
+    return reject(error)
   }
 }))

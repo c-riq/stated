@@ -1,6 +1,8 @@
-import { get } from './request.js'
-import { validateDomainFormat } from './domainNames/validateDomainFormat.js'
-import {getCertCache, setCertCache} from './db.js'
+// @ts-nocheck
+
+import { get } from './request'
+import { validateDomainFormat } from './domainNames/validateDomainFormat'
+import {getCertCache, setCertCache} from './db'
 
 
 const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {

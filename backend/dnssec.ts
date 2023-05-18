@@ -1,6 +1,6 @@
 
 import * as cp from 'child_process'
-import {validateDomainFormat} from './domainNames/validateDomainFormat.js'
+import {validateDomainFormat} from './domainNames/validateDomainFormat'
 
 const log = true
 

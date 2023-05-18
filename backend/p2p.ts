@@ -1,10 +1,11 @@
+// @ts-nocheck
 
-import { p2p_seed } from './p2p_seed.js'
-import { getAllNodes, updateNode, addNode } from './db.js'
-import { validateAndAddStatementIfMissing } from './statementVerification.js'
-import { forbiddenChars } from './statementFormats.js'
+import { p2p_seed } from './p2p_seed'
+import { getAllNodes, updateNode, addNode } from './db'
+import { validateAndAddStatementIfMissing } from './statementVerification'
+import { forbiddenChars } from './statementFormats'
 
-import { get, post } from './request.js'
+import { get, post } from './request'
 
 const log = false
 

@@ -5,12 +5,12 @@ import https from 'https'
 import fs from 'fs'
 
 import {humanReadableEndpoints} from './humanReadableEndpoints'
-import api from './api.js'
+import api from './api'
 
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import p2p from './p2p.js'
+import p2p from './p2p'
 import retryAndCleanUp from './retryAndCleanUp'
 import updateIdentityBeliefs from './updateIdentityBeliefs'
 

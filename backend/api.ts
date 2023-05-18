@@ -1,17 +1,19 @@
+// @ts-nocheck
+
 import express from 'express'
 
 
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement,
-    getPersonVerificationsForStatement, getJoiningStatements, getAllNodes, getDomainOwnershipBeliefs,
+    getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
     getVotes
-} from './db.js'
-import p2p from './p2p.js'
-import ssl from './ssl.js'
-import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification.js'
-import {getTXTEntriesDNSSEC} from './dnssec.js'
+} from './db'
+import p2p from './p2p'
+import ssl from './ssl'
+import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification'
+import {getTXTEntriesDNSSEC} from './dnssec'
 
-import {saveFile} from './upload.js'
+import {saveFile} from './upload'
 
 const log = false
 
@@ -47,19 +49,19 @@ api.post("/submit_statement", async (req, res, next) => {
 })
 
 api.get("/statements_with_details", async (req, res, next) => {
-    const minIdStr = req.query && req.query.min_id
-    let minId = '0'
-    // @ts-ignore
-    if(minIdStr && minIdStr.length > 0){
-        minId = '' + parseInt(minId)
-    }
-    log && console.log('minid', minId, typeof minId)
-    const searchQuery = req.query && req.query.search_query
-    const dbResult = await getStatementsWithDetail({minId, searchQuery})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
+    try {
+        const minIdStr = req.query && req.query.min_id
+        let minId = '0'
+        // @ts-ignore
+        if(minIdStr && minIdStr.length > 0){
+            minId = '' + parseInt(minId)
+        }
+        log && console.log('minid', minId, typeof minId)
+        const searchQuery = req.query && req.query.search_query
+        const dbResult = await getStatementsWithDetail({minId, searchQuery})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch (error) {
+        next(error)
     }
 })
 
@@ -71,68 +73,66 @@ api.get("/statements", async (req, res, next) => {
             // @ts-ignore
             minId = '' + (parseInt(req.query.min_id) || 0)
         }
-    } catch {}
-    // @ts-ignore
-    const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
+        // @ts-ignore
+        const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false})
         let statements = dbResult.rows.map(({id, statement, hash_b64}) => ({id, statement, hash_b64}))
         res.end(JSON.stringify({statements, time: new Date().toUTCString()}))       
+    } catch(error) {
+        next(error)
     }
 })
 
 api.post("/statement", async (req, res, next) => {
-    const dbResult = await getStatement({hash_b64: req.body.hash_b64})
-    if(dbResult?.error){
-        next(dbResult?.error)
-    } else {
+    try {
+        const dbResult = await getStatement({hash_b64: req.body.hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    }catch(error){
+        next(error)
     }
 })
 
 api.post("/organisation_verifications", async (req, res, next) => {
-    const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.body.hash_b64})
-    if(dbResult?.error){
-        next(dbResult?.error)
-    } else {
+    try {
+        const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.body.hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
+        next(error)
     }
 })
 
 api.post("/person_verifications", async (req, res, next) => {
+    try {
     const dbResult = await getPersonVerificationsForStatement({hash_b64: req.body.hash_b64})
-    if(dbResult?.error){
-        next(dbResult?.error)
-    } else {
-        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
+        next(error)
     }
 })
 
 api.post("/joining_statements", async (req, res, next) => {
-    const dbResult = await getJoiningStatements({hash_b64: req.body.hash_b64})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
+    try {
+        const dbResult = await getJoiningStatements({hash_b64: req.body.hash_b64})  
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
+    } catch(error){
+        next(error)
     }
 })
 
 api.post("/votes", async (req, res, next) => {
-    const dbResult = await getVotes({hash_b64: req.body.hash_b64})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
+    try {
+        const dbResult = await getVotes({hash_b64: req.body.hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
+    } catch(error){
+        next(error)
     }
 })
 
 api.get("/nodes", async (req, res, next) => {
-    const dbResult = await getAllNodes()
-    if(dbResult?.error){
-        next(dbResult?.error)
-    } else {
+    try {
+        const dbResult = await getAllNodes()
         res.end(JSON.stringify({domains: dbResult.rows.map(r=>r.domain)})) 
+    } catch(error){
+        next(error)
     }
 })
 
@@ -152,25 +152,11 @@ api.post("/join_network", async (req, res, next) => {
 })
 
 api.get("/health", async (req, res, next) => {
-    const dbResult = await getAllNodes()
-    if(dbResult?.error){
-        next(dbResult?.error)
-    } else {
+    try {
+        const dbResult = await getAllNodes()
         res.end(JSON.stringify({ apiVersion, application: "stated" }))
-    }
-})
-
-api.get("/domain_ownership_beliefs", async (req, res, next) => {
-    let domain = req.query && req.query.domain
-    if(!domain || domain.length == 0){
-        next({error: "missing parameter: domain"})
-        return
-    }
-    const dbResult = await getDomainOwnershipBeliefs({domain})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
-        res.end(JSON.stringify({result: dbResult.rows}))       
+    } catch(error){
+        next(error)
     }
 })
 
@@ -203,16 +189,18 @@ api.get("/check_dnssec", async (req, res, next) => {
 })
 
 api.get("/match_domain", async (req, res, next) => {
-    let domain_substring = req.query && req.query.domain_substring
-    if(!domain_substring || domain_substring.length == 0){
-        next({error: "missing parameter: domain"})
-        return
-    }
-    const dbResult = await matchDomain({domain_substring})
-    if(dbResult?.error){
-        next(dbResult.error)
-    } else {
+    try {
+        let domain_substring = req.query && req.query.domain_substring
+        if(!domain_substring || domain_substring.length == 0){
+            next(Error("missing parameter: domain"))
+            return
+        }
+        const dbResult = await matchDomain({domain_substring})
         res.end(JSON.stringify({result: dbResult.rows}))       
+
+    } catch (error) {
+        console.log(error)
+        next(error)
     }
 })
 

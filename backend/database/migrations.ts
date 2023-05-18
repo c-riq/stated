@@ -1,16 +1,12 @@
+// @ts-nocheck
+
 import fs from "fs";
 
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { backup } from "../db"
 
-import { backup } from "../db.js";
+import { transaction } from "./transaction"
 
-import { transaction } from "./transaction";
-
-import { Pool } from "pg";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { Pool } from "pg"
 
 var migration1 = fs
   .readFileSync(__dirname + "/migration_1.sql", "utf8")
@@ -50,11 +46,11 @@ const testMigrationTableExistence = (pool: Pool) => new Promise((resolve, reject
         console.trace();
       }
   }})
-};
+})
 
 const getLatestMigrationVersion = (pool: Pool) => new Promise((resolve, reject) => {
   const sql = `SELECT MAX(to_version) max_version FROM migrations`;
-  const res = await pool.query(sql, (error, res) => {
+  pool.query(sql, (error, res) => {
   if (error) {
     console.log("res error", error);
     console.trace();
@@ -64,9 +60,8 @@ const getLatestMigrationVersion = (pool: Pool) => new Promise((resolve, reject) 
       // positive integer
       return maxVersion;
     }
-  }
-  return;
-}};
+  }})
+})
 
 const _performMigrations = async (pool: Pool, cb: () => any) => {
   const migrationsTableExists = await testMigrationTableExistence(pool);
@@ -91,7 +86,7 @@ const _performMigrations = async (pool: Pool, cb: () => any) => {
     if (maxVersion === "" + currentCodeVersion) {
       cb();
     } else {
-      const dbVersion = parseInt(maxVersion);
+      const dbVersion = parseInt('' + maxVersion);
       const targetVersion = dbVersion + 1;
       if (targetVersion > 1 && migrateToVersion[targetVersion]) {
         const backupResult = await backup();

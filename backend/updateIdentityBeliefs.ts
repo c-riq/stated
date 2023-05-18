@@ -1,5 +1,5 @@
 
-import {getHighConfidenceVerifications, createOrganisationIDBelief} from './db.js'
+import {getHighConfidenceVerifications, createOrganisationIDBelief} from './db'
 
 const log = false
 

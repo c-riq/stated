@@ -1,13 +1,13 @@
-
+// @ts-nocheck
 
 import axios from 'axios'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './db.js'
-import * as hashUtils from './hash.js'
-import {createOrgVerification, createPersVerification} from './domainVerification.js'
-import {parseAndCreatePoll, parseAndCreateVote} from './poll.js'
-import {parseAndCreateRating} from './rating.js'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './db'
+import * as hashUtils from './hash'
+import {createOrgVerification, createPersVerification} from './domainVerification'
+import {parseAndCreatePoll, parseAndCreateVote} from './poll'
+import {parseAndCreateRating} from './rating'
 import * as cp from 'child_process'
-import {parseStatement, statementTypes} from './statementFormats.js'
+import {parseStatement, statementTypes} from './statementFormats'
 
 const log = true
 const ownAPIKey = process.env.API_KEY

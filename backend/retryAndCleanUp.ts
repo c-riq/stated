@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /* 
 If an author node is temporarily unavailable,
 statements are added to the unverified_statements table
@@ -5,8 +7,8 @@ and will be retried according to the schedule below
 and deleted afterwards.
 */
 
-import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, } from './db.js'
-import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification.js'
+import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, } from './db'
+import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification'
 
 const log = true
 

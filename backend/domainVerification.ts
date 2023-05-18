@@ -1,5 +1,7 @@
-import {createPersonVerification, createOrganisationVerification} from './db.js'
-import {parsePersonVerification, parseOrganisationVerification} from './statementFormats.js'
+// @ts-nocheck
+
+import {createPersonVerification, createOrganisationVerification} from './db'
+import {parsePersonVerification, parseOrganisationVerification} from './statementFormats'
 
 const log = true
 
