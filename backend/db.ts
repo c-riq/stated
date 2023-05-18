@@ -85,7 +85,7 @@ type statement = {
   domain: string,
   author: string,
   statement: string,
-  proclaimed_publication_time: string,
+  proclaimed_publication_time: number,
   hash_b64: string,
   tags?: string[],
   content: string,

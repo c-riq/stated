@@ -16,20 +16,20 @@ const test = process.env.TEST || false
 const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
     if (!parsedStatement) {
-        return({error: "invalid verification"})
+        throw(Error("invalid verification"))
     }
     const {domain, author, time, content, tags, type} = parsedStatement
     if (!domain) {
-        return({error: "domain missing"})
+        throw(Error("domain missing"))
     }
     if (!content){
-        return {error: 'content missing'}
+        throw(Error('content missing'))
     }
     if (!time){
-        return {error: 'time missing'}
+        throw(Error('time missing'))
     }
     if (!hashUtils.verify(statement, hash_b64)){
-        return({error: "invalid hash: "+statement+hash_b64})
+        throw(Error("invalid hash: "+statement+hash_b64))
     }
     if (! (
         (typeof source_node_id == 'number')
@@ -37,7 +37,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
         (source_node_id === undefined || source_node_id === null)
         ) 
     ){
-        return({error: "invalid sourceNodeId: " + source_node_id})
+        throw(Error("invalid sourceNodeId: " + source_node_id))
     }
     let proclaimed_publication_time = -1
     try {
@@ -48,7 +48,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
         console.log(error)
     }
     if (!(proclaimed_publication_time > 0)){
-        return({error: "invalid publication timestamp (unix epoch):" + proclaimed_publication_time})
+        throw(Error("invalid publication timestamp (unix epoch):" + proclaimed_publication_time))
     }
     let result = {content, domain, author, tags, type, content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time}
     if (type) {
@@ -57,7 +57,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
             statementTypes.rating, statementTypes.signPdf ].includes(type)) {
             return result
         } else {
-            return {error: 'invalid type: ' + type}
+            throw (Error('invalid type: ' + type))
         }
     } else {
         return result
@@ -171,21 +171,11 @@ export const validateAndAddStatementIfMissing =
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
         const {domain, author, proclaimed_publication_time, tags, content_hash_b64, type, content } = validationResult
         log && console.log('proclaimed_publication_time', proclaimed_publication_time)
-        if (validationResult.error) {
-            resolve(validationResult)
-        }
         log && console.log('check if exsits', hash_b64)
         const result = await statementExists({hash_b64})
-        if (result.error){
-            console.log(result.error)
-            console.trace()
-            resolve(result)
-            return
-        }
         if (result.rows && result.rows.length > 0){
             existsOrCreated = true
-            resolve({existsOrCreated})
-            return
+            return resolve({existsOrCreated})
         }
         let verified = false
         let verifiedByAPI = false
@@ -215,67 +205,36 @@ export const validateAndAddStatementIfMissing =
                 verifiedByAPI = true
             }
         }
-        let dbResult = {error: 'no entity created'}
         if (verified) {
             console.log('verified', verified, verifiedByAPI)
-            dbResult = await createStatement({type: type || statementTypes.statement,
+            const dbResult = await createStatement({type: type || statementTypes.statement,
                 domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                 verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
-            if(dbResult.error){
-                console.log(dbResult.error)
-                console.trace()
-                resolve(dbResult)
-                return
-            } else {
-                if(dbResult.rows && dbResult.rows[0]){
-                    existsOrCreated = true
-                }
+            if(dbResult.rows && dbResult.rows[0]){
+                existsOrCreated = true
             }
             if(type && dbResult.rows[0]) {
-                const derivedEntityResult = await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, 
+                await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, 
                     domain, content, type, proclaimed_publication_time})
-                if(derivedEntityResult.error){
-                    console.log(derivedEntityResult.error)
-                    console.trace()
-                }
             }
-            if(dbResult.error){
-                console.log(dbResult.error)
-                console.trace()
-                resolve(dbResult)
-                return
-            }
-        } else {
+        } else { // !verified
             if (api_key){
-                resolve({error: 'could not verify statement ' + hash_b64 + ' on '+ validationResult.domain})
-                return
+                throw(Error('could not verify statement ' + hash_b64 + ' on '+ validationResult.domain))
             } else {
-                dbResult = await createUnverifiedStatement({statement, author, hash_b64, source_node_id, 
+                const dbResult = await createUnverifiedStatement({statement, author, hash_b64, source_node_id, 
                     source_verification_method: verification_method})
-                if(dbResult.error){
-                    console.log(dbResult.error)
-                    console.trace()
-                    resolve(dbResult)
-                    return
+                if(dbResult.rows && dbResult.rows[0]){
+                    existsOrCreated = true
                 } else {
-                    if(dbResult.rows && dbResult.rows[0]){
-                        existsOrCreated = true
-                    }
-                }
-                dbResult = await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
-                if(dbResult.error){
-                    console.log(dbResult.error)
-                    console.trace()
-                    resolve(dbResult)
-                    return
+                    await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
                 }
             }
         }
-        resolve({...dbResult,existsOrCreated})
+        resolve({existsOrCreated})
     } catch (error) {
         console.log(error)
         console.trace()
-        resolve({error})
+        reject((error))
     }
 }))
 
