@@ -64,37 +64,38 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     }
 }
 
-export const getTXTEntries = (d) => new Promise((resolve, reject) => {
+export const getTXTEntries = (d) => new Promise((resolve: (entries: string[])=>void, reject) => {
     try {
         log && console.log('getTXTEntries', d)
         if (!test && ! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
             console.log('invalid domain', d)
-            resolve({error: 'invalid domain '+ d})
+            reject(Error('invalid domain '+ d))
         }
+        // TODO: use delv and require DNSSEC
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
         dig.stdout.on('data', (data) => {
             try {
                 log && console.log('data',data)
-                const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
+                const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,'')) || ['']
                 resolve(TXTEntries)
             }
             catch(error) {
-                resolve({error})
+                reject(error)
             }
         })
         dig.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
-            resolve({error: data})
+            reject(Error(data))
         })
         dig.on('error', (error) => { 
-            resolve({error: 'dig process error: ' + error}) 
+            reject(error) 
         })
         dig.on('close', function (code) {
-            resolve({error: 'dig process exited with code ' + code})
+            reject(Error('dig process exited with code ' + code))
         });
           
     } catch (error){
-        resolve({error})
+        reject(error)
     }
 })
 
@@ -102,10 +103,6 @@ export const verifyTXTRecord = async (domain, record) => {
     log && console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
-        console.log(TXTEntries, 'TXTEntries')
-        if(TXTEntries.error){
-            console.log(TXTEntries.error)
-        }
         log && console.log('TXTEntries result', domain, TXTEntries, record)
         return TXTEntries.includes(record)
     }
@@ -118,40 +115,40 @@ export const verifyTXTRecord = async (domain, record) => {
 const verifyViaStatedApi = async (domain, hash_b64) => {
     let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement/'
     log && console.log('verifyViaStatedApi', url, hash_b64)
-    let result = {}
     try {
-        result = await axios({
+        const result = await axios({
             method: "POST",
             url, headers: { 'Content-Type': 'application/json'},
-            data: { hash_b64 }})
+            data: { hash_b64 }})      
+        if (result.data?.statements?.length > 0){
+            console.log(result.data.statements[0].hash_b64, 'result from ', domain)
+            if (result.data.statements[0].hash_b64 === hash_b64){
+                return true
+            }
+        }
+        return false
     } catch(e) {
         console.log(e)
         return false
     }
-    if (result.data && result.data.statements && result.data.statements.length > 0){
-        console.log(result.data.statements[0].hash_b64, 'result from ', domain)
-        if (result.data.statements[0].hash_b64 === hash_b64){
-            return true
-        }
-    }
-    return false
 }
+
+// TODO: fix - 
 const verifyViaStaticTextFile = async (domain, statement) => {
     let url = 'https://static.stated.' + domain + '/statements.txt'
-    let result = {}
     try {
-        result = await axios({
+        const result = await axios({
             method: "GET",
             url})
+        if (result.data.length > 0){
+            console.log(result.data.substring(0.100), 'result from ', domain)
+            if (result.data.match(statement)){
+                return true
+            }
+        }
     } catch(e) {
         console.log(e)
         return false
-    }
-    if (result && result.length > 0){
-        console.log(result.substring(0.100), 'result from ', domain)
-        if (result.match(statement)){
-            return true
-        }
     }
     return false
 }
@@ -285,40 +282,33 @@ export const validateAndAddStatementIfMissing =
 export const createDerivedEntity = 
     ({statement_hash, domain, content, type, proclaimed_publication_time}) => 
     (new Promise(async (resolve, reject) => {
-        let dbResult = {error: 'no entity created'}
+        let entityCreated = false
         try {
             if(type === statementTypes.organisationVerification){
-                dbResult = await createOrgVerification({statement_hash, domain, content})
+                entityCreated = !! await createOrgVerification({statement_hash, domain, content})
             }
             if(type === statementTypes.personVerification){
-                dbResult = await createPersVerification({statement_hash, domain, content})
+                entityCreated = !! await createPersVerification({statement_hash, domain, content})
             }
             if(type === statementTypes.poll){
-                dbResult = await parseAndCreatePoll({statement_hash, domain, content})
+                entityCreated = !! await parseAndCreatePoll({statement_hash, domain, content})
             }
             if (type === statementTypes.vote) {
-                dbResult = await parseAndCreateVote({statement_hash, domain, content, proclaimed_publication_time})
+                entityCreated = !! await parseAndCreateVote({statement_hash, domain, content, proclaimed_publication_time})
             }
             if (type === statementTypes.rating) {
-                dbResult = await parseAndCreateRating({statement_hash, domain, content})
+                entityCreated = !!await parseAndCreateRating({statement_hash, domain, content})
             }
-            if((!dbResult.error) && dbResult.entityCreated === true){
-                dbResult = await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
+            if(entityCreated === true){
+                await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
             } else {
-                dbResult = await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
-            }
-            if(dbResult.error){
-                console.log(dbResult.error)
-                console.trace()
-                resolve(dbResult)
-                return
+                await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
             }
         } catch (error) {
             console.log(error)
             console.trace()
-            resolve({error})
-            return
+            return reject(error)
         }
-        resolve(dbResult)
+        resolve(entityCreated)
     })
 )
