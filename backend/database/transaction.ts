@@ -2,7 +2,6 @@ import { PoolClient, Pool } from "pg"
 
 export const transaction = async (cb: (client: PoolClient) => void, pool: Pool) => {
   const client = await pool.connect();
-
   try {
     await client.query("BEGIN");
     try {

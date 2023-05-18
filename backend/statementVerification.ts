@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import axios from 'axios'
 import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './db'
@@ -64,28 +63,6 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
         return result
     }
 }
-
-const getTXTEntriesViaGoogle = (d) => new Promise((resolve, reject) => {
-    // check terms before using
-    let url = 'https://dns.google/resolve?name=' + d + '&type=TXT&do=true&rand=' + Math.random()
-    log && console.log('checkDomain', url)
-    axios.get(url)
-        .then(function (json) {
-            try {
-                const TXTEntries = json.data['Answer'].map(v => v['data'])
-                log && console.log(TXTEntries)
-                resolve(TXTEntries)
-            }
-            catch {
-                reject()
-            }
-        })
-        .catch(function (error) {
-            console.trace()
-            console.log(error);
-            reject()
-        })
-})
 
 export const getTXTEntries = (d) => new Promise((resolve, reject) => {
     try {

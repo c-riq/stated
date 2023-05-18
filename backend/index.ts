@@ -7,18 +7,16 @@ import fs from 'fs'
 import {humanReadableEndpoints} from './humanReadableEndpoints'
 import api from './api'
 
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
 import p2p from './p2p'
 import retryAndCleanUp from './retryAndCleanUp'
-import updateIdentityBeliefs from './updateIdentityBeliefs'
+
+process.on('unhandledRejection', (error, promise) => {
+    // @ts-ignore
+    console.log('Unhandled Rejection at: Promise', promise, 'reason:', error, error.stack);
+  });
 
 p2p.setupSchedule()
 retryAndCleanUp.setupSchedule()
-//updateIdentityBeliefs.setupSchedule()
-// @ts-ignore
-//const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const prod = process.env.NODE_ENV === "production"
 const ownDomain = process.env.DOMAIN

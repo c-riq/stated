@@ -25,7 +25,6 @@ export const backup = () => {return new Promise((resolve: DBCallback, reject: DB
     if(test) {
         return resolve()
     }
-
     const fileName = __dirname + `/database/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
     try {
         const pgdump = cp.spawn(`pg_dump`,[`-h`,`${pgHost}`,`-U`,`${pgUser}`,`-d`,`${pgDatabase}`,`-a`,`-f`,`${fileName}`], 
@@ -64,7 +63,7 @@ let migrationsDone = false;
 ([500, 2500, 5000]).map(ms => setTimeout(
   async () => {
     if(!migrationsDone){
-      performMigrations(pool, ()=>migrationsDone=true)
+      await performMigrations(pool, ()=>migrationsDone=true)
     }
   }, ms
 ))
@@ -81,8 +80,22 @@ const s = (o) => {
     }
 }
 
-export const createStatement = (type: String, domain: String, author: String, statement: String, proclaimed_publication_time: String, hash_b64: String, 
-  tags: [String], content: String, content_hash_b64: String, verification_method?: String, source_node_id?: String) => (new Promise((resolve: DBCallback, reject) => {
+type statement = {
+  type: string,
+  domain: string,
+  author: string,
+  statement: string,
+  proclaimed_publication_time: string,
+  hash_b64: string,
+  tags?: string[],
+  content: string,
+  content_hash_b64: string,
+  verification_method?: string,
+  source_node_id?: string
+}
+
+export const createStatement = ({type, domain, author, statement, proclaimed_publication_time, hash_b64, 
+  tags, content, content_hash_b64, verification_method, source_node_id}: statement) => (new Promise((resolve: DBCallback, reject) => {
   try {
     s({ type, domain, author, statement, proclaimed_publication_time, hash_b64, 
       tags, content, content_hash_b64, verification_method, source_node_id })
