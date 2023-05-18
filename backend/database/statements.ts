@@ -85,6 +85,35 @@ export const createStatementFactory =
       }
     });
 
+export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+        log && console.log('getStatement', hash_b64)
+        try {
+          sanitize({ hash_b64 })
+          pool.query(`
+                  SELECT 
+                      s.*,
+                      v.name
+                  FROM statements s        
+                    LEFT JOIN organisation_verifications v 
+                      ON s.domain=v.verified_domain 
+                      --AND v.verifier_domain='rixdata.net'
+                  WHERE hash_b64=$1;
+                  `,[hash_b64], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
 export const getStatementsWithDetailFactory =
   (pool) =>
   ({ minId, searchQuery }) =>
@@ -432,3 +461,94 @@ export const cleanUpUnverifiedStatementsFactory =
         return reject(error);
       }
     });
+
+
+
+export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+        try {
+          sanitize({ hash_b64 })
+          pool.query(`
+                  WITH content_hashes AS(
+                    SELECT content_hash
+                    FROM statements
+                    WHERE hash_b64=$1
+                  )
+                  SELECT * FROM (
+                    SELECT 
+                        s.*,
+                        v.name,
+                        rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
+                    FROM statements s        
+                      LEFT JOIN organisation_verifications v 
+                        ON s.domain=v.verified_domain 
+                        AND v.verifier_domain='rixdata.net'
+                      LEFT JOIN statements verification_statement
+                        ON v.statement_hash = verification_statement.hash_b64
+                    WHERE s.content_hash IN (SELECT content_hash FROM content_hashes)
+                    AND s.hash_b64 <> $1) AS result
+                  WHERE _rank = 1;
+                  `,[hash_b64], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
+      export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback, reject) => {
+        try {
+          sanitize({ hash_b64, ownDomain })
+          pool.query(`
+                  SELECT 
+                    *,
+                    $1 || $2 input
+                  FROM statements s
+                  WHERE hash_b64=$1
+                    ${ownDomain ? "AND domain=$2" : ""}
+                  ;
+                  `,[hash_b64, ownDomain || 'ownDomain'], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
+export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+        try {
+          sanitize({ hash_b64 })
+          log && console.log(hash_b64, 'check')
+          pool.query(`
+                  SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
+                  `, [hash_b64], (error, results) => {
+            log && console.log('statementExists', hash_b64, results, error)
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))

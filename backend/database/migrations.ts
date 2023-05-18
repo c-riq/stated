@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import { backup } from ".";
+import { backup } from "./backup";
 
 import { transaction } from "./transaction";
 
