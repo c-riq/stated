@@ -4,7 +4,13 @@ import {validateDomainFormat} from './domainNames/validateDomainFormat'
 
 const log = true
 
-export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve, reject) => {
+type DNSSECResult = {
+    TXTEntries: string[],
+    validated: boolean,
+    trust: string
+}
+
+export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve: (result: DNSSECResult) => void, reject) => {
     if(!validateDomainFormat(domain)){
         return reject(Error('invalid domain format'))
     }

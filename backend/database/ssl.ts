@@ -1,7 +1,4 @@
-
-const log = false;
-
-import { DBCallback, DBErrorCallback, sanitize } from ".";
+import { DBCallback, sanitize } from ".";
 
 export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promise((resolve: DBCallback, reject) => {
     try {

@@ -48,6 +48,7 @@ Exit the sql promt with `exit`, and exit the postgres user shell session by runn
 git clone https://github.com/c-riq/stated.git
 cd stated/backend
 npm install 
+npm run build 
 # replace DOMAIN, API_KEY and SSL_CERT_PATH below
 tmux
 sudo NODE_ENV=production DOMAIN=2.rixdata.net API_KEY=dOhewi9GhjoLkgiXhnq0N1 SSL_CERT_PATH=/etc/letsencrypt/live/stated.2.rixdata.net/ node server.js 

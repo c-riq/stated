@@ -1,7 +1,7 @@
 
 const log = false;
 
-import { DBCallback, DBErrorCallback, sanitize } from ".";
+import { DBCallback, sanitize } from ".";
 
 export const createPollFactory = pool => (o) => 
 (new Promise((resolve: DBCallback, reject) => {

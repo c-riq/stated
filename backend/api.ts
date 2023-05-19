@@ -138,11 +138,7 @@ api.post("/join_network", async (req, res, next) => {
     log && console.log('join_network request', req.body)
     try {
         const r = await p2p.validateAndAddNode({domain: req.body.domain})
-        if(r?.error){
-            next(r?.error)
-        } else {
-            res.end(JSON.stringify(r))
-        }
+        res.end(JSON.stringify(r))
     } catch (error) {
         console.log(error)
         next(error)
@@ -159,30 +155,29 @@ api.get("/health", async (req, res, next) => {
 })
 
 api.get("/get_ssl_ov_info", async (req, res, next) => {
-    let domain = req.query && req.query.domain
-    if(!domain || domain.length == 0){
-        next({error: "missing parameter: domain"})
-        return
-    }
-    const result = await ssl.getOVInfoForSubdomains({domain})
-    if(result?.error){
-        next(result.error)
-    } else {
-        res.end(JSON.stringify({result}))       
+    try {
+        let domain = req.query && req.query.domain
+        if(!domain || domain.length == 0){
+            throw(Error("missing parameter: domain"))
+        }
+        const result = await ssl.getOVInfoForSubdomains({domain})
+        res.end(JSON.stringify({result}))
+    } catch (error) {
+        next(error)
     }
 })
 
 api.get("/check_dnssec", async (req, res, next) => {
-    let domain = req.query && req.query.domain
-    if(!domain || domain.length == 0){
-        next({error: "missing parameter: domain"})
-        return
-    }
-    const result = await getTXTEntriesDNSSEC({domain, strict: false})
-    if(result?.error){
-        next(result.error)
-    } else {
+    try {
+        let domain = req.query && req.query.domain
+        if(!domain || domain.length == 0){
+            throw(Error("missing parameter: domain"))
+        }
+        const result = await getTXTEntriesDNSSEC({domain, strict: false})
         res.end(JSON.stringify({validated: result.validated, trust: result.trust, domain}))       
+    } catch (error) {
+        console.log(error)
+        next(error)
     }
 })
 

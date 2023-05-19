@@ -46,7 +46,7 @@ export const sanitize = (o) => {
 import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFactory, 
   getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
   createUnverifiedStatementFactory, getJoiningStatementsFactory, getOwnStatementFactory,
-getStatementFactory, statementExistsFactory } from './statements'
+getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory } from './statements'
 
 export const createStatement = createStatementFactory(pool)
 export const getStatement = getStatementFactory(pool)
@@ -59,6 +59,7 @@ export const cleanUpUnverifiedStatements = cleanUpUnverifiedStatementsFactory(po
 export const getJoiningStatements = getJoiningStatementsFactory(pool)
 export const getOwnStatement = getOwnStatementFactory(pool)
 export const statementExists = statementExistsFactory(pool)
+export const updateUnverifiedStatement = updateUnverifiedStatementFactory(pool)
 
 import { setCertCacheFactory, getCertCacheFactory, matchDomainFactory } from './ssl'
 
@@ -67,23 +68,26 @@ export const getCertCache = getCertCacheFactory(pool)
 export const matchDomain = matchDomainFactory(pool)
 
 import { createOrganisationVerificationFactory, createPersonVerificationFactory, 
-  getAllVerificationsFactory, getPersonVerificationsForStatementFactory, getVerificationsForDomainFactory } from './verification'
+  getAllVerificationsFactory, getPersonVerificationsForStatementFactory, 
+  getVerificationsForDomainFactory, getOrganisationVerificationsForStatementFactory } from './verification'
 
 export const createOrganisationVerification = createOrganisationVerificationFactory(pool)
 export const createPersonVerification = createPersonVerificationFactory(pool)
 export const getAllVerifications = getAllVerificationsFactory(pool)
 export const getPersonVerificationsForStatement = getPersonVerificationsForStatementFactory(pool)
 export const getVerificationsForDomain = getVerificationsForDomainFactory(pool)
+export const getOrganisationVerificationsForStatement = getOrganisationVerificationsForStatementFactory(pool)
 
 import { createRatingFactory } from './rating'
 
 export const createRating = createRatingFactory(pool)
 
-import { createPollFactory, getPollFactory, createVoteFactory } from './poll'
+import { createPollFactory, getPollFactory, createVoteFactory, getVotesFactory } from './poll'
 
 export const createPoll = createPollFactory(pool)
 export const getPoll = getPollFactory(pool)
 export const createVote = createVoteFactory(pool)
+export const getVotes = getVotesFactory(pool)
 
 import { addNodeFactory, updateNodeFactory, getAllNodesFactory } from './p2p'
 

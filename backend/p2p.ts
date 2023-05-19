@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { p2p_seed } from './p2p_seed'
 import { getAllNodes, updateNode, addNode } from './database'
 import { validateAndAddStatementIfMissing } from './statementVerification'
