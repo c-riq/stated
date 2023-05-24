@@ -15,13 +15,14 @@ process.on('unhandledRejection', (error, promise) => {
     console.log('Unhandled Rejection at: Promise', promise, 'reason:', error, error.stack);
   });
 
-p2p.setupSchedule()
-retryAndCleanUp.setupSchedule()
-
 const prod = process.env.NODE_ENV === "production"
-const ownDomain = process.env.DOMAIN
 const port = parseInt(process.env.PORT || '7766')
 const certPath = process.env.SSL_CERT_PATH
+const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
+const retryIntervalSeconds = process.env.RETRY_INTERVA_SECONDS || 7
+
+p2p.setupSchedule(pullIntervalSeconds)
+retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 
 const app = express();
 

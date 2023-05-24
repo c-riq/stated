@@ -13,4 +13,4 @@ RUN npm install
 COPY backend .
 RUN npm run build
 
-CMD [ "node", "server.js"  ]
+CMD [ "node", "index.js"  ]

@@ -13,7 +13,14 @@ var migration2 = fs
   .readFileSync(__dirname + "/migration_2.sql", "utf8")
   .toString();
 
-const currentCodeVersion = 2;
+let currentCodeVersion = 2;
+const test = process.env.TEST || false
+const migrateTestVersion = parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
+if (test) {
+  currentCodeVersion = migrateTestVersion
+}
+const deleteData = process.env.TEST && process.env.DELETE_DATA 
+let dataDeleted = false
 
 const migrateToVersion = {
   1: { sql: migration1 },
@@ -77,6 +84,11 @@ const getLatestMigrationVersion = (pool: Pool) =>
 
 export const performMigrations = async (pool: Pool, cb: () => any) => {
   try {
+    if (deleteData && !dataDeleted) {
+      console.log("deleting data");
+      await pool.query(migrateToVersion[1]['sql']);
+      dataDeleted = true
+    }
     const migrationsTableExists = await testMigrationTableExistence(pool);
     if (!migrationsTableExists) {
       const backupResult = await backup();

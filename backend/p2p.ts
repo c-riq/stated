@@ -156,7 +156,7 @@ const fetchMissingStatementsFromNodes = async () => {
     return res
 }
 
-const setupSchedule = () => {
+const setupSchedule = (pullIntervalSeconds) => {
     setInterval(async () => {
         try {
             const seedRes = await addSeedNodes()
@@ -183,7 +183,7 @@ const setupSchedule = () => {
             console.log(error)
             console.trace()
         }
-    }, 20 * 1000)
+    }, pullIntervalSeconds * 1000)
 }
 
 export default {

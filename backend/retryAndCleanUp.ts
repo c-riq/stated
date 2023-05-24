@@ -77,7 +77,7 @@ const tryAddMissingDerivedEntitiesFromStatements = async () => {
     }
 }
 
-const setupSchedule = () => {
+const setupSchedule = (retryIntervalSeconds) => {
     setInterval(async () => {
         log && console.log('retry verification started')
         try {
@@ -89,7 +89,7 @@ const setupSchedule = () => {
             console.log(error)
             console.trace()
         }
-    }, 5 * 1000)   
+    }, retryIntervalSeconds * 1000)   
 }
 
 export default {

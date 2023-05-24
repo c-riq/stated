@@ -1,4 +1,4 @@
-// send n statements to different nodes
+// send n 400 statements to different nodes
 
 var http = require('http');
 
@@ -11,34 +11,28 @@ function sha256(content) {
   }
   
 const nodes = [1,2,3,4,5,6]
+console.log(crypto)
+console.log(sha256('d')) //.update().digest('base64')
 
-const statementCount = 6 * 20
-const verificationCount = 6 * 3
-
-const request = (method, data, node, path, callback) => {
+const post = (data, node) => {
 
   var post_options = {
       host: 'localhost',
       port: 7000 + node,
-      path: '/api/' + path,
-      method: method,
+      path: '/api/submit_statement',
+      method: 'POST',
       headers: {
           'Content-Type': 'application/json'
       }
   }
   var post_req = http.request(post_options, (res) => {
-        let rawData = '';
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
-          //console.log('Response: ' + chunk);
-            rawData += chunk;
-      });
-      res.on('end', function () {
-          callback && callback(rawData)
+          console.log('Response: ' + chunk);
       });
   });
 
-  method === 'POST' && post_req.write(JSON.stringify(data))
+  post_req.write(JSON.stringify(data))
   post_req.end()
 }
 
@@ -53,7 +47,7 @@ Content: hi2 ${new Date()} ${Math.random()}`
 const buildOrganisationVerificationContent = (
     {verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
     verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
-// console.log(verifyName, country, city, province, legalEntity, verifyDomain)
+console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) return ""
 if (!["limited liability corporation","local government","state government","national government"].includes(legalEntity)) 
         return ""
@@ -82,7 +76,7 @@ Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
 Content: ${buildOrganisationVerificationContent({verifyName: 'node_'+node_2,
  verifyDomain: 'stated_'+node_2+':'+(7000+node_2), 
- country: 'DE', city: "Berlin", legalEntity: 'limited liability corporation', confidence: Math.random()})}`
+ country: 'DE', city: "Berlin", legalEntity: 'limited liability corporation'})}`
 }
 
 
@@ -99,53 +93,21 @@ const generateVerificationStatement = (node) => {
     return({statement, hash_b64, api_key: "XXX" })
 }
 
-let beforeCount = 1e9
 
-request('GET', {}, 1, 'statements', (res) => {
-    const r = JSON.parse(res)
-    beforeCount = r.statements.length
-    console.log(beforeCount)
+let i = 0
+while (i <= 400){
+    const node = (i % 6) + 1
+    const json = generateStatement(node)
+    console.log(json)
+    post(json, node)
+    i = i+1
+}
 
-    let i = 0
-    while (i < statementCount){
-        const node = (i % 6) + 1
-        const json = generateStatement(node)
-        //console.log(json)
-        request('POST', json, node, 'submit_statement')
-        //request('POST', json, node, 'submit_statement')
-        i = i+1
-    }
-
-    i = 0
-    while (i < verificationCount){
-        const node = (i % 6) + 1
-        const json = generateVerificationStatement(node)
-        //console.log(json)
-        request('POST', json, node, 'submit_statement')
-        //request('POST', json, node, 'submit_statement')
-        i = i+1
-    }
-})
-
-
-setTimeout(() => {
-    request('GET', {}, 1, 'nodes', (res) => {
-        const r = JSON.parse(res)
-        console.log(nodes.length, r.domains.length)
-        if ((r.domains.length - (nodes.length - 1)) < 0) {
-            throw(new Error('Not all nodes registered with node 1'))
-        } else {
-            request('GET', {}, 1, 'statements', (res) => {
-                const r = JSON.parse(res)
-                console.log(r.statements.length)
-                if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
-                    console.log(r.statements.length - beforeCount, statementCount + verificationCount)
-                    throw(new Error('Not all statements propagated to node 1'))
-                } else {
-                    process.stdout.write('success');
-                }
-            })
-        }
-    })
-    }, 
-12 * 1000)
+i = 0
+while (i <= 40){
+    const node = (i % 6) + 1
+    const json = generateVerificationStatement(node)
+    console.log(json)
+    post(json, node)
+    i = i+1
+}
