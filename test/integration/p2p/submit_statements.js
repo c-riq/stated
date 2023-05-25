@@ -161,18 +161,18 @@ const test = () => {
                 })
             }
         })
-        }, 
+    }, 
     12 * 1000)
 }
 
 const healthTestInterval = setInterval(() => {
     try {
-        request('GET', {}, 1, 'health', (res) => {
+        request('GET', {}, 3, 'health', (res) => {
             try {
                 const r = JSON.parse(res)
                 console.log('healthTest response: ', r)
                 if(r.application == 'stated') {
-                    setTimeout(test, 1000)
+                    setTimeout(test, 3000)
                     clearInterval(healthTestInterval)
                 }
             } catch (e) {
