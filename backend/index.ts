@@ -19,7 +19,7 @@ const prod = process.env.NODE_ENV === "production"
 const port = parseInt(process.env.PORT || '7766')
 const certPath = process.env.SSL_CERT_PATH
 const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
-const retryIntervalSeconds = process.env.RETRY_INTERVA_SECONDS || 7
+const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
 
 p2p.setupSchedule(pullIntervalSeconds)
 retryAndCleanUp.setupSchedule(retryIntervalSeconds)
