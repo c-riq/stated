@@ -12,8 +12,8 @@ function sha256(content) {
   
 const nodes = [1]//,2,3,4,5,6]
 
-const statementCount = 6 * 20
-const verificationCount = 6 * 3
+const statementCount = nodes.length * 20
+const verificationCount = nodes.length * 3
 
 const request = (method, data, node, path, callback) => {
     console.log(method, data, node, path)
@@ -122,7 +122,7 @@ const test = () => {
 
         let i = 0
         while (i < statementCount){
-            const node = (i % 6) + 1
+            const node = (i % nodes.length) + 1
             const json = generateStatement(node)
             //console.log(json)
             request('POST', json, node, 'submit_statement')
@@ -132,7 +132,7 @@ const test = () => {
 
         i = 0
         while (i < verificationCount){
-            const node = (i % 6) + 1
+            const node = (i % nodes.length) + 1
             const json = generateVerificationStatement(node)
             //console.log(json)
             request('POST', json, node, 'submit_statement')
