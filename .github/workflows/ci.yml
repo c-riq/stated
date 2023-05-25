@@ -56,9 +56,11 @@ jobs:
         node-version: 16.x
   
     - name: Install pg
-      run: cd test/integration/migration && npm i
+      working-directory: ./test/integration/migration
+      run: npm i
 
     - name: Run test
+      working-directory: ./test/integration/migration
       run: node test.js
 
     - name: Stop containers
