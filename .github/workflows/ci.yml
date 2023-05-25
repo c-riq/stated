@@ -55,9 +55,10 @@ jobs:
       with:
         node-version: 16.x
   
-    - name: Install pg
-      working-directory: ./test/integration/migration
+    - name: Build backend
+      working-directory: ./backend/
       run: npm i
+      run: npm run build
 
     - name: Run test
       working-directory: ./test/integration/migration
