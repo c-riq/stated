@@ -17,24 +17,6 @@ services:
       - postgres
     restart: unless-stopped
 
-  stated_1: 
-    environment:
-      - PORT=pp
-      - POSTGRES_PORT=5432
-      - POSTGRES_HOST=db_1
-      - API_KEY=XXX
-      - DOMAIN=stated_1:7001
-      - TEST=true
-      - MIGRATION_TEST_VERSION=1
-    build: ../../..
-    ports:
-      - '7001:7001'
-    networks:
-      - postgres
-    depends_on:
-      - db_1
-    restart: unless-stopped
-
 networks:
   postgres:
     driver: bridge

@@ -98,8 +98,7 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
         console.log("migrating from 0 to version " + targetVersion);
         const res = await client.query(
           sql +
-            `;INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, $1)`,
-          [targetVersion]
+            `;INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, ${targetVersion})`,
         );
       }, pool);
     } else {

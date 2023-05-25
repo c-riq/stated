@@ -6,6 +6,7 @@ backend/**/*.js
 frontend/node_modules
 frontend/docker_output
 backend/node_modules
+test/**/node_modules
 /.pnp
 .pnp.js
 
