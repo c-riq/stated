@@ -65,7 +65,7 @@ jobs:
 
     - name: Install test dependencies
       working-directory: ./test/integration/migration
-      run: npm ip
+      run: npm i
 
     - name: Run test
       working-directory: ./test/integration/migration
