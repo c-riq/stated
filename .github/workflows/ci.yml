@@ -63,6 +63,10 @@ jobs:
       working-directory: ./backend/
       run: npm run build
 
+    - name: Install test dependencies
+      working-directory: ./test/integration/migration
+      run: npm ip
+
     - name: Run test
       working-directory: ./test/integration/migration
       run: node test.js
