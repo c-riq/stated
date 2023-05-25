@@ -167,7 +167,7 @@ const test = () => {
 
 const healthTestInterval = setInterval(() => {
     try {
-        request('GET', {}, 3, 'health', (res) => {
+        request('GET', {}, nodes.length, 'health', (res) => {
             try {
                 const r = JSON.parse(res)
                 console.log('healthTest response: ', r)
