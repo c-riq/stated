@@ -169,6 +169,7 @@ const healthTestInterval = setInterval(() => {
         request('GET', {}, 1, 'health', (res) => {
             try {
                 const r = JSON.parse(res)
+                console.log('healthTest response: ', r)
                 if(r.application == 'stated') {
                     setTimeout(test, 1000)
                     clearInterval(healthTestInterval)
