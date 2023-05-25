@@ -4,26 +4,25 @@ import http from 'http'
 import https from 'https'
 import fs from 'fs'
 
-import {humanReadableEndpoints} from './humanReadableEndpoints.js'
-import api from './api.js'
+import {humanReadableEndpoints} from './humanReadableEndpoints'
+import api from './api'
 
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import p2p from './p2p'
+import retryAndCleanUp from './retryAndCleanUp'
 
-import p2p from './p2p.js'
-import retryAndCleanUp from './retryAndCleanUp.js'
-import updateIdentityBeliefs from './updateIdentityBeliefs.js'
-
-p2p.setupSchedule()
-retryAndCleanUp.setupSchedule()
-//updateIdentityBeliefs.setupSchedule()
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+process.on('unhandledRejection', (error, promise) => {
+    // @ts-ignore
+    console.log('Unhandled Rejection at: Promise', promise, 'reason:', error, error.stack);
+  });
 
 const prod = process.env.NODE_ENV === "production"
-const ownDomain = process.env.DOMAIN
 const port = parseInt(process.env.PORT || '7766')
 const certPath = process.env.SSL_CERT_PATH
+const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
+const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
+
+p2p.setupSchedule(pullIntervalSeconds)
+retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 
 const app = express();
 

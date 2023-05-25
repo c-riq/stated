@@ -1,14 +1,9 @@
+// @ts-nocheck
 
 import * as cp from 'child_process'
 
 import fs from 'node:fs'
-import {sha256} from './hash.js'
-
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import {sha256} from './hash'
 
 const log=false
 

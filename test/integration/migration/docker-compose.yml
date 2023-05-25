@@ -1,0 +1,25 @@
+# docker compose rm
+# docker-compose build --no-cache && docker-compose up
+
+services:
+  db_1:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - vol_db_1:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5441:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    vol_db_1:

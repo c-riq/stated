@@ -2,12 +2,15 @@ name: CI tests
 on: pull_request
 jobs:
   frontend_tests:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Node
         uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
       - name: Install dependencies
         run: npm install
         working-directory: ./frontend
@@ -15,3 +18,59 @@ jobs:
         run: npm test
         working-directory: ./frontend
 
+  p2p_test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Start test nodes
+      run: docker-compose -f "test/integration/p2p/docker-compose.yml" up -d
+
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+  
+    - name: Run tests
+      run: node test/integration/p2p/test.js
+
+    - name: Stop containers
+      if: always()
+      run: docker-compose -f "test/integration/p2p/docker-compose.yml" down
+
+  migration_test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Start test nodes
+      run: docker-compose -f "test/integration/migration/docker-compose.yml" up -d
+
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+  
+    - name: Install backend dependencies
+      working-directory: ./backend/
+      run: npm i 
+
+    - name: Build backend
+      working-directory: ./backend/
+      run: npm run build
+
+    - name: Install test dependencies
+      working-directory: ./test/integration/migration
+      run: npm i
+
+    - name: Run test
+      working-directory: ./test/integration/migration
+      run: node test.js
+
+    - name: Stop containers
+      if: always()
+      run: docker-compose -f "test/integration/migration/docker-compose.yml" down

@@ -12,8 +12,14 @@ if (test) {
     _https = http
 }
 
-// @ts-ignore
-export const get = ({hostname, path, cache=false}) => new Promise((resolve, reject) => {
+type response = {
+    data?: any,
+    error?: any,
+    cert?: any,
+    ip?: any
+}
+
+export const get = ({hostname, path, cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
