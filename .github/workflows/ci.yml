@@ -18,7 +18,7 @@ jobs:
         run: npm test
         working-directory: ./frontend
 
-  docker:
+  p2p_test:
     timeout-minutes: 10
     runs-on: ubuntu-latest
 
@@ -27,7 +27,7 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Start test nodes
-      run: docker-compose -f "test/integration/p2p/docker-compose.yml" up -d --build
+      run: docker-compose -f "test/integration/p2p/docker-compose.yml" up
 
     - name: Install node
       uses: actions/setup-node@v3
@@ -39,4 +39,4 @@ jobs:
 
     - name: Stop containers
       if: always()
-      run: docker-compose -f "docker-compose.yml" down
+      run: docker-compose -f "test/integration/p2p/docker-compose.yml" down

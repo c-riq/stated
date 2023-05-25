@@ -32,14 +32,14 @@ const request = (method, data, node, path, callback) => {
             res.setEncoding('utf8');
             res.on('data', function (chunk) {
                 //console.log('Response: ' + chunk);
-                    rawData += chunk;
+                rawData += chunk;
             });
             res.on('end', function () {
                 callback && callback(rawData)
             });
             res.on('error', function (e) {
-                    console.log('Error: ' + e.message);
-                });
+                console.log('Error: ' + e.message);
+            });
         });
         post_req.on('error', function (e) {
             console.log('Error: ' + e.message);
