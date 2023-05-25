@@ -10,7 +10,7 @@ function sha256(content) {
     return urlSafe
   }
   
-const nodes = [1,2,3]//4,5,6]
+const nodes = [1,2,3,4]//,5,6]
 
 const statementCount = nodes.length * 20
 const verificationCount = nodes.length * 3

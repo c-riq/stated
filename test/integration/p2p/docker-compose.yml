@@ -98,7 +98,7 @@ services:
       - POSTGRES_HOST=db_3
       - API_KEY=XXX
       - DOMAIN=stated_3:7003
-      - SEED_NODES=stated_2:7002
+      #- SEED_NODES=stated_2:7002
       - TEST=true
       - PULL_INTERVAL_SECONDS=1
       - DELETE_DATA=true
@@ -113,41 +113,42 @@ services:
       - stated_2
     restart: unless-stopped
   
-# # node 4
+# node 4
 
-#   db_4:
-#     image: postgres
-#     environment:
-#       POSTGRES_USER: sdf
-#       POSTGRES_PASSWORD: sdf
-#       PGDATA: /data/postgres
-#     volumes:
-#        - vol_db_4:/data/postgres
-#        - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
-#     ports:
-#       - "5444:5432"
-#     networks:
-#       - postgres
-#     restart: unless-stopped
+  db_4:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - vol_db_4:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5444:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
 
-#   stated_4: 
-#     environment:
-#       - PORT=7004
-#       - POSTGRES_PORT=5432
-#       - POSTGRES_HOST=db_4
-#       - API_KEY=XXX
-#       - DOMAIN=stated_4:7004
-#       - TEST=true
-#       - PULL_INTERVAL_SECONDS=1
-#       - DELETE_DATA=true
-#     build: ../../..
-#     ports:
-#       - '7004:7004'
-#     networks:
-#       - postgres
-#     depends_on:
-#       - db_4
-#     restart: unless-stopped
+  stated_4: 
+    environment:
+      - PORT=7004
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_4
+      - API_KEY=XXX
+      - DOMAIN=stated_4:7004
+      - SEED_NODES=stated_3:7003,stated_1:7001
+      - TEST=true
+      - PULL_INTERVAL_SECONDS=1
+      - DELETE_DATA=true
+    build: ../../..
+    ports:
+      - '7004:7004'
+    networks:
+      - postgres
+    depends_on:
+      - db_4
+    restart: unless-stopped
 
 # # node 5
 
