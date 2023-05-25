@@ -16,30 +16,41 @@ const statementCount = 6 * 20
 const verificationCount = 6 * 3
 
 const request = (method, data, node, path, callback) => {
+    try {
+        var post_options = {
+            host: 'localhost',
+            port: 7000 + node,
+            path: '/api/' + path,
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+        var post_req = http.request(post_options, (res) => {
+            let rawData = '';
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                //console.log('Response: ' + chunk);
+                    rawData += chunk;
+            });
+            res.on('end', function () {
+                callback && callback(rawData)
+            });
+            res.on('error', function (e) {
+                    console.log('Error: ' + e.message);
+                });
+        });
+        post_req.on('error', function (e) {
+            console.log('Error: ' + e.message);
+        });
 
-  var post_options = {
-      host: 'localhost',
-      port: 7000 + node,
-      path: '/api/' + path,
-      method: method,
-      headers: {
-          'Content-Type': 'application/json'
-      }
-  }
-  var post_req = http.request(post_options, (res) => {
-        let rawData = '';
-      res.setEncoding('utf8');
-      res.on('data', function (chunk) {
-          //console.log('Response: ' + chunk);
-            rawData += chunk;
-      });
-      res.on('end', function () {
-          callback && callback(rawData)
-      });
-  });
+        method === 'POST' && post_req.write(JSON.stringify(data))
+        post_req.end()
 
-  method === 'POST' && post_req.write(JSON.stringify(data))
-  post_req.end()
+
+    } catch (e) {
+        console.log(e)
+    }
 }
 
 const generateContent = (node) => {
@@ -101,51 +112,71 @@ const generateVerificationStatement = (node) => {
 
 let beforeCount = 1e9
 
-request('GET', {}, 1, 'statements', (res) => {
-    const r = JSON.parse(res)
-    beforeCount = r.statements.length
-    console.log(beforeCount)
-
-    let i = 0
-    while (i < statementCount){
-        const node = (i % 6) + 1
-        const json = generateStatement(node)
-        //console.log(json)
-        request('POST', json, node, 'submit_statement')
-        //request('POST', json, node, 'submit_statement')
-        i = i+1
-    }
-
-    i = 0
-    while (i < verificationCount){
-        const node = (i % 6) + 1
-        const json = generateVerificationStatement(node)
-        //console.log(json)
-        request('POST', json, node, 'submit_statement')
-        //request('POST', json, node, 'submit_statement')
-        i = i+1
-    }
-})
-
-
-setTimeout(() => {
-    request('GET', {}, 1, 'nodes', (res) => {
+const test = () => {
+    request('GET', {}, 1, 'statements', (res) => {
         const r = JSON.parse(res)
-        console.log(nodes.length, r.domains.length)
-        if ((r.domains.length - (nodes.length - 1)) < 0) {
-            throw(new Error('Not all nodes registered with node 1'))
-        } else {
-            request('GET', {}, 1, 'statements', (res) => {
-                const r = JSON.parse(res)
-                console.log(r.statements.length)
-                if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
-                    console.log(r.statements.length - beforeCount, statementCount + verificationCount)
-                    throw(new Error('Not all statements propagated to node 1'))
-                } else {
-                    process.stdout.write('success');
-                }
-            })
+        beforeCount = r.statements.length
+        console.log(beforeCount)
+
+        let i = 0
+        while (i < statementCount){
+            const node = (i % 6) + 1
+            const json = generateStatement(node)
+            //console.log(json)
+            request('POST', json, node, 'submit_statement')
+            //request('POST', json, node, 'submit_statement')
+            i = i+1
+        }
+
+        i = 0
+        while (i < verificationCount){
+            const node = (i % 6) + 1
+            const json = generateVerificationStatement(node)
+            //console.log(json)
+            request('POST', json, node, 'submit_statement')
+            //request('POST', json, node, 'submit_statement')
+            i = i+1
         }
     })
-    }, 
-12 * 1000)
+
+
+    setTimeout(() => {
+        request('GET', {}, 1, 'nodes', (res) => {
+            const r = JSON.parse(res)
+            console.log(nodes.length, r.domains.length)
+            if ((r.domains.length - (nodes.length - 1)) < 0) {
+                throw(new Error('Not all nodes registered with node 1'))
+            } else {
+                request('GET', {}, 1, 'statements', (res) => {
+                    const r = JSON.parse(res)
+                    console.log(r.statements.length)
+                    if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
+                        console.log(r.statements.length - beforeCount, statementCount + verificationCount)
+                        throw(new Error('Not all statements propagated to node 1'))
+                    } else {
+                        process.stdout.write('success');
+                    }
+                })
+            }
+        })
+        }, 
+    12 * 1000)
+}
+
+const healthTestInterval = setInterval(() => {
+    try {
+        request('GET', {}, 1, 'health', (res) => {
+            try {
+                const r = JSON.parse(res)
+                if(r.application == 'stated') {
+                    setTimeout(test, 1000)
+                    clearInterval(healthTestInterval)
+                }
+            } catch (e) {
+                console.log(e)
+            }
+        })
+    } catch (e) {
+        console.log(e)
+    }
+}, 1000)
