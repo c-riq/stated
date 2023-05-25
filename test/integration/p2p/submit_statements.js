@@ -16,6 +16,7 @@ const statementCount = 6 * 20
 const verificationCount = 6 * 3
 
 const request = (method, data, node, path, callback) => {
+    console.log(method, data, node, path)
     try {
         var post_options = {
             host: 'localhost',
