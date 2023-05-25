@@ -235,6 +235,6 @@ volumes:
     vol_db_1:
     vol_db_2:
     vol_db_3:
-    # vol_db_4:
+    vol_db_4:
     # vol_db_5:
     # vol_db_6:
