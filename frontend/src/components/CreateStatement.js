@@ -56,8 +56,10 @@ const CreateStatement = props => {
 
     React.useEffect(()=>{
         getSSLOVInfo(domain, res  => {
-            setOVInfo(res ? (res.result || []) : [])
-            const matchingOV = res.result && res.result.find(r => (r.domain === domain ||
+            const OVInfo = res ? (res.result || []).filter(r => 
+                r.status==="fulfilled").map(r => r.value) : []
+            setOVInfo(OVInfo)
+            const matchingOV = OVInfo.find(r => (r.domain === domain ||
                 r.domain === 'stated.' + domain ||
                 r.domain === 'www.' + domain) && r.O)
             if(matchingOV) { 
@@ -151,6 +153,7 @@ const CreateStatement = props => {
             />
         </React.Fragment>
     )
+    console.log(OVInfo, "OVInfo")
 
     return (
         <div style={{ padding: "7%", backgroundColor: "white", borderRadius: 8, display:'flex',
