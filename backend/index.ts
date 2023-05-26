@@ -55,6 +55,11 @@ app.get("/files/*", (req, res) =>{
     res.status(404);
     res.send("File not found")}
 );
+app.get("/static/*", (req, res) =>{
+    console.log("could not find file " + req.path)
+    res.status(404);
+    res.send("File not found")}
+);
 app.get("*", (req,res)=>{
     res.sendFile(__dirname + '/public/index.html')
 });

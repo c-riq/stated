@@ -2,6 +2,7 @@
 
 backend/**/*.js
 backend/**/*.js.map
+backend/ssh.sh
 
 # dependencies
 frontend/node_modules

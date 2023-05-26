@@ -51,7 +51,7 @@ npm install
 npm run build 
 # replace DOMAIN, API_KEY and SSL_CERT_PATH below
 tmux
-sudo NODE_ENV=production DOMAIN=2.rixdata.net API_KEY=dOhewi9GhjoLkgiXhnq0N1 SSL_CERT_PATH=/etc/letsencrypt/live/stated.2.rixdata.net/ node server.js 
+sudo NODE_ENV=production DOMAIN=2.rixdata.net API_KEY=dOhewi9GhjoLkgiXhnq0N1 SSL_CERT_PATH=/etc/letsencrypt/live/stated.2.rixdata.net/ node index.js 
 ```
 Exit tmux by `CTRL + b` then `d`.
 
