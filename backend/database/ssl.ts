@@ -14,7 +14,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
                 _rank
               FROM ssl_cert_cache
                 JOIN regex ON host ~ regex.pattern
-              WHERE LOWER(subject_l) NOT LIKE '%cloudflare%'
+              WHERE LOWER(subject_o) NOT LIKE '%cloudflare%'
               ORDER BY _rank ASC LIMIT 20
               ;
               `,[domain_substring || ''], (error, results) => {

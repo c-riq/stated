@@ -49,8 +49,8 @@ const CreateStatement = props => {
     React.useEffect(()=>{
         getDomainSuggestions(domainInputValue, res  => {
             if(!res || !res.result) {return}
-            res.result = res.result.map(r=>({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
-            setDomainOptions(res ? (res.result || []) : [])
+            const domains = res.result.map(r => ({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
+            setDomainOptions(domains)
         })
     },[domainInputValue])
 
