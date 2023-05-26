@@ -8,6 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "backend",
+            "preLaunchTask": "npm: build - backend",
             "runtimeExecutable": "node",
             "runtimeArgs": ["--nolazy", "-r", "${workspaceFolder}/backend/node_modules/ts-node/register/transpile-only"],
             "program": "${workspaceFolder}/backend/index.ts",

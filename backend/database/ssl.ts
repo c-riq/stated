@@ -33,17 +33,24 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
     }
   }))
   
-  export const setCertCacheFactory = (pool) => ({ domain, O, C, ST, L,
+  export const setCertCacheFactory = (pool) => ({ domain, subject_o, subject_c, subject_st, subject_l, subject_serialnumber, subject_cn, subjectaltname,
     issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ domain, O, C, ST, L, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
-      pool.query(`INSERT INTO ssl_cert_cache (host, subject_o, subject_c, subject_st, subject_l, 
-        sha256, valid_from, valid_to, first_seen, last_seen,
-        issuer_o, issuer_c, issuer_cn) 
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $9 , $10, $11)
+      sanitize({ domain, subject_o, subject_c, subject_st, subject_l, subject_serialnumber, subject_cn, subjectaltname, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
+      pool.query(`INSERT INTO ssl_cert_cache 
+        (host, subject_o, subject_c, subject_st, subject_l, 
+          subject_serialnumber, subject_cn, subjectaltname, sha256, valid_from, 
+          valid_to, first_seen, last_seen, issuer_o, issuer_c,
+          issuer_cn) 
+  VALUES ($1, $2, $3, $4, $5,
+          $6, $7, $8, $9, $10,
+          $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $12 , $13,
+          $14)
   ON CONFLICT (sha256) DO NOTHING
   RETURNING *;`,
-  [domain, O, C, ST, L, sha256, validFrom, validTo, issuer_o, issuer_c, issuer_cn], (error, results) => {
+  [domain, subject_o, subject_c, subject_st, subject_l,
+    subject_serialnumber, subject_cn, subjectaltname, sha256, validFrom,
+    validTo, issuer_o, issuer_c, issuer_cn], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()

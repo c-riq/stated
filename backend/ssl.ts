@@ -17,8 +17,9 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
         const subject = cert && cert.subject 
         const issuer = cert && cert.issuer 
         if (subject && subject.O && subject.C){
-           setCertCache({domain, O: subject.O, L: subject.L, ST: subject.ST, C: subject.C, 
-            issuer_o: issuer.O, issuer_c: issuer.C, issuer_cn: issuer.CN, 
+           setCertCache({domain, subject_o: subject.O, subject_l: subject.L, subject_st: subject.ST, subject_c: subject.C, 
+            subject_cn: subject.CN, subject_serialnumber: subject.serialNumber, subjectaltname: cert.subjectaltname,
+            issuer_o: issuer.O, issuer_c: issuer.C, issuer_cn: issuer.CN,
             sha256: cert.fingerprint256.replace(/:/g,""), validFrom: cert.valid_from, validTo: cert.valid_to})
             resolve({...subject, issuer_o: issuer.O, issuer_c: issuer.C, issuer_cn: issuer.CN, domain, sha256: cert.fingerprint256?.replace(/:/g,"")})
         }
