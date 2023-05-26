@@ -6,7 +6,7 @@ import {matchDomain, getStatement, getStatements, getStatementsWithDetail,
     getVotes
 } from './database'
 import p2p from './p2p'
-import ssl from './ssl'
+import {getOVInfoForSubdomains} from './ssl'
 import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification'
 import {getTXTEntriesDNSSEC} from './dnssec'
 
@@ -160,7 +160,7 @@ api.get("/get_ssl_ov_info", async (req, res, next) => {
         if(!domain || domain.length == 0){
             throw(Error("missing parameter: domain"))
         }
-        const result = await ssl.getOVInfoForSubdomains({domain})
+        const result = await getOVInfoForSubdomains({domain})
         res.end(JSON.stringify({result}))
     } catch (error) {
         next(error)

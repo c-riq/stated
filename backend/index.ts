@@ -4,11 +4,13 @@ import http from 'http'
 import https from 'https'
 import fs from 'fs'
 
-import {humanReadableEndpoints} from './humanReadableEndpoints'
+import { humanReadableEndpoints } from './humanReadableEndpoints'
 import api from './api'
 
 import p2p from './p2p'
 import retryAndCleanUp from './retryAndCleanUp'
+
+import { fetchOVInfoForMostPopularDomains } from './prefillOV'
 
 process.on('unhandledRejection', (error, promise) => {
     // @ts-ignore
@@ -20,9 +22,11 @@ const port = parseInt(process.env.PORT || '7766')
 const certPath = process.env.SSL_CERT_PATH
 const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
 const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
+const prefillSSLOVInfo = process.env.PREFILL_SSL_OV_INFO || false
 
 p2p.setupSchedule(pullIntervalSeconds)
 retryAndCleanUp.setupSchedule(retryIntervalSeconds)
+prefillSSLOVInfo && fetchOVInfoForMostPopularDomains()
 
 const app = express();
 
