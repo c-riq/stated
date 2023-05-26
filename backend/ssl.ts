@@ -3,7 +3,7 @@ import { validateDomainFormat } from './domainNames/validateDomainFormat'
 import {getCertCache, setCertCache} from './database'
 
 
-const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
+export const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
     const cached = await getCertCache({domain})
     if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_o){
@@ -32,7 +32,7 @@ const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     }
 })
 
-const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject) => {
+export const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject) => {
     if(!validateDomainFormat(domain)){
         resolve({error: 'invalid domain format'})
         return
@@ -55,5 +55,3 @@ const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject)
         reject(error)
     }
 })
-
-export default {getOVInfo, getOVInfoForSubdomains}
