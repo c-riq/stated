@@ -31,6 +31,7 @@ prefillSSLOVInfo && fetchOVInfoForMostPopularDomains()
 const app = express();
 
 app.disable('x-powered-by')
+// app.disable('etag')
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -51,6 +52,11 @@ app.use("/own",humanReadableEndpoints)
 
 app.use("/", express.static(__dirname + '/public/'));
 app.get("/files/*", (req, res) =>{
+    console.log("could not find file " + req.path)
+    res.status(404);
+    res.send("File not found")}
+);
+app.get("/static/*", (req, res) =>{
     console.log("could not find file " + req.path)
     res.status(404);
     res.send("File not found")}

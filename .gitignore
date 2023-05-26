@@ -1,7 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-backend/**/*.js
-backend/**/*.js.map
+backend/*.js
+backend/*.js.map
+backend/database/*.js
+backend/database/*.js.map
+backend/domainNames/*.js
+backend/domainNames/*.js.map
+
+backend/ssh.sh
 
 # dependencies
 frontend/node_modules

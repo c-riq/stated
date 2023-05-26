@@ -15,7 +15,7 @@ export const backup = () => {return new Promise((resolve: DBCallback, reject: DB
     if(test) {
         return resolve()
     }
-    const fileName = __dirname + `/database/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
+    const fileName = __dirname + `/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
     try {
         const pgdump = cp.spawn(`pg_dump`,[`-h`,`${pgHost}`,`-U`,`${pgUser}`,`-d`,`${pgDatabase}`,`-a`,`-f`,`${fileName}`], 
         {env: {PGPASSWORD: `${pgPassword}`, ...process.env}})
