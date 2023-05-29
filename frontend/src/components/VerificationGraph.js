@@ -216,8 +216,9 @@ export const VerificationGraph = (props) => {
       const uniqueDomains = [...new Set(domains)];
       uniqueDomains.forEach((domain) => {
         getSSLOVInfo(domain, res  => {
+          const newCerts = res?.result?.filter(r=> r.status ="fulfilled").map(r=>r.value);
           if (res?.result?.length > 0) {
-            setSslCerts([...sslCerts, ...res.result]);
+            setSslCerts([...sslCerts, ...newCerts]);
           }
       });});
       setFetchedSslCerts(true);
