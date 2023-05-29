@@ -16,7 +16,7 @@ export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve: (
     }
     try {
         log && console.log('getTXTEntriesDNSSEC', domain)
-        if (! /^[a-zA-Z\.-]{7,260}$/.test(domain)) {
+        if (! /^[a-zA-Z\.-]{4,260}$/.test(domain)) {
             console.log('invalid domain', domain)
             reject(Error('invalid domain '+ domain))
         }
