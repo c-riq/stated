@@ -55,6 +55,12 @@ const CreateStatement = props => {
     },[domainInputValue])
 
     React.useEffect(()=>{
+        if(!domain || !domain.match(/\.[a-z]{2,18}$/i)) {
+            setAuthor("")
+            setDNSSECInfo({domain: null, validated: null})
+            setOVInfo([{domain: null, O: null}])
+            return
+        }
         getSSLOVInfo(domain, res  => {
             const OVInfo = res ? (res.result || []).filter(r => 
                 r.status==="fulfilled").map(r => r.value) : []
