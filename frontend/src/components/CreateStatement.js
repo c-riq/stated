@@ -58,13 +58,13 @@ const CreateStatement = props => {
         getSSLOVInfo(domain, res  => {
             const OVInfo = res ? (res.result || []).filter(r => 
                 r.status==="fulfilled").map(r => r.value) : []
-            setOVInfo(OVInfo)
             const matchingOV = OVInfo.find(r => (r.domain === domain ||
                 r.domain === 'stated.' + domain ||
                 r.domain === 'www.' + domain) && r.O)
             if(matchingOV) { 
                 console.log(matchingOV, matchingOV.O)
                 setAuthor(matchingOV.O)
+                setOVInfo(OVInfo)
             }
         })
         getDNSSECInfo(domain, res  => {
