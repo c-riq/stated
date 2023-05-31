@@ -139,8 +139,6 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
-	+ /(?:\tVAT number: (?<VATNumber>[^\n]+?)\n)?/.source
-	+ /(?:\tISIN: (?<ISINNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
