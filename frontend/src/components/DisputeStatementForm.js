@@ -4,7 +4,7 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
-import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forbiddenStrings } from '../constants/statementFormats.js'
+import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forbiddenStrings } from '../statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 
 

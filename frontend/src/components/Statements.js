@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 
 import { Link } from 'react-router-dom';
 
-import { parsePoll, statementTypes } from '../constants/statementFormats.js'
+import { parsePoll, statementTypes } from '../statementFormats.js'
 
 
 const Statements = props => {

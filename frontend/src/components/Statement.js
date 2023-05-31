@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications, 
     getPersonVerifications, getVotes } from '../api.js'
-import { statementTypes, parsePDFSigning } from '../constants/statementFormats.js';
+import { statementTypes, parsePDFSigning } from '../statementFormats.js';
 
 import {VerificationGraph} from './VerificationGraph.js'
 

@@ -8,7 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import { TextField } from '@mui/material';
 
-import { buildRating, buildStatement, parseStatement, parseRating } from '../constants/statementFormats.js'
+import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 
 export const RatingForm = props => {

@@ -11,7 +11,7 @@ import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 import {subdivisions} from '../constants/provinces_un_locode'
 import { parseStatement, buildStatement, forbiddenStrings, 
-    buildOrganisationVerificationContent, parseOrganisationVerification } from '../constants/statementFormats.js'
+    buildOrganisationVerificationContent, parseOrganisationVerification } from '../statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 

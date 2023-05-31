@@ -3,10 +3,10 @@
 
 // TODO: use named matching groups, (did not work in the js bundle)
 
-import {countries} from './country_names_iso3166'
-import {legalForms} from './legalForms'
-import {cities} from './cities'
-import {subdivisions} from './provinces_un_locode'
+import {countries} from './constants/country_names_iso3166'
+import {legalForms} from './constants/legalForms'
+import {cities} from './constants/cities'
+import {subdivisions} from './constants/provinces_un_locode'
 
 export const statementTypes = {
     statement: 'statement',
