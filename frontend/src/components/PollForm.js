@@ -17,7 +17,7 @@ import {cities} from '../constants/cities'
 import GenerateStatement from './GenerateStatement.js'
 import { sha256 } from '../utils/hash.js'
 
-import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../constants/statementFormats.js'
+import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats.js'
 
 
 const PollForm = props => {

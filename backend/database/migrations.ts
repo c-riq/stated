@@ -120,6 +120,7 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
                 const res = client.query(sql, (error, res) => {
                   if (error) {
                     reject(error);
+                    return client.release();
                   } else {
                     client.query(
                       `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`,
@@ -127,8 +128,10 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
                       (error, res) => {
                         if (error) {
                           reject(error);
+                          return client.release();
                         } else {
                           resolve(res);
+                          return client.release();
                         }
                       }
                     );

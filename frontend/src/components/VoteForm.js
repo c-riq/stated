@@ -8,7 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
-import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../constants/statementFormats.js'
+import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 
 

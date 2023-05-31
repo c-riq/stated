@@ -1,6 +1,12 @@
+/* eslint-disable no-useless-concat */
 // copied from frotend to backend directory via 'npm run build'
 
 // TODO: use named matching groups, (did not work in the js bundle)
+
+import {countries} from './constants/country_names_iso3166'
+import {legalForms} from './constants/legalForms'
+import {cities} from './constants/cities'
+import {subdivisions} from './constants/provinces_un_locode'
 
 export const statementTypes = {
     statement: 'statement',
@@ -96,19 +102,23 @@ export const parsePoll = (s) => {
 export const buildOrganisationVerificationContent = (
 		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
 		verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
+	/* Omit any fields that may have multiple values */
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
-	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) return ""
-	if (!["limited liability corporation","local government","state government","national government"].includes(legalEntity)) 
-			return ""
+	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city")
+	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country")
+	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid country")
+	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity")
+
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
-	"\t" + "Name: " + verifyName + "\n" +
-	"\t" + "Country: " + country + "\n" +
+	"\t" + "Name: " + verifyName + "\n" + // Full name, as in business register
+	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
 	"\t" + "Legal entity: " + legalEntity + "\n" +
 	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
 	(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
-	(province ? "\t" + "Province or state: " + province + "\n" : "") +
+	(province ? "\t" + "Province or state: " + province + "\n" : "") + // UN/LOCODE
 	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
 	(city ? "\t" + "City: " + city + "\n" : "") +
 	(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +

@@ -17,6 +17,11 @@ const pool = new Pool({
   port: pgPort,
 })
 
+pool.on('error', (error) => {
+  console.log('pg pool error: ', error)
+  console.trace()
+})
+
 export type DBCallback = (result?: QueryResult) => void
 export type DBErrorCallback = (error: Error) => void
 

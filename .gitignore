@@ -7,6 +7,8 @@ backend/database/*.js.map
 backend/domainNames/*.js
 backend/domainNames/*.js.map
 
+backend/public/files/*.pdf
+
 backend/ssh.sh
 
 # dependencies

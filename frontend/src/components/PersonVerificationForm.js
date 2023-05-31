@@ -16,7 +16,7 @@ import moment from 'moment'
 import {countries} from '../constants/country_names_iso3166'
 import {cities} from '../constants/cities'
 import { parseStatement, buildStatement, forbiddenStrings, 
-    parsePersonVerification, buildPersonVerificationContent } from '../constants/statementFormats.js'
+    parsePersonVerification, buildPersonVerificationContent } from '../statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 

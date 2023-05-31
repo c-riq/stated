@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications, 
     getPersonVerifications, getVotes } from '../api.js'
-import { statementTypes, parsePDFSigning } from '../constants/statementFormats.js';
+import { statementTypes, parsePDFSigning } from '../statementFormats.js';
 
 import {VerificationGraph} from './VerificationGraph.js'
 
@@ -54,6 +54,7 @@ const Statement = props => {
     }
 
     console.log('verifications',organisationVerifications, personVerifications)
+    if (!statement) return (<div style={{marginTop: "20px"}}>Statement not found</div>)
     return (
         <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
