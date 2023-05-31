@@ -1,6 +1,4 @@
-import React from 'react'
-import {Buffer} from 'buffer';
-
+import React from 'react';
 
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
@@ -11,6 +9,7 @@ import Box from '@mui/material/Box';
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
+import {subdivisions} from '../constants/provinces_un_locode'
 import { parseStatement, buildStatement, forbiddenStrings, 
     buildOrganisationVerificationContent, parseOrganisationVerification } from '../constants/statementFormats.js'
 import GenerateStatement from './GenerateStatement';
@@ -23,17 +22,21 @@ const OrganisationVerificationForm = props => {
     const [legalForm, setLegalForm] = React.useState("");
     const [legalFormObject, setLegalFormObject] = React.useState("");
     const [city, setCity] = React.useState("");
-    const [cityObject, setCityObject] = React.useState("");
+    const [cityObject, setCityObject] = React.useState(null);
     const [province, setProvince] = React.useState("");
+    const [provinceObject, setProvinceObject] = React.useState(null);
     const [serialNumber, setSerialNumber] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-        const content = buildOrganisationVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
-        console.log(statement)
+        try {
+            const content = buildOrganisationVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm,
+                foreignDomain: "", verificationMethod: "", confidence: "", supersededVerificationHash: "", pictureHash: ""})
+            const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+
+            console.log(statement)
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
@@ -49,7 +52,10 @@ const OrganisationVerificationForm = props => {
             }
             props.setStatement(statement)
             sha256(statement).then((value) => { props.setStatementHash(value); });
+        } catch (e) {
+            props.setAlertMessage(e.message)
         }
+    }
 
     return (
         <FormControl sx={{width: "100%"}}>
@@ -119,7 +125,7 @@ const OrganisationVerificationForm = props => {
         />
         <Autocomplete
             id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] == countryObject[4] ) : []}
+            options={countryObject ? cities.cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo
@@ -131,12 +137,18 @@ const OrganisationVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
-        <TextField
+        <Autocomplete
             id="province"
-            variant="outlined"
-            placeholder='Bavaria'
-            label="Province"
-            onChange={e => { setProvince(e.target.value) }}
+            options={countryObject ? subdivisions.filter(l =>(l[0] === countryObject[1] )) : []}
+            autoHighlight
+            getOptionLabel={(option) => option ? option[2] : ''}
+            freeSolo
+            onChange={(e,newvalue)=>setProvinceObject(newvalue)}
+            value={provinceObject}
+            inputValue={province}
+            onInputChange={(event, newInputValue) => setProvince(newInputValue)}
+            renderInput={(params) => <TextField {...params} label="Province / state" />}
+            renderOption={(props, option) => (<Box {...props} id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <TextField
