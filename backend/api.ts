@@ -1,7 +1,7 @@
 import express from 'express'
 
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
-    getOrganisationVerificationsForStatement,
+    getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
     getVotes
 } from './database'
@@ -93,6 +93,15 @@ api.post("/organisation_verifications", async (req, res, next) => {
     try {
         const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.body.hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
+        next(error)
+    }
+})
+
+api.get("/domain_verifications", async (req, res, next) => {
+    try {
+        const dbResult = await getVerificationsForDomain({domain: req.query.domain})
+        res.end(JSON.stringify({result: dbResult.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
     }

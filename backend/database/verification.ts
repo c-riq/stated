@@ -152,7 +152,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
       pool.query(`
               SELECT 
                   *
-              FROM verifications
+              FROM organisation_verifications
               WHERE verified_domain = $1;
               `,[domain], (error, results) => {
         if (error) {
