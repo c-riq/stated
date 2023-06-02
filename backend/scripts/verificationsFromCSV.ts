@@ -74,7 +74,7 @@ for (const row of rows) {
 }
 
 for (const i of array) {
-    // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,ov_of_subsidiary,country,province,city,serial_number,vat_id
+    // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
     const {
         company,
         website,
@@ -82,6 +82,7 @@ for (const i of array) {
         province,
         city,
         serial_number,
+        confidence
         //isin,
         //vat_id,
     } = i;
@@ -97,6 +98,7 @@ for (const i of array) {
         city,
         serialNumber: serial_number,
         legalEntity: legalForms.legalForms.find((i) => i[2] === "limited liability corporation")[2],
+        confidence: confidence,
     });
     const statement = buildStatement({
         domain: "localhost",
