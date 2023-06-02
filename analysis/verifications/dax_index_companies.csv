@@ -1,4 +1,4 @@
-company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,ov_of_subsidiary,country,province,city,serial_number,vat_id,lei_number,confidence,source_proclaimed,source_official
+company,instrument,trading_symbol,isin,index,date_index,website,ssl_ov_verification,ov_of_subsidiary,country,province,city,serial_number,vat_id,lei_number,confidence,source_proclaimed,source_official
 Adidas AG,ADIDAS AG NA O.N.,ADS,DE000A1EWWW0,DAX,03.05.2023,adidas.com,1,0,Germany,Bayern,Herzogenaurach,HRB3868,DE132490588,,0.95,,
 Airbus SE,AIRBUS SE,AIR,NL0000235190,DAX,03.05.2023,airbus.com,0,0,Netherlands (the),Zuid-Holland,Leiden,24288945,,,0.8, ,https://www.kvk.nl/zoeken/
 Allianz SE,ALLIANZ SE NA O.N.,ALV,DE0008404005,DAX,03.05.2023,allianz.com,1,1,Germany,Bayern,München,HRB164232,DE129274114,,0.8,,
@@ -15,26 +15,26 @@ Deutsche Bank AG,DEUTSCHE BANK AG NA O.N.,DBK,DE0005140008,DAX,03.05.2023,db.com
 Deutsche Boerse AG,DEUTSCHE BOERSE NA O.N.,DB1,DE0005810055,DAX,03.05.2023,deutsche-boerse.com,0,,Germany,Hessen,Frankfurt am Main,HRB32232,DE114151950,,0.95,,
 Deutsche Post AG,DEUTSCHE POST AG NA O.N.,DPW,DE0005552004,DAX,03.05.2023,deutschepost.de,1,0,Germany,Nordrhein-Westfalen,Bonn,HRB6792,DE169838187,,0.95,,
 Dr. Ing. h.c. F. Porsche AG,DR.ING.H.C.F.PORSCHE VZOI,P911,DE000PAG9113,DAX,03.05.2023,porsche.com,0,,Germany,Baden-Württemberg,Stuttgart,HRB730623,DE147799625,,0.8,,
-Deutsche Telekom AG,DT.TELEKOM AG NA,DTE,DE0005557508,DAX,03.05.2023,telekom.com,1,1,Germany,Nordrhein-Westfalen,Bonn,HRB 6794,DE 123475223,,0.8,,
-E. On SE,E.ON SE NA O.N.,EOAN,DE000ENAG999,DAX,03.05.2023,eon.com,1,0,Germany,Nordrhein-Westfalen,Essen,HRB 28196,DE 119356834,,0.95,,
-Fresenius SE & Co. KGaA,FRESENIUS SE+CO.KGAA O.N.,FRE,DE0005785604,DAX,03.05.2023,fresenius.com,0,,Germany,Hessen,Bad Homburg,HRB11852,DE 114152311,,0.8,,
+Deutsche Telekom AG,DT.TELEKOM AG NA,DTE,DE0005557508,DAX,03.05.2023,telekom.com,1,1,Germany,Nordrhein-Westfalen,Bonn,HRB6794,DE123475223,,0.8,,
+E. On SE,E.ON SE NA O.N.,EOAN,DE000ENAG999,DAX,03.05.2023,eon.com,1,0,Germany,Nordrhein-Westfalen,Essen,HRB28196,DE119356834,,0.95,,
+Fresenius SE & Co. KGaA,FRESENIUS SE+CO.KGAA O.N.,FRE,DE0005785604,DAX,03.05.2023,fresenius.com,0,,Germany,Hessen,Bad Homburg,HRB11852,DE114152311,,0.8,,
 Hannover Rück SE,HANNOVER RUECK SE NA O.N.,HNR1,DE0008402215,DAX,03.05.2023,hannover-rueck.de,0,,Germany,Niedersachsen,Hannover,HRB6778,DE811185660,,0.8,,
 HeidelbergCement AG,HEIDELBERGCEMENT AG O.N.,HEI,DE0006047004,DAX,03.05.2023,heidelbergmaterials.com,0,,Germany,Baden-Württemberg,Heidelberg,HRB330082,DE143455653,,0.8,,
-Henkel AG & Co. KGAA,HENKEL AG+CO.KGAA VZO,HEN3,DE0006048432,DAX,03.05.2023,henkel.com,0,,Germany,Nordrhein-Westfalen,Düsseldorf,HRB 4724,DE 11 94 29 301,,0.8,,
-Infineon Technologies AG,INFINEON TECH.AG NA O.N.,IFX,DE0006231004,DAX,03.05.2023,infineon.com,1,0,Germany,Bayern,Neubiberg ,HRB 126492 ,DE 812655055,,0.95,,
-Mercedes-Benz Group AG,MERCEDES-BENZ GRP NA O.N.,MBG,DE0007100000,DAX,03.05.2023,mercedes-benz.com,0,,Germany,Baden-Württemberg,Stuttgart,HRB 19360,DE 81 25 26 315,,0.8,https://group.mercedes-benz.com/provider/,
-Merck KGaA,MERCK KGAA O.N.,MRK,DE0006599905,DAX,03.05.2023,merckgroup.com,1,0,Germany,Hessen,Darmstadt,HRB 6164,DE 811850788 ,,0.95,https://www.merckgroup.com/en/legal-disclaimer.html,
-MTU Aero Engines AG,MTU AERO ENGINES NA O.N.,MTX,DE000A0D9PT0,DAX,03.05.2023,mtu.de,0,,Germany,Bayern,München,HRB 157206,DE 81 44 00 965,,0.8,https://www.mtu.de/imprint/,
-Muenchener Rueckversicherungs-Gesellschaft AG,MUENCH.RUECKVERS.VNA O.N.,MUV2,DE0008430026,DAX,03.05.2023,munichre.com,Munich Re Group, ,Germany,Bayern,München,HRB 42039,DE 129274139,529900MUF4C20K50JS49,0.8,https://www.munichre.com/en/general/imprint.html,
-Porsche Automobil Holding SE,PORSCHE AUTOM.HLDG VZO,PAH3,DE000PAH0038,DAX,03.05.2023,porsche-se.com,0, ,Germany,Baden-Württemberg,Stuttgart,HRB 724512,DE814936756,,0.8,https://www.porsche-se.com/kontakt/impressum,
+Henkel AG & Co. KGAA,HENKEL AG+CO.KGAA VZO,HEN3,DE0006048432,DAX,03.05.2023,henkel.com,0,,Germany,Nordrhein-Westfalen,Düsseldorf,HRB4724,DE119429301,,0.8,,
+Infineon Technologies AG,INFINEON TECH.AG NA O.N.,IFX,DE0006231004,DAX,03.05.2023,infineon.com,1,0,Germany,Bayern,Neubiberg ,HRB126492,DE812655055,,0.95,,
+Mercedes-Benz Group AG,MERCEDES-BENZ GRP NA O.N.,MBG,DE0007100000,DAX,03.05.2023,mercedes-benz.com,0,,Germany,Baden-Württemberg,Stuttgart,HRB19360,DE812526315,,0.8,https://group.mercedes-benz.com/provider/,
+Merck KGaA,MERCK KGAA O.N.,MRK,DE0006599905,DAX,03.05.2023,merckgroup.com,1,0,Germany,Hessen,Darmstadt,HRB6164,DE811850788,,0.95,https://www.merckgroup.com/en/legal-disclaimer.html,
+MTU Aero Engines AG,MTU AERO ENGINES NA O.N.,MTX,DE000A0D9PT0,DAX,03.05.2023,mtu.de,0,,Germany,Bayern,München,HRB157206,DE814400965,,0.8,https://www.mtu.de/imprint/,
+Muenchener Rueckversicherungs-Gesellschaft AG,MUENCH.RUECKVERS.VNA O.N.,MUV2,DE0008430026,DAX,03.05.2023,munichre.com,Munich Re Group, ,Germany,Bayern,München,HRB42039,DE129274139,529900MUF4C20K50JS49,0.8,https://www.munichre.com/en/general/imprint.html,
+Porsche Automobil Holding SE,PORSCHE AUTOM.HLDG VZO,PAH3,DE000PAH0038,DAX,03.05.2023,porsche-se.com,0, ,Germany,Baden-Württemberg,Stuttgart,HRB724512,DE814936756,,0.8,https://www.porsche-se.com/kontakt/impressum,
 Qiagen N.V.,QIAGEN NV     EO -,QIA,NL0012169213,DAX,03.05.2023,qiagen.com,Microsoft Corporation, ,Netherlands (the),Limburg,Venlo,12036979,,,0.8,https://www.kvk.nl/zoeken/,
 Rheinmetall AG,RHEINMETALL AG,RHM,DE0007030009,DAX,03.05.2023,rheinmetall.com,1,0,Germany,Nordrhein-Westfalen,Düsseldorf,HRB39401,DE119356818,,0.95,,
 RWE AG,RWE AG  INH O.N.,RWE,DE0007037129,DAX,03.05.2023,rwe.com,0,,Germany,Nordrhein-Westfalen,Essen,HRB14525,DE813023584,,0.8,,
 SAP AG,SAP SE O.N.,SAP,DE0007164600,DAX,03.05.2023,sap.com,0,,Germany,Baden-Württemberg,Walldorf,HRB719915,DE143454214,,0.8,,
 Satorius AG,SARTORIUS AG VZO O.N.,SRT3,DE0007165631,DAX,03.05.2023,sartorius.com,0,,Germany,Niedersachsen,Göttingen,HRB1970,DE115302222,,0.8,,
 Siemens AG,SIEMENS AG NA O.N.,SIE,DE0007236101,DAX,03.05.2023,siemens.com,0,,Germany,Berlin|Bayern,Berlin|München,HRB12300|HRB6684,DE129274202,,0.1,,
-Siemens Energy AG,SIEMENS ENERGY AG NA O.N.,ENR,DE000ENER6Y0,DAX,03.05.2023,siemens-energy.com,0,,Germany,Bayern,München,HRB 252581,,,0.8,,https://www.handelsregister.de/rp_web/normalesuche.xhtml
-Siemens Healthineers AG,SIEMENS HEALTH.AG NA O.N.,SHL,DE000SHL1006,DAX,03.05.2023,siemens-healthineers.com,0,,Germany,Bayern,München,HRB 237558,,,0.8,,https://www.handelsregister.de/rp_web/normalesuche.xhtml
+Siemens Energy AG,SIEMENS ENERGY AG NA O.N.,ENR,DE000ENER6Y0,DAX,03.05.2023,siemens-energy.com,0,,Germany,Bayern,München,HRB252581,,,0.8,,https://www.handelsregister.de/rp_web/normalesuche.xhtml
+Siemens Healthineers AG,SIEMENS HEALTH.AG NA O.N.,SHL,DE000SHL1006,DAX,03.05.2023,siemens-healthineers.com,0,,Germany,Bayern,München,HRB237558,,,0.8,,https://www.handelsregister.de/rp_web/normalesuche.xhtml
 Symrise AG,SYMRISE AG INH. O.N.,SY1,DE000SYM9999,DAX,03.05.2023,symrise.com,0,,Germany,Nordrhein-Westfalen,Holzminden,HRB200436,DE813508474,,0.8,,
 Volkswagen AG,VOLKSWAGEN AG VZO O.N.,VOW3,DE0007664039,DAX,03.05.2023,volkswagenag.com,0,,Germany,Niedersachsen,Wolfsburg,HRB100484,DE115235681,,0.8,,
 Vonovia SE,VONOVIA SE NA O.N.,VNA,DE000A1ML7J1,DAX,03.05.2023,vonovia.de,0,,Germany,Nordrhein-Westfalen,Bochum,HRB16879,DE197946568,,0.8,,
