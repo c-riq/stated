@@ -1,6 +1,6 @@
 company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,ov_of_subsidiary,country,province,city,serial_number,vat_id
 Adidas AG,ADIDAS AG NA O.N.,ADS,DE000A1EWWW0,DAX,03.05.2023,adidas.com,1,0,Germany,Bayern,Herzogenaurach,HRB3868,DE132490588
-Airbus SE,AIRBUS SE,AIR,NL0000235190,DAX,03.05.2023,airbus.com,0,0,Netherlands,Zuid-Holland,Leiden,24288945,
+Airbus SE,AIRBUS SE,AIR,NL0000235190,DAX,03.05.2023,airbus.com,0,0,Netherlands (the),Zuid-Holland,Leiden,24288945,
 Allianz SE,ALLIANZ SE NA O.N.,ALV,DE0008404005,DAX,03.05.2023,allianz.com,1,1,Germany,Bayern,München,HRB 164232,DE 129 274 114
 Basf SE,BASF SE NA O.N.,BAS,DE000BASF111,DAX,03.05.2023,basf.com,1,1,Germany,Rheinland-Pfalz,Ludwigshafen,HRB 6000,DE 149145247
 Bayer AG,BAY.MOTOREN WERKE AG ST,BMW,DE0005190003,DAX,03.05.2023,bayer.com,1,0,Germany,Nordrhein-Westfalen,Leverkusen,HRB 48248,DE 123659859

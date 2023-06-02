@@ -1,6 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.countries = void 0;
 // ["Country","Alpha-2 code","Alpha-3 code","Numeric","wikidata id"]
-export const countries = {
-    "countries" : [
+exports.countries = {
+    "countries": [
         ["Afghanistan", "AF", "AFG", "004", "Q889"],
         ["Albania", "AL", "ALB", "008", "Q222"],
         ["Algeria", "DZ", "DZA", "012", "Q262"],
@@ -251,4 +254,5 @@ export const countries = {
         ["Zimbabwe", "ZW", "ZWE", "716", "Q954"],
         ["Åland Islands", "AX", "ALA", "248", ""]
     ]
-}
+};
+//# sourceMappingURL=country_names_iso3166.js.map

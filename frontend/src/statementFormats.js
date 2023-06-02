@@ -105,10 +105,13 @@ export const buildOrganisationVerificationContent = (
 	/* Omit any fields that may have multiple values */
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
-	if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city")
-	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country")
-	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid country")
-	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity")
+	if(city && !cities.cities.map(c => c[1]).includes(city)) {
+		console.warn("Unknown city " + city)
+		//throw new Error("Invalid city " + city)
+	}
+	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
+	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
+	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
