@@ -68,7 +68,20 @@ app.get("*", (req,res)=>{
 app.use((err, req, res, next) => {
     console.log(err)
     res.status(500);
-    res.send("Server Error." + err)
+    let message = "unknown error"
+    if (err) {
+        if (err.message || err.error) {
+            message = (err.message || err.error) + err.stack
+        } else {
+            try {
+                message = JSON.stringify(err)
+            }
+            catch (e) {
+                console.log(e)
+            }
+        }
+    }
+    res.send("Server Error: " + message)
 });
 
 
