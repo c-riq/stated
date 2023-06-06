@@ -140,6 +140,7 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
+	+ /(?:\tConfidence: (?<confidence>[0-9\.]+?)\n)?/.source
 	+ /$/.source
 	);
 	console.log(s)
@@ -152,7 +153,8 @@ export const parseOrganisationVerification = (s) => {
 		foreignDomain: m[5],
 		province: m[6],
 		serialNumber: m[7],
-		city: m[8]
+		city: m[8],
+		confidence: m[9] && parseFloat(m[9])
 	} : {error: "Invalid organisation verification format"}
 }
 

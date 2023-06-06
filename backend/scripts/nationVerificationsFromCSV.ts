@@ -10,12 +10,16 @@ import { sha256 } from "../hash";
 
 import { legalForms } from "../constants/legalForms";
 
+const host = process.env.HOST || "localhost";
+const port = process.env.PORT || 7766;
+const apiKey = process.env.API_KEY || "XXX";
+
 const submitStatement = (data, callback) => {
   console.log(data);
   try {
     var post_options = {
-      host: "localhost",
-      port: 7766,
+      host: host,
+      port: port,
       path: "/api/submit_statement",
       method: "POST",
       headers: {
@@ -49,7 +53,7 @@ const submitStatement = (data, callback) => {
 
 var daxCompanies = fs
   .readFileSync(
-    __dirname + "/../../analysis/verifications/dax_index_companies.csv",
+    __dirname + "/../../analysis/verifications/national_governments.csv",
     "utf8"
   )
   .toString();
@@ -74,31 +78,25 @@ for (const row of rows) {
 }
 
 for (const i of array) {
-    // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
+    // country,code,government_website_domain,source_domain,confidence_domain,ssl_ov_subject_org,google_search_term_first_result,
+    // foreign_affairs_ministry_domain,source_fa_domain,confidence_fa_domain,Population_2022_million,gdp_2022_billion_usd,source_population_gdp
     const {
-        company,
-        website,
         country,
-        province,
-        city,
-        serial_number,
-        confidence
+        foreign_affairs_ministry_domain,
+        confidence_fa_domain
         //isin,
         //vat_id,
     } = i;
-    if (!company || !website || !country || !province || !city || !serial_number) {
+    if (Number.parseFloat(confidence_fa_domain) < 0.8 || !country || !foreign_affairs_ministry_domain) {
         continue;
     }
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        verifyName: company,
-        verifyDomain: website,
+        verifyName: country,
+        verifyDomain: foreign_affairs_ministry_domain,
         country,
-        province,
-        city,
-        serialNumber: serial_number,
-        legalEntity: legalForms.legalForms.find((i) => i[2] === "limited liability corporation")[2],
-        confidence: confidence,
+        legalEntity: legalForms.legalForms.find((i) => i[2] === "national government")[2],
+        confidence: confidence_fa_domain,
     });
     const statement = buildStatement({
         domain: "localhost",
@@ -109,7 +107,7 @@ for (const i of array) {
     const data = {
         statement,
         hash_b64: sha256(statement),
-        api_key: "XXX"
+        api_key: apiKey
     }
     submitStatement(data, (res) => {
         console.log(res);

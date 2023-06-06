@@ -4,7 +4,7 @@ const log = false;
 import { DBCallback, DBErrorCallback, sanitize } from ".";
 
 export const createOrganisationVerificationFactory = (pool) => ({ statement_hash, verifier_domain, verified_domain, 
-    name, legal_entity_type, country, province, city, serialNumber, foreignDomain }) => (new Promise((resolve, reject) => {
+    name, legal_entity_type, country, province, city, serialNumber, foreignDomain=null }) => (new Promise((resolve: DBCallback, reject) => {
     try {
       sanitize({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain })
       pool.query(`

@@ -216,6 +216,7 @@ export const getStatementsFactory =
                     domain,
                     hash_b64,
                     first_verification_time,
+                    proclaimed_publication_time,
                     derived_entity_creation_retry_count
                   FROM statements 
                   WHERE id > $1 
