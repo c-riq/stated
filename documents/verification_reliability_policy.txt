@@ -1,0 +1,13 @@
+Domain verification reliability policy.
+
+For all verifications with confidence rating = 1.0,
+100 EUR will be rewarded to any entity that
+is the first to prove that an organisation which has been verified by us
+a) does not exist or b) does not directly or indirectly control the referenced domain.
+Minor variations in spelling or minor inaccuracies in supplementary data points
+For which at the time of providing the proof no superseding verification was done by us and the statement was not removed nor revoked / disputed by us.
+For verifications with confidence rating smaller than 1.0, it also needs to be demonstrated that the confidence ratings are too high by finding enough false verifications among all verifications with the same confidence rating,
+such that ((correct verifications) / (all verifications)) is smaller than the confidence rating.
+
+This policy is restricted to verification statements under the same author and domain as this statement.
+We are not liable for any resulting damages.
