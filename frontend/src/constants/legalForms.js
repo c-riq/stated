@@ -8,6 +8,7 @@ export const legalForms =
       ['all', 'Q1802419', 'state government'],
       ['all', 'Q10926884', 'national government'],
       ['all', '', 'limited liability corporation'],
+      // add Statutory corporation? / state owned enterprise?
   ]
 }
 
