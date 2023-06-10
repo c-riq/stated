@@ -19,6 +19,7 @@ export const statementTypes = {
     rating: 'rating',
 	signPdf: "sign_pdf"
 }
+export const employeeCounts = ["0-10", "10-100", "100-1000", "1000-10,000", "10,000-100,000", "100,000+"]
 export const buildStatement = ({domain, author, time, tags = [], content}) => {
 	const statement = "Domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" +
@@ -101,7 +102,8 @@ export const parsePoll = (s) => {
 
 export const buildOrganisationVerificationContent = (
 		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
-		verificationMethod, confidence = null, supersededVerificationHash = null, pictureHash = null, reliabilityPolicy = null}) => {
+		verificationMethod, confidence = null, supersededVerificationHash = null, pictureHash = null,
+		reliabilityPolicy = null, employeeCount = null}) => {
 	/* Omit any fields that may have multiple values */
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
@@ -109,11 +111,12 @@ export const buildOrganisationVerificationContent = (
 	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
 	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
 	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
+	if(employeeCount && !employeeCounts.includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
-	"\t" + "Name: " + verifyName + "\n" + // Full name, as in business register
+	"\t" + "Name: " + verifyName + "\n" + // Full name as in business register; wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
 	"\t" + "Legal entity: " + legalEntity + "\n" +
 	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
@@ -125,6 +128,7 @@ export const buildOrganisationVerificationContent = (
 	(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
 	(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
 	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(employeeCount ? "\t" + "Employee count: " + employeeCount + "\n" : "") +
 	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 	""
 }
@@ -141,7 +145,8 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
-	+ /(?:\tConfidence: (?<confidence>[1-9\.]+?)\n)?/.source
+	+ /(?:\tConfidence: (?<confidence>[1-9.]+?)\n)?/.source
+	+ /(?:\tEmployee count: (?<employeeCount>[01,+]+?)\n)?/.source
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
@@ -157,7 +162,8 @@ export const parseOrganisationVerification = (s) => {
 		serialNumber: m[7],
 		city: m[8],
 		confidence: m[9] && parseFloat(m[9]),
-		reliabilityPolicy: m[10]
+		employeeCount: m[10],
+		reliabilityPolicy: m[11]
 	} : {error: "Invalid organisation verification format"}
 }
 

@@ -1,14 +1,13 @@
-// ["country_code","wikidata_id", "name"],
 export const legalForms = 
 {
-  'legalForms':
+  'legalForms': // Q10541491
   [ 
+    // ["country_code","wikidata_id", "name"],
       ['all', 'Q5', 'person'],
       ['all', 'Q6501447', 'local government'],
       ['all', 'Q1802419', 'state government'],
-      ['all', 'Q10926884', 'national government'],
-      ['all', '', 'limited liability corporation'],
-      // add Statutory corporation? / state owned enterprise?
+      ['all', 'Q20901295', 'foreign affairs ministry'],
+      ['all', 'Q167037', 'corporation'],
   ]
 }
 
