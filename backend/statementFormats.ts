@@ -101,7 +101,7 @@ export const parsePoll = (s) => {
 
 export const buildOrganisationVerificationContent = (
 		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
-		verificationMethod, confidence, supersededVerificationHash, pictureHash}) => {
+		verificationMethod, confidence = null, supersededVerificationHash = null, pictureHash = null, reliabilityPolicy = null}) => {
 	/* Omit any fields that may have multiple values */
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
@@ -113,18 +113,19 @@ export const buildOrganisationVerificationContent = (
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
-	"\t" + "Name: " + verifyName + "\n" + // Full name, as in business register
+	"\t" + "Name: " + verifyName + "\n" + // Full name as in business register; wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
 	"\t" + "Legal entity: " + legalEntity + "\n" +
 	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
 	(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
 	(province ? "\t" + "Province or state: " + province + "\n" : "") + // UN/LOCODE
 	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
-	(city ? "\t" + "City: " + city + "\n" : "") +
+	(city ? "\t" + "City: " + city + "\n" : "") + // wikidata english name, if available
 	(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
 	(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
 	(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
 	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 	""
 }
 
@@ -140,7 +141,8 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
-	+ /(?:\tConfidence: (?<confidence>[0-9\.]+?)\n)?/.source
+	+ /(?:\tConfidence: (?<confidence>[1-9\.]+?)\n)?/.source
+	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
 	console.log(s)
@@ -154,14 +156,15 @@ export const parseOrganisationVerification = (s) => {
 		province: m[6],
 		serialNumber: m[7],
 		city: m[8],
-		confidence: m[9] && parseFloat(m[9])
+		confidence: m[9] && parseFloat(m[9]),
+		reliabilityPolicy: m[10]
 	} : {error: "Invalid organisation verification format"}
 }
 
 export const buildPersonVerificationContent = (
 		{verifyName, birthCountry, birthCity, verifyDomain = null, foreignDomain = null,
 		birthDate, job = null, employer = null, verificationMethod = null, confidence = null,
-		supersededVerificationHash = null, pictureHash = null}) => {
+		supersededVerificationHash = null, pictureHash = null, reliabilityPolicy= null}) => {
 	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
 	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) return ""
 	let content = "\n" +
@@ -179,6 +182,7 @@ export const buildPersonVerificationContent = (
 		(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
 		(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
 		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+		(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 		""
 	console.log(content)
 	return content
@@ -200,6 +204,7 @@ export const parsePersonVerification = (s) => {
 	+ /(?:\tVerification method: (?<verificationMethod>[^\n]+?)\n)?/.source
 	+ /(?:\tSuperseded verification: (?<supersededVerification>[^\n]+?)\n)?/.source
 	+ /(?:\tConfidence: (?<confidence>[^\n]+?)\n)?/.source
+	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
 	console.log(s)
@@ -216,7 +221,8 @@ export const parsePersonVerification = (s) => {
 		picture: m[9],
 		verificationMethod: m[10],
 		supersededVerification: m[11],
-		confidence: m[12]
+		confidence: m[12] && parseFloat(m[12]),
+		reliabilityPolicy: m[13]
 	} : {error: "Invalid person verification format"}
 }
 

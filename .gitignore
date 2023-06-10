@@ -16,6 +16,8 @@ backend/public/files/*.pdf
 
 backend/ssh.sh
 
+.~*#
+
 # dependencies
 frontend/node_modules
 frontend/docker_output
