@@ -79,7 +79,7 @@ const StatementForm = props => {
                 value={content}
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
             />
-            <TextField
+            <TextField // TODO: fix tags
                 id="tags"
                 variant="outlined"
                 placeholder=''

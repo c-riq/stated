@@ -1,3 +1,5 @@
+Tag: Verification reliability policy
+
 For any verification published by us under this domain, with confidence rating = 1.0,
 100 EUR will be awarded to the first entity to prove that a verification contains significant errors.
 This does not apply to:

@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS organisation_verifications (
     serial_number VARCHAR(100),
     country VARCHAR(100) NOT NULL,-- ISO 3166 country name
     province VARCHAR(100),
-    city VARCHAR(100),
-    confidence DOUBLE PRECISION,
+    city VARCHAR(100)
+--    confidence DOUBLE PRECISION, TODO: Add migration sql
 );
 CREATE TABLE IF NOT EXISTS person_verifications (
     id SERIAL PRIMARY KEY,

@@ -4,7 +4,7 @@ import http from "http";
 
 import {
   buildOrganisationVerificationContent,
-  buildStatement} from "../statementFormats";
+  buildStatement, minEmployeeCountToRange} from "../statementFormats";
 
 import { sha256 } from "../hash";
 
@@ -54,7 +54,7 @@ const submitStatement = (data, callback) => {
 var daxCompanies = fs
   .readFileSync(
     __dirname + "/../../analysis/verifications/company_list.csv",
-//    __dirname + "/../../analysis/verifications/dax_index_companies.csv",
+    //__dirname + "/../../analysis/verifications/dax_index_companies.csv",
 //    __dirname + "/../../analysis/verifications/dax_index_companies.csv",
     "utf8"
   )
@@ -90,6 +90,7 @@ for (const i of array) {
         province,
         city,
         serial_number,
+        employees_min,
         confidence
         //isin,
         //vat_id,
@@ -111,7 +112,9 @@ for (const i of array) {
         serialNumber: serial_number,
         legalEntity: legalForms.legalForms.find((i) => i[2] === "corporation")[2],
         confidence: confidence,
+        employeeCount: employees_min && minEmployeeCountToRange(employees_min)
     });
+    if(!verification){ console.log("no verification generated"); continue}
     const statement = buildStatement({
         domain: "localhost", // rixdata.net
         author: "localhost", // Rix Data NL B.V.

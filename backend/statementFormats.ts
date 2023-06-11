@@ -19,7 +19,17 @@ export const statementTypes = {
     rating: 'rating',
 	signPdf: "sign_pdf"
 }
+export const employeeCounts = ["0-10", "10-100", "100-1000", "1000-10,000", "10,000-100,000", "100,000+"]
+export const minEmployeeCountToRange = (n) => {
+	if(n >= 100000) return employeeCounts[5]
+	if(n >= 10000) return employeeCounts[4]
+	if(n >= 1000) return employeeCounts[3]
+	if(n >= 100) return employeeCounts[2]
+	if(n >= 10) return employeeCounts[1]
+	if(n >= 0) return employeeCounts[0]
+}
 export const buildStatement = ({domain, author, time, tags = [], content}) => {
+	if(content.match(/\nDomain: /)) throw(new Error("Statement must not contain 'Domain: ', as this marks the beginning of a new statement."))
 	const statement = "Domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" +
 			"Time: " + time + "\n" +
@@ -101,7 +111,8 @@ export const parsePoll = (s) => {
 
 export const buildOrganisationVerificationContent = (
 		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
-		verificationMethod, confidence = null, supersededVerificationHash = null, pictureHash = null, reliabilityPolicy = null}) => {
+		verificationMethod, confidence = null, supersededVerificationHash = null, pictureHash = null,
+		reliabilityPolicy = null, employeeCount = null}) => {
 	/* Omit any fields that may have multiple values */
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
@@ -109,6 +120,7 @@ export const buildOrganisationVerificationContent = (
 	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
 	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
 	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
+	if(employeeCount && !employeeCounts.includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
@@ -124,8 +136,9 @@ export const buildOrganisationVerificationContent = (
 	(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
 	(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
 	(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
-	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(employeeCount ? "\t" + "Employee count: " + employeeCount + "\n" : "") +
 	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
 	""
 }
 
@@ -141,8 +154,9 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
-	+ /(?:\tConfidence: (?<confidence>[1-9\.]+?)\n)?/.source
+	+ /(?:\tEmployee count: (?<employeeCount>[01\,\+\-]+?)\n)?/.source
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+	+ /(?:\tConfidence: (?<confidence>[0-9\.]+?)\n)?/.source
 	+ /$/.source
 	);
 	console.log(s)
@@ -156,8 +170,9 @@ export const parseOrganisationVerification = (s) => {
 		province: m[6],
 		serialNumber: m[7],
 		city: m[8],
-		confidence: m[9] && parseFloat(m[9]),
-		reliabilityPolicy: m[10]
+		employeeCount: m[9],
+		reliabilityPolicy: m[10],
+		confidence: m[11] && parseFloat(m[11]),
 	} : {error: "Invalid organisation verification format"}
 }
 
