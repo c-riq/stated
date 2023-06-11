@@ -15,7 +15,7 @@ import { fetchOVInfoForMostPopularDomains } from './prefillOV'
 process.on('unhandledRejection', (error, promise) => {
     // @ts-ignore
     console.log('Unhandled Rejection at: Promise', promise, 'reason:', error, error.stack);
-  });
+});
 
 const prod = process.env.NODE_ENV === "production"
 const port = parseInt(process.env.PORT || '7766')
@@ -26,7 +26,7 @@ const prefillSSLOVInfo = process.env.PREFILL_SSL_OV_INFO || false
 
 p2p.setupSchedule(pullIntervalSeconds)
 retryAndCleanUp.setupSchedule(retryIntervalSeconds)
-prefillSSLOVInfo && fetchOVInfoForMostPopularDomains()
+prefillSSLOVInfo==="true" && fetchOVInfoForMostPopularDomains()
 
 const app = express();
 
@@ -68,7 +68,20 @@ app.get("*", (req,res)=>{
 app.use((err, req, res, next) => {
     console.log(err)
     res.status(500);
-    res.send("Server Error." + err)
+    let message = "unknown error"
+    if (err) {
+        if (err.message || err.error) {
+            message = (err.message || err.error) + err.stack
+        } else {
+            try {
+                message = JSON.stringify(err)
+            }
+            catch (e) {
+                console.log(e)
+            }
+        }
+    }
+    res.send("Server Error: " + message)
 });
 
 

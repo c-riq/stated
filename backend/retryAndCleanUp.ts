@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /* 
 If an author node is temporarily unavailable,
 statements are added to the unverified_statements table
@@ -15,27 +13,24 @@ const log = true
 const verificationRetryScheduleHours = [0, 0.1, 0.2, 1, 10, 24, 336]
 
 const tryVerifyUnverifiedStatements = async () => {
-    let dbResult = {} 
     try {
-        dbResult = await getUnverifiedStatements()
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
-    let unverifiedStatements = dbResult.rows
-    log && console.log('unverifiedStatements count ', unverifiedStatements.length)
-    unverifiedStatements = unverifiedStatements.filter(s => {
-        const diffTime = (new Date()) - s.received_time
-        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
-        const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-        if (targetRetryCount > s.verification_retry_count) {
-            return true
-        } return false
-    })
-    log && console.log('unverifiedStatements up for retry ', unverifiedStatements.length)
-    try {
+        const dbResult = await getUnverifiedStatements()
+        let unverifiedStatements = dbResult.rows
+        log && console.log('unverifiedStatements count ', unverifiedStatements.length)
+        unverifiedStatements = unverifiedStatements.filter(s => {
+            // @ts-ignore
+            const diffTime = (new Date()) - s.received_time
+            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
+            const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
+            if (targetRetryCount > s.verification_retry_count) {
+                return true
+            } return false
+        })
+        log && console.log('unverifiedStatements up for retry ', unverifiedStatements.length)
+
         const res = await Promise.allSettled(unverifiedStatements.map(({statement, hash_b64, source_node_id, verification_method}) =>
-            validateAndAddStatementIfMissing({statement, hash_b64, source_node_id, source_verification_method: verification_method, api_key: undefined })
+            validateAndAddStatementIfMissing({statement, hash_b64, source_node_id,
+                verification_method, api_key: undefined })
         ))
         return res
     } catch (error) {
@@ -46,29 +41,24 @@ const tryVerifyUnverifiedStatements = async () => {
 
 const tryAddMissingDerivedEntitiesFromStatements = async () => {
     /* Use cases: Poll might arrive after votes; version upgrades may be necessary. */
-    let dbResult = {} 
     try {
-        dbResult = await getStatements({onlyStatementsWithMissingEntities : true})
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
-    let statements = dbResult.rows
-    log && console.log('statements without entity ', statements.length)
-    statements = statements.filter(s => {
-        const diffTime = (new Date()) - s.first_verification_time
-        console.log(diffTime, new Date(), s.first_verification_time)
-        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
-        console.log(diffHours)
-        const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-        if (targetRetryCount > s.derived_entity_creation_retry_count) {
-            return true
-        } return false
-    })
-    log && console.log('statements without entity up for retry ', statements.length)
-    try {
-        const res = await Promise.allSettled(statements.map(({type, domain, content, hash_b64}) => 
-            createDerivedEntity({statement_hash: hash_b64, domain, content, type})
+        const dbResult = await getStatements({onlyStatementsWithMissingEntities : true})
+        let statements = dbResult.rows
+        log && console.log('statements without entity ', statements.length)
+        statements = statements.filter(s => {
+            // @ts-ignore
+            const diffTime = (new Date()) - s.first_verification_time
+            console.log(diffTime, new Date(), s.first_verification_time)
+            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
+            console.log(diffHours)
+            const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
+            if (targetRetryCount > s.derived_entity_creation_retry_count) {
+                return true
+            } return false
+        })
+        log && console.log('statements without entity up for retry ', statements.length)
+        const res = await Promise.allSettled(statements.map(({type, domain, content, hash_b64, proclaimed_publication_time}) => 
+            createDerivedEntity({statement_hash: hash_b64, domain, content, type, proclaimed_publication_time})
         ))
         return res
     } catch (error) {

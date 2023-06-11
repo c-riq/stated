@@ -23,7 +23,7 @@ import SignPDFForm from './SignPDFForm.js';
 import {VoteForm} from './VoteForm.js';
 
 import { submitStatement, checkDomainVerification, 
-    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo } from '../api.js'
+    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api.js'
 
 import StatementForm from './StatementForm.js';
 
@@ -33,6 +33,7 @@ const CreateStatement = props => {
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([{domain: null, O: null}]);
+    const [statedVerification, setStatedVerification] = React.useState([]);
     const [DNSSECInfo, setDNSSECInfo] = React.useState({domain: null, validated: null});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
@@ -50,7 +51,8 @@ const CreateStatement = props => {
         getDomainSuggestions(domainInputValue, res  => {
             if(!res || !res.result) {return}
             const domains = res.result.map(r => ({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
-            setDomainOptions(domains)
+            const uniqueDomains = [...new Set(res.result.map(r => r.domain))].map(d => domains.find(r => r.domain === d))
+            setDomainOptions(uniqueDomains)
         })
     },[domainInputValue])
 
@@ -59,6 +61,7 @@ const CreateStatement = props => {
             setAuthor("")
             setDNSSECInfo({domain: null, validated: null})
             setOVInfo([{domain: null, O: null}])
+            setStatedVerification([])
             return
         }
         getSSLOVInfo(domain, res  => {
@@ -75,6 +78,9 @@ const CreateStatement = props => {
         })
         getDNSSECInfo(domain, res  => {
             setDNSSECInfo(res)
+        })
+        getDomainVerifications(domain, res  => {
+            setStatedVerification(res?.result || [])
         })
     },[domain])
 
@@ -94,6 +100,10 @@ const CreateStatement = props => {
     }
 
     const submitStatementAPI = () => {
+        if(statement?.length >= 1500){
+            setAlertMessage("Error: Statement cannot exceed 1500 characters ")
+            return setisError(true)
+        }
         submitStatement({ statement, hash_b64: statementHash, ...(apiKey ? {api_key: apiKey} : {}) },
         (res) => {
             setAlertMessage("Statement posted!")
@@ -102,7 +112,7 @@ const CreateStatement = props => {
             setContent("")
             props.onPostSuccess()
         }, (error) => {
-            setAlertMessage("Error: could not submit statement! " + error)
+            setAlertMessage("Error: could not submit statement! " + JSON.stringify(error))
             setisError(true)
         })
     }
@@ -133,10 +143,20 @@ const CreateStatement = props => {
                      (  OVInfo.reduce((acc, i) => acc || i.O, false) 
                         ?
                         OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via SSL certificate {i.domain +": "+ i.O}</Alert>))
+                            Verified via SSL certificate {i.domain +": "+ i.O + " by " + i.issuer_o}</Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>
                             Organisation not verified via SSL certificate.</Alert>)
+                     )
+                }
+                { (statedVerification && statedVerification.reduce((acc, i) => acc || i.verified_domain === domain, false)) &&
+                     (  statedVerification.reduce((acc, i) => acc || i.verified_domain, false) 
+                        ?
+                        [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
+                            Verified via stated verification {i.verified_domain +": "+ i.name + " by " + i.verifier_domain}</Alert>))
+                        : 
+                        (<Alert severity="warning" style={{marginTop: "10px"}}>
+                            Not verified via stated verification.</Alert>)
                      )
                 }
                 { (DNSSECInfo && DNSSECInfo.domain === domain) &&

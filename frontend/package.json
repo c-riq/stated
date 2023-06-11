@@ -28,7 +28,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build --domain=\"rixdata.net\" && rm -rf ../backend/public && mkdir ../backend/public && cp -r build/* ../backend/public/ && cp ./src/statementFormats.js ../backend/statementFormats.ts",
+    "build": "react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && npm run copyFiles && npm run jsToTs",
+    "copyFiles": "cp ./src/statementFormats.js ../backend/statementFormats.ts & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
+    "jsToTs": "for f in ../backend/constants/*.js; do mv -- \"$f\" \"${f%.js}.ts\"; done",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

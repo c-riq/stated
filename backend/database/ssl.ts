@@ -5,17 +5,40 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
       sanitize({ domain_substring })
       pool.query(`
               with regex AS ( SELECT '.*' || $1 || '.*' pattern)
-              SELECT 
-                host domain,
-                subject_o AS organization,
-                subject_c AS country,
-                subject_st AS state,
-                subject_l AS city,
-                _rank
-              FROM ssl_cert_cache
-                JOIN regex ON host ~ regex.pattern
-              WHERE LOWER(subject_o) NOT LIKE '%cloudflare%'
-              ORDER BY _rank ASC LIMIT 20
+              ,
+              ssl AS(
+                SELECT 
+                  host domain,
+                  subject_o AS organization,
+                  subject_c AS country,
+                  subject_st AS state,
+                  subject_l AS city,
+                  '' statement_hash,
+                  first_seen first_verification_time
+                FROM ssl_cert_cache
+                  JOIN regex ON host ~ regex.pattern
+                WHERE LOWER(subject_o) NOT LIKE '%cloudflare%'
+                  AND valid_from < CURRENT_TIMESTAMP
+                  AND CURRENT_TIMESTAMP < valid_to
+                ORDER BY _rank ASC LIMIT 20
+              )
+              ,
+              _stated AS (
+                SELECT
+                  verified_domain domain,
+                  name organization,
+                  country,
+                  province state,
+                  city,
+                  statement_hash,
+                  first_verification_time
+                FROM organisation_verifications
+                  JOIN regex ON verified_domain ~ regex.pattern
+                  JOIN statements ON organisation_verifications.statement_hash = statements.hash_b64
+                ORDER BY first_verification_time ASC
+                LIMIT 20
+              )
+              SELECT * FROM ssl UNION SELECT * FROM _stated
               ;
               `,[domain_substring || ''], (error, results) => {
         if (error) {

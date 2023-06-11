@@ -16,18 +16,17 @@ const req = (method, path, body, cb, reject) => {
     console.log(url, opts)
     fetch(url, opts)
         .then(res => {
-            if(res.status != 200) {
-                reject(res)
-            }
-            else {
+            if(res.status === 200) {
                 res.json().then(json => {
                     console.log("json", json)
                     cb(json)
                 })
                 .catch(error => reject(error))
+            } else {
+                reject(res)
             }
         })
-        .catch(error => reject(error))
+        .catch(error => reject({error}))
 }
 
 export const getStatement = (hash_b64, cb) => {
@@ -49,6 +48,15 @@ export const getDomainSuggestions = (searchQuery, cb) => {
         return
     }
     req('GET',(searchQuery ? 'match_domain?domain_substring=' + searchQuery : 'match_domain'), {}, (json) => {
+        cb(json)
+    }, e => {console.log(e); return})
+}
+export const getDomainVerifications = (domain, cb) => {
+    if (domain.length < 1) {
+        cb([])
+        return
+    }
+    req('GET',(domain ? 'domain_verifications?domain=' + domain : 'domain_verifications'), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }

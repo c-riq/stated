@@ -1,7 +1,7 @@
 import express from 'express'
 
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
-    getOrganisationVerificationsForStatement,
+    getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
     getVotes
 } from './database'
@@ -36,6 +36,9 @@ api.post("/get_txt_records", async (req, res, next) => {
 api.post("/submit_statement", async (req, res, next) => {
     try {
         const { statement, hash_b64, api_key } = req.body
+        if(!statement) return next(new Error('Statement missing'))
+        if(!hash_b64) return next(new Error('Statement hash missing'))
+        if(statement.length > 1499) return next(new Error('Statements cannot be longer than 1500 characters'))
         const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, 
             verification_method: api_key ? 'api' : 'dns', api_key})
             log && console.log(dbResult)
@@ -93,6 +96,15 @@ api.post("/organisation_verifications", async (req, res, next) => {
     try {
         const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.body.hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
+        next(error)
+    }
+})
+
+api.get("/domain_verifications", async (req, res, next) => {
+    try {
+        const dbResult = await getVerificationsForDomain({domain: req.query.domain})
+        res.end(JSON.stringify({result: dbResult.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
     }
