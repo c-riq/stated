@@ -16,6 +16,7 @@ backend/public/files/*.pdf
 
 backend/ssh.sh
 
+# libre office
 .~*#
 
 # dependencies
