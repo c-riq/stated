@@ -21,6 +21,7 @@ export const statementTypes = {
 }
 export const employeeCounts = ["0-10", "10-100", "100-1000", "1000-10,000", "10,000-100,000", "100,000+"]
 export const buildStatement = ({domain, author, time, tags = [], content}) => {
+	if(content.match(/\nDomain: /)) throw(new Error("Statement must not contain 'Domain: ', as this marks the beginning of a new statement."))
 	const statement = "Domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" +
 			"Time: " + time + "\n" +

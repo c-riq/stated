@@ -100,6 +100,10 @@ const CreateStatement = props => {
     }
 
     const submitStatementAPI = () => {
+        if(statement?.length >= 1500){
+            setAlertMessage("Error: Statement cannot exceed 1500 characters ")
+            return setisError(true)
+        }
         submitStatement({ statement, hash_b64: statementHash, ...(apiKey ? {api_key: apiKey} : {}) },
         (res) => {
             setAlertMessage("Statement posted!")
@@ -108,7 +112,7 @@ const CreateStatement = props => {
             setContent("")
             props.onPostSuccess()
         }, (error) => {
-            setAlertMessage("Error: could not submit statement! " + error)
+            setAlertMessage("Error: could not submit statement! " + JSON.stringify(error))
             setisError(true)
         })
     }

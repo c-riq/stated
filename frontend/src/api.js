@@ -16,18 +16,17 @@ const req = (method, path, body, cb, reject) => {
     console.log(url, opts)
     fetch(url, opts)
         .then(res => {
-            if(res.status != 200) {
-                reject(res)
-            }
-            else {
+            if(res.status === 200) {
                 res.json().then(json => {
                     console.log("json", json)
                     cb(json)
                 })
                 .catch(error => reject(error))
+            } else {
+                reject(res)
             }
         })
-        .catch(error => reject(error))
+        .catch(error => reject({error}))
 }
 
 export const getStatement = (hash_b64, cb) => {

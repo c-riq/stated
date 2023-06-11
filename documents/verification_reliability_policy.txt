@@ -1,25 +1,13 @@
-Domain verification reliability policy.
+For any verification published by us under this domain, with confidence rating = 1.0,
+100 EUR will be awarded to the first entity to prove that a verification contains significant errors.
 
-For all verifications published by us with confidence rating = 1.0,
-100 EUR will be awarded to any entity that
-is the first to prove, that at the time of the verification publication
-any of the following conditions were met:
-1. the verified organisation did not directly or indirectly have the rightful control the referenced domain name
-2. the verified organisation was falsely associated with data points of a company with a very similar name
-3. the verified organisation did not exist
+This does not apply to:
+1. Verifications which have already been removed or superseded by us before the proof is provided.
+2. Data points which were correct previously and have only been outdated for less than 13 months.
 
-This does not apply to verifications which have been disputed / superseded or removed by us before the proof has been provided.
-This also does not apply to data points which were correct previously and have only been outdated for less than 13 months.
-For information which is shared publicly with a certain delay, such as employee counts in annual reports, this delay is subtracted,
-for determining the duration of data being outdated.
+Logs from third party stated nodes can be used to provide proof of the publication times of relevant statements.
 
-The statement existence monitoring data from third party stated nodes can provide proof of the publication times of
-verifications and statements providing evidence for false information.
+For verifications with a confidence rating smaller than 1.0, it also needs to be demonstrated that the confidence ratings are too high,
+such that ((correct verifications) / (all verifications by the same author with the same confidence)) is smaller than the proclaimed confidence rating.
 
-For verifications with a confidence rating smaller than 1.0, it also needs to be demonstrated that the confidence ratings are too high.
-So enough false verifications need to be refuted among the set of all verifications with the same confidence rating from the same author,
-such that ((correct verifications) / (all verifications)) is smaller than the proclaimed confidence rating.
-
-This policy is restricted to verification statements published via the same domain and under the same author as
-this domain verification reliability policy.
 We are not liable for any resulting damages.
