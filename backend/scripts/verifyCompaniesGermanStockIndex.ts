@@ -53,9 +53,10 @@ const submitStatement = (data, callback) => {
 
 var daxCompanies = fs
   .readFileSync(
-    __dirname + "/../../analysis/verifications/company_list.csv",
+    // __dirname + "/../../analysis/verifications/company_list.csv",
+    __dirname + "/../../analysis/verifications/company_list_ukraine.csv",
     //__dirname + "/../../analysis/verifications/dax_index_companies.csv",
-//    __dirname + "/../../analysis/verifications/dax_index_companies.csv",
+   // __dirname + "/../../analysis/verifications/organisations_list.csv",
     "utf8"
   )
   .toString();
@@ -85,6 +86,7 @@ for (const i of array) {
     // ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
     const {
         company,
+        organisation,
         website_domain,
         country,
         province,
@@ -95,7 +97,7 @@ for (const i of array) {
         //isin,
         //vat_id,
     } = i;
-    if (!company || !website_domain || !country || !province || !city || !serial_number) {
+    if (!(company || organisation) || !website_domain || !country || !province || !city || !(serial_number || organisation)) {
         continue;
     }
     if (city.match(/\|/g)){
@@ -104,7 +106,7 @@ for (const i of array) {
     console.log('add')
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        verifyName: company,
+        verifyName: company || organisation,
         verifyDomain: website_domain,
         country,
         province,
