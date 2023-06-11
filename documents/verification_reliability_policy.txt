@@ -1,13 +1,9 @@
 For any verification published by us under this domain, with confidence rating = 1.0,
 100 EUR will be awarded to the first entity to prove that a verification contains significant errors.
-
 This does not apply to:
 1. Verifications which have already been removed or superseded by us before the proof is provided.
 2. Data points which were correct previously and have only been outdated for less than 13 months.
-
 Logs from third party stated nodes can be used to provide proof of the publication times of relevant statements.
-
 For verifications with a confidence rating smaller than 1.0, it also needs to be demonstrated that the confidence ratings are too high,
 such that ((correct verifications) / (all verifications by the same author with the same confidence)) is smaller than the proclaimed confidence rating.
-
 We are not liable for any resulting damages.
