@@ -92,7 +92,7 @@ const generateVerification = (node) => {
     return `Publishing domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
-Content: ${buildOrganisationVerificationContent({verifyName: 'node_'+node_2,
+Statement content: ${buildOrganisationVerificationContent({verifyName: 'node_'+node_2,
  verifyDomain: 'stated_'+node_2+':'+(7000+node_2), 
  country: 'DE', city: "Berlin", legalEntity: 'limited liability corporation', confidence: Math.random()})}`
 }
