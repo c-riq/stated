@@ -19,14 +19,14 @@ export const statementTypes = {
     rating: 'rating',
 	signPdf: "sign_pdf"
 }
-export const employeeCounts = ["0-10", "10-100", "100-1000", "1000-10,000", "10,000-100,000", "100,000+"]
+export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000"}
 export const minEmployeeCountToRange = (n) => {
-	if(n >= 100000) return employeeCounts[5]
-	if(n >= 10000) return employeeCounts[4]
-	if(n >= 1000) return employeeCounts[3]
-	if(n >= 100) return employeeCounts[2]
-	if(n >= 10) return employeeCounts[1]
-	if(n >= 0) return employeeCounts[0]
+	if(n >= 100000) return employeeCounts["100000"]
+	if(n >= 10000) return employeeCounts["10000"]
+	if(n >= 1000) return employeeCounts["1000"]
+	if(n >= 100) return employeeCounts["100"]
+	if(n >= 10) return employeeCounts["10"]
+	if(n >= 0) return employeeCounts["0"]
 }
 export const buildStatement = ({domain, author, time, tags = [], content}) => {
 	if(content.match(/\nDomain: /)) throw(new Error("Statement must not contain 'Domain: ', as this marks the beginning of a new statement."))

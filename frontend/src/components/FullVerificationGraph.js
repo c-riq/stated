@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
+import { legalForms } from "../constants/legalForms.js";
+import { employeeCounts } from "../statementFormats.js";
 
 import { backendHost, getDomainVerifications } from "../api.js";
 
@@ -38,7 +40,9 @@ export const FullVerificationGraph = (props) => {
           author,
           name,
           hash_b64,
-          statement_hash
+          statement_hash,
+          legal_entity_type,
+          statement
         },
         i
       ) => {
@@ -65,6 +69,7 @@ export const FullVerificationGraph = (props) => {
               id: sourceId,
               name:
                 (!author) ? "author" : author.length > 17 ? author.substring(0, 15) + "..." : author,
+              color : "rgba(200,42,42,1)"
             },
           });
         }
@@ -76,6 +81,12 @@ export const FullVerificationGraph = (props) => {
               id: targetId,
               name: (name.length > 20 ? name.substring(0, 17) + "..." : name) + "\n" + domain,
               href: `${backendHost}/statement/${hash_b64}`,
+              color: 
+                legal_entity_type === legalForms.foreign_affairs_ministry ? "rgba(42,100,103,1)" :
+                legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)":
+                "rgba(42,42,42,1)",
+              size: 
+                statement?.match(': '+employeeCounts["100000"]) ? "50px" : "30px"
             },
           });
         }
@@ -106,8 +117,9 @@ export const FullVerificationGraph = (props) => {
             "font-size": "10px",
             "text-valign": "center",
             "text-halign": "center",
-            "background-color": "rgba(42,74,103,1)",
             color: "rgba(255,255,255,1)",
+            backgroundColor: "data(color)",
+            height: "data(size)",
             width: "100px",
           },
         },
