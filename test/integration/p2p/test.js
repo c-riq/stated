@@ -55,7 +55,7 @@ const request = (method, data, node, path, callback) => {
 }
 
 const generateContent = (node) => {
-    return `Domain: stated_${node}:${7000+node}
+    return `Publishing domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
 Statement content: hi2 ${new Date()} ${Math.random()}`
