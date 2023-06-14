@@ -18,7 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import CloseIcon from '@mui/icons-material/Close';
-import { Route, Routes, Link, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, Link, useParams, useNavigate, Outlet } from 'react-router-dom';
 
 import { getStatements } from './api.js'
 import gh from './img/github.png'
@@ -58,40 +58,50 @@ const CenterModal = (props) => {
 </Modal>)
 }
 
-const Top = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, joinStatement, voteOnPoll, setModalOpen, setServerTime, posts, lt850px}) => {
+const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, joinStatement, voteOnPoll, setModalOpen, setServerTime, posts, lt850px}) => {
   return(
     <React.Fragment>
-    <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
-    <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
-      <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
-        <div>
-          <Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>
+      <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
+      <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
+        <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
+          <div>
+            <Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>
+          </div>
+          <div style={{ flexGrow: 1 }}></div>
+          <div>
+            <TextField id="search-field" label="" variant="outlined" size='small'
+              placeholder='search'
+              onChange={e => { setSearchQuery(e.target.value) }}
+              onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
+              onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
+              sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
+                '& label': { paddingLeft: (theme) => theme.spacing(2) },
+                '& input': { paddingLeft: (theme) => theme.spacing(3) },
+                '& fieldset': {
+              paddingLeft: (theme) => theme.spacing(2.5),
+              borderRadius: '40px',
+              height: '40 px'
+            },}}/>
+          </div>
         </div>
-        <div style={{ flexGrow: 1 }}></div>
-        <div>
-          <TextField id="search-field" label="" variant="outlined" size='small'
-            placeholder='search'
-            onChange={e => { setSearchQuery(e.target.value) }}
-            onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
-            onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
-            sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
-              '& label': { paddingLeft: (theme) => theme.spacing(2) },
-              '& input': { paddingLeft: (theme) => theme.spacing(3) },
-              '& fieldset': {
-            paddingLeft: (theme) => theme.spacing(2.5),
-            borderRadius: '40px',
-            height: '40 px'
-          },}}/>
+      </div>
+    </header>
+    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}>
+      <Link to="/create-statement">
+        <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
+        sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
+      </Link>
+    </Statements>
+    <Outlet />
+    <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}>
+      <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
+        <div style={{display: "flex", flexDirection: "column", justifyContent:"center", alignItems:"center", height: '100%'}}>
+          <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>
+            <img src={gh} style={{height: "30px", width: '30px', flexGroq: 0}}></img>
+          </a>
         </div>
       </div>
     </div>
-  </header>
-  <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}>
-    <Link to="/create-statement">
-      <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
-      sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
-    </Link>
-  </Statements>
   </React.Fragment>
   )}
 
@@ -151,32 +161,23 @@ function App() {
     <CssBaseline />
     <div className='App-main'>
       <Routes>
-          <Route path='*' element={(<Top getStatementsAPI={getStatementsAPI}
+          <Route element={(<Layout getStatementsAPI={getStatementsAPI}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
-           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} posts={posts} lt850px={lt850px} />)} />
-          <Route path='/' exact />
-          <Route path='/statement/:statementId' element={(
-            <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-              <Statement hash_b64={useParams().statementId || ''} voteOnPoll={voteOnPoll} lt850px={lt850px}/>
-            </CenterModal>)} 
-          />
-          <Route path='/create-statement' element={
-            <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}) => {warning ? setDialogOpen(true) : resetState() }}>
-              <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} lt850px={lt850px}/>
-            </CenterModal>} 
-          />
+           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} posts={posts} lt850px={lt850px} />)} >
+            <Route path='/' exact />
+            <Route path='/statement/:statementId' element={(
+              <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
+                <Statement hash_b64={useParams().statementId || ''} voteOnPoll={voteOnPoll} lt850px={lt850px}/>
+              </CenterModal>)} 
+            />
+            <Route path='/create-statement' element={
+              <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}) => {warning ? setDialogOpen(true) : resetState() }}>
+                <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} lt850px={lt850px}/>
+              </CenterModal>} 
+            />
+          </Route>
           <Route path='/full-verification-graph' element={<FullVerificationGraph style={{ width: "100vw", height: "100vh" }}/>} />
       </Routes>
-      <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}>
-
-      <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
-        <div style={{display: "flex", flexDirection: "column", justifyContent:"center", alignItems:"center", height: '100%'}}>
-          <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>
-            <img src={gh} style={{height: "30px", width: '30px', flexGroq: 0}}></img>
-            </a>
-        </div>
-        </div>
-      </div>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */
         open={dialogOpen}

@@ -93,7 +93,8 @@ for (const i of array) {
         city,
         serial_number,
         employees_min,
-        confidence
+        confidence,
+        confidence_mfa_domain
         //isin,
         //vat_id,
     } = i;
@@ -113,8 +114,9 @@ for (const i of array) {
         city,
         serialNumber: serial_number,
         legalEntity: legalForms.legalForms.find((i) => i[2] === "corporation")[2],
-        confidence: confidence,
-        employeeCount: employees_min && minEmployeeCountToRange(employees_min)
+        confidence: confidence || confidence_mfa_domain,
+        employeeCount: employees_min && minEmployeeCountToRange(employees_min),
+        reliabilityPolicy: "https://stated.rixdata.net/statement/Rr636YoaBeKvxQ-oxte6JYUewDMfr49lJxgNcMGtjrE",
     });
     if(!verification){ console.log("no verification generated"); continue}
     const statement = buildStatement({

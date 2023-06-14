@@ -146,14 +146,16 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
     }
   }));
   
-  export const getVerificationsForDomainFactory = pool => ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
+  export const getVerificationsForDomainFactory = pool => ({ domain = null }) => (new Promise((resolve: DBCallback, reject) => {
     try {
       sanitize({ domain })
       pool.query(`
+              WITH _ AS( SELECT $1 as _)
               SELECT 
                   *
               FROM organisation_verifications
-              WHERE verified_domain = $1;
+              JOIN statements ON organisation_verifications.statement_hash=statements.hash_b64
+              ${domain ? 'WHERE verified_domain = $1' : ''} LIMIT 300;
               `,[domain], (error, results) => {
         if (error) {
           console.log(error)
