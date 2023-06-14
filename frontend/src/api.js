@@ -52,10 +52,6 @@ export const getDomainSuggestions = (searchQuery, cb) => {
     }, e => {console.log(e); return})
 }
 export const getDomainVerifications = (domain, cb) => {
-    if (domain.length < 1) {
-        cb([])
-        return
-    }
     req('GET',(domain ? 'domain_verifications?domain=' + domain : 'domain_verifications'), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})

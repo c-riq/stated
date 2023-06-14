@@ -10,7 +10,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 
-import { getStatement, getJoiningStatements, getOrganisationVerifications, 
+import { getStatement, getJoiningStatements, getOrganisationVerifications, getDomainVerifications,
     getPersonVerifications, getVotes } from '../api.js'
 import { statementTypes, parsePDFSigning } from '../statementFormats.js';
 
@@ -37,7 +37,9 @@ const Statement = props => {
         getStatement(hash_b64, s => setStatement(s))
         getJoiningStatements(hash_b64, s => setJoiningStatements(s))
         getVotes(hash_b64, v => setVotes(v))
-        getOrganisationVerifications(hash_b64, v => setOrganisationVerifications(v))
+        //getOrganisationVerifications(hash_b64, v => {
+            getDomainVerifications(undefined, v2 => setOrganisationVerifications(v2?.result))
+        //})
         getPersonVerifications(hash_b64, v => setPersonVerifications(v))
         setDataFetched(true)
       }

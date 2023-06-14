@@ -6,6 +6,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import CreateStatement from './components/CreateStatement'
 import Statement from './components/Statement'
 import Statements from './components/Statements'
+import {FullVerificationGraph} from './components/FullVerificationGraph'
 
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
@@ -21,17 +22,6 @@ import { Route, Routes, Link, useParams, useNavigate } from 'react-router-dom';
 
 import { getStatements } from './api.js'
 import gh from './img/github.png'
-
-
-// profile form
-
-// add post form
-
-// send data
-
-// backend verification via domain
-
-// publish results / news feed with upload
 
 const CenterModal = (props) => {
   const { lt850px } = props
@@ -68,6 +58,42 @@ const CenterModal = (props) => {
 </Modal>)
 }
 
+const Top = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, joinStatement, voteOnPoll, setModalOpen, setServerTime, posts, lt850px}) => {
+  return(
+    <React.Fragment>
+    <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
+    <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
+      <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
+        <div>
+          <Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>
+        </div>
+        <div style={{ flexGrow: 1 }}></div>
+        <div>
+          <TextField id="search-field" label="" variant="outlined" size='small'
+            placeholder='search'
+            onChange={e => { setSearchQuery(e.target.value) }}
+            onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
+            onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
+            sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
+              '& label': { paddingLeft: (theme) => theme.spacing(2) },
+              '& input': { paddingLeft: (theme) => theme.spacing(3) },
+              '& fieldset': {
+            paddingLeft: (theme) => theme.spacing(2.5),
+            borderRadius: '40px',
+            height: '40 px'
+          },}}/>
+        </div>
+      </div>
+    </div>
+  </header>
+  <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}>
+    <Link to="/create-statement">
+      <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
+      sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
+    </Link>
+  </Statements>
+  </React.Fragment>
+  )}
 
 function App() {
   const [serverTime, setServerTime] = React.useState(new Date().toUTCString());
@@ -124,45 +150,10 @@ function App() {
     <div className="App" style={{overflow: modalOpen ? 'hidden': 'scroll'}}>
     <CssBaseline />
     <div className='App-main'>
-      <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
-        <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
-          <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
-            <div>
-              <Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>
-            </div>
-            <div style={{ flexGrow: 1 }}></div>
-            <div>
-              <TextField id="search-field" label="" variant="outlined" size='small'
-                placeholder='search'
-                onChange={e => { setSearchQuery(e.target.value) }}
-                onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
-                onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
-                sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
-                  '& label': { paddingLeft: (theme) => theme.spacing(2) },
-                  '& input': { paddingLeft: (theme) => theme.spacing(3) },
-                  '& fieldset': {
-                paddingLeft: (theme) => theme.spacing(2.5),
-                borderRadius: '40px',
-                height: '40 px'
-              },}}/>
-            </div>
-            {/* <div>
-              <Link style={{color: "rgba(255,255,255,1)"}} to="/">home</Link>
-            </div>
-            <div>
-              <Link style={{color: "rgba(255,255,255,1)"}} to="/contact">contact</Link>
-            </div> */}
-          </div>
-        </div>
-      </header>
-      <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}>
-        <Link to="/create-statement">
-          <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
-          sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
-        </Link>
-      </Statements>
-
       <Routes>
+          <Route path='*' element={(<Top getStatementsAPI={getStatementsAPI}
+          setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
+           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} posts={posts} lt850px={lt850px} />)} />
           <Route path='/' exact />
           <Route path='/statement/:statementId' element={(
             <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
@@ -174,6 +165,7 @@ function App() {
               <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} lt850px={lt850px}/>
             </CenterModal>} 
           />
+          <Route path='/full-verification-graph' element={<FullVerificationGraph style={{ width: "100vw", height: "100vh" }}/>} />
       </Routes>
       <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}>
 
