@@ -28,31 +28,34 @@ export const minEmployeeCountToRange = (n) => {
 	if(n >= 10) return employeeCounts["10"]
 	if(n >= 0) return employeeCounts["0"]
 }
-export const buildStatement = ({domain, author, time, tags = [], content}) => {
-	if(content.match(/\nDomain: /)) throw(new Error("Statement must not contain 'Domain: ', as this marks the beginning of a new statement."))
-	const statement = "Domain: " + domain + "\n" +
-			"Author: " + (author || "") + "\n" +
+export const buildStatement = ({domain, author, time, tags = [], content, representative = ''}) => {
+	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
+	const statement = "Publishing domain: " + domain + "\n" +
+			"Author: " + (author || "") + "\n" + // organisation name
+			(representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
 			"Time: " + time + "\n" +
             (tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
-            "Content: " +  content;
+            "Statement content: " +  content;
 	return statement
 }
 export const parseStatement = (s) => {
 	const statementRegex= new RegExp(''
-	+ /^Domain: ([^\n]+?)\n/.source
+	+ /^Publishing domain: ([^\n]+?)\n/.source
 	+ /Author: ([^\n]+?)\n/.source
+	+ /(?:Authorized signing representative: ([^\n]*?)\n)?/.source
 	+ /Time: ([^\n]+?)\n/.source
 	+ /(?:Tags: ([^\n]*?)\n)?/.source
-	+ /Content: (?:(\n\tType: ([^\n]+?)\n[\s\S]+?$)|([\s\S]+?$))/.source
+	+ /Statement content: (?:(\n\tType: ([^\n]+?)\n[\s\S]+?$)|([\s\S]+?$))/.source
 	);
 	const m = s.match(statementRegex)
 	return m ? {
 		domain: m[1],
 		author: m[2],
-		time: m[3],
-		tags: m[4],
-		content: m[5] || m[7],
-		type: m[6] ? m[6].toLowerCase().replace(' ','_') : undefined,
+		representative: m[3],
+		time: m[4],
+		tags: m[5],
+		content: m[6] || m[8],
+		type: m[7] ? m[7].toLowerCase().replace(' ','_') : undefined,
 	} : {error: 'Invalid statement format'}
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {

@@ -53,7 +53,7 @@ const StatementForm = props => {
 
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-            const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, tags: props.tags, content})
+            const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, tags: tags, content})
             const parsedResult = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
                 props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))

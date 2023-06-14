@@ -1,4 +1,4 @@
-export const legalForms = // Q10541491
+export const legalForms = // Wikidata ID: Q10541491
 {
     person: 'person', //'Q5'
     local_government: 'local government', //'Q6501447'

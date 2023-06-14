@@ -6,21 +6,21 @@ const { parseRating, parseStatement,
     parseVote, parsePoll } = require('./statementFormats')
 
 test('parse statement', () => {
-	const statement = `Domain: localhost
+	const statement = `Publishing domain: localhost
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
-Content: hi`
+Statement content: hi`
 	const parsedStatement = parseStatement(statement)
 	expect(parsedStatement.content).toBe('hi');
 });
 
 
 test('parse rating', () => {
-	let rating = `Domain: localhost
+	let rating = `Publishing domain: localhost
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
-Content: 
+Statement content: 
 	Type: Rating
 	Organisation name: AMBOSS GmbH
 	Organisation domain: amboss.com
@@ -33,10 +33,10 @@ Content:
 });
 
 test('parse org verification', () => {
-	let organisationVerification = `Domain: rixdata.net
+	let organisationVerification = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content: 
+Statement content: 
 	Type: Organisation verification
 	Description: We verified the following information about an organisation.
 	Name: Walmart Inc.
@@ -55,10 +55,10 @@ Content:
 
 
 test('parse person verification', () => {
-	let personVerification = `Domain: rixdata.net
+	let personVerification = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content: 
+Statement content: 
 	Type: Person verification
 	Description: We verified the following information about a person.
 	Name: Barack Hossein Obama II
@@ -75,10 +75,10 @@ Content:
 
 
 test('parse dispute', () => {
-	let dispute = `Domain: rixdata.net
+	let dispute = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content: 
+Statement content: 
 	Type: Dispute statement
 	Description: We are convinced that the referenced statement is not authentic.
 	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
@@ -90,10 +90,10 @@ Content:
 });
 
 test('parse poll', () => {
-let poll = `Domain: rixdata.net
+let poll = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Thu, 17 Nov 2022 13:38:20 GMT
-Content: 
+Statement content: 
 	Type: Poll
 	Poll type: majority vote wins
 	Country scope: United Kingdom of Great Britain and Northern Ireland (the)
@@ -111,10 +111,10 @@ Content:
 });
 
 test('parse vote', () => {
-	let dispute = `Domain: rixdata.net
+	let dispute = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Content: 
+Statement content: 
 	Type: Vote
 	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
 	Poll: ABC

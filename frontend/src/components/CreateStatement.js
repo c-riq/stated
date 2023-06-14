@@ -123,7 +123,7 @@ const CreateStatement = props => {
                 freeSolo
                 disableClearable
                 id="domain"
-                isOptionEqualToValue={(option, value) => !!(option.domain && option.domain === value.domain)}
+                isOptionEqualToValue={(option, value) => option && value && !!(option.domain && option.domain === value.domain)}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
                 onChange={(event, newInputValue) => {
@@ -244,7 +244,7 @@ const CreateStatement = props => {
                     <div>Full statement:</div>
                     <div style={{backgroundColor: "#cccccc"}}>
                     <TextField
-                        id="tags"
+                        id="statement"
                         variant="outlined"
                         placeholder=''
                         label=""

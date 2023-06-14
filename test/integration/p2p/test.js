@@ -58,7 +58,7 @@ const generateContent = (node) => {
     return `Domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
-Content: hi2 ${new Date()} ${Math.random()}`
+Statement content: hi2 ${new Date()} ${Math.random()}`
 }
 
 
@@ -89,7 +89,7 @@ return "\n" +
 
 const generateVerification = (node) => {
     var node_2 = nodes[Math.floor(Math.random()*nodes.length)];
-    return `Domain: stated_${node}:${7000+node}
+    return `Publishing domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
 Content: ${buildOrganisationVerificationContent({verifyName: 'node_'+node_2,

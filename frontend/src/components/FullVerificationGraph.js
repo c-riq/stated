@@ -16,7 +16,6 @@ export const FullVerificationGraph = (props) => {
   const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
   const [dataFetched, setDataFetched] = React.useState(false);
 
-
   React.useEffect(() => { if(!dataFetched) {
     getDomainVerifications(undefined, ({result}) => {
       let verifications = result || []
@@ -25,7 +24,6 @@ export const FullVerificationGraph = (props) => {
     })
     setDataFetched(true)
   }})
-
 
   useEffect(() => {
     let nodes = [];
@@ -42,7 +40,6 @@ export const FullVerificationGraph = (props) => {
           hash_b64,
           statement_hash,
           legal_entity_type,
-          statement,
           content
         },
         i
