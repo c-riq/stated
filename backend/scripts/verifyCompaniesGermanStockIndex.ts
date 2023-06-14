@@ -113,7 +113,7 @@ for (const i of array) {
         province,
         city,
         serialNumber: serial_number,
-        legalEntity: legalForms.legalForms.find((i) => i[2] === "corporation")[2],
+        legalEntity: legalForms.corporation,
         confidence: confidence || confidence_mfa_domain,
         employeeCount: employees_min && minEmployeeCountToRange(employees_min),
         reliabilityPolicy: "https://stated.rixdata.net/statement/Rr636YoaBeKvxQ-oxte6JYUewDMfr49lJxgNcMGtjrE",

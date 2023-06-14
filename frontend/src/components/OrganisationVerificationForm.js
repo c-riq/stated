@@ -109,18 +109,16 @@ const OrganisationVerificationForm = props => {
         />
         <Autocomplete
             id="legalForm"
-            options={countryObject && countryObject[1] ? 
-                legalForms.legalForms.filter(l => l[0] == countryObject[1] || l[0] == 'all')
-                : legalForms.legalForms}
+            options={Object.values(legalForms)}
             autoHighlight
-            getOptionLabel={(option) => option ? option[2] : ''}
+            getOptionLabel={(option) => option}
             freeSolo
             onChange={(e,newvalue)=>setLegalFormObject(newvalue)}
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Legal entity" />}
-            renderOption={(props, option) => (<Box {...props} id={option[1]} >{option[2]}</Box>)}
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete

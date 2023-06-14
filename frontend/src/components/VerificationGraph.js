@@ -53,6 +53,7 @@ export const VerificationGraph = (props) => {
               name:
               verifier_domain.length > 20 ? verifier_domain.substring(0, 17) + "..." : verifier_domain,
               parent: sourceParentId,
+              backgroundColor: "rgba(42,74,103,1)",
             },
           });
           nodes.push({
@@ -61,6 +62,7 @@ export const VerificationGraph = (props) => {
               name:
                 author.length > 20 ? author.substring(0, 17) + "..." : author,
               parent: sourceParentId,
+              backgroundColor: "rgba(42,74,103,1)",
             },
           });
         }
@@ -79,6 +81,7 @@ export const VerificationGraph = (props) => {
               name:
               domain.length > 20 ? domain.substring(0, 17) + "..." : domain,
               parent: targetParentId,
+              backgroundColor: "rgba(42,74,103,1)",
             },
           });
           nodes.push({
@@ -87,6 +90,7 @@ export const VerificationGraph = (props) => {
               name:
                 name.length > 20 ? name.substring(0, 17) + "..." : name,
               parent: targetParentId,
+              backgroundColor: "rgba(42,74,103,1)",
             },
           });
         }
@@ -126,6 +130,7 @@ export const VerificationGraph = (props) => {
           data: {
             id: sourceParentId + ":" + statement.domain,
             name: statement.domain.length > 20 ? statement.domain.substring(0, 17) + "..." : statement.domain,
+            backgroundColor: "rgba(42,74,103,1)",
             parent: sourceParentId,
           },
         });
@@ -137,6 +142,7 @@ export const VerificationGraph = (props) => {
             ).toLowerCase(),
             name:
             statement.author.length > 20 ? statement.author.substring(0, 17) + "..." : statement.author,
+            backgroundColor: "rgba(42,74,103,1)",
             parent: sourceParentId,
           },
         });
@@ -158,6 +164,7 @@ export const VerificationGraph = (props) => {
               statement.author?.length > 20
                 ? statement.author?.substring(0, 17) + "..."
                 : statement.author,
+                backgroundColor: "rgba(42,74,103,1)",
                 parent: targetParentId,
           },
         });
@@ -168,6 +175,7 @@ export const VerificationGraph = (props) => {
               statement.content?.length > 20
                 ? statement.content?.substring(0, 17) + "..."
                 : statement.content,
+                backgroundColor: "rgba(42,42,42,1)",
                 parent: targetParentId,
           },
         });
@@ -215,7 +223,7 @@ export const VerificationGraph = (props) => {
     if(!fetchedSslCerts && domains.length > 0 && domains[0]){
       const uniqueDomains = [...new Set(domains)];
       uniqueDomains.forEach((domain) => {
-        getSSLOVInfo(domain, res  => {
+        getSSLOVInfo({domain, cacheOnly: true}, res  => {
           const newCerts = res?.result?.filter(r=> r.status ="fulfilled").map(r=>r.value);
           if (res?.result?.length > 0) {
             setSslCerts([...sslCerts, ...newCerts]);
@@ -240,7 +248,7 @@ export const VerificationGraph = (props) => {
             "text-wrap": "wrap",
             "text-valign": "center",
             "text-halign": "center",
-            "background-color": "rgba(42,74,103,1)",
+            backgroundColor: "data(backgroundColor)",
             color: "rgba(255,255,255,1)",
             width: "150px",
             height: "50px",
@@ -265,7 +273,7 @@ export const VerificationGraph = (props) => {
             label: "data(name)",
             "text-rotation": "autorotate",
             "text-margin-y": "-10px",
-            color: "#0000ee",
+            "line-color": "#0000ee",
             "line-style": "data(style)",
           },
         },

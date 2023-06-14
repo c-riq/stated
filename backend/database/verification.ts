@@ -155,7 +155,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
                   *
               FROM organisation_verifications
               JOIN statements ON organisation_verifications.statement_hash=statements.hash_b64
-              ${domain ? 'WHERE verified_domain = $1' : ''} LIMIT 300;
+              ${domain ? 'WHERE verified_domain = $1' : ''} LIMIT 500;
               `,[domain], (error, results) => {
         if (error) {
           console.log(error)

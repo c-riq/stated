@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
 import { legalForms } from "../constants/legalForms.js";
-import { employeeCounts } from "../statementFormats.js";
+import { employeeCounts, parseOrganisationVerification } from "../statementFormats.js";
 
 import { backendHost, getDomainVerifications } from "../api.js";
 
@@ -42,16 +42,19 @@ export const FullVerificationGraph = (props) => {
           hash_b64,
           statement_hash,
           legal_entity_type,
-          statement
+          statement,
+          content
         },
         i
       ) => {
+        const parsedOrganisationVerification = parseOrganisationVerification(content)
+        console.log("parsedOrganisationVerification", parsedOrganisationVerification)
         if(!author) { author = author || "author" }
         if(!name) { name = "name" }
         if(!verified_domain) { verified_domain = "verified_domain" }
         if(!verifier_domain) { verifier_domain = "verifier_domain" }
         if(!hash_b64) { hash_b64 = statement_hash || "hash_b64" }
-        console.log("verifier_domain", verifier_domain, "author", author, "verified_domain", verified_domain, "name", name, "hash_b64", hash_b64, "statement_hash", statement_hash)
+        //console.log("verifier_domain", verifier_domain, "author", author, "verified_domain", verified_domain, "name", name, "hash_b64", hash_b64, "statement_hash", statement_hash)
         const sourceId = (
           (verifier_domain) +
           ":" +
@@ -86,7 +89,7 @@ export const FullVerificationGraph = (props) => {
                 legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)":
                 "rgba(42,42,42,1)",
               size: 
-                statement?.match(': '+employeeCounts["100000"]) ? "50px" : "30px"
+              parsedOrganisationVerification.employeeCount === employeeCounts["100000"] ? "50px" : "30px"
             },
           });
         }
@@ -97,6 +100,7 @@ export const FullVerificationGraph = (props) => {
             target: targetId,
             name: "stated:" + hash_b64.substring(0, 5),
             href: `${backendHost}/statement/${hash_b64}`,
+            color: parseFloat(parsedOrganisationVerification?.confidence) >= 0.8 ? "rgb(150,150,150)" : "rgb(200,200,200)",
           },
         });
       }
@@ -121,6 +125,29 @@ export const FullVerificationGraph = (props) => {
             backgroundColor: "data(color)",
             height: "data(size)",
             width: "100px",
+          },
+        },
+        {
+          selector: "edge",
+          css: {
+            "curve-style": "bezier",
+            "target-arrow-shape": "triangle",
+            label: "data(name)",
+            "text-rotation": "autorotate",
+            "color": "data(color)",
+            "text-margin-y": "-10px",
+            "line-color": "data(color)",
+            "line-style": "data(style)",
+          },
+        },
+        {
+          selector: "loop",
+          style: {
+            "loop-direction": "180deg",
+            "loop-sweep": "200deg",
+            "target-endpoint": "-90deg",
+            "source-endpoint": "90deg",
+            "control-point-step-size": 160,
           },
         },
       ],

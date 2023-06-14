@@ -96,7 +96,7 @@ for (const i of array) {
         verifyName: mfa_name,
         verifyDomain: foreign_affairs_ministry_domain,
         country,
-        legalEntity: legalForms.legalForms.find((i) => i[2] === "foreign affairs ministry")[2],
+        legalEntity: legalForms.foreign_affairs_ministry,
         confidence: confidence_fa_domain,
     });
     const statement = buildStatement({

@@ -119,8 +119,8 @@ export const buildOrganisationVerificationContent = (
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
 	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
 	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
-	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
-	if(employeeCount && !employeeCounts.includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
+	if(!Object.values(legalForms).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
+	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
@@ -159,7 +159,6 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tConfidence: (?<confidence>[0-9\.]+?)\n)?/.source
 	+ /$/.source
 	);
-	console.log(s)
 	const m = s.match(organisationVerificationRegex)
 	return m ? {
 		name: m[1],

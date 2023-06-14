@@ -19,14 +19,14 @@ export const statementTypes = {
     rating: 'rating',
 	signPdf: "sign_pdf"
 }
-export const employeeCounts = ["0-10", "10-100", "100-1000", "1000-10,000", "10,000-100,000", "100,000+"]
+export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000"}
 export const minEmployeeCountToRange = (n) => {
-	if(n >= 100000) return employeeCounts[5]
-	if(n >= 10000) return employeeCounts[4]
-	if(n >= 1000) return employeeCounts[3]
-	if(n >= 100) return employeeCounts[2]
-	if(n >= 10) return employeeCounts[1]
-	if(n >= 0) return employeeCounts[0]
+	if(n >= 100000) return employeeCounts["100000"]
+	if(n >= 10000) return employeeCounts["10000"]
+	if(n >= 1000) return employeeCounts["1000"]
+	if(n >= 100) return employeeCounts["100"]
+	if(n >= 10) return employeeCounts["10"]
+	if(n >= 0) return employeeCounts["0"]
 }
 export const buildStatement = ({domain, author, time, tags = [], content}) => {
 	if(content.match(/\nDomain: /)) throw(new Error("Statement must not contain 'Domain: ', as this marks the beginning of a new statement."))
@@ -119,8 +119,8 @@ export const buildOrganisationVerificationContent = (
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
 	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
 	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
-	if(!legalForms.legalForms.map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
-	if(employeeCount && !employeeCounts.includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
+	if(!Object.values(legalForms).map(l=> l[2]).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
+	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
@@ -159,7 +159,6 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tConfidence: (?<confidence>[0-9\.]+?)\n)?/.source
 	+ /$/.source
 	);
-	console.log(s)
 	const m = s.match(organisationVerificationRegex)
 	return m ? {
 		name: m[1],
