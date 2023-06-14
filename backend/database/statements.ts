@@ -139,7 +139,7 @@ export const getStatementsWithDetailFactory =
                       : ""
                   }
                   GROUP BY 1
-                  ORDER BY repost_count DESC
+                  ORDER BY repost_count DESC, first_id DESC
                   LIMIT 20
               )
               ,votes as (
@@ -179,7 +179,8 @@ export const getStatementsWithDetailFactory =
                           ON v.statement_hash = verification_statement.hash_b64
                   ) AS results 
                   LEFT JOIN votes on results.hash_b64=votes.poll_hash
-                WHERE _rank=1;
+                WHERE _rank=1
+                ORDER BY repost_count DESC, id DESC;
               `,
           [minId || 0, searchQuery || "searchQuery"],
           (error, results) => {

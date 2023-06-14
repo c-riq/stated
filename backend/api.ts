@@ -169,10 +169,11 @@ api.get("/health", async (req, res, next) => {
 api.get("/get_ssl_ov_info", async (req, res, next) => {
     try {
         let domain = req.query && req.query.domain
+        let cacheOnly = req.query && req.query.cache_only
         if(!domain || domain.length == 0){
             throw(Error("missing parameter: domain"))
         }
-        const result = await getOVInfoForSubdomains({domain})
+        const result = await getOVInfoForSubdomains({domain, cacheOnly})
         res.end(JSON.stringify({result}))
     } catch (error) {
         next(error)

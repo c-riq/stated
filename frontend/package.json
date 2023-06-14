@@ -15,6 +15,7 @@
     "core-js": "^3.26.1",
     "cytoscape": "^3.23.0",
     "cytoscape-elk": "^2.1.0",
+    "cytoscape-fcose": "^2.2.0",
     "elkjs": "^0.8.2",
     "moment": "^2.29.4",
     "needle": "^3.1.0",

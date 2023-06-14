@@ -10,13 +10,13 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 
-import { getStatement, getJoiningStatements, getOrganisationVerifications, 
+import { getStatement, getJoiningStatements, getOrganisationVerifications, getDomainVerifications,
     getPersonVerifications, getVotes } from '../api.js'
 import { statementTypes, parsePDFSigning } from '../statementFormats.js';
 
 import {VerificationGraph} from './VerificationGraph.js'
 
-import {filePath} from './SignPDFForm.js'
+import {filePath, getWorkingFileURL} from './SignPDFForm.js'
 
 
 const Statement = props => {
@@ -29,6 +29,7 @@ const Statement = props => {
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
+    const [workingFileURL, setWorkingFileURL] = React.useState('');
 
     const hash_b64 = useParams().statementId || '';
 
@@ -46,6 +47,11 @@ const Statement = props => {
     React.useEffect(() => {
         setDataFetched(false)
     }, [location])
+    React.useEffect(() => {
+        if (statement && statement.type === statementTypes.signPdf){
+            getWorkingFileURL({hash: parsePDFSigning(statement.content).hash_b64, host: 'https://stated.' + statement.domain}).then(setWorkingFileURL)
+        }
+    }, [statement])
 
     let fileURL = ""
     if (statement && (statement.type === statementTypes.signPdf)) {
@@ -65,15 +71,19 @@ const Statement = props => {
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
                 overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement?.statement} />
             {statement.type === statementTypes.signPdf && (
-                <div style={{border: "1px solid rgba(0,0,0,0.1)"}}>
+                <div style={{border: "1px solid rgba(0,0,0,0.1)",
+                minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}>
+                    {workingFileURL ? ( 
                     <embed
-                    src={
-                        (parsePDFSigning(statement.content) && filePath({hash: parsePDFSigning(statement.content).hash_b64, host: 'https://stated.' + statement.domain}))
-                    }
+                    src={workingFileURL}
                     style={{minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}
                     height="300px"
                     type="application/pdf"
-                    />
+                    />) : (
+                    <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
+                        <p>File not found</p>
+                    </div>
+                    )}
                 </div>
             )}
             {statement && (statement.type === statementTypes.poll && (<RouterLink to="/create-statement">

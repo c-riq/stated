@@ -3,13 +3,16 @@ import { validateDomainFormat } from './domainNames/validateDomainFormat'
 import {getCertCache, setCertCache} from './database'
 
 
-export const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
+export const getOVInfo = ({domain, cacheOnly}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
     const cached = await getCertCache({domain})
     if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_o){
         const {subject_o, subject_l, subject_st, subject_c, sha256, issuer_o, issuer_c, issuer_cn} = cached.rows[0]
         return resolve({domain, O: subject_o, L: subject_l, ST: subject_st, C: subject_c, sha256,
             issuer_o: issuer_o, issuer_c: issuer_c, issuer_cn: issuer_cn})
+    }
+    if (cacheOnly){
+        return resolve({domain})
     }
     try {
         const res = await get({hostname: domain, path: '', cache: false})
@@ -32,7 +35,7 @@ export const getOVInfo = ({domain}) => new Promise(async (resolve, reject) => {
     }
 })
 
-export const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, reject) => {
+export const getOVInfoForSubdomains = ({domain, cacheOnly}) => new Promise(async (resolve, reject) => {
     if(!validateDomainFormat(domain)){
         resolve({error: 'invalid domain format'})
         return
@@ -42,7 +45,7 @@ export const getOVInfoForSubdomains = ({domain}) => new Promise(async (resolve, 
         domain = domain.replace(/^stated\./, '')
     }
     try {
-        const promises = [domain, 'www.' + domain, 'stated.' + domain].map(domain => getOVInfo({domain}))
+        const promises = [domain, 'www.' + domain, 'stated.' + domain].map(domain => getOVInfo({domain, cacheOnly}))
         const results = await Promise.allSettled(promises)
         results.filter(r=>r.status == 'rejected').map(r=>{
             // @ts-ignore

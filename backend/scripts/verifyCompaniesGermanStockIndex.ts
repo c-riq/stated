@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import http from "http";
+import https from "https";
 
 import {
   buildOrganisationVerificationContent,
@@ -10,8 +10,8 @@ import { sha256 } from "../hash";
 
 import { legalForms } from "../constants/legalForms";
 
-const host = process.env.HOST || "localhost";
-const port = process.env.PORT || 7766;
+const host = process.env.HOST || "stated.rixdata.net";
+const port = process.env.PORT || 443;
 const apiKey = process.env.API_KEY || "XXX";
 
 const submitStatement = (data, callback) => {
@@ -26,7 +26,7 @@ const submitStatement = (data, callback) => {
         "Content-Type": "application/json",
       },
     };
-    var post_req = http.request(post_options, (res) => {
+    var post_req = https.request(post_options, (res) => {
       let rawData = "";
       res.setEncoding("utf8");
       res.on("data", function (chunk) {
@@ -54,9 +54,9 @@ const submitStatement = (data, callback) => {
 var daxCompanies = fs
   .readFileSync(
     // __dirname + "/../../analysis/verifications/company_list.csv",
-    __dirname + "/../../analysis/verifications/company_list_ukraine.csv",
-    //__dirname + "/../../analysis/verifications/dax_index_companies.csv",
-   // __dirname + "/../../analysis/verifications/organisations_list.csv",
+    // __dirname + "/../../analysis/verifications/company_list_ukraine.csv",
+    // __dirname + "/../../analysis/verifications/dax_index_companies.csv",
+    __dirname + "/../../analysis/verifications/organisations_list.csv",
     "utf8"
   )
   .toString();
@@ -93,7 +93,8 @@ for (const i of array) {
         city,
         serial_number,
         employees_min,
-        confidence
+        confidence,
+        confidence_mfa_domain
         //isin,
         //vat_id,
     } = i;
@@ -112,14 +113,15 @@ for (const i of array) {
         province,
         city,
         serialNumber: serial_number,
-        legalEntity: legalForms.legalForms.find((i) => i[2] === "corporation")[2],
-        confidence: confidence,
-        employeeCount: employees_min && minEmployeeCountToRange(employees_min)
+        legalEntity: legalForms.corporation,
+        confidence: confidence || confidence_mfa_domain,
+        employeeCount: employees_min && minEmployeeCountToRange(employees_min),
+        reliabilityPolicy: "https://stated.rixdata.net/statement/Rr636YoaBeKvxQ-oxte6JYUewDMfr49lJxgNcMGtjrE",
     });
     if(!verification){ console.log("no verification generated"); continue}
     const statement = buildStatement({
-        domain: "localhost", // rixdata.net
-        author: "localhost", // Rix Data NL B.V.
+        domain: "rixdata.net", // rixdata.net
+        author: "Rix Data NL B.V.", // Rix Data NL B.V.
         time: new Date(),
         content: verification,
     })

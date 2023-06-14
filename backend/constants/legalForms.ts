@@ -1,14 +1,10 @@
-export const legalForms = 
+export const legalForms = // Wikidata ID: Q10541491
 {
-  'legalForms': // Q10541491
-  [ 
-    // ["country_code","wikidata_id", "name"],
-      ['all', 'Q5', 'person'],
-      ['all', 'Q6501447', 'local government'],
-      ['all', 'Q1802419', 'state government'],
-      ['all', 'Q20901295', 'foreign affairs ministry'],
-      ['all', 'Q167037', 'corporation'],
-  ]
+    person: 'person', //'Q5'
+    local_government: 'local government', //'Q6501447'
+    state_government: 'state government', //'Q1802419'
+    foreign_affairs_ministry: 'foreign affairs ministry', //'Q20901295'
+    corporation: 'corporation', //'Q167037'
 }
 
 /* 

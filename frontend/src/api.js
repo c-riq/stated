@@ -52,21 +52,17 @@ export const getDomainSuggestions = (searchQuery, cb) => {
     }, e => {console.log(e); return})
 }
 export const getDomainVerifications = (domain, cb) => {
-    if (domain.length < 1) {
-        cb([])
-        return
-    }
     req('GET',(domain ? 'domain_verifications?domain=' + domain : 'domain_verifications'), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getSSLOVInfo = (domain, cb) => {
+export const getSSLOVInfo = ({domain, cacheOnly = false}, cb) => {
     console.log("getSSLOVInfo", domain)
     if (!domain || domain.length < 1) {
         cb([])
         return
     }
-    req('GET',(domain ? 'get_ssl_ov_info?domain=' + domain : 'get_ssl_ov_info'), {}, (json) => {
+    req('GET',(domain ? 'get_ssl_ov_info?domain=' + domain : '&cache_only=' + cacheOnly), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }

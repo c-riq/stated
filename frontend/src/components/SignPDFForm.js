@@ -16,6 +16,12 @@ import { uploadPdf, backendHost } from "../api";
 
 export const filePath = ({hash, host}) => (host || backendHost) + "/files/" + hash + ".pdf"
 
+export const getWorkingFileURL = async ({hash, host}) => {
+  const promises = [host,backendHost].map(h => fetch(h + "/files/" + hash + ".pdf", {method: "OPTIONS"}))
+  const responses = await Promise.allSettled(promises)
+  return responses.find(r => r.status === "fulfilled")?.value?.url
+}
+
 const SignPDFForm = (props) => {
   const content = props.statementToJoin?.content
   let originalHost = props.statementToJoin?.domain

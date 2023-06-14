@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import http from "http";
+import https from "https";
 
 import {
   buildOrganisationVerificationContent,
@@ -10,8 +10,8 @@ import { sha256 } from "../hash";
 
 import { legalForms } from "../constants/legalForms";
 
-const host = process.env.HOST || "localhost";
-const port = process.env.PORT || 7766;
+const host = process.env.HOST || "stated.rixdata.net";
+const port = process.env.PORT || 443;
 const apiKey = process.env.API_KEY || "XXX";
 
 const submitStatement = (data, callback) => {
@@ -26,7 +26,7 @@ const submitStatement = (data, callback) => {
         "Content-Type": "application/json",
       },
     };
-    var post_req = http.request(post_options, (res) => {
+    var post_req = https.request(post_options, (res) => {
       let rawData = "";
       res.setEncoding("utf8");
       res.on("data", function (chunk) {
@@ -96,12 +96,12 @@ for (const i of array) {
         verifyName: mfa_name,
         verifyDomain: foreign_affairs_ministry_domain,
         country,
-        legalEntity: legalForms.legalForms.find((i) => i[2] === "foreign affairs ministry")[2],
+        legalEntity: legalForms.foreign_affairs_ministry,
         confidence: confidence_fa_domain,
     });
     const statement = buildStatement({
-        domain: "localhost",
-        author: "localhost",
+      domain: "rixdata.net", // rixdata.net
+      author: "Rix Data NL B.V.", // Rix Data NL B.V.
         time: new Date(),
         content: verification,
     })
