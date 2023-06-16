@@ -15,7 +15,7 @@ const test = process.env.TEST || false
 
 const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
-    if (!parsedStatement) {
+    if (parsedStatement.error) {
         throw(Error("invalid verification"))
     }
     const {domain, author, time, content, tags, type} = parsedStatement
