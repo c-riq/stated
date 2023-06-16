@@ -53,10 +53,10 @@ const submitStatement = (data, callback) => {
 
 var daxCompanies = fs
   .readFileSync(
-    // __dirname + "/../../analysis/verifications/company_list.csv",
+     __dirname + "/../../analysis/verifications/company_list.csv",
     // __dirname + "/../../analysis/verifications/company_list_ukraine.csv",
     // __dirname + "/../../analysis/verifications/dax_index_companies.csv",
-    __dirname + "/../../analysis/verifications/organisations_list.csv",
+    // __dirname + "/../../analysis/verifications/organisations_list.csv",
     "utf8"
   )
   .toString();
@@ -85,8 +85,8 @@ for (const i of array) {
     // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,
     // ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
     const {
-        company,
-        organisation,
+        name,
+        english_name,
         website_domain,
         country,
         province,
@@ -94,11 +94,8 @@ for (const i of array) {
         serial_number,
         employees_min,
         confidence,
-        confidence_mfa_domain
-        //isin,
-        //vat_id,
     } = i;
-    if (!(company || organisation) || !website_domain || !country || !province || !city || !(serial_number || organisation)) {
+    if (!(name) || !website_domain || !country || !province || !city) {
         continue;
     }
     if (city.match(/\|/g)){
@@ -107,16 +104,17 @@ for (const i of array) {
     console.log('add')
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        verifyName: company || organisation,
+        verifyName: name,
+        englishName: english_name,
         verifyDomain: website_domain,
         country,
         province,
         city,
         serialNumber: serial_number,
         legalEntity: legalForms.corporation,
-        confidence: confidence || confidence_mfa_domain,
+        confidence: confidence,
         employeeCount: employees_min && minEmployeeCountToRange(employees_min),
-        reliabilityPolicy: "https://stated.rixdata.net/statement/Rr636YoaBeKvxQ-oxte6JYUewDMfr49lJxgNcMGtjrE",
+        reliabilityPolicy: "https://stated.rixdata.net/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE",
     });
     if(!verification){ console.log("no verification generated"); continue}
     const statement = buildStatement({

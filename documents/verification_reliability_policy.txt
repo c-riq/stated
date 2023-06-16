@@ -1,7 +1,7 @@
 Tag: Verification reliability policy
 
 For any verification published by us under this domain, with confidence rating = 1.0,
-100 EUR will be awarded to the first entity to prove that a verification contains significant errors.
+100 USD will be awarded to the first entity to prove that a verification contains significant errors.
 This does not apply to:
 1. Verifications which have already been removed or superseded by us before the proof is provided.
 2. Data points which were correct previously and have only been outdated for less than 13 months.
