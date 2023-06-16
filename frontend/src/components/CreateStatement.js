@@ -136,7 +136,7 @@ const CreateStatement = props => {
                     setDomain(newValue)
                 }}
                 renderInput={(params) => <TextField {...params} 
-                  label="Your domain used for publishing/ authenticating" placeholder='google.com' />}
+                  label="Your domain used for publishing/ authenticating" placeholder='example.com' required />}
                 style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
                 />
                 { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
@@ -176,6 +176,7 @@ const CreateStatement = props => {
                 onChange={e => { setAuthor(e.target.value) }}
                 margin="normal"
                 style={{backgroundColor: '#eeeeee'}}
+                required
             />
         </React.Fragment>
     )

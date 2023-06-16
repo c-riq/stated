@@ -19,7 +19,7 @@ export const statementTypes = {
     rating: 'rating',
 	signPdf: "sign_pdf"
 }
-export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000"}
+export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000+"}
 export const minEmployeeCountToRange = (n) => {
 	if(n >= 100000) return employeeCounts["100000"]
 	if(n >= 10000) return employeeCounts["10000"]
@@ -114,8 +114,8 @@ export const parsePoll = (s) => {
 
 export const buildOrganisationVerificationContent = (
 		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
-		verificationMethod, confidence = null, supersededVerificationHash = null, pictureHash = null,
-		reliabilityPolicy = null, employeeCount = null}) => {
+		verificationMethod, confidence = '', supersededVerificationHash = '', pictureHash = '',
+		reliabilityPolicy = '', employeeCount = ''}) => {
 	/* Omit any fields that may have multiple values */
 	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
 	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
@@ -124,6 +124,7 @@ export const buildOrganisationVerificationContent = (
 	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
 	if(!Object.values(legalForms).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
 	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
+	if(confidence && !confidence?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +

@@ -11,7 +11,7 @@ import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
 import {subdivisions} from '../constants/provinces_un_locode'
 import { parseStatement, buildStatement, forbiddenStrings, 
-    buildOrganisationVerificationContent, parseOrganisationVerification } from '../statementFormats.js'
+    buildOrganisationVerificationContent, parseOrganisationVerification, employeeCounts } from '../statementFormats.js'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 
@@ -19,8 +19,8 @@ import { sha256 } from '../utils/hash';
 const OrganisationVerificationForm = props => {
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
-    const [legalForm, setLegalForm] = React.useState("");
-    const [legalFormObject, setLegalFormObject] = React.useState("");
+    const [legalForm, setLegalForm] = React.useState(legalForms.corporation);
+    const [legalFormObject, setLegalFormObject] = React.useState(legalForms.corporation);
     const [city, setCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState(null);
     const [province, setProvince] = React.useState("");
@@ -28,12 +28,16 @@ const OrganisationVerificationForm = props => {
     const [serialNumber, setSerialNumber] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
+    const [employeeCount, setEmployeeCount] = React.useState("");
+    const [employeeCountObject, setEmployeeCountObject] = React.useState(null);
+    const [confidence, setConfidence] = React.useState("");
+    const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         try {
             const content = buildOrganisationVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm,
-                foreignDomain: "", verificationMethod: "", confidence: "", supersededVerificationHash: "", pictureHash: ""})
+                foreignDomain: "", verificationMethod: "", confidence, reliabilityPolicy, supersededVerificationHash: "", pictureHash: "", employeeCount})
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             console.log(statement)
@@ -54,19 +58,21 @@ const OrganisationVerificationForm = props => {
             sha256(statement).then((value) => { props.setStatementHash(value); });
         } catch (e) {
             props.setAlertMessage(e.message)
+            props.setisError(true)
         }
     }
 
     return (
         <FormControl sx={{width: "100%"}}>
         <TextField
-            id="domain to be verified"
+            id="website"
             variant="outlined"
             placeholder='walmart.com'
             label="Domain owned by organisation"
             onChange={e => { setVerifyDomain(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "24px"}}
+            required
         />
         <TextField
             id="organisation name"
@@ -76,6 +82,7 @@ const OrganisationVerificationForm = props => {
             onChange={e => { setVerifyName(e.target.value) }}
             margin="normal"
             sx={{marginTop: "0px"}}
+            required
         />
         <Autocomplete
             id="country"
@@ -103,6 +110,7 @@ const OrganisationVerificationForm = props => {
                 <TextField
                 {...params}
                 label="Headquarter country"
+                required
                 />
             )}
             sx={{marginTop: "20px"}}
@@ -117,7 +125,7 @@ const OrganisationVerificationForm = props => {
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
-            renderInput={(params) => <TextField {...params} label="Legal entity" />}
+            renderInput={(params) => <TextField {...params} label="Legal entity" required />}
             renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
@@ -149,12 +157,56 @@ const OrganisationVerificationForm = props => {
             renderOption={(props, option) => (<Box {...props} id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />
+        <Autocomplete
+            id="employeeCount"
+            options={Object.values(employeeCounts)}
+            autoHighlight
+            getOptionLabel={(option) => option}
+            onChange={(e,newvalue)=>setEmployeeCountObject(newvalue)}
+            value={employeeCountObject}
+            inputValue={employeeCount}
+            onInputChange={(event, newInputValue) => setEmployeeCount(newInputValue)}
+            renderInput={(params) => <TextField {...params} label="Employee count" />}
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
+            sx={{marginTop: "20px"}}
+        />
         <TextField
             id="serial number"
             variant="outlined"
-            placeholder='12345'
-            label="Business register serial number"
+            placeholder={(
+                countryObject?.[1] === 'DE' ? 'HRB 1234' :
+                countryObject?.[1] === 'US' ? '71-0415188' : 
+                '12345')}
+            label={"Business register serial number" + (
+                countryObject?.[1] === 'US' ? ' (IRS Employer Identification No.)' : 
+                countryObject?.[1] === 'DE' ? ' (Handelsregisternummer)' :
+                countryObject?.[1] === 'NL' ? ' (KVK-nummer)' :
+                '')}
             onChange={e => { setSerialNumber(e.target.value) }}
+            sx={{marginTop: "20px"}}
+        />
+        <TextField
+            id="confidence"
+            variant="outlined"
+            placeholder='0.9'
+            label="Confidence (probability of correctness 0.0 - 1.0)"
+            value={confidence}
+            onChange={e => { 
+                const str = e.target.value.replace(/[^0-9.]/g, '')
+                if(parseFloat(str) < 0) return setConfidence("0")
+                if(parseFloat(str) > 1) return setConfidence("1.0")
+                setConfidence(str)
+            }}
+            sx={{marginTop: "20px"}}
+        />
+        <TextField
+            id="reliability"
+            variant="outlined"
+            placeholder='https://stated.example.com/statement/NF6irhgDU0F_HEgTRKnh'
+            label="Policy containing correctness guarantees"
+            onChange={e => { 
+                setReliabilityPolicy(e.target.value)
+            }}
             sx={{marginTop: "20px"}}
         />
         {props.children}
