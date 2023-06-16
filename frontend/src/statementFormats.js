@@ -113,7 +113,7 @@ export const parsePoll = (s) => {
 }
 
 export const buildOrganisationVerificationContent = (
-		{verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
+		{verifyName, englishName = '', country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
 		verificationMethod, confidence = '', supersededVerificationHash = '', pictureHash = '',
 		reliabilityPolicy = '', employeeCount = ''}) => {
 	/* Omit any fields that may have multiple values */
@@ -129,7 +129,8 @@ export const buildOrganisationVerificationContent = (
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
-	"\t" + "Name: " + verifyName + "\n" + // Full name as in business register; wikidata english name if available
+	"\t" + "Name: " + verifyName + "\n" + // Full name as in business register
+	(englishName ? "\t" + "English name: " + verifyName + "\n" : "") + // wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
 	"\t" + "Legal entity: " + legalEntity + "\n" +
 	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
@@ -151,6 +152,7 @@ export const parseOrganisationVerification = (s) => {
 	+ /^\n\tType: Organisation verification\n/.source
 	+ /\tDescription: We verified the following information about an organisation.\n/.source
 	+ /\tName: (?<name>[^\n]+?)\n/.source
+	+ /(?:\tEnglish name: (?<englishName>[^\n]+?)\n)?/.source
 	+ /\tCountry: (?<country>[^\n]+?)\n/.source
 	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
 	+ /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
@@ -166,16 +168,17 @@ export const parseOrganisationVerification = (s) => {
 	const m = s.match(organisationVerificationRegex)
 	return m ? {
 		name: m[1],
-		country: m[2],
-		legalForm: m[3],
-		domain: m[4],
-		foreignDomain: m[5],
-		province: m[6],
-		serialNumber: m[7],
-		city: m[8],
-		employeeCount: m[9],
-		reliabilityPolicy: m[10],
-		confidence: m[11] && parseFloat(m[11]),
+		englishName: m[2],
+		country: m[3],
+		legalForm: m[4],
+		domain: m[5],
+		foreignDomain: m[6],
+		province: m[7],
+		serialNumber: m[8],
+		city: m[9],
+		employeeCount: m[10],
+		reliabilityPolicy: m[11],
+		confidence: m[12] && parseFloat(m[12]),
 	} : {error: "Invalid organisation verification format"}
 }
 
