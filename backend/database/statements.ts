@@ -130,8 +130,10 @@ export const getStatementsWithDetailFactory =
                       CAST($1 AS INTEGER) as input1,
                       $2 as input2
                   FROM statements 
-                  WHERE (type = 'statement' OR type = 'poll' OR type = 'rating' 
-                  OR type = 'organisation_verification' OR type='sign_pdf')
+                  WHERE (
+                    type = 'statement' OR type = 'poll' OR type = 'rating' 
+                    ${ searchQuery ? "OR type = 'organisation_verification' " : "" }
+                    OR type='sign_pdf')
                   ${minId ? "AND id > $1 " : ""}
                   ${
                     searchQuery

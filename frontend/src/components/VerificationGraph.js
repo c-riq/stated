@@ -270,6 +270,7 @@ export const VerificationGraph = (props) => {
           css: {
             "curve-style": "bezier",
             "target-arrow-shape": "triangle",
+            "target-arrow-color": "#0000ee",
             label: "data(name)",
             "text-rotation": "autorotate",
             "text-margin-y": "-10px",

@@ -130,7 +130,7 @@ export const buildOrganisationVerificationContent = (
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
 	"\t" + "Name: " + verifyName + "\n" + // Full name as in business register
-	(englishName ? "\t" + "English name: " + verifyName + "\n" : "") + // wikidata english name if available
+	(englishName ? "\t" + "English name: " + englishName + "\n" : "") + // wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
 	"\t" + "Legal entity: " + legalEntity + "\n" +
 	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
