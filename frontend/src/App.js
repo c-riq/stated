@@ -22,6 +22,7 @@ import { Route, Routes, Link, useParams, useNavigate, Outlet } from 'react-route
 
 import { getStatements } from './api.js'
 import gh from './img/github.png'
+import logo from './img/logo.png'
 
 const CenterModal = (props) => {
   const { lt850px } = props
@@ -95,9 +96,13 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, join
     <Outlet />
     <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}>
       <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
-        <div style={{display: "flex", flexDirection: "column", justifyContent:"center", alignItems:"center", height: '100%'}}>
+        <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
           <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>
-            <img src={gh} style={{height: "30px", width: '30px', flexGroq: 0}}></img>
+            <img src={gh} style={{height: "40px", width: '30px', marginRight: "20px", paddingTop: "10px", flexGrow: 0}}></img>
+          </a>
+          <a href="https://stated.link" style={{backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "10px", 
+          paddingLeft: "10px", borderRadius: "20px", textDecoration:"none"}}>
+            <img src={logo} style={{height: "20px", width: '20px', flexGrow: 0}}></img>
           </a>
         </div>
       </div>

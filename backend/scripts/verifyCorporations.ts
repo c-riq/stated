@@ -102,6 +102,7 @@ for (const i of array) {
         serial_number,
         employees_min,
         confidence,
+        employer_identification_number
     } = i;
     if (!(name) || !website_domain || !country || !province || !city) {
         continue;
@@ -118,7 +119,7 @@ for (const i of array) {
         country,
         province,
         city,
-        serialNumber: serial_number,
+        serialNumber: serial_number || employer_identification_number,
         legalEntity: legalForms.corporation,
         confidence: confidence,
         employeeCount: employees_min && minEmployeeCountToRange(employees_min),
