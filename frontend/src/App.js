@@ -87,7 +87,8 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, join
         </div>
       </div>
     </header>
-    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}>
+    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}
+    setModalOpen={()=>{setModalOpen(true)}}>
       <Link to="/create-statement">
         <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
         sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
