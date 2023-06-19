@@ -7,6 +7,7 @@ import CreateStatement from './components/CreateStatement'
 import Statement from './components/Statement'
 import Statements from './components/Statements'
 import {FullVerificationGraph} from './components/FullVerificationGraph'
+import { FullNetworkGraph } from './components/FullNetworkGraph';
 
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
@@ -183,6 +184,7 @@ function App() {
             />
           </Route>
           <Route path='/full-verification-graph' element={<FullVerificationGraph style={{ width: "100vw", height: "100vh" }}/>} />
+          <Route path='/full-network-graph' element={<FullNetworkGraph style={{ width: "100vw", height: "100vh" }}/>} />
       </Routes>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */

@@ -56,6 +56,11 @@ export const getDomainVerifications = (domain, cb) => {
         cb(json)
     }, e => {console.log(e); return})
 }
+export const getNodes = (cb) => {
+    req('GET', 'nodes', {}, (json) => {
+        cb(json)
+    }, e => {console.log(e); return})
+}
 export const getSSLOVInfo = ({domain, cacheOnly = false}, cb) => {
     console.log("getSSLOVInfo", domain)
     if (!domain || domain.length < 1) {
