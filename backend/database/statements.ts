@@ -130,12 +130,14 @@ export const getStatementsWithDetailFactory =
                       CAST($1 AS INTEGER) as input1,
                       $2 as input2
                   FROM statements 
-                  WHERE (type = 'statement' OR type = 'poll' OR type = 'rating' 
-                  OR type = 'organisation_verification' OR type='sign_pdf')
+                  WHERE (
+                    type = 'statement' OR type = 'poll' OR type = 'rating' 
+                    ${ searchQuery ? "OR type = 'organisation_verification' " : "" }
+                    OR type='sign_pdf')
                   ${minId ? "AND id > $1 " : ""}
                   ${
                     searchQuery
-                      ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
+                      ? "AND (content LIKE '%'||$2||'%' OR tags LIKE '%'||$2||'%')"
                       : ""
                   }
                   GROUP BY 1
@@ -182,7 +184,7 @@ export const getStatementsWithDetailFactory =
                 WHERE _rank=1
                 ORDER BY repost_count DESC, id DESC;
               `,
-          [minId || 0, (searchQuery || "").toLowerCase()],
+          [minId || 0, searchQuery || "searchQuery"],
           (error, results) => {
             if (error) {
               console.log(error);
