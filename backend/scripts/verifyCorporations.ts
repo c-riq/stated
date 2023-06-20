@@ -63,8 +63,6 @@ const submitStatement = (data, callback) => {
 var daxCompanies = fs
   .readFileSync(
      __dirname + "/../../analysis/verifications/" + fileName,
-    // __dirname + "/../../analysis/verifications/dax_index_companies.csv",
-    // __dirname + "/../../analysis/verifications/organisations_list.csv",
     "utf8"
   )
   .toString();
@@ -88,7 +86,7 @@ for (const row of rows) {
   array.push(parsedRow);
 }
 console.log(array);
-
+( async () => {
 for (const i of array) {
     // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,
     // ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
@@ -140,6 +138,7 @@ for (const i of array) {
     submitStatement(data, (res) => {
         console.log(res);
     });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 }
-
+})();
 console.log(array.filter((i) => i.website));

@@ -39,12 +39,12 @@ Statements can either contain plain text messages as content or a strucutured me
 ## Statement format
 ### Plain statement example
 ```
-Domain: rixdata.net
+Publishing domain: rixdata.net
 Author: Rix Data NL B.V.
-Time: Sat, 22 Apr 2023 18:52:40 GMT
-Content: hello world
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content: hello world
 ```
-This statement can also be viewed under [https://stated.rixdata.net/statement/rQ4vsAVjQWfrb2WXYtgE4weBXAFe5qbJPvVlnrN_y-8](https://stated.rixdata.net/statement/rQ4vsAVjQWfrb2WXYtgE4weBXAFe5qbJPvVlnrN_y-8)
+This statement can also be viewed under [https://stated.rixdata.net/statement/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statement/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
 
 ### Design principles
 #### Everyone should be able to inspect how the system works
