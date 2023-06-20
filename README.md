@@ -24,6 +24,7 @@ delv @1.1.1.1 TXT stated.rixdata.net +short +trust | grep -e 'fully validated' -
 and then publish the full text of the statement statement through another organizations stated web app.
 - Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.\
 \
+#
 Statements can either contain plain text messages as content or a strucutured message such as:
 - Organisation Verification: for associating another domain with an organisation
 - Dispute statement: To express the conviction that a referenced statement is not authentic
