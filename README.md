@@ -25,8 +25,8 @@ and then publish the full text of the statement statement through another organi
 - Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 <br/>
 Statements can either contain plain text messages as content or a strucutured message such as:
-- Organisation Verification: for associating another domain with an organisation
-- Dispute statement: To express the conviction that a referenced statement is not authentic
+ - Organisation Verification: for associating another domain with an organisation
+ - Dispute statement: To express the conviction that a referenced statement is not authentic
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/diagram.png?raw=true)
 <b>Fig.1: Steps for validate a collective decision</b> Any internet user should be able to independently verify collective actions on stated.
