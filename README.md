@@ -4,7 +4,7 @@ To achieve a collective decision, participating organisations publish open lette
 The signatures are verified, saved, re-broadcasted and aggregated by each pariticipating organisation. This decentralized design makes the system resistant to censorship.<br/>
 The identity of the signature authors are transparently established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
- - Cross verifications among participating organisations within stated (such as this [verification](https://stated.rixdata.net/statement/4llEn48YnhUBjvcUnF1dDX1aV98KPqwdQShSNAcHY2s))
+ - Cross verifications among participating organisations within stated (such as this [verification](https://stated.rixdata.net/statement/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
 
 ## Supported statement publication methods
 
@@ -13,13 +13,13 @@ For publishing a statement, organisations or individuals can:
 - Make sure individual statements can be retrieved by the hash of it's contents via the stated API under their domain:
 ```bash
 curl 'https://stated.rixdata.net/api/statement' -H 'Content-Type: application/json' \
---data'{"hash_b64":"4llEn48YnhUBjvcUnF1dDX1aV98KPqwdQShSNAcHY2s"}'
+--data '{"hash_b64":"NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA"}'
 ```
 - Add the statement's URL safe base64 encoded hash as a TXT record for the subdomain  `stated.` in their DNS domain records, such that it can be verified by the following shell commands
 ```bash
-dig -t txt stated.rixdata.net +short | grep E9-x4ItecIitBJ69QapiwyVVpv1tK0sWMVuIuzc5uus
+dig -t txt stated.rixdata.net +short | grep NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA
 # with DNSSEC
-delv @1.1.1.1 TXT stated.rixdata.net +short +trust | grep -e 'fully validated' -e 'E9-x4ItecIitBJ69QapiwyVVpv1tK0sWMVuIuzc5uus'
+delv @1.1.1.1 TXT stated.rixdata.net +short +trust | grep -e 'fully validated' -e 'NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
 ```
 and then publish the full text of the statement statement through another organizations stated web app.
 - Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
