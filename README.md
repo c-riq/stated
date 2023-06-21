@@ -1,9 +1,6 @@
 ### Stated
 Stated is an p2p network for collective decision making among large groups of organisations.<br />
-To achieve a collective decision, participating organisations publish open letter signatures (or other statements) on thier website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/own/statements.txt).
-[comment]: <> (support https://static.stated.rixdata.net/own/statements.txt ?)
-[comment]: <> (support https://stated.rixdata.net/.well-known/statements.txt ?)
- This standardization allows for automated verification and aggregation of signatures.<br/>
+To achieve a collective decision, participating organisations publish open letter signatures (or other statements) on thier website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/own/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system resistant to censorship.<br/>
 The identity of the signature authors are established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
