@@ -1,5 +1,5 @@
 Symbol,Security,CIK,Headquarters Location,name,website_domain,city,province,country,employee_count,serial_number,source,table_source
-MMM,3M,66740,"Saint Paul, Minnesota",3M COMPANY,3m.com,St. Paul,Minnesota,United States of America (the),92000,41-0417775,https://www.sec.gov/Archives/edgar/data/66740/000006674023000014/mmm-20221231.htm,https://github.com/datasets/s-and-p-500-companies
+MMM,3M,66740,"Saint Paul, Minnesota",3M COMPANY,3m.com,Saint Paul,Minnesota,United States of America (the),92000,41-0417775,https://www.sec.gov/Archives/edgar/data/66740/000006674023000014/mmm-20221231.htm,https://github.com/datasets/s-and-p-500-companies
 AOS,A. O. Smith,91142,"Milwaukee, Wisconsin",A. O. Smith Corporation,aosmith.com,Milwaukee,Wisconsin,United States of America (the),12000,39-0619790,https://www.sec.gov/ix?doc=/Archives/edgar/data/91142/000009114223000025/aos-20221231.htm,
 ABT,Abbott,1800,"North Chicago, Illinois",Abbott Laboratories,abbottinvestor.com>abbott.com,,,United States of America (the),115000,36-0698440,https://www.sec.gov/ix?doc=/Archives/edgar/data/0000001800/000162828023004026/abt-20221231.htm,
 ABBV,AbbVie,1551152,"North Chicago, Illinois",,abbvie.com,,,,,,https://www.sec.gov/ix?doc=/Archives/edgar/data/1551152/000155115223000011/abbv-20221231.htm,https://www.sec.gov/edgar/browse/?CIK=1551152
