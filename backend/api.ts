@@ -23,7 +23,7 @@ api.use((req, res, next) => {
     next()
 })
 
-api.post("/get_txt_records", async (req, res, next) => {
+api.post("/txt_records", async (req, res, next) => {
     try {
         const records = await getTXTEntries(req.body.domain)
         res.end(JSON.stringify({ records: records }))
@@ -83,18 +83,18 @@ api.get("/statements", async (req, res, next) => {
     }
 })
 
-api.post("/statement", async (req, res, next) => {
+api.get("/statement", async (req, res, next) => {
     try {
-        const dbResult = await getStatement({hash_b64: req.body.hash_b64})
+        const dbResult = await getStatement({hash_b64: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     }catch(error){
         next(error)
     }
 })
 
-api.post("/organisation_verifications", async (req, res, next) => {
+api.get("/organisation_verifications", async (req, res, next) => {
     try {
-        const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.body.hash_b64})
+        const dbResult = await getOrganisationVerificationsForStatement({hash_b64: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
@@ -110,27 +110,27 @@ api.get("/domain_verifications", async (req, res, next) => {
     }
 })
 
-api.post("/person_verifications", async (req, res, next) => {
+api.get("/person_verifications", async (req, res, next) => {
     try {
-    const dbResult = await getPersonVerificationsForStatement({hash_b64: req.body.hash_b64})
-    res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+        const dbResult = await getPersonVerificationsForStatement({hash_b64: req.query.hash})
+        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
     }
 })
 
-api.post("/joining_statements", async (req, res, next) => {
+api.get("/joining_statements", async (req, res, next) => {
     try {
-        const dbResult = await getJoiningStatements({hash_b64: req.body.hash_b64})  
+        const dbResult = await getJoiningStatements({hash_b64: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)
     }
 })
 
-api.post("/votes", async (req, res, next) => {
+api.get("/votes", async (req, res, next) => {
     try {
-        const dbResult = await getVotes({hash_b64: req.body.hash_b64})
+        const dbResult = await getVotes({hash_b64: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)
@@ -166,7 +166,7 @@ api.get("/health", async (req, res, next) => {
     }
 })
 
-api.get("/get_ssl_ov_info", async (req, res, next) => {
+api.get("/ssl_ov_info", async (req, res, next) => {
     try {
         let domain = req.query && req.query.domain
         let cacheOnly = req.query && req.query.cache_only

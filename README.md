@@ -1,6 +1,6 @@
 ### Stated
 Stated is an p2p network for collective decision making among large groups of organisations.<br />
-To achieve a collective decision, participating organisations publish open letter signatures (or other statements) on thier website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/own/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
+To achieve a collective decision, participating organisations publish open letter signatures (or other statements) on their website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/own/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system resistant to censorship.<br/>
 The identity of the signature authors are established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
@@ -10,19 +10,18 @@ The identity of the signature authors are established by:
 
 For publishing a statement, organisations or individuals can:
 1. Publish it on their website domain in a text file (such as [https://stated.rixdata.net/own/statements.txt](https://stated.rixdata.net/own/statements.txt))
-- Make sure individual statements can be retrieved by the hash of it's contents via the stated API under their domain:
+2. Make sure individual statements can be retrieved by the hash of it's contents via the stated API under their domain:
 ```bash
-curl 'https://stated.rixdata.net/api/statement' -H 'Content-Type: application/json' \
---data '{"hash_b64":"NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA"}'
+curl 'https://stated.rixdata.net/api/statement?hash=NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
 ```
-2. Add the statement's URL-safe-base64 encoded hash as a TXT record for the subdomain  `stated.` in their DNS domain records, such that it can be verified by shell commands such as:
+3. Add the statement's URL-safe-base64 encoded hash as a TXT record for the subdomain  `stated.` in their DNS domain records, such that it can be verified by shell commands such as:
 ```bash
 dig -t txt stated.rixdata.net +short | grep NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA
 # with DNSSEC
 delv @1.1.1.1 TXT stated.rixdata.net +short +trust | grep -e 'fully validated' -e 'NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
 ```
 and then publish the full text of the statement statement through another organizations stated web app.
-3. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
+4. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 ## Online identities
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/diagram.png?raw=true)

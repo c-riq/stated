@@ -30,11 +30,14 @@ const req = (method, path, body, cb, reject) => {
 }
 
 export const getStatement = (hash_b64, cb) => {
-    req('POST', 'statement', {hash_b64}, (json) => {
+    if (hash_b64.length < 1) {
+        return cb({})
+    }
+    req('GET',('statement?hash=' + hash_b64), {}, (json) => {
         if ("statements" in json) {
             cb(json.statements[0])
             window.scrollTo(0,0)
-        } 
+        }
     }, e => {console.log(e); return})
 }
 export const getStatements = (searchQuery, cb) => {
@@ -67,7 +70,7 @@ export const getSSLOVInfo = ({domain, cacheOnly = false}, cb) => {
         cb([])
         return
     }
-    req('GET',(domain ? 'get_ssl_ov_info?domain=' + domain : '&cache_only=' + cacheOnly), {}, (json) => {
+    req('GET',(domain ? 'ssl_ov_info?domain=' + domain : '&cache_only=' + cacheOnly), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }
@@ -82,40 +85,36 @@ export const getDNSSECInfo = (domain, cb) => {
     }, e => {console.log(e); return})
 }
 export const getJoiningStatements = (hash_b64, cb) => {
-    req('POST', 'joining_statements', {hash_b64}, (json) => {
+    hash_b64 && req('GET',('joining_statements?hash=' + hash_b64), {}, (json) => {
         if ("statements" in json) {
-            cb(json.statements)
-            window.scrollTo(0,0)
-        } 
+            cb(json)
+        }
     }, e => {console.log(e); return})
 }
 export const getVotes = (hash_b64, cb) => {
-    req('POST', 'votes', {hash_b64}, (json) => {
+    hash_b64 && req('GET',('votes?hash=' + hash_b64), {}, (json) => {
         if ("statements" in json) {
             cb(json.statements)
-            window.scrollTo(0,0)
-        } 
+        }
     }, e => {console.log(e); return})
 }
 export const getOrganisationVerifications = (hash_b64, cb) => {
-    req('POST', 'organisation_verifications', {hash_b64}, (json) => {
+    hash_b64 && req('GET',('organisation_verifications?hash=' + hash_b64), {}, (json) => {
         if ("statements" in json) {
             cb(json.statements)
-            window.scrollTo(0,0)
-        } 
+        }
     }, e => {console.log(e); return})
 }
 export const getPersonVerifications = (hash_b64, cb) => {
-    req('POST', 'person_verifications', {hash_b64}, (json) => {
+    hash_b64 && req('GET',('person_verifications?hash=' + hash_b64), {}, (json) => {
         if ("statements" in json) {
             cb(json.statements)
-            window.scrollTo(0,0)
-        } 
+        }
     }, e => {console.log(e); return})
 }
 
 export const checkDomainVerification = (domain, cb, reject) => {
-    req('POST', "get_txt_records", domain, cb, reject)
+    req('GET', "txt_records?domain=" + domain, {}, cb, reject)
 }
 export const submitStatement = (body, cb, reject) => {
     req('POST', 'submit_statement', body, cb, reject)
