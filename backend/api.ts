@@ -35,11 +35,11 @@ api.post("/txt_records", async (req, res, next) => {
 
 api.post("/submit_statement", async (req, res, next) => {
     try {
-        const { statement, hash_b64, api_key } = req.body
+        const { statement, hash, api_key } = req.body
         if(!statement) return next(new Error('Statement missing'))
-        if(!hash_b64) return next(new Error('Statement hash missing'))
+        if(!hash) return next(new Error('Statement hash missing'))
         if(statement.length > 1499) return next(new Error('Statements cannot be longer than 1500 characters'))
-        const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64, 
+        const dbResult = await validateAndAddStatementIfMissing({statement, hash_b64: hash, 
             verification_method: api_key ? 'api' : 'dns', api_key})
             log && console.log(dbResult)
             res.end(JSON.stringify(dbResult));

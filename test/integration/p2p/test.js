@@ -4,6 +4,8 @@ var http = require('http');
 
 const crypto = require('node:crypto');
 
+const dockerMode = process.env.DOCKER || 'docker'
+
 function sha256(content) {  
     const base64 = crypto.createHash('sha256').update(content).digest('base64')
     const urlSafe = base64.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
@@ -100,15 +102,15 @@ Statement content: ${buildOrganisationVerificationContent({verifyName: 'node_'+n
 
 const generateStatement = (node) => {
     const statement = generateContent(node)
-    const hash_b64 = sha256(statement)
-    return({statement, hash_b64, api_key: "XXX" })
+    const hash = sha256(statement)
+    return({statement, hash, api_key: "XXX" })
 }
 
 
 const generateVerificationStatement = (node) => {
     const statement = generateVerification(node)
-    const hash_b64 = sha256(statement)
-    return({statement, hash_b64, api_key: "XXX" })
+    const hash = sha256(statement)
+    return({statement, hash, api_key: "XXX" })
 }
 
 let beforeCount = 1e9
@@ -125,7 +127,7 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateStatement(node)
             //console.log(json)
-            request('POST', json, node, 'submit_statement')
+            request('POST', json, node, 'submit_statement', (res) => { console.log(res) })
             //request('POST', json, node, 'submit_statement')
             i = i+1
         }
@@ -135,7 +137,7 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateVerificationStatement(node)
             //console.log(json)
-            request('POST', json, node, 'submit_statement')
+            request('POST', json, node, 'submit_statement', (res) => { console.log(res) })
             //request('POST', json, node, 'submit_statement')
             i = i+1
         }
