@@ -293,19 +293,6 @@ export const VerificationGraph = (props) => {
         nodes: nodes,
         edges: edges,
       },
-      layout: {
-        directed: true,
-        name: "elk",
-        rankDir: "LR",
-        spacingFactor: 1.5,
-        padding: 20,
-        //roots: "#CA",
-        elk: {
-          algorithm: "layered",
-          "elk.direction": "RIGHT",
-          "spacing.nodeNodeBetweenLayers": 80,
-        },
-      },
     });
 
     cy.userZoomingEnabled(false);
@@ -332,7 +319,21 @@ export const VerificationGraph = (props) => {
     cy.on("mouseout", "edge", () =>
       document.body.setAttribute("style", "cursor: auto;")
     );
+    cy.layout({
+        directed: true,
+        name: "elk",
+        rankDir: "LR",
+        spacingFactor: 1.5,
+        padding: 20,
+        //roots: "#CA",
+        elk: {
+          algorithm: "layered",
+          "elk.direction": "RIGHT",
+          "spacing.nodeNodeBetweenLayers": 80,
+        },
+    }).run();
   }, [props, sslCerts, setSslCerts, fetchedSslCerts]);
+
   return (
     <Fragment>
       <h3>Verification Graph</h3>
