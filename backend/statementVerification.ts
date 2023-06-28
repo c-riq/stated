@@ -113,13 +113,13 @@ export const verifyTXTRecord = async (domain, record) => {
 }
 
 const verifyViaStatedApi = async (domain, hash_b64) => {
-    let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement/'
+    let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement?hash=' + hash_b64
     log && console.log('verifyViaStatedApi', url, hash_b64)
     try {
         const result = await axios({
-            method: "POST",
-            url, headers: { 'Content-Type': 'application/json'},
-            data: { hash_b64 }})      
+            method: "GET",
+            url, headers: { 'Content-Type': 'application/json'}
+        })      
         if (result.data?.statements?.length > 0){
             console.log(result.data.statements[0].hash_b64, 'result from ', domain)
             if (result.data.statements[0].hash_b64 === hash_b64){

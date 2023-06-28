@@ -1,6 +1,6 @@
 ### Stated
 Stated enables large groups of organisations to make decisions collectively.<br />
-An example decision would be a set of private sanctions by companies to enforce international laws or peace.<br />
+An example decision would be a set of private sanctions by companies to enforce international laws or to promote peace.<br />
 To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/own/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system more resillient against censorship and manipulation.<br/>
 The identity of the signature authors are established by:

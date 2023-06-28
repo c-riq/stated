@@ -4,8 +4,6 @@ var http = require('http');
 
 const crypto = require('node:crypto');
 
-const dockerMode = process.env.DOCKER || 'docker'
-
 function sha256(content) {  
     const base64 = crypto.createHash('sha256').update(content).digest('base64')
     const urlSafe = base64.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
