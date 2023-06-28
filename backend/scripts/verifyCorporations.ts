@@ -134,13 +134,13 @@ for (const i of array) {
     })
     const data = {
         statement,
-        hash_b64: sha256(statement),
+        hash: sha256(statement),
         api_key: apiKey
     }
     submitStatement(data, (res) => {
         console.log(res);
     });
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 })();
 console.log(array.filter((i) => i.website));
