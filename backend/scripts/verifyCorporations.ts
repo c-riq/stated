@@ -93,6 +93,7 @@ for (const i of array) {
     // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,
     // ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
     const {
+        skip,
         name,
         english_name,
         website_domain,
@@ -108,6 +109,10 @@ for (const i of array) {
         continue;
     }
     if (city.match(/\|/g)){
+        continue;
+    }
+    if (skip){
+        console.log('skip, ', skip + ': ' + name)
         continue;
     }
     console.log('add')
