@@ -346,4 +346,3 @@ export const forbiddenStrings = a =>
 	a.filter(i =>
 		forbiddenChars('' + i)
 	)
-const b =  	'ˈʽʼʻʹʺ' + `sdf«»‹› ̓`
