@@ -100,15 +100,15 @@ Statement content: ${buildOrganisationVerificationContent({verifyName: 'node_'+n
 
 const generateStatement = (node) => {
     const statement = generateContent(node)
-    const hash_b64 = sha256(statement)
-    return({statement, hash_b64, api_key: "XXX" })
+    const hash = sha256(statement)
+    return({statement, hash, api_key: "XXX" })
 }
 
 
 const generateVerificationStatement = (node) => {
     const statement = generateVerification(node)
-    const hash_b64 = sha256(statement)
-    return({statement, hash_b64, api_key: "XXX" })
+    const hash = sha256(statement)
+    return({statement, hash, api_key: "XXX" })
 }
 
 let beforeCount = 1e9
@@ -118,14 +118,14 @@ const test = () => {
         console.log(res)
         const r = JSON.parse(res)
         beforeCount = r.statements.length
-        console.log(beforeCount)
+        console.log('initial count: ', beforeCount)
 
         let i = 0
         while (i < statementCount){
             const node = (i % nodes.length) + 1
             const json = generateStatement(node)
             //console.log(json)
-            request('POST', json, node, 'submit_statement')
+            request('POST', json, node, 'submit_statement', (res) => { console.log(res) })
             //request('POST', json, node, 'submit_statement')
             i = i+1
         }
@@ -135,7 +135,7 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateVerificationStatement(node)
             //console.log(json)
-            request('POST', json, node, 'submit_statement')
+            request('POST', json, node, 'submit_statement', (res) => { console.log(res) })
             //request('POST', json, node, 'submit_statement')
             i = i+1
         }
@@ -151,9 +151,9 @@ const test = () => {
             } else {
                 request('GET', {}, 1, 'statements', (res) => {
                     const r = JSON.parse(res)
-                    console.log(r.statements.length)
+                    console.log('final count node 1: ' + r.statements.length)
                     if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
-                        console.log(r.statements.length - beforeCount, statementCount + verificationCount)
+                        console.log('count change in node 1: ' + (r.statements.length - beforeCount), 'sent statement count: ' + statementCount + verificationCount)
                         throw(new Error('Not all statements propagated to node 1'))
                     } else {
                         process.stdout.write('success');
