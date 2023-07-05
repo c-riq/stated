@@ -31,6 +31,7 @@ export const minEmployeeCountToRange = (n) => {
 }
 export const buildStatement = ({domain, author, time, tags = [], content, representative = ''}) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
+	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	const statement = "Publishing domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" + // organisation name
 			(representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
@@ -40,6 +41,7 @@ export const buildStatement = ({domain, author, time, tags = [], content, repres
 	return statement
 }
 export const parseStatement = (s) => {
+	if(s.match(/\n\n/)) return {error: "Statements cannot contain two line breaks in a row, as this is used for separating statements."}
 	const statementRegex= new RegExp(''
 	+ /^Publishing domain: ([^\n]+?)\n/.source
 	+ /Author: ([^\n]+?)\n/.source
