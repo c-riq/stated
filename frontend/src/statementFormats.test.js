@@ -3,7 +3,7 @@
 const { parseRating, parseStatement, 
     parseOrganisationVerification, 
     parsePersonVerification, parseDispute, 
-    parseVote, parsePoll } = require('./statementFormats')
+    parseVote, parsePoll, parseQuotation } = require('./statementFormats')
 
 test('parse statement', () => {
 	const statement = `Publishing domain: localhost
@@ -111,7 +111,7 @@ Statement content:
 });
 
 test('parse vote', () => {
-	let dispute = `Publishing domain: rixdata.net
+	let vote = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
@@ -120,9 +120,33 @@ Statement content:
 	Poll: ABC
 	Option: XYZ
 `
-	const parsedStatement = parseStatement(dispute)
+	const parsedStatement = parseStatement(vote)
 	const parsedVote = parseVote(parsedStatement.content)
 	const option = parsedVote.option
 	expect(option).toBe('XYZ');
 });
 
+test('parse quotation', () => {
+	let quotation = `Publishing domain: rixdata.net
+Author: Example Inc.
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement content: 
+	Type: Quotation
+	Original author: XYZ Company Inc.
+	Author verification: eXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
+	Original publication time: Sun, 04 Sep 2022 14:48:50 GMT
+	Source: https://www.facebook.com/companyxzy/posts/XXXX
+	Picture proof: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
+	Confidence: 0.9
+	Quotation: we give example.com a 2/5 star rating
+	Paraphrased statement: 
+		Type: Rating
+		Organisation name: example
+		Organisation domain: example.com
+		Our rating: 2/5 Stars
+`
+	const parsedStatement = parseStatement(quotation)
+	const parsedQuotation = parseQuotation(parsedStatement.content)
+	const type = parsedQuotation.type
+	expect(type).toBe('rating');
+});

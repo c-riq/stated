@@ -10,6 +10,7 @@ import {subdivisions} from './constants/provinces_un_locode'
 
 export const statementTypes = {
     statement: 'statement',
+    quotation: 'quotation',
     organisationVerification: 'organisation_verification',
     personVerification: 'person_verification',
     poll: 'poll',
@@ -57,6 +58,48 @@ export const parseStatement = (s) => {
 		content: m[6] || m[8],
 		type: m[7] ? m[7].toLowerCase().replace(' ','_') : undefined,
 	} : {error: 'Invalid statement format'}
+}
+export const buildQuotationContent = ({originalAuthor, authorVerification, originalTime, source,
+		quotation, paraphrasedStatement, picture, confidence}) => {
+	if(quotation && quotation.match(/\n/)) throw(new Error("Quotation must not contain line breaks."))
+	const content = "\n" +
+	"\t" + "Type: Quotation" + "\n" +
+	"\t" + "Original author: " + originalAuthor + "\n" +
+	"\t" + "Author verification: " + authorVerification + "\n" +
+	"\t" + "Original publication time: " + originalTime + "\n" +
+	"\t" + "Source: " + source + "\n" +
+	(picture?.length > 0 ? "Picture proof: " + (picture || "") + "\n" : '') +
+	(confidence?.length > 0 ? "Confidence: " + (confidence || "") + "\n" : '') +
+	(quotation?.length > 0 ? "Quotation: " + (quotation || "") + "\n" : '') +
+	(paraphrasedStatement?.length > 0 ? "Paraphrased statement: " + (paraphrasedStatement || "") + "\n" : '') +
+	""
+	return content
+}
+export const parseQuotation = (s) => {
+	const voteRegex= new RegExp(''
+	+ /^\n\tType: Quotation\n/.source
+	+ /\tOriginal author: (?<originalAuthor>[^\n]+?)\n/.source
+	+ /\tAuthor verification: (?<authorVerification>[^\n]+?)\n/.source
+	+ /\tOriginal publication time: (?<originalTime>[^\n]+?)\n/.source
+	+ /\tSource: (?<source>[^\n]+?)\n/.source
+	+ /(?:\tPicture proof: (?<picture>[^\n]+?)\n)?/.source
+	+ /(?:\tConfidence: (?<confidence>[^\n]+?)\n)?/.source
+	+ /(?:\tQuotation: (?<quotation>[^\n]+?)\n)?/.source
+	+ /(?:\tParaphrased statement: (?:(\n\t\tType: ([^\n]+?)\n[\s\S]+?)|([\s\S]+?)))/.source
+	+ /$/.source
+	);
+	const m = s.match(voteRegex)
+	return m ? {
+		originalAuthor: m[1],
+		authorVerification: m[2],
+		originalTime: m[3],
+		source: m[4],
+		picture: m[5],
+		confidence: m[6],
+		quotation: m[7],
+		content: m[9] ? m[8].replace(/\t\t/g, "	") : m[10],
+		type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined,
+	} : {error : "Invalid quotation Format"}
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
 	const content = "\n" +
