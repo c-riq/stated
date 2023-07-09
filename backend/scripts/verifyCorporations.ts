@@ -1,6 +1,7 @@
 import fs from "fs";
 
 import https from "https";
+import http from "http";
 
 import {
   buildOrganisationVerificationContent,
@@ -18,6 +19,7 @@ dax_index_companies.csv
 organisations_list.csv
 */
 const domain = process.env.DOMAIN || "rixdata.net";
+const useHttps = (process.env.PROTOCOL || "https") === "https";
 const author = process.env.AUTHOR || "Rix Data NL B.V."
 const port = process.env.PORT || 443;
 const apiKey = process.env.API_KEY || "XXX";
@@ -35,7 +37,7 @@ const submitStatement = (data, callback) => {
         "Content-Type": "application/json",
       },
     };
-    var post_req = https.request(post_options, (res) => {
+    var post_req = (useHttps ? https : http).request(post_options, (res) => {
       let rawData = "";
       res.setEncoding("utf8");
       res.on("data", function (chunk) {
@@ -91,6 +93,7 @@ for (const i of array) {
     // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,
     // ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
     const {
+        skip,
         name,
         english_name,
         website_domain,
@@ -106,6 +109,10 @@ for (const i of array) {
         continue;
     }
     if (city.match(/\|/g)){
+        continue;
+    }
+    if (skip){
+        console.log('skip, ', skip + ': ' + name)
         continue;
     }
     console.log('add')
@@ -132,7 +139,7 @@ for (const i of array) {
     })
     const data = {
         statement,
-        hash_b64: sha256(statement),
+        hash: sha256(statement),
         api_key: apiKey
     }
     submitStatement(data, (res) => {
