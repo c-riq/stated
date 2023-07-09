@@ -1,9 +1,7 @@
-
-
 const { parseRating, parseStatement, 
     parseOrganisationVerification, 
     parsePersonVerification, parseDispute, 
-    parseVote, parsePoll } = require('./statementFormats')
+    parseVote, parsePoll, parseQuotation } = require('./statementFormats')
 
 test('parse statement', () => {
 	const statement = `Publishing domain: localhost
@@ -81,12 +79,12 @@ Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
 	Type: Dispute statement
 	Description: We are convinced that the referenced statement is not authentic.
-	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 `
 	const parsedStatement = parseStatement(dispute)
 	const parsedDispute = parseDispute(parsedStatement.content)
 	const hash = parsedDispute.hash_b64
-	expect(hash).toBe('5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=');
+	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
 });
 
 test('parse poll', () => {
@@ -111,18 +109,105 @@ Statement content:
 });
 
 test('parse vote', () => {
-	let dispute = `Publishing domain: rixdata.net
+	let vote = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
 	Type: Vote
-	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Poll id: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 	Poll: ABC
 	Option: XYZ
 `
-	const parsedStatement = parseStatement(dispute)
+	const parsedStatement = parseStatement(vote)
 	const parsedVote = parseVote(parsedStatement.content)
 	const option = parsedVote.option
 	expect(option).toBe('XYZ');
 });
 
+test('parse quotation', () => {
+	let quotation = `Publishing domain: rixdata.net
+Author: Example Inc.
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement content: 
+	Type: Quotation
+	Original author: XYZ Company Inc.
+	Author verification: eXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
+	Original publication time: Sun, 04 Sep 2022 14:48:50 GMT
+	Source: https://www.facebook.com/companyxzy/posts/XXXX
+	Picture proof: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
+	Confidence: 0.9
+	Quotation: we give example.com a 2/5 star rating
+	Paraphrased statement: 
+		Type: Rating
+		Organisation name: example
+		Organisation domain: example.com
+		Our rating: 2/5 Stars
+`
+	const parsedStatement = parseStatement(quotation)
+	const parsedQuotation = parseQuotation(parsedStatement.content)
+	const type = parsedQuotation.type
+	expect(type).toBe('rating');
+});
+
+const { buildRating, buildStatement, buildOrganisationVerificationContent } = require('./statementFormats')
+
+const randomUnicodeString = () => Array.from(
+	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
+  ).join('')
+
+test('build statement', () => {
+	const [domain, author, time, content, representative, supersededStatement] = Array.from({ length: 6 },randomUnicodeString)
+	const tags = Array.from({ length: 4 },randomUnicodeString)
+	const statementContent = buildStatement({domain, author, time, content, representative, supersededStatement, tags})
+	const parsedStatement = parseStatement(statementContent)
+	expect(parsedStatement.domain).toBe(domain)
+	expect(parsedStatement.author).toBe(author)
+	expect(parsedStatement.time).toBe(time)
+	expect(parsedStatement.content).toBe(content)
+	expect(parsedStatement.representative).toBe(representative)
+	expect(parsedStatement.supersededStatement).toBe(supersededStatement)
+	expect(parsedStatement.tags.split(', ').sort()).toStrictEqual(tags.sort())
+});
+
+test('build verification', () => {
+	const [name, englishName, city, domain, foreignDomain, serialNumber,
+		reliabilityPolicy, pictureHash] = Array.from({ length: 8 },randomUnicodeString)
+	const country = 'Germany'
+	const province = 'Bayern'
+	const legalForm = 'corporation'
+	const employeeCount = '100-1000'
+	const confidence = '0.8'
+	const verificationContent = buildOrganisationVerificationContent({
+		name, englishName, country, city, province, legalForm, domain, pictureHash,
+		foreignDomain, serialNumber, confidence, reliabilityPolicy, employeeCount })
+	console.log(verificationContent)
+	const parsedVerification = parseOrganisationVerification(verificationContent)
+	console.log(parsedVerification)
+	expect(parsedVerification.name).toBe(name)
+	expect(parsedVerification.englishName).toBe(englishName)
+	expect(parsedVerification.country).toBe(country)
+	expect(parsedVerification.city).toBe(city)
+	expect(parsedVerification.province).toBe(province)
+	expect(parsedVerification.legalForm).toBe(legalForm)
+	expect(parsedVerification.domain).toBe(domain)
+	expect(parsedVerification.foreignDomain).toBe(foreignDomain)
+	expect(parsedVerification.serialNumber).toBe(serialNumber)
+	expect(parsedVerification.confidence).toBe(parseFloat(confidence))
+	expect(parsedVerification.pictureHash).toBe(pictureHash)
+	expect(parsedVerification.reliabilityPolicy).toBe(reliabilityPolicy)
+	expect(parsedVerification.employeeCount).toBe(employeeCount)
+
+});
+
+test('build rating', () => {
+	const [organisation, domain, comment] = Array.from({ length: 3 },randomUnicodeString)
+	const ratingInt = Math.floor(Math.random() * 5.99)
+	const rating = `${ratingInt}/5 Stars`
+	const ratingContent = buildRating({organisation, domain, rating, comment})
+	console.log(ratingContent)
+	const parsedRating = parseRating(ratingContent)
+	expect(parsedRating.organisation).toBe(organisation)
+	expect(parsedRating.domain).toBe(domain)
+	expect(parsedRating.rating).toBe('' + ratingInt)
+	expect(parsedRating.comment).toBe(comment)
+});

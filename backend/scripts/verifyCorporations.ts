@@ -118,14 +118,14 @@ for (const i of array) {
     console.log('add')
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        verifyName: name,
+        name,
         englishName: english_name,
-        verifyDomain: website_domain,
+        domain: website_domain,
         country,
         province,
         city,
         serialNumber: serial_number || employer_identification_number,
-        legalEntity: legalForms.corporation,
+        legalForm: legalForms.corporation,
         confidence: confidence,
         employeeCount: employees_min && minEmployeeCountToRange(employees_min),
         reliabilityPolicy: "https://stated.rixdata.net/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE",
