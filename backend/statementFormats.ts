@@ -18,7 +18,8 @@ export const statementTypes = {
     response: 'response',
     dispute: 'dispute_statement',
     rating: 'rating',
-	signPdf: "sign_pdf"
+	signPdf: "sign_pdf",
+	bounty: "bounty",
 }
 export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000+"}
 export const minEmployeeCountToRange = (n) => {
@@ -31,6 +32,7 @@ export const minEmployeeCountToRange = (n) => {
 }
 export const buildStatement = ({domain, author, time, tags = [], content, representative = ''}) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
+	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	const statement = "Publishing domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" + // organisation name
 			(representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
@@ -40,6 +42,7 @@ export const buildStatement = ({domain, author, time, tags = [], content, repres
 	return statement
 }
 export const parseStatement = (s) => {
+	if(s.match(/\n\n/)) return {error: "Statements cannot contain two line breaks in a row, as this is used for separating statements."}
 	const statementRegex= new RegExp(''
 	+ /^Publishing domain: ([^\n]+?)\n/.source
 	+ /Author: ([^\n]+?)\n/.source
@@ -381,6 +384,31 @@ export const parseRating = (s) => {
 		rating: m[3],
 		comment: m[4]
 	} : {error: "Invalid rating format"}
+}
+
+export const buildBounty = ({reward, judge, bountyDescription}) => {
+	const content = "\n" +
+	"\t" + "Type: Bounty" + "\n" +
+	"\t" + "Reward: " + reward + "\n" +
+	"\t" + "Judge in case of dispute: " + judge + "\n" +
+	"\t" + "Description: " + bountyDescription + "\n" +
+	""
+	return content
+}
+export const parseBounty = (s) => {
+	const ratingRegex= new RegExp(''
+	+ /^\n\tType: Bounty\n/.source
+	+ /\tReward: (?<reward>[^\n]*?)\n/.source
+	+ /\tJudge in case of dispute: (?<judge>[^\n]*?)\n/.source
+	+ /\tDescription: (?<bountyDescription>[^\n]*?)\n/.source
+	+ /$/.source
+	);
+	const m = s.match(ratingRegex)
+	return m ? {
+		reward: m[1],
+		judge: m[2],
+		bountyDescription: m[3],
+	} : {error: "Invalid bounty format"}
 }
 
 export const forbiddenChars = s => /;|>|<|"|'|’|\\/.test(s)

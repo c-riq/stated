@@ -79,12 +79,12 @@ Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
 	Type: Dispute statement
 	Description: We are convinced that the referenced statement is not authentic.
-	Hash of referenced statement: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 `
 	const parsedStatement = parseStatement(dispute)
 	const parsedDispute = parseDispute(parsedStatement.content)
 	const hash = parsedDispute.hash_b64
-	expect(hash).toBe('5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=');
+	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
 });
 
 test('parse poll', () => {
@@ -114,7 +114,7 @@ Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
 	Type: Vote
-	Poll id: 5HKiyQXGV4xavq+Nn9RXi/ndUH+2BEux3ccFIjaSk/8=
+	Poll id: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 	Poll: ABC
 	Option: XYZ
 `
