@@ -93,10 +93,10 @@ for (const i of array) {
     }
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        verifyName: mfa_name,
-        verifyDomain: foreign_affairs_ministry_domain,
+        name: mfa_name,
+        domain: foreign_affairs_ministry_domain,
         country,
-        legalEntity: legalForms.foreign_affairs_ministry,
+        legalForm: legalForms.foreign_affairs_ministry,
         confidence: confidence_fa_domain,
     });
     const statement = buildStatement({

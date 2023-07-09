@@ -36,8 +36,8 @@ const OrganisationVerificationForm = props => {
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
         try {
-            const content = buildOrganisationVerificationContent({verifyName, verifyDomain, city, country, province, serialNumber, legalEntity: legalForm,
-                foreignDomain: "", verificationMethod: "", confidence, reliabilityPolicy, supersededVerificationHash: "", pictureHash: "", employeeCount})
+            const content = buildOrganisationVerificationContent({name: verifyName, domain: verifyDomain, city, country, province, serialNumber, legalForm,
+                foreignDomain: "", confidence, reliabilityPolicy, pictureHash: "", employeeCount})
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             console.log(statement)

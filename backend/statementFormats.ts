@@ -30,7 +30,7 @@ export const minEmployeeCountToRange = (n) => {
 	if(n >= 10) return employeeCounts["10"]
 	if(n >= 0) return employeeCounts["0"]
 }
-export const buildStatement = ({domain, author, time, tags = [], content, representative = ''}) => {
+export const buildStatement = ({domain, author, time, tags = [], content, representative = '', supersededStatement = ''}) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
 	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	const statement = "Publishing domain: " + domain + "\n" +
@@ -38,6 +38,7 @@ export const buildStatement = ({domain, author, time, tags = [], content, repres
 			(representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
 			"Time: " + time + "\n" +
             (tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
+			(supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
             "Statement content: " +  content;
 	return statement
 }
@@ -49,6 +50,7 @@ export const parseStatement = (s) => {
 	+ /(?:Authorized signing representative: ([^\n]*?)\n)?/.source
 	+ /Time: ([^\n]+?)\n/.source
 	+ /(?:Tags: ([^\n]*?)\n)?/.source
+	+ /(?:Superseded statement: ([^\n]*?)\n)?/.source
 	+ /Statement content: (?:(\n\tType: ([^\n]+?)\n[\s\S]+?$)|([\s\S]+?$))/.source
 	);
 	const m = s.match(statementRegex)
@@ -58,8 +60,9 @@ export const parseStatement = (s) => {
 		representative: m[3],
 		time: m[4],
 		tags: m[5],
-		content: m[6] || m[8],
-		type: m[7] ? m[7].toLowerCase().replace(' ','_') : undefined,
+		supersededStatement: m[6],
+		content: m[7] || m[9],
+		type: m[8] ? m[8].toLowerCase().replace(' ','_') : undefined,
 	} : {error: 'Invalid statement format'}
 }
 export const buildQuotationContent = ({originalAuthor, authorVerification, originalTime, source,
@@ -159,34 +162,31 @@ export const parsePoll = (s) => {
 }
 
 export const buildOrganisationVerificationContent = (
-		{verifyName, englishName = '', country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
-		verificationMethod, confidence = '', supersededVerificationHash = '', pictureHash = '',
-		reliabilityPolicy = '', employeeCount = ''}) => {
+		{name, englishName = '', country, city, province, legalForm, domain, foreignDomain, serialNumber,
+		confidence = '', reliabilityPolicy = '', employeeCount = '', pictureHash = ''}) => {
 	/* Omit any fields that may have multiple values */
-	console.log(verifyName, country, city, province, legalEntity, verifyDomain)
-	if(!verifyName || !country || !legalEntity || (!verifyDomain && !foreignDomain)) throw new Error("Missing required fields")
+	console.log(name, country, city, province, legalForm, domain)
+	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
 	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
 	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
-	if(!Object.values(legalForms).includes(legalEntity)) throw new Error("Invalid legal entity " + legalEntity)
+	if(!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal entity " + legalForm)
 	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 	if(confidence && !confidence?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
 
 	return "\n" +
 	"\t" + "Type: Organisation verification" + "\n" +
 	"\t" + "Description: We verified the following information about an organisation." + "\n" +
-	"\t" + "Name: " + verifyName + "\n" + // Full name as in business register
+	"\t" + "Name: " + name + "\n" + // Full name as in business register
 	(englishName ? "\t" + "English name: " + englishName + "\n" : "") + // wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
-	"\t" + "Legal entity: " + legalEntity + "\n" +
-	(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
+	"\t" + "Legal entity: " + legalForm + "\n" +
+	(domain ? "\t" + "Owner of the domain: " + domain + "\n" : "") +
 	(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
 	(province ? "\t" + "Province or state: " + province + "\n" : "") + // UN/LOCODE
 	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
 	(city ? "\t" + "City: " + city + "\n" : "") + // wikidata english name, if available
 	(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
-	(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
-	(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
 	(employeeCount ? "\t" + "Employee count: " + employeeCount + "\n" : "") +
 	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
@@ -206,6 +206,7 @@ export const parseOrganisationVerification = (s) => {
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
+	+ /(?:\tLogo: (?<pictureHash>[^\n]+?)\n)?/.source
 	+ /(?:\tEmployee count: (?<employeeCount>[01\,\+\-]+?)\n)?/.source
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /(?:\tConfidence: (?<confidence>[0-9\.]+?)\n)?/.source
@@ -222,16 +223,17 @@ export const parseOrganisationVerification = (s) => {
 		province: m[7],
 		serialNumber: m[8],
 		city: m[9],
-		employeeCount: m[10],
-		reliabilityPolicy: m[11],
-		confidence: m[12] && parseFloat(m[12]),
+		pictureHash: m[10],
+		employeeCount: m[11],
+		reliabilityPolicy: m[12],
+		confidence: m[13] && parseFloat(m[13]),
 	} : {error: "Invalid organisation verification format"}
 }
 
 export const buildPersonVerificationContent = (
 		{verifyName, birthCountry, birthCity, verifyDomain = null, foreignDomain = null,
 		birthDate, job = null, employer = null, verificationMethod = null, confidence = null,
-		supersededVerificationHash = null, pictureHash = null, reliabilityPolicy= null}) => {
+		pictureHash = null, reliabilityPolicy= null}) => {
 	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
 	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) return ""
 	let content = "\n" +
@@ -247,7 +249,6 @@ export const buildPersonVerificationContent = (
 		(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
 		(pictureHash ? "\t" + "Picture: " + pictureHash + "\n" : "") +
 		(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
-		(supersededVerificationHash ? "\t" + "Superseded verification: " + supersededVerificationHash + "\n" : "") +
 		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
 		(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 		""
@@ -269,7 +270,6 @@ export const parsePersonVerification = (s) => {
 	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
 	+ /(?:\tPicture: (?<picture>[^\n]+?)\n)?/.source
 	+ /(?:\tVerification method: (?<verificationMethod>[^\n]+?)\n)?/.source
-	+ /(?:\tSuperseded verification: (?<supersededVerification>[^\n]+?)\n)?/.source
 	+ /(?:\tConfidence: (?<confidence>[^\n]+?)\n)?/.source
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /$/.source
@@ -287,9 +287,8 @@ export const parsePersonVerification = (s) => {
 		foreignDomain: m[8],
 		picture: m[9],
 		verificationMethod: m[10],
-		supersededVerification: m[11],
-		confidence: m[12] && parseFloat(m[12]),
-		reliabilityPolicy: m[13]
+		confidence: m[11] && parseFloat(m[11]),
+		reliabilityPolicy: m[12]
 	} : {error: "Invalid person verification format"}
 }
 
@@ -390,7 +389,7 @@ export const buildBounty = ({reward, judge, bountyDescription}) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +
 	"\t" + "Reward: " + reward + "\n" +
-	"\t" + "Judge in case of dispute: " + judge + "\n" +
+	(judge ? "\t" + "Judge in case of dispute: " + judge + "\n" : "") +
 	"\t" + "Description: " + bountyDescription + "\n" +
 	""
 	return content
@@ -399,7 +398,7 @@ export const parseBounty = (s) => {
 	const ratingRegex= new RegExp(''
 	+ /^\n\tType: Bounty\n/.source
 	+ /\tReward: (?<reward>[^\n]*?)\n/.source
-	+ /\tJudge in case of dispute: (?<judge>[^\n]*?)\n/.source
+	+ /(?:\tJudge in case of dispute: (?<judge>[^\n]*?)\n)?/.source
 	+ /\tDescription: (?<bountyDescription>[^\n]*?)\n/.source
 	+ /$/.source
 	);

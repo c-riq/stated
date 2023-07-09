@@ -148,3 +148,66 @@ Statement content:
 	const type = parsedQuotation.type
 	expect(type).toBe('rating');
 });
+
+const { buildRating, buildStatement, buildOrganisationVerificationContent } = require('./statementFormats')
+
+const randomUnicodeString = () => Array.from(
+	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
+  ).join('')
+
+test('build statement', () => {
+	const [domain, author, time, content, representative, supersededStatement] = Array.from({ length: 6 },randomUnicodeString)
+	const tags = Array.from({ length: 4 },randomUnicodeString)
+	const statementContent = buildStatement({domain, author, time, content, representative, supersededStatement, tags})
+	const parsedStatement = parseStatement(statementContent)
+	expect(parsedStatement.domain).toBe(domain)
+	expect(parsedStatement.author).toBe(author)
+	expect(parsedStatement.time).toBe(time)
+	expect(parsedStatement.content).toBe(content)
+	expect(parsedStatement.representative).toBe(representative)
+	expect(parsedStatement.supersededStatement).toBe(supersededStatement)
+	expect(parsedStatement.tags.split(', ').sort()).toStrictEqual(tags.sort())
+});
+
+test('build verification', () => {
+	const [name, englishName, city, domain, foreignDomain, serialNumber,
+		reliabilityPolicy, pictureHash] = Array.from({ length: 8 },randomUnicodeString)
+	const country = 'Germany'
+	const province = 'Bayern'
+	const legalForm = 'corporation'
+	const employeeCount = '100-1000'
+	const confidence = '0.8'
+	const verificationContent = buildOrganisationVerificationContent({
+		name, englishName, country, city, province, legalForm, domain, pictureHash,
+		foreignDomain, serialNumber, confidence, reliabilityPolicy, employeeCount })
+	console.log(verificationContent)
+	const parsedVerification = parseOrganisationVerification(verificationContent)
+	console.log(parsedVerification)
+	expect(parsedVerification.name).toBe(name)
+	expect(parsedVerification.englishName).toBe(englishName)
+	expect(parsedVerification.country).toBe(country)
+	expect(parsedVerification.city).toBe(city)
+	expect(parsedVerification.province).toBe(province)
+	expect(parsedVerification.legalForm).toBe(legalForm)
+	expect(parsedVerification.domain).toBe(domain)
+	expect(parsedVerification.foreignDomain).toBe(foreignDomain)
+	expect(parsedVerification.serialNumber).toBe(serialNumber)
+	expect(parsedVerification.confidence).toBe(parseFloat(confidence))
+	expect(parsedVerification.pictureHash).toBe(pictureHash)
+	expect(parsedVerification.reliabilityPolicy).toBe(reliabilityPolicy)
+	expect(parsedVerification.employeeCount).toBe(employeeCount)
+
+});
+
+test('build rating', () => {
+	const [organisation, domain, comment] = Array.from({ length: 3 },randomUnicodeString)
+	const ratingInt = Math.floor(Math.random() * 5.99)
+	const rating = `${ratingInt}/5 Stars`
+	const ratingContent = buildRating({organisation, domain, rating, comment})
+	console.log(ratingContent)
+	const parsedRating = parseRating(ratingContent)
+	expect(parsedRating.organisation).toBe(organisation)
+	expect(parsedRating.domain).toBe(domain)
+	expect(parsedRating.rating).toBe('' + ratingInt)
+	expect(parsedRating.comment).toBe(comment)
+});
