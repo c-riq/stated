@@ -137,7 +137,7 @@ export const getStatementsWithDetailFactory =
                   ${minId ? "AND id > $1 " : ""}
                   ${
                     searchQuery
-                      ? "AND (content LIKE '%'||$2||'%' OR tags LIKE '%'||$2||'%')"
+                      ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
                       : ""
                   }
                   GROUP BY 1
@@ -184,7 +184,7 @@ export const getStatementsWithDetailFactory =
                 WHERE _rank=1
                 ORDER BY repost_count DESC, id DESC;
               `,
-          [minId || 0, searchQuery || "searchQuery"],
+          [minId || 0, (searchQuery || "searchQuery").toLowerCase()],
           (error, results) => {
             if (error) {
               console.log(error);

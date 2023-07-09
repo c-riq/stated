@@ -168,8 +168,9 @@ export const buildOrganisationVerificationContent = (
 	console.log(name, country, city, province, legalForm, domain)
 	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
-	if(!countries.countries.map(c => c[0]).includes(country)) throw new Error("Invalid country " + country)
-	if(province && !subdivisions.map(c => c[2]).includes(province)) throw new Error("Invalid province " + province)
+	const countryObject = countries.countries.find(c => c[0] === country)
+	if(!countryObject) throw new Error("Invalid country " + country)
+	if(province && !subdivisions.filter(c => c[0] === countryObject[1]).map(c => c[2]).includes(province)) throw new Error("Invalid province " + province + ", " + country)
 	if(!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal entity " + legalForm)
 	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 	if(confidence && !confidence?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
@@ -410,9 +411,8 @@ export const parseBounty = (s) => {
 	} : {error: "Invalid bounty format"}
 }
 
-export const forbiddenChars = s => /;|>|<|"|'|’|\\/.test(s)
-export const inValid256BitBase64 = s => !(/^[A-Za-z0-9+/]{30,60}[=]{0,2}$/.test(s))
+export const forbiddenChars = s => /;|>|=|<|"|'|’|\\/.test(s)
 export const forbiddenStrings = a =>
 	a.filter(i =>
-		forbiddenChars('' + i) && inValid256BitBase64('' + i)
+		forbiddenChars('' + i)
 	)
