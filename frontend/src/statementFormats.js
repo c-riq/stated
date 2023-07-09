@@ -29,12 +29,13 @@ export const minEmployeeCountToRange = (n) => {
 	if(n >= 10) return employeeCounts["10"]
 	if(n >= 0) return employeeCounts["0"]
 }
-export const buildStatement = ({domain, author, time, tags = [], content, representative = ''}) => {
+export const buildStatement = ({domain, author, time, tags = [], content, representative = '', penalty}) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
 	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	const statement = "Publishing domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" + // organisation name
 			(representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
+			(penalty?.length > 0 ? "Contract penalty: " + (penalty || "") + "\n" : '') +
 			"Time: " + time + "\n" +
             (tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
             "Statement content: " +  content;
@@ -46,6 +47,7 @@ export const parseStatement = (s) => {
 	+ /^Publishing domain: ([^\n]+?)\n/.source
 	+ /Author: ([^\n]+?)\n/.source
 	+ /(?:Authorized signing representative: ([^\n]*?)\n)?/.source
+	+ /(?:Contract penalty: ([^\n]*?)\n)?/.source
 	+ /Time: ([^\n]+?)\n/.source
 	+ /(?:Tags: ([^\n]*?)\n)?/.source
 	+ /Statement content: (?:(\n\tType: ([^\n]+?)\n[\s\S]+?$)|([\s\S]+?$))/.source
