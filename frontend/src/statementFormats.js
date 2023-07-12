@@ -74,10 +74,11 @@ export const buildQuotationContent = ({originalAuthor, authorVerification, origi
 	"\t" + "Author verification: " + authorVerification + "\n" +
 	"\t" + "Original publication time: " + originalTime + "\n" +
 	"\t" + "Source: " + source + "\n" +
-	(picture?.length > 0 ? "Picture proof: " + (picture || "") + "\n" : '') +
-	(confidence?.length > 0 ? "Confidence: " + (confidence || "") + "\n" : '') +
-	(quotation?.length > 0 ? "Quotation: " + (quotation || "") + "\n" : '') +
-	(paraphrasedStatement?.length > 0 ? "Paraphrased statement: " + (paraphrasedStatement || "") + "\n" : '') +
+	(picture?.length > 0 ? "\t" + "Picture proof: " + (picture || "") + "\n" : '') +
+	(confidence?.length > 0 ? "\t" + "Confidence: " + (confidence || "") + "\n" : '') +
+	(quotation?.length > 0 ? "\t" + "Quotation: " + (quotation || "") + "\n" : '') +
+	(paraphrasedStatement?.length > 0 ? "\t" + "Paraphrased statement: " + 
+		(paraphrasedStatement || "").replace('\n\t', '\n\t\t') + "\n" : '') +
 	""
 	return content
 }
@@ -103,20 +104,20 @@ export const parseQuotation = (s) => {
 		picture: m[5],
 		confidence: m[6],
 		quotation: m[7],
-		content: m[9] ? m[8].replace(/\t\t/g, "	") : m[10],
+		paraphrasedStatement: m[9] ? m[8].replace(/\t\t/g, "	") : m[10],
 		type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined,
 	} : {error : "Invalid quotation Format"}
 }
-export const buildPollContent = ({country, city, legalEntity, domainScope, nodes, votingDeadline, poll, options}) => {
+export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, options}) => {
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
 	"\t" + "Poll type: Majority vote wins" + "\n" +
 	(country ? "\t" + "Country scope: " + country + "\n" : "") +
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
-	(domainScope.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
-	"\t" + "The decision is finalized when the following nodes agree: " + nodes + "\n" +
-	"\t" + "Voting deadline: " + new Date(votingDeadline).toUTCString() + "\n" +
+	(domainScope?.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
+	"\t" + "The decision is finalized when the following nodes agree: " + judges + "\n" +
+	"\t" + "Voting deadline: " + new Date(deadline).toUTCString() + "\n" +
 	"\t" + "Poll: " + poll + "\n" +
 	(options.length > 0 ? "\t" + "Option 1: " + options[0] + "\n" : "") +
 	(options.length > 1 ? "\t" + "Option 2: " + options[1] + "\n" : "") +
@@ -232,23 +233,23 @@ export const parseOrganisationVerification = (s) => {
 }
 
 export const buildPersonVerificationContent = (
-		{verifyName, birthCountry, birthCity, verifyDomain = null, foreignDomain = null,
-		birthDate, job = null, employer = null, verificationMethod = null, confidence = null,
-		pictureHash = null, reliabilityPolicy= null}) => {
-	console.log(verifyName, birthCountry, birthCity, verifyDomain, foreignDomain, birthDate)
-	if(!verifyName || !birthCountry || !birthCity || !birthDate || (!verifyDomain && !foreignDomain)) return ""
+		{name, countryOfBirth, cityOfBirth, ownDomain = '', foreignDomain = '',
+		dateOfBirth, jobTitle = '', employer = '', verificationMethod = '', confidence = '',
+		picture = '', reliabilityPolicy= ''}) => {
+	console.log(name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain, dateOfBirth)
+	if(!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) return ""
 	let content = "\n" +
 		"\t" + "Type: Person verification" + "\n" +
 		"\t" + "Description: We verified the following information about a person." + "\n" +
-		"\t" + "Name: " + verifyName + "\n" +
-		"\t" + "Date of birth: " + new Date(birthDate).toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ') + "\n" +
-		"\t" + "City of birth: " + birthCity + "\n" +
-		"\t" + "Country of birth: " + birthCountry + "\n" +
-		(job ? "\t" + "Job title: " + job + "\n" : "") +
+		"\t" + "Name: " + name + "\n" +
+		"\t" + "Date of birth: " + new Date(dateOfBirth).toString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ') + "\n" +
+		"\t" + "City of birth: " + cityOfBirth + "\n" +
+		"\t" + "Country of birth: " + countryOfBirth + "\n" +
+		(jobTitle ? "\t" + "Job title: " + jobTitle + "\n" : "") +
 		(employer ? "\t" + "Employer: " + employer + "\n" : "") +
-		(verifyDomain ? "\t" + "Owner of the domain: " + verifyDomain + "\n" : "") +
+		(ownDomain ? "\t" + "Owner of the domain: " + ownDomain + "\n" : "") +
 		(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
-		(pictureHash ? "\t" + "Picture: " + pictureHash + "\n" : "") +
+		(picture ? "\t" + "Picture: " + picture + "\n" : "") +
 		(verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
 		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
 		(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
@@ -265,7 +266,7 @@ export const parsePersonVerification = (s) => {
 	+ /\tDate of birth: (?<dateOfBirth>[^\n]+?)\n/.source
 	+ /\tCity of birth: (?<cityOfBirth>[^\n]+?)\n/.source
 	+ /\tCountry of birth: (?<countryOfBirth>[^\n]+?)\n/.source
-	+ /(?:\tJob title: (?<job>[^\n]+?)\n)?/.source
+	+ /(?:\tJob title: (?<jobTitle>[^\n]+?)\n)?/.source
 	+ /(?:\tEmployer: (?<employer>[^\n]+?)\n)?/.source
 	+ /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
 	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
@@ -293,10 +294,10 @@ export const parsePersonVerification = (s) => {
 	} : {error: "Invalid person verification format"}
 }
 
-export const buildVoteContent = ({hash_b64, poll, vote}) => {
+export const buildVoteContent = ({pollHash, poll, vote}) => {
 	const content = "\n" +
 	"\t" + "Type: Vote" + "\n" +
-	"\t" + "Poll id: " + hash_b64 + "\n" +
+	"\t" + "Poll id: " + pollHash + "\n" +
 	"\t" + "Poll: " + poll + "\n" +
 	"\t" + "Option: " + vote + "\n" +
 	""
@@ -307,21 +308,21 @@ export const parseVote = (s) => {
 	+ /^\n\tType: Vote\n/.source
 	+ /\tPoll id: (?<pollHash>[^\n]+?)\n/.source
 	+ /\tPoll: (?<poll>[^\n]+?)\n/.source
-	+ /\tOption: (?<option>[^\n]+?)\n/.source
+	+ /\tOption: (?<vote>[^\n]+?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(voteRegex)
 	return m ? {
 		pollHash: m[1],
 		poll: m[2],
-		option: m[3]
+		vote: m[3]
 	} : {error : "Invalid vote Format"}
 }
-export const buildDisputeContent = ({hash_b64}) => {
+export const buildDisputeContent = ({hash}) => {
 	const content = "\n" +
 	"\t" + "Type: Dispute statement" + "\n" +
 	"\t" + "Description: We are convinced that the referenced statement is not authentic.\n" +
-	"\t" + "Hash of referenced statement: " + hash_b64 + "\n" +
+	"\t" + "Hash of referenced statement: " + hash + "\n" +
 	""
 	return content
 }
@@ -329,19 +330,19 @@ export const parseDispute = (s) => {
 	const disputeRegex= new RegExp(''
 	+ /^\n\tType: Dispute statement\n/.source
 	+ /\tDescription: We are convinced that the referenced statement is not authentic.\n/.source
-	+ /\tHash of referenced statement: (?<hash_b64>[^\n]+?)\n/.source
+	+ /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(disputeRegex)
 	return m ? {
-		hash_b64: m[1]
+		hash: m[1]
 	} : {error: "Invalid dispute format"}
 }
-export const buildPDFSigningContent = ({hash_b64}) => {
+export const buildPDFSigningContent = ({hash}) => {
 	const content = "\n" +
 	"\t" + "Type: Sign PDF" + "\n" +
 	"\t" + "Description: We hereby digitally sign the referenced PDF file.\n" +
-	"\t" + "PDF file hash: " + hash_b64 + "\n" +
+	"\t" + "PDF file hash: " + hash + "\n" +
 	""
 	return content
 }
@@ -349,12 +350,12 @@ export const parsePDFSigning = (s) => {
 	const signingRegex= new RegExp(''
 	+ /^\n\tType: Sign PDF\n/.source
 	+ /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
-	+ /\tPDF file hash: (?<hash_b64>[^\n]+?)\n/.source
+	+ /\tPDF file hash: (?<hash>[^\n]+?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(signingRegex)
 	return m ? {
-		hash_b64: m[1]
+		hash: m[1]
 	} : {error: "Invalid PDF signing format"}
 }
 
@@ -386,28 +387,34 @@ export const parseRating = (s) => {
 	} : {error: "Invalid rating format"}
 }
 
-export const buildBounty = ({reward, judge, bountyDescription}) => {
+export const buildBounty = ({motivation, bounty, reward, judge, judgeRenumeration}) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +
-	"\t" + "Reward: " + reward + "\n" +
-	(judge ? "\t" + "Judge in case of dispute: " + judge + "\n" : "") +
-	"\t" + "Description: " + bountyDescription + "\n" +
+	(motivation ? "\t" + "In order to: " + motivation + "\n" : "") +
+	"\t" + "We will reward any entity that: " + bounty + "\n" +
+	"\t" + "The reward is: " + reward + "\n" +
+	"\t" + "In case of dispute, bounty claims are judged by: " + judge + "\n" +
+	(judgeRenumeration ? "\t" + "The judge will be renumerated per investigated case with a maxium of: " + judgeRenumeration + "\n" : "") +
 	""
 	return content
 }
 export const parseBounty = (s) => {
-	const ratingRegex= new RegExp(''
+	const bountyRegex= new RegExp(''
 	+ /^\n\tType: Bounty\n/.source
-	+ /\tReward: (?<reward>[^\n]*?)\n/.source
-	+ /(?:\tJudge in case of dispute: (?<judge>[^\n]*?)\n)?/.source
-	+ /\tDescription: (?<bountyDescription>[^\n]*?)\n/.source
+	+ /(?:\tIn order to: (?<motivation>[^\n]*?)\n)?/.source
+	+ /\tWe will reward any entity that: (?<bounty>[^\n]*?)\n/.source
+	+ /\tThe reward is: (?<reward>[^\n]*?)\n/.source
+	+ /\tIn case of dispute, bounty claims are judged by: (?<judge>[^\n]*?)\n/.source
+	+ /(?:\tThe judge will be renumerated per investigated case with a maxium of: (?<judgeRenumeration>[^\n]*?)\n)?/.source
 	+ /$/.source
 	);
-	const m = s.match(ratingRegex)
+	const m = s.match(bountyRegex)
 	return m ? {
-		reward: m[1],
-		judge: m[2],
-		bountyDescription: m[3],
+		motivation: m[1],
+		bounty: m[2],
+		reward: m[3],
+		judge: m[4],
+		judgeRenumeration: m[5]
 	} : {error: "Invalid bounty format"}
 }
 
