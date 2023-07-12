@@ -65,6 +65,7 @@ export const parseStatement = (s) => {
 		type: m[8] ? m[8].toLowerCase().replace(' ','_') : undefined,
 	} : {error: 'Invalid statement format'}
 }
+
 export const buildQuotationContent = ({originalAuthor, authorVerification, originalTime, source,
 		quotation, paraphrasedStatement, picture, confidence}) => {
 	if(quotation && quotation.match(/\n/)) throw(new Error("Quotation must not contain line breaks."))
@@ -194,6 +195,8 @@ export const buildOrganisationVerificationContent = (
 	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
 	""
 }
+
+export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
 
 export const parseOrganisationVerification = (s) => {
 	const organisationVerificationRegex= new RegExp(''
@@ -338,6 +341,7 @@ export const parseDispute = (s) => {
 		hash: m[1]
 	} : {error: "Invalid dispute format"}
 }
+export const PDFSigningKeys = /(Type: |Description: |PDF file hash: )/
 export const buildPDFSigningContent = ({hash}) => {
 	const content = "\n" +
 	"\t" + "Type: Sign PDF" + "\n" +
@@ -358,6 +362,7 @@ export const parsePDFSigning = (s) => {
 		hash: m[1]
 	} : {error: "Invalid PDF signing format"}
 }
+export const ratingKeys = /(Type: |Organisation name: |Organisation domain: |Our rating: |Comment: )/
 
 export const buildRating = ({organisation, domain, rating, comment}) => {
 	const content = "\n" +
@@ -387,6 +392,7 @@ export const parseRating = (s) => {
 	} : {error: "Invalid rating format"}
 }
 
+export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |In case of dispute, bounty claims are judged by: |The judge will be renumerated per investigated case with a maxium of: )/
 export const buildBounty = ({motivation, bounty, reward, judge, judgeRenumeration}) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +
