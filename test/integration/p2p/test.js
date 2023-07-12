@@ -169,20 +169,31 @@ const test = () => {
 }
 
 const healthTestInterval = setInterval(() => {
-    try {
-        request('GET', {}, nodes.length, 'health', (res) => {
-            try {
-                const r = JSON.parse(res)
-                console.log('healthTest response: ', r)
-                if(r.application == 'stated') {
-                    setTimeout(test, 3000)
-                    clearInterval(healthTestInterval)
+    Promise.allSettled(nodes.map((node) => new Promise((resolve, reject) => { 
+        try {
+            request('GET', {}, nodes.length, 'health', (res) => {
+                try {
+                    const r = JSON.parse(res)
+                    console.log('healthTest response: ', r)
+                    if(r.application == 'stated') {
+                        return resolve(r.application)
+                    }
+                    reject()
+                } catch (e) {
+                    console.log(e)
+                    reject(e)
                 }
-            } catch (e) {
-                console.log(e)
-            }
-        })
-    } catch (e) {
-        console.log(e)
-    }
+            })
+        } catch (e) {
+            console.log(e)
+            reject(e)
+        }
+    }))).then((results) => {
+        console.log('healthTest results: ', results)
+        if(results.map((r) => r.value).filter((r) => r == 'stated').length == nodes.length) {
+            console.log('all nodes healthy')
+            clearInterval(healthTestInterval)
+            test()
+        }
+    })
 }, 1000)
