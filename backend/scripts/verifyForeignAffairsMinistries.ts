@@ -102,7 +102,7 @@ for (const i of array) {
     const statement = buildStatement({
       domain: "rixdata.net", // rixdata.net
       author: "Rix Data NL B.V.", // Rix Data NL B.V.
-        time: new Date(),
+        time: new Date().toUTCString(),
         content: verification,
     })
     const data = {

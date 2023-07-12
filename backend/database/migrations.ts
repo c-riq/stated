@@ -12,8 +12,11 @@ var migration1 = fs
 var migration2 = fs
   .readFileSync(__dirname + "/migration_2.sql", "utf8")
   .toString();
+var migration3 = fs
+  .readFileSync(__dirname + "/migration_3.sql", "utf8")
+  .toString();
 
-let currentCodeVersion = 2;
+let currentCodeVersion = 3;
 const test = process.env.TEST || false
 const migrateTestVersion = parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 if (test) {
@@ -25,6 +28,7 @@ let dataDeleted = false
 const migrateToVersion = {
   1: { sql: migration1 },
   2: { sql: migration2 },
+  3: { sql: migration3 },
 };
 
 const testMigrationTableExistence = (pool: Pool) =>

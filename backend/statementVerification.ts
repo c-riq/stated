@@ -53,7 +53,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     let result = {content, domain, author, tags, type, content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time}
     if (type) {
         if([ statementTypes.organisationVerification, statementTypes.personVerification,
-            statementTypes.poll, statementTypes.vote, 
+            statementTypes.poll, statementTypes.vote, statementTypes.bounty,
             statementTypes.rating, statementTypes.signPdf ].includes(type)) {
             return result
         } else {
