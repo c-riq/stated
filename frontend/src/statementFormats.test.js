@@ -61,10 +61,11 @@ Statement content:
 });
 
 test('quotation build & parse function compatibility: input=parse(build(input))', () => {
-	const [originalAuthor, source, picture, confidence, 
+	const [originalAuthor, source, picture, 
 		quotation, paraphrasedStatement] = Array.from({ length: 6 },randomUnicodeString)
 	const authorVerification = 'yXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE'
 	const originalTime = 'Sun, 04 Sep 2022 14:48:50 GMT'
+	const confidence = '' + Math.random()
 	const quotationContent = buildQuotationContent({originalAuthor, 
 		authorVerification, originalTime, source, picture, confidence, quotation, 
 		paraphrasedStatement})
@@ -152,10 +153,11 @@ Statement content:
 
 test('person verification build & parse function compatibility: input=parse(build(input))', () => {
 	const [name, ownDomain, foreignDomain,
-		jobTitle, employer, verificationMethod, confidence,
+		jobTitle, employer, verificationMethod,
 		picture, reliabilityPolicy] = Array.from({ length: 12 },randomUnicodeString)
 	const countryOfBirth = 'Germany'
 	const cityOfBirth = 'Berlin'
+	const confidence = '' + Math.random()
 	const dateOfBirth = (new Date(0)).toString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ')
 	const personVerificationContent = buildPersonVerificationContent({ name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
 	dateOfBirth, jobTitle, employer, verificationMethod, confidence,
@@ -261,7 +263,7 @@ test('poll build & parse function compatibility: input=parse(build(input))', () 
 	expect(parsedPoll.country).toBe(country)
 	expect(parsedPoll.legalEntity).toBe(legalEntity)
 	expect(parsedPoll.judges).toBe(judges)
-	expect(parsedPoll.deadline).toBe(deadline)
+	expect(parsedPoll.deadline?.toUTCString()).toBe(deadline)
 	expect(parsedPoll.option1).toEqual(options[0])
 	expect(parsedPoll.option2).toEqual(options[1])
 });
