@@ -72,10 +72,11 @@ export const setCertCache = setCertCacheFactory(pool)
 export const getCertCache = getCertCacheFactory(pool)
 export const matchDomain = matchDomainFactory(pool)
 
-import { createOrganisationVerificationFactory, createPersonVerificationFactory, 
+import { checkIfVerificationExistsFactory, createOrganisationVerificationFactory, createPersonVerificationFactory, 
   getAllVerificationsFactory, getPersonVerificationsForStatementFactory, 
   getVerificationsForDomainFactory, getOrganisationVerificationsForStatementFactory } from './verification'
 
+export const checkIfVerificationExists = checkIfVerificationExistsFactory(pool)
 export const createOrganisationVerification = createOrganisationVerificationFactory(pool)
 export const createPersonVerification = createPersonVerificationFactory(pool)
 export const getAllVerifications = getAllVerificationsFactory(pool)
