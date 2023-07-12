@@ -13,7 +13,7 @@ const DisputeStatementForm = props => {
 
     const generateHash = ({viaAPI}) => {
             props.setViaAPI(viaAPI)
-            const content = buildDisputeContent({hash_b64: disputedStatementHash})
+            const content = buildDisputeContent({hash: disputedStatementHash})
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
