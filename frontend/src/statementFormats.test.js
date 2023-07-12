@@ -10,20 +10,6 @@ const randomUnicodeString = () => Array.from(
 	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
 	).join('').replace(/[>=<"'’\\]/g, '')
 
-const e = {
-    statement: 'statement',
-    quotation: 'quotation',
-    organisationVerification: 'organisation_verification',
-    personVerification: 'person_verification',
-    poll: 'poll',
-    vote: 'vote',
-    response: 'response',
-    dispute: 'dispute_statement',
-    rating: 'rating',
-	signPdf: "sign_pdf",
-	bounty: "bounty",
-}
-
 test('parse statement', () => {
 	const statement = `Publishing domain: localhost
 Author: chris
@@ -303,6 +289,20 @@ test('vote build & parse function compatibility: input=parse(build(input))', () 
 	expect(parsedVote.poll).toBe(poll)
 	expect(parsedVote.pollHash).toBe(pollHash)
 	expect(parsedVote.vote).toBe(vote)
+});
+
+test('parse pdf signing', () => {
+	let signPdf = `Publishing domain: rixdata.net
+Author: Example Inc.
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement content: 
+	Type: Sign PDF
+	Description: We hereby digitally sign the referenced PDF file.
+	PDF file hash: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
+`
+	const parsedStatement = parseStatement(signPdf)
+	const parsedSignPdf = parsePDFSigning(parsedStatement.content)
+	expect(parsedSignPdf.hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
 });
 
 test('sign pdf build & parse function compatibility: input=parse(build(input))', () => {
