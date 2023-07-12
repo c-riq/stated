@@ -36,6 +36,7 @@ let migrationsDone = false;
   }, ms
 ))
 
+export const checkIfMigrationsDone = () => migrationsDone
 export const sanitize = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
     if (!migrationsDone){
