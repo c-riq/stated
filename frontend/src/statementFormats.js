@@ -152,7 +152,7 @@ export const parsePoll = (s) => {
 		legalEntity: m[4],
 		domainScope: m[5],
 		judges: m[6],
-		deadline: m[7],
+		deadline: m[7] && new Date(m[7]),
 		poll: m[8],
 		option1: m[9],
 		option2: m[10],

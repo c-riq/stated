@@ -266,13 +266,18 @@ export const createDerivedEntity =
             }
             if(entityCreated || exsits){
                 await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
-            } else {
-                await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
             }
         } catch (error) {
             console.log(error)
             console.trace()
             return reject(error)
+        } finally {
+            try {
+                await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
+            } catch (error) {
+                console.log(error)
+                console.trace()
+            }
         }
         resolve(entityCreated || exsits)
     })

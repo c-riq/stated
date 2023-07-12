@@ -36,7 +36,7 @@ const PollForm = props => {
 
     const generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-        const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, nodes, votingDeadline, poll, options})
+        const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline, poll, options})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
             console.log(statement)
 

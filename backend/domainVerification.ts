@@ -27,7 +27,7 @@ export const createOrgVerification = ({statement_hash, domain: verifier_domain, 
         console.log(e)
         return reject(e)
     }
-    reject(new Error("No verification created"))
+    reject(new Error("No organisation verification created"))
 }))
 
 export const createPersVerification = ({statement_hash, domain: verifier_domain, content }) => (new Promise(async (resolve, reject)=>{
@@ -51,11 +51,11 @@ export const createPersVerification = ({statement_hash, domain: verifier_domain,
             name, 
             countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})        
         if(dbResult.rows[0]){
-            return({entityCreated: true})
+            return resolve({entityCreated: true})
         }
-        resolve(dbResult)
     } catch(e) {
         console.log(e)
         return reject(e)
     }
+    reject(new Error("No person verification created"))
 }))
