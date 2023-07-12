@@ -54,11 +54,15 @@ const request = (method, data, node, path, callback) => {
     }
 }
 
+const randomUnicodeString = () => Array.from(
+	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
+  ).join('')
+
 const generateContent = (node) => {
     return `Publishing domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
-Statement content: hi2 ${new Date()} ${Math.random()}`
+Statement content: ${randomUnicodeString()}`
 }
 
 
