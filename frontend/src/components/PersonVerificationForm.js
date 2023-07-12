@@ -36,8 +36,8 @@ const PersonVerificationForm = props => {
         props.setViaAPI(viaAPI)
         let date = birthDate.toDate()
         date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-        const content = buildPersonVerificationContent({verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
-            birthCity, birthCountry, birthDate: date})
+        const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
+            cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
         console.log(statement)
 

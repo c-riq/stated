@@ -12,19 +12,21 @@ var migration1 = fs
 var migration2 = fs
   .readFileSync(__dirname + "/migration_2.sql", "utf8")
   .toString();
+var migration3 = fs
+  .readFileSync(__dirname + "/migration_3.sql", "utf8")
+  .toString();
 
-let currentCodeVersion = 2;
+export const currentCodeVersion = 3;
 const test = process.env.TEST || false
-const migrateTestVersion = parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
-if (test) {
-  currentCodeVersion = migrateTestVersion
-}
+const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
+
 const deleteData = process.env.TEST && process.env.DELETE_DATA 
 let dataDeleted = false
 
 const migrateToVersion = {
   1: { sql: migration1 },
   2: { sql: migration2 },
+  3: { sql: migration3 },
 };
 
 const testMigrationTableExistence = (pool: Pool) =>
@@ -103,7 +105,7 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
       }, pool);
     } else {
       const maxVersion = await getLatestMigrationVersion(pool);
-      if (maxVersion === "" + currentCodeVersion) {
+      if (maxVersion === "" + _currentCodeVersion) {
         cb();
       } else {
         const dbVersion = parseInt("" + maxVersion);

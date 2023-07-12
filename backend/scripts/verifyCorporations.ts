@@ -134,7 +134,7 @@ for (const i of array) {
     const statement = buildStatement({
         domain,
         author,
-        time: new Date(),
+        time: new Date().toUTCString(),
         content: verification,
     })
     const data = {

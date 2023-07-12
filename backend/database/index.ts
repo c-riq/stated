@@ -28,7 +28,7 @@ export type DBErrorCallback = (error: Error) => void
 const log = false
 
 let migrationsDone = false;
-([500, 2500, 5000]).map(ms => setTimeout(
+([100, 200, 300, 500, 1000, 2000, 2500, 5000, 15000, 20000]).map(ms => setTimeout(
   async () => {
     if(!migrationsDone){
       await performMigrations(pool, ()=>migrationsDone=true)
@@ -36,6 +36,7 @@ let migrationsDone = false;
   }, ms
 ))
 
+export const checkIfMigrationsDone = () => migrationsDone
 export const sanitize = (o) => {
   // sql&xss satitize all input to exported functions, checking all string values of a single input object
     if (!migrationsDone){
@@ -72,10 +73,11 @@ export const setCertCache = setCertCacheFactory(pool)
 export const getCertCache = getCertCacheFactory(pool)
 export const matchDomain = matchDomainFactory(pool)
 
-import { createOrganisationVerificationFactory, createPersonVerificationFactory, 
+import { checkIfVerificationExistsFactory, createOrganisationVerificationFactory, createPersonVerificationFactory, 
   getAllVerificationsFactory, getPersonVerificationsForStatementFactory, 
   getVerificationsForDomainFactory, getOrganisationVerificationsForStatementFactory } from './verification'
 
+export const checkIfVerificationExists = checkIfVerificationExistsFactory(pool)
 export const createOrganisationVerification = createOrganisationVerificationFactory(pool)
 export const createPersonVerification = createPersonVerificationFactory(pool)
 export const getAllVerifications = getAllVerificationsFactory(pool)

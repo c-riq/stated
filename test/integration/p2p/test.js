@@ -54,13 +54,16 @@ const request = (method, data, node, path, callback) => {
     }
 }
 
+const randomUnicodeString = () => Array.from(
+	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
+  ).join('').replace(/[\n;>=<"'’\\]/g, '')
+
 const generateContent = (node) => {
     return `Publishing domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
-Statement content: hi2 ${new Date()} ${Math.random()}`
+Statement content: ${randomUnicodeString()}`
 }
-
 
 const buildOrganisationVerificationContent = (
     {verifyName, country, city, province, legalEntity, verifyDomain, foreignDomain, serialNumber,
@@ -166,20 +169,32 @@ const test = () => {
 }
 
 const healthTestInterval = setInterval(() => {
-    try {
-        request('GET', {}, nodes.length, 'health', (res) => {
-            try {
-                const r = JSON.parse(res)
-                console.log('healthTest response: ', r)
-                if(r.application == 'stated') {
-                    setTimeout(test, 3000)
-                    clearInterval(healthTestInterval)
+    Promise.allSettled(nodes.map((node) => new Promise((resolve, reject) => {
+        setTimeout(() => reject(), 800)
+        try {
+            request('GET', {}, node, 'health', (res) => {
+                try {
+                    const r = JSON.parse(res)
+                    console.log('healthTest response: ', r)
+                    if(r.application == 'stated') {
+                        return resolve(r.application)
+                    }
+                    reject()
+                } catch (e) {
+                    console.log(e)
+                    reject(e)
                 }
-            } catch (e) {
-                console.log(e)
-            }
-        })
-    } catch (e) {
-        console.log(e)
-    }
+            })
+        } catch (e) {
+            console.log(e)
+            reject(e)
+        }
+    }))).then((results) => {
+        console.log('healthTest results: ', results)
+        if(results.map((r) => r.value).filter((r) => r == 'stated').length == nodes.length) {
+            console.log('all nodes healthy')
+            clearInterval(healthTestInterval)
+            test()
+        }
+    })
 }, 1000)

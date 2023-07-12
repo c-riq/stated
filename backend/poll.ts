@@ -20,17 +20,16 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
         if(dbResult.error){
             console.log(dbResult.error)
             console.trace()
-            resolve(dbResult)
+            reject(dbResult)
             return
         } 
         if(dbResult.rows[0]){
-            dbResult.entityCreated = true
+            resolve(dbResult)
         }
-        resolve(dbResult)
     } catch (error) {
         console.log(error)
         console.trace()
-        resolve({error})
+        reject({error})
     }
 }))
 
@@ -39,31 +38,27 @@ export const parseAndCreateVote = ({statement_hash, domain, content, proclaimed_
     log && console.log('createVote', content)
     try {
         const parsedVote = parseVote(content)
-        const { pollHash, option } = parsedVote
+        const { pollHash, vote } = parsedVote
         if (domain.length < 1 || statement_hash.length < 1 ||
-            option.length < 1 || pollHash.length < 1 ) {
+            vote.length < 1 || pollHash.length < 1 ) {
             log && console.log("Missing required fields")
-            resolve({error: "Missing required fields"})
-            return
+            return reject({error: "Missing required fields"})
         }
         let dbResult = await getVerificationsForDomain({domain})
         if(dbResult.error){
             console.log(dbResult)
-            resolve(dbResult)
-            return
+            return reject(dbResult)
         }
         if(dbResult.rows.length == 0){
             log && console.log("No verification for voting entity")
-            resolve({error: "No verification for voting entity"})
-            return
+            return reject({error: "No verification for voting entity"})
         }
         const verification = dbResult.rows[0]
         
         dbResult = await getPoll({statement_hash: pollHash})
         if(dbResult.rows.length == 0){
             log && console.log("Poll does not exist")
-            resolve({error: "Poll does not exist"})
-            return
+            return reject({error: "Poll does not exist"})
         }
         const poll = dbResult.rows[0]
         
@@ -86,24 +81,22 @@ export const parseAndCreateVote = ({statement_hash, domain, content, proclaimed_
          ) {
             votingEntityQualified = true
         }
+        // TODO: remove vote qualification
         if(voteTimeQualified && votingEntityQualified){
-            dbResult = await createVote({statement_hash, poll_hash: pollHash, option, domain, qualified: true })
+            dbResult = await createVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified: true })
             if(dbResult.error){
                 console.log(dbResult.error)
                 console.trace()
-                resolve(dbResult)
-                return
+                return reject(dbResult)
             } 
             if(dbResult.rows[0]){
-                dbResult.entityCreated = true
+                return resolve(dbResult)
             }
-            resolve(dbResult)
-        } else {
-            resolve({error: 'vote not qualified ' + statement_hash})
         }
+        reject({error: 'vote not qualified ' + statement_hash})
     } catch (error) {
         console.log(error)
         console.trace()
-        resolve({error})
+        reject({error})
     }
 }))

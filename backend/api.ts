@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
-    getVotes
+    getVotes, checkIfMigrationsDone
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -159,6 +159,9 @@ api.post("/join_network", async (req, res, next) => {
 
 api.get("/health", async (req, res, next) => {
     try {
+        if(!checkIfMigrationsDone()){
+            throw(Error("Migrations not done yet"))
+        }
         const dbResult = await getAllNodes()
         res.end(JSON.stringify({ apiVersion, application: "stated" }))
     } catch(error){

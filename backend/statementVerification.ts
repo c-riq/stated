@@ -3,6 +3,7 @@ import axios from 'axios'
 import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './database'
 import * as hashUtils from './hash'
 import {createOrgVerification, createPersVerification} from './domainVerification'
+import {checkIfVerificationExists} from './database'
 import {parseAndCreatePoll, parseAndCreateVote} from './poll'
 import {parseAndCreateRating} from './rating'
 import * as cp from 'child_process'
@@ -53,7 +54,7 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     let result = {content, domain, author, tags, type, content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time}
     if (type) {
         if([ statementTypes.organisationVerification, statementTypes.personVerification,
-            statementTypes.poll, statementTypes.vote, 
+            statementTypes.poll, statementTypes.vote, statementTypes.bounty,
             statementTypes.rating, statementTypes.signPdf ].includes(type)) {
             return result
         } else {
@@ -242,9 +243,14 @@ export const createDerivedEntity =
     ({statement_hash, domain, content, type, proclaimed_publication_time}) => 
     (new Promise(async (resolve, reject) => {
         let entityCreated = false
+        let exsits = false // should only occur if statements were deleted and re-added
         try {
             if(type === statementTypes.organisationVerification){
-                entityCreated = !! await createOrgVerification({statement_hash, domain, content})
+                // TODO: (?) check if other types exsit
+                exsits = ((await checkIfVerificationExists({hash: statement_hash}))?.rows?.[0]?.exists) === true
+                if (!exsits){
+                    entityCreated = !! await createOrgVerification({statement_hash, domain, content})
+                }
             }
             if(type === statementTypes.personVerification){
                 entityCreated = !! await createPersVerification({statement_hash, domain, content})
@@ -258,16 +264,21 @@ export const createDerivedEntity =
             if (type === statementTypes.rating) {
                 entityCreated = !!await parseAndCreateRating({statement_hash, domain, content})
             }
-            if(entityCreated === true){
+            if(entityCreated || exsits){
                 await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
-            } else {
-                await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
             }
         } catch (error) {
             console.log(error)
             console.trace()
             return reject(error)
+        } finally {
+            try {
+                await updateStatement({ hash_b64: statement_hash, increment_derived_entity_creation_retry_count: true })
+            } catch (error) {
+                console.log(error)
+                console.trace()
+            }
         }
-        resolve(entityCreated)
+        resolve(entityCreated || exsits)
     })
 )

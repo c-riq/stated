@@ -195,4 +195,27 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
       return reject(error)
     }
   }));
+
+  export const checkIfVerificationExistsFactory = pool => ({hash}) => (new Promise((resolve: DBCallback, reject) => {
+    try {
+      pool.query(`
+      SELECT EXISTS (
+        SELECT 
+        FROM organisation_verifications 
+        WHERE statement_hash=$1
+    );`,[hash], (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        } else {
+          return resolve(results)
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      console.trace()
+      return reject(error)
+    }
+  }));
   
