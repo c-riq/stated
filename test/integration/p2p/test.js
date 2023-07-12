@@ -56,7 +56,7 @@ const request = (method, data, node, path, callback) => {
 
 const randomUnicodeString = () => Array.from(
 	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
-  ).join('').replace(/[;>=<"'’\\]/g, '')
+  ).join('').replace(/[\n;>=<"'’\\]/g, '')
 
 const generateContent = (node) => {
     return `Publishing domain: stated_${node}:${7000+node}

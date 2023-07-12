@@ -8,7 +8,7 @@ const { buildRating, buildStatement, buildBounty, buildDisputeContent, buildPDFS
 
 const randomUnicodeString = () => Array.from(
 	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
-	).join('').replace(/[;>=<"'’\\]/g, '')
+	).join('').replace(/[\n;>=<"'’\\]/g, '')
 
 test('parse statement', () => {
 	const statement = `Publishing domain: localhost
