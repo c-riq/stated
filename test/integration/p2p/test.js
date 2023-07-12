@@ -169,9 +169,10 @@ const test = () => {
 }
 
 const healthTestInterval = setInterval(() => {
-    Promise.allSettled(nodes.map((node) => new Promise((resolve, reject) => { 
+    Promise.allSettled(nodes.map((node) => new Promise((resolve, reject) => {
+        setTimeout(() => reject(), 800)
         try {
-            request('GET', {}, nodes.length, 'health', (res) => {
+            request('GET', {}, node, 'health', (res) => {
                 try {
                     const r = JSON.parse(res)
                     console.log('healthTest response: ', r)
