@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 
 import { Link } from 'react-router-dom';
 
-import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys } from '../statementFormats.js'
+import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys } from '../statementFormats'
 
 const highlightedStatement = (text, type) => {
     let regex = /(\nType: )/

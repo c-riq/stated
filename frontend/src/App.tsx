@@ -21,7 +21,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Route, Routes, Link, useParams, useNavigate, Outlet } from 'react-router-dom';
 
-import { getStatements } from './api.js'
+import { getStatements } from './api'
 import gh from './img/github.png'
 import logo from './img/logo.png'
 

@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import elk from "cytoscape-elk";
 
-import { getSSLOVInfo, backendHost } from "../api.js";
+import { getSSLOVInfo, backendHost } from "../api";
 
 cytoscape.use(elk);
 

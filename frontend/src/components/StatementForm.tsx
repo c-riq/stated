@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 
 import { sha256 } from '../utils/hash';
-import { buildStatement, parseStatement, forbiddenStrings } from '../statementFormats.js'
+import { buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 
 

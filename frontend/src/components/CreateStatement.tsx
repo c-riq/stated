@@ -14,18 +14,18 @@ import InputLabel from '@mui/material/InputLabel';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
-import OrganisationVerificationForm from './OrganisationVerificationForm.js';
-import PersonVerificationForm from './PersonVerificationForm.js';
-import PollForm from './PollForm.js';
-import DisputeStatementForm from './DisputeStatementForm.js';
-import RatingForm from './RatingForm.js';
-import SignPDFForm from './SignPDFForm.js';
-import {VoteForm} from './VoteForm.js';
+import OrganisationVerificationForm from './OrganisationVerificationForm';
+import PersonVerificationForm from './PersonVerificationForm';
+import PollForm from './PollForm';
+import DisputeStatementForm from './DisputeStatementForm';
+import RatingForm from './RatingForm';
+import SignPDFForm from './SignPDFForm';
+import {VoteForm} from './VoteForm';
 
 import { submitStatement, checkDomainVerification, 
-    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api.js'
+    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api'
 
-import StatementForm from './StatementForm.js';
+import StatementForm from './StatementForm';
 
 const CreateStatement = props => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");

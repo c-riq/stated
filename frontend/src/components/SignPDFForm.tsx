@@ -10,7 +10,7 @@ import {
   parseStatement,
   forbiddenStrings,
   parsePDFSigning,
-} from "../statementFormats.js";
+} from "../statementFormats";
 import GenerateStatement from "./GenerateStatement";
 import { uploadPdf, backendHost } from "../api";
 

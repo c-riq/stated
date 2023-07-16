@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
 
-import { getNodes } from "../api.js";
+import { getNodes } from "../api";
 
 cytoscape.use(fcose);
 

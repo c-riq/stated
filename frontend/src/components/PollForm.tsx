@@ -14,10 +14,10 @@ import Box from '@mui/material/Box';
 import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
 import {cities} from '../constants/cities'
-import GenerateStatement from './GenerateStatement.js'
-import { sha256 } from '../utils/hash.js'
+import GenerateStatement from './GenerateStatement'
+import { sha256 } from '../utils/hash'
 
-import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats.js'
+import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 
 
 const PollForm = props => {

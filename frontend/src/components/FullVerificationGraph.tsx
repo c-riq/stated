@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
-import { legalForms } from "../constants/legalForms.js";
-import { employeeCounts, parseOrganisationVerification } from "../statementFormats.js";
+import { legalForms } from "../constants/legalForms";
+import { employeeCounts, parseOrganisationVerification } from "../statementFormats";
 
-import { backendHost, getDomainVerifications } from "../api.js";
+import { backendHost, getDomainVerifications } from "../api";
 
 cytoscape.use(fcose);
 
