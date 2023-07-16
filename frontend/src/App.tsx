@@ -25,7 +25,12 @@ import { getStatements } from './api.js'
 import gh from './img/github.png'
 import logo from './img/logo.png'
 
-const CenterModal = (props) => {
+type Props = {
+  lt850px: Boolean,
+  text: string,
+}
+
+const CenterModal = (props: Props) => {
   const { lt850px } = props
   return(
   <Modal sx={{backgroundColor:'rgba(0,0,0,0.1)'}} open={props.modalOpen} onClose={() => props.onClose({warning: true})}>

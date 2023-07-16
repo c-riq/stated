@@ -11,12 +11,12 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications, getDomainVerifications,
-    getPersonVerifications, getVotes } from '../api.js'
-import { statementTypes, parsePDFSigning } from '../statementFormats.js';
+    getPersonVerifications, getVotes } from '../api'
+import { statementTypes, parsePDFSigning } from '../statementFormats';
 
-import {VerificationGraph} from './VerificationGraph.js'
+import {VerificationGraph} from './VerificationGraph'
 
-import {filePath, getWorkingFileURL} from './SignPDFForm.js'
+import {filePath, getWorkingFileURL} from './SignPDFForm'
 
 
 const Statement = props => {
