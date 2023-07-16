@@ -48,7 +48,12 @@ app.options('/*', function (req, res, next) {
 
 app.use("/api",api)
 
-app.use("/own",humanReadableEndpoints)
+app.all([
+    "/statements|statements.txt",
+    "/text/statement/:hash",
+    "/verifications|verifications.txt",
+    "/nodes|nodes.txt",
+],humanReadableEndpoints)
 
 app.use("/", express.static(__dirname + '/public/'));
 app.get("/files/*", (req, res) =>{

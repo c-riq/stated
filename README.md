@@ -1,7 +1,7 @@
 ### Stated
 Stated enables large groups of organisations to make decisions collectively.<br />
 An example decision would be a set of private sanctions by companies to enforce international laws or to promote peace.<br />
-To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/own/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
+To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system more resillient against censorship and manipulation.<br/>
 The identity of the signature authors are established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
@@ -10,7 +10,7 @@ The identity of the signature authors are established by:
 ## Supported statement publication methods
 
 For publishing a statement, organisations or individuals can use the following options:
-1. Publish it on their website domain in a text file (such as [https://stated.rixdata.net/own/statements.txt](https://stated.rixdata.net/own/statements.txt))
+1. Publish it on their website domain in a text file (such as [https://stated.rixdata.net/statements.txt](https://stated.rixdata.net/statements.txt))
 2. Make sure individual statements can be retrieved by the hash of it's contents via the stated API under their domain:
 ```bash
 curl 'https://stated.rixdata.net/api/statement?hash=NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
