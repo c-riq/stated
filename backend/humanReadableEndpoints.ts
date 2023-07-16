@@ -14,7 +14,7 @@ router.get("/statements|statements.txt", async (req, res, next) => {
         return next(err);
     }
 });
-router.get("/statement/:hash", async (req, res, next) => {
+router.get("/text/statement/:hash", async (req, res, next) => {
     console.log(req.params)
     try {
         const hash_b64 = req.params.hash

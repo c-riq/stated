@@ -119,7 +119,7 @@ const Statement = props => {
                 <h4>1.1 Via the domain owners website</h4>
                 <p>Check if the domain owner also published the domain under this URL: <Link href={`https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
                     {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</Link> or as part of a text file under this URL: <br />
-                    <Link href={`https://stated.${statement.domain}/own/statements.txt`}>{`https://stated.${statement.domain}/own/statements.txt`}</Link></p>
+                    <Link href={`https://stated.${statement.domain}/statements.txt`}>{`https://stated.${statement.domain}/statements.txt`}</Link></p>
                 <h4>1.2 Via the domain DNS records</h4>
                 <h4>1.2.1 Generate the statement hash</h4>
                 <p>The SHA256 hash (in URL compatible base 64 representation) is a transformed version of the above statement text. 
