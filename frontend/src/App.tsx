@@ -22,15 +22,20 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Route, Routes, Link, useParams, useNavigate, Outlet } from 'react-router-dom';
 
 import { getStatements } from './api'
+// @ts-ignore
 import gh from './img/github.png'
+// @ts-ignore
 import logo from './img/logo.png'
 
-type Props = {
-  lt850px: Boolean,
+type CenterModalProps = {
+  lt850px: boolean,
   text: string,
+  modalOpen: boolean,
+  onClose: Function,
+  children: any
 }
 
-const CenterModal = (props: Props) => {
+const CenterModal = (props: CenterModalProps) => {
   const { lt850px } = props
   return(
   <Modal sx={{backgroundColor:'rgba(0,0,0,0.1)'}} open={props.modalOpen} onClose={() => props.onClose({warning: true})}>
@@ -65,7 +70,19 @@ const CenterModal = (props: Props) => {
 </Modal>)
 }
 
-const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, joinStatement, voteOnPoll, setModalOpen, setServerTime, posts, lt850px}) => {
+type LayoutProps = {
+  getStatementsAPI: Function,
+  setSearchQuery: Function,
+  searchQuery: string,
+  joinStatement: Function,
+  voteOnPoll: Function,
+  setModalOpen: Function,
+  setServerTime: Function,
+  posts: any,
+  lt850px: boolean
+}
+
+const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, setModalOpen, setServerTime, posts, lt850px}:LayoutProps) => {
   return(
     <React.Fragment>
       <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
@@ -118,14 +135,14 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, serverTime, join
   )}
 
 function App() {
-  const [serverTime, setServerTime] = React.useState(new Date().toUTCString());
+  const [serverTime, setServerTime] = React.useState(new Date());
   const [statementToJoin, setStatementToJoin] = React.useState(false);
   const [poll, setPoll] = React.useState(false);
   const [posts, setPosts] = React.useState([]);
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState(undefined);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
 

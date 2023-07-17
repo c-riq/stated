@@ -20,7 +20,7 @@ import { parseStatement, buildStatement, forbiddenStrings,
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 
-const PersonVerificationForm = props => {
+const PersonVerificationForm = (props:FormProps) => {
     const [birthCountry, setBirthCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
     const [birthCity, setBirthCity] = React.useState("");

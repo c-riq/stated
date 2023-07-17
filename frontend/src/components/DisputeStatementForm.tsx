@@ -8,17 +8,17 @@ import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forb
 import GenerateStatement from './GenerateStatement';
 
 
-const DisputeStatementForm = props => {
+const DisputeStatementForm = (props:FormProps) => {
     const [disputedStatementHash, setDisputedStatementHash] = React.useState("");
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash:generateHash = ({viaAPI}) => {
             props.setViaAPI(viaAPI)
             const content = buildDisputeContent({hash: disputedStatementHash})
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
+            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
+                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
                 props.setisError(true)
                 return
             }

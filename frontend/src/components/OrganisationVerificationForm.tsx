@@ -16,7 +16,7 @@ import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 
 
-const OrganisationVerificationForm = props => {
+const OrganisationVerificationForm = (props:FormProps) => {
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
     const [legalForm, setLegalForm] = React.useState(legalForms.corporation);

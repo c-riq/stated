@@ -10,7 +10,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 
-import { getStatement, getJoiningStatements, getOrganisationVerifications, getDomainVerifications,
+import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes } from '../api'
 import { statementTypes, parsePDFSigning } from '../statementFormats';
 
@@ -18,28 +18,32 @@ import {VerificationGraph} from './VerificationGraph'
 
 import {filePath, getWorkingFileURL} from './SignPDFForm'
 
+type props = {
+    lt850px: boolean,
+    voteOnPoll: (statement: any) => void
+}
 
-const Statement = props => {
+const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState([]);
     const [votes, setVotes] = React.useState([]);
     const [statement, setStatement] = React.useState({statement: undefined, 
         type: undefined, domain: undefined, 
-        hash_b64: undefined, content: undefined});
+        hash: undefined, content: undefined});
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
 
-    const hash_b64 = useParams().statementId || '';
+    const hash = useParams().statementId || '';
 
 
     React.useEffect(() => { if(!dataFetched) {
-        getStatement(hash_b64, s => setStatement(s))
-        getJoiningStatements(hash_b64, s => setJoiningStatements(s))
-        getVotes(hash_b64, v => setVotes(v))
-        getOrganisationVerifications(hash_b64, v => setOrganisationVerifications(v))
-        getPersonVerifications(hash_b64, v => setPersonVerifications(v))
+        getStatement(hash, s => setStatement(s))
+        getJoiningStatements(hash, s => setJoiningStatements(s))
+        getVotes(hash, v => setVotes(v))
+        getOrganisationVerifications(hash, v => setOrganisationVerifications(v))
+        getPersonVerifications(hash, v => setPersonVerifications(v))
         setDataFetched(true)
       }
     })
@@ -48,15 +52,16 @@ const Statement = props => {
         setDataFetched(false)
     }, [location])
     React.useEffect(() => {
-        if (statement && statement.type === statementTypes.signPdf){
-            getWorkingFileURL({hash: parsePDFSigning(statement.content).hash_b64, host: 'https://stated.' + statement.domain}).then(setWorkingFileURL)
+        if (statement && (statement.type === statementTypes.signPdf) && statement.content){
+            getWorkingFileURL(parsePDFSigning(statement.content).hash, 'https://stated.' + statement.domain)
+            .then(setWorkingFileURL)
         }
     }, [statement])
 
     let fileURL = ""
-    if (statement && (statement.type === statementTypes.signPdf)) {
+    if (statement && (statement.type === statementTypes.signPdf) && statement.content) {
         const parsedSigning = parsePDFSigning(statement.content)
-        fileURL = filePath({hash: parsedSigning.hash_b64, host: null})
+        fileURL = filePath(parsedSigning.hash, undefined)
     }
 
     console.log('verifications',organisationVerifications, personVerifications)
@@ -117,8 +122,8 @@ const Statement = props => {
                 <h4>1. Check the domain owners intention to publish the statement</h4>
                 <p>There are 2 supported methods for this: via a running stated server application on the authors website domain (1.1) and via DNS TXT entries of the authors domain (1.2).</p>
                 <h4>1.1 Via the domain owners website</h4>
-                <p>Check if the domain owner also published the domain under this URL: <Link href={`https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
-                    {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</Link> or as part of a text file under this URL: <br />
+                <p>Check if the domain owner also published the domain under this URL: <Link href={`https://stated.${statement.domain}/statement/${statement.hash}`}>
+                    {`https://stated.${statement.domain}/statement/${statement.hash}`}</Link> or as part of a text file under this URL: <br />
                     <Link href={`https://stated.${statement.domain}/statements.txt`}>{`https://stated.${statement.domain}/statements.txt`}</Link></p>
                 <h4>1.2 Via the domain DNS records</h4>
                 <h4>1.2.1 Generate the statement hash</h4>
@@ -131,7 +136,7 @@ const Statement = props => {
                 <h4>1.2.2 via DNS records </h4>
                 <p>Only the owner of a website domain should be able change the DNS records. If the hash representing the statement was added there, 
                     this implies that the domain owner is also the author of the statement. Running the following command in the mac terminal 
-                    allows you to verify that the statement hash <span style={{backgroundColor:"#cccccc"}}>{statement.hash_b64}</span> is published in the domain's DNS records:</p>
+                    allows you to verify that the statement hash <span style={{backgroundColor:"#cccccc"}}>{statement.hash}</span> is published in the domain's DNS records:</p>
                 <div>
                     <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"delv @1.1.1.1 TXT stated."+statement.domain+" +short +trust"}/>
                 </div>
@@ -153,9 +158,9 @@ const Statement = props => {
                 [statementTypes.statement, statementTypes.signPdf, statementTypes.personVerification, 
                     statementTypes.organisationVerification].includes(statement.type) && 
             (<div><h3>Organisations that joined the statemet</h3>
-                {joiningStatements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
+                {joiningStatements.map(({domain, proclaimed_publication_time, name, hash},i)=>(
                     <div key={i}>
-                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash}>
                             {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>
@@ -166,9 +171,9 @@ const Statement = props => {
 
             
             {votes.length > 0 && (<div><h3>Qualified votes</h3>
-                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, name},i)=>(
+                {votes.map(({proclaimed_publication_time, domain, option, hash, name},i)=>(
                     <div key={i}>
-                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash}>
                             {option + " | " + domain + " | " + (new Date(parseInt(proclaimed_publication_time)).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>

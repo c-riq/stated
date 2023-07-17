@@ -38,7 +38,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && npm run copyFiles && npm run jsToTs",
+    "build": "react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && npm run copyFiles",
     "copyFiles": "cp ./src/statementFormats.ts ../backend/ & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

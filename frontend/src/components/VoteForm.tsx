@@ -13,7 +13,7 @@ import GenerateStatement from './GenerateStatement';
 
 
 
-export const VoteForm = props => {
+export const VoteForm = (props:FormProps) => {
 
     const [vote, setVote] = React.useState("");
 
@@ -24,9 +24,9 @@ export const VoteForm = props => {
     const statementParsed = parseStatement(props.poll.statement)
     const pollParsed = parsePoll(statementParsed.content)
     console.log(pollParsed)
-    const options = [pollParsed.option1, pollParsed.option2, pollParsed.option3, pollParsed.option4, pollParsed.option5].filter(o=>o)
+    const options = pollParsed.options
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
         props.setViaAPI(viaAPI)
         const content = buildVoteContent({pollHash: props.poll.hash_b64, poll: pollParsed.poll , vote})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})

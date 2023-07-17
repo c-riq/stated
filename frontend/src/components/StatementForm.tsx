@@ -9,24 +9,24 @@ import { buildStatement, parseStatement, forbiddenStrings } from '../statementFo
 import GenerateStatement from './GenerateStatement';
 
 
-const StatementForm = props => {
+const StatementForm = (props:FormProps) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
-    const [tags, setTags] = React.useState([]);
+    const [tags, setTags] = React.useState([] as string[]);
     const [tagInput, setTagInput] = React.useState("")
 
 
-    function tagHandleKeyDown(event) {
-        if (event.key === "Enter") {
-            const input = event.target.value.trim().replace(',','')
-            if (!input.length){return}
-            if (tags.indexOf(input) != -1) {
+    const tagHandleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+        if (e.key === "Enter") {
+            const input = (e.target as HTMLTextAreaElement).value.trim().replace(',','')
+            if (!(input?.length)){return}
+            if (tags.indexOf(input) !== -1) {
                 setTagInput("")
             } else {
                 setTags([...tags, input])
                 setTagInput("")
             }
         }
-        if (tags.length && !tagInput.length && event.key === "Backspace") {
+        if (tags.length && !tagInput.length && e.key === "Backspace") {
         setTags(tags.slice(0, tags.length - 1))
         }
     }
@@ -34,29 +34,29 @@ const StatementForm = props => {
         if (!tagInput){return}
         const input = tagInput.trim().replace(',','')
         if (!input.length){return}
-        if (tags.indexOf(input) != -1) {
+        if (tags.indexOf(input) !== -1) {
             setTagInput("")
         } else {
             setTags([...tags, input])
             setTagInput("")
         }
     }
-    const handleDelete = item => () => {
+    const handleDelete = (item:string) => () => {
         const updatedTags = [...tags]
         updatedTags.splice(updatedTags.indexOf(item), 1)
         setTags(updatedTags)
     }
-    function tagHandleInputChange(event) {
+    function tagHandleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         setTagInput(event.target.value)
     }
 
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash:generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, tags: tags, content})
             const parsedResult = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedResult)).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult)))
+            if(forbiddenStrings(Object.values(parsedResult) as string[]).length > 0) {
+                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedResult) as string[]))
                 props.setisError(true)
                 return
             }

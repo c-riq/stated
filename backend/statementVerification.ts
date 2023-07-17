@@ -16,19 +16,7 @@ const test = process.env.TEST || false
 
 const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
-    if (parsedStatement.error) {
-        throw(Error("invalid verification"))
-    }
     const {domain, author, time, content, tags, type} = parsedStatement
-    if (!domain) {
-        throw(Error("domain missing"))
-    }
-    if (!content){
-        throw(Error('content missing'))
-    }
-    if (!time){
-        throw(Error('time missing'))
-    }
     if (!hashUtils.verify(statement, hash_b64)){
         throw(Error("invalid hash: "+statement+hash_b64))
     }

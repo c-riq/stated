@@ -43,7 +43,7 @@ export const createPersVerification = ({statement_hash, domain: verifier_domain,
             !name || name.length < 1 || 
             !countryOfBirth || countryOfBirth.length < 1|| 
             !cityOfBirth || cityOfBirth.length < 1|| 
-            !dateOfBirth || dateOfBirth.length < 1 ) {
+            !dateOfBirth || (typeof dateOfBirth.getMonth === 'function')) {
             resolve({error: "Missing required fields"})
             return
         }

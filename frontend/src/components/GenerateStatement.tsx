@@ -2,18 +2,22 @@ import React from 'react'
 
 import Button from '@mui/material/Button';
 
-const GenerateStatement = props => {
+type props = {
+    serverTime: Date,
+    generateHash: generateHash
+}
 
+const GenerateStatement = (props:props) => {
     return (
         <React.Fragment>
-            <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime}</div>
+            <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime.toUTCString()}</div>
             <div style={{display: "flex", flexDirection:"row"}}>
-                <Button variant="contained" onClick={() => props.generateHash({viaAPI: false})} margin="normal"
-                    sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px"}}>
+                <Button variant="contained" onClick={() => props.generateHash({viaAPI: false})}
+                    sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px", marginBottom: "12px"}}>
                     Authenticate via DNS
                 </Button>
-                <Button variant="contained" onClick={() => props.generateHash({viaAPI: true})} margin="normal"
-                    sx={{marginTop: "24px", flexGrow: 1}}>
+                <Button variant="contained" onClick={() => props.generateHash({viaAPI: true})}
+                    sx={{marginTop: "24px", flexGrow: 1, marginBottom: "12px"}}>
                     Publish as {window.location.hostname}
                 </Button>
             </div>

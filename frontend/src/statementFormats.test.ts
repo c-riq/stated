@@ -31,7 +31,7 @@ test('statement build & parse function compatibility: input=parse(build(input))'
 	expect(parsedStatement.content).toBe(content)
 	expect(parsedStatement.representative).toBe(representative)
 	expect(parsedStatement.supersededStatement).toBe(supersededStatement)
-	expect(parsedStatement.tags.split(', ').sort()).toStrictEqual(tags.sort())
+	expect(parsedStatement.tags.sort()).toStrictEqual(tags.sort())
 });
 
 
@@ -264,8 +264,8 @@ test('poll build & parse function compatibility: input=parse(build(input))', () 
 	expect(parsedPoll.legalEntity).toBe(legalEntity)
 	expect(parsedPoll.judges).toBe(judges)
 	expect(parsedPoll.deadline?.toUTCString()).toBe(deadline)
-	expect(parsedPoll.option1).toEqual(options[0])
-	expect(parsedPoll.option2).toEqual(options[1])
+	expect(parsedPoll.options[0]).toEqual(options[0])
+	expect(parsedPoll.options[1]).toEqual(options[1])
 });
 
 test('parse vote', () => {

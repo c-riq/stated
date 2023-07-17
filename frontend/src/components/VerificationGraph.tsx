@@ -1,21 +1,49 @@
 import React, { Fragment, useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
+// @ts-ignore
 import elk from "cytoscape-elk";
 
 import { getSSLOVInfo, backendHost } from "../api";
 
-cytoscape.use(elk);
+import { statement } from "../statementFormats";
 
-export const VerificationGraph = (props) => {
+cytoscape.use(elk);
+type node = {
+  data: {
+    id: string;
+    name: string;
+    href?: string;
+    backgroundColor?: string;
+    size?: string;
+    parent?: string;
+  };
+};
+type edge = {
+  data: {
+    id: string;
+    name: string;
+    source: string;
+    href?: string;
+    target: string;
+    color?: string;
+  };
+};
+type props = {
+    organisationVerifications: any[];
+    personVerifications: any[];
+    statement: statement & {hash: string};
+}
+type ssl = {domain: string, O: string, issuer_o: string, issuer_cn: string, sha256: string}
+export const VerificationGraph = (props:props) => {
   const graphRef = useRef(null);
-  const [sslCerts, setSslCerts] = React.useState([]);
+  const [sslCerts, setSslCerts] = React.useState([] as ssl[]);
   const [fetchedSslCerts, setFetchedSslCerts] = React.useState(false);
 
   useEffect(() => {
     const { organisationVerifications, personVerifications, statement } = props;
-    let nodes = [];
-    let edges = [];
-    let domains = [];
+    let nodes:node[] = [];
+    let edges:edge[] = [];
+    let domains:string[] = [];
     [...organisationVerifications, ...personVerifications].forEach(
       (
         {
@@ -110,7 +138,7 @@ export const VerificationGraph = (props) => {
       / /g,
       "_"
     ).toLowerCase();
-    const targetParentId = ("statement:" + statement.hash_b64).replace(
+    const targetParentId = ("statement:" + statement.hash).replace(
       / /g,
       "_"
     ).toLowerCase();
@@ -185,8 +213,8 @@ export const VerificationGraph = (props) => {
           id: sourceParentId + "-" + targetParentId,
           source: sourceParentId,
           target: targetParentId,
-          name: "stated:" + statement.hash_b64?.substring(0, 5),
-          href: `${backendHost}/statement/${statement.hash_b64}`,
+          name: "stated:" + statement.hash?.substring(0, 5),
+          href: `${backendHost}/statement/${statement.hash}`,
         },
       });
     }
@@ -223,12 +251,12 @@ export const VerificationGraph = (props) => {
     if(!fetchedSslCerts && domains.length > 0 && domains[0]){
       const uniqueDomains = [...new Set(domains)];
       uniqueDomains.forEach((domain) => {
-        getSSLOVInfo({domain, cacheOnly: true}, res  => {
-          const newCerts = res?.result?.filter(r=> r.status ="fulfilled").map(r=>r.value);
+        getSSLOVInfo(domain, res  => {
+          const newCerts = res?.result?.filter((r:PromiseSettledResult<any>)=> r.status ="fulfilled").map((r:PromiseFulfilledResult<any>)=>r.value);
           if (res?.result?.length > 0) {
             setSslCerts([...sslCerts, ...newCerts]);
           }
-      });});
+      },true);});
       setFetchedSslCerts(true);
     }
     console.log(nodes, edges, domains, sslCerts);
@@ -259,6 +287,7 @@ export const VerificationGraph = (props) => {
           css: {
             "text-valign": "top",
             "text-halign": "center",
+            // @ts-ignore
             "border-style": "none",
             "border-color": "#eeeeee",
             "background-color": "#eeeeee",
@@ -273,8 +302,10 @@ export const VerificationGraph = (props) => {
             "target-arrow-color": "#0000ee",
             label: "data(name)",
             "text-rotation": "autorotate",
+            // @ts-ignore
             "text-margin-y": "-10px",
             "line-color": "#0000ee",
+            // @ts-ignore
             "line-style": "data(style)",
           },
         },
@@ -297,20 +328,22 @@ export const VerificationGraph = (props) => {
 
     cy.userZoomingEnabled(false);
     //cy.userPanningEnabled(false);
-    cy.on("tap", "node", function () {
-      if (!this.data("href")) return;
+    cy.on("tap", "node", function (e) {
+      const node = e.target;
+      if (!node.data("href")) return;
       try {
-        window.open(this.data("href"));
+        window.open(node.data("href"));
       } catch (e) {
-        window.location.href = this.data("href");
+        window.location.href = node.data("href");
       }
     });
-    cy.on("tap", "edge", function () {
-      if (!this.data("href")) return;
+    cy.on("tap", "edge", function (e) {
+      const edge = e.target;
+      if (!edge.data("href")) return;
       try {
-        window.open(this.data("href"));
+        window.open(edge.data("href"));
       } catch (e) {
-        window.location.href = this.data("href");
+        window.location.href = edge.data("href");
       }
     });
     cy.on("mouseover", "edge", () =>
@@ -320,6 +353,7 @@ export const VerificationGraph = (props) => {
       document.body.setAttribute("style", "cursor: auto;")
     );
     cy.layout({
+        // @ts-ignore
         directed: true,
         name: "elk",
         rankDir: "LR",

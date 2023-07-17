@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys } from '../statementFormats'
 
-const highlightedStatement = (text, type) => {
+const highlightedStatement = (text: string, type:string) => {
     let regex = /(\nType: )/
     if (type === statementTypes.bounty){
         regex = BountyKeys
@@ -22,7 +22,6 @@ const highlightedStatement = (text, type) => {
     if (type === statementTypes.rating){
         regex = ratingKeys
     }
-    console.log(type, statementTypes.bounty, typeof type, typeof statementTypes.bounty, regex)
     const parts = text.split(new RegExp(regex, 'g'));
     return <span>{ parts.map((v, i) => 
         <><span key={i} style={regex.test(v) ? {backgroundColor: 'rgba(42, 74, 103, 0.3)', borderRadius: '3px'} : {}}>
@@ -33,9 +32,16 @@ const highlightedStatement = (text, type) => {
     } </span>;
 }
 
+type props = {
+    posts: any[],
+    setStatementToJoin: any,
+    setModalOpen: any,
+    lt850px: boolean,
+    children: any,
+    voteOnPoll: any,
+}
 
-
-const Statements = props => {
+const Statements = (props:props) => {
     const { lt850px } = props
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { padding: "7%",margin: "2%", borderRadius: 8 }}>
@@ -53,14 +59,15 @@ const Statements = props => {
                                 <Link to="/create-statement">
                                     <Button onClick={()=>{props.setStatementToJoin(s); props.setModalOpen()}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
-                                        <PlusOneIcon variant='contained'/>
+                                        <PlusOneIcon/>
                                     </Button>
                                 </Link>
                             </div>
                             <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}}>
                                 <div className="statement" 
+                                // @ts-ignore 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
-                                    {s.content.split("\n").map((s1,i)=>(<div key={i}>{highlightedStatement(s1, s.type)}</div>))}
+                                    {s.content.split("\n").map((s1:string,i:number)=>(<div key={i}>{highlightedStatement(s1, s.type)}</div>))}
                                     <img src={'https://www.'+s.domain+'/favicon.ico'} style={{
                                     width: "20px", height: "20px", borderRadius: "10px", paddingTop: "8px", paddingRight: "3px"
                                 }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{s.name ? s.name : s.domain}</span>
@@ -69,11 +76,16 @@ const Statements = props => {
                         </div>
                     )
                         }
-                        if (s.type == statementTypes.poll){
-                            const parsedPoll = parsePoll(s.content)
-                            const options = [parsedPoll.option1, parsedPoll.option2, parsedPoll.option3, 
-                                parsedPoll.option4, parsedPoll.option5].filter(o=>o)
-                            let votes = {}
+                        if (s.type === statementTypes.poll){
+                            let parsedPoll = undefined
+                            try{
+                                parsedPoll = parsePoll(s.content)
+                            } catch (e){
+                                console.log(e)
+                                return (<></>)
+                            }
+                            const options = parsedPoll.options
+                            let votes: {[key: string]: number} = {} 
                             if (s.votes){
                                 for (let o of Object.keys(s.votes)){
                                     votes[o] = s.votes[o]
@@ -84,19 +96,20 @@ const Statements = props => {
                                     votes[o] = 0
                                 }
                             }
-                            const totalVotes = Object.values((votes || [0])).reduce((a,b)=>a+b, 0)
+                            const totalVotes = Object.values((votes || [0])).reduce((a:number,b:number)=>a+b, 0)
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>
                                 <Link to="/create-statement">
                                     <Button onClick={()=>{props.voteOnPoll(s);props.setModalOpen()}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
-                                        <PollIcon variant='contained'/>
+                                        <PollIcon/>
                                     </Button>
                                 </Link>
                             </div>
                             <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}}>
-                                <div className="statement" 
+                                <div className="statement"
+                                    // @ts-ignore
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
                                     <div>{parsedPoll.poll}</div>
                                     <Stack spacing={2} sx={{paddingTop: "10px", paddingBottom: "10px"}}>

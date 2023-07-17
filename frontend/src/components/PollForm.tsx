@@ -19,8 +19,7 @@ import { sha256 } from '../utils/hash'
 
 import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 
-
-const PollForm = props => {
+const PollForm = (props:FormProps) => {
     const province = ''
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState("");
@@ -34,15 +33,15 @@ const PollForm = props => {
     const [votingDeadline, setVotingDeadline] = React.useState(moment());
     const [poll, setPoll] = React.useState("");
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash:generateHash = ({viaAPI}) => {
         props.setViaAPI(viaAPI)
-        const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline, poll, options})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+        const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
             console.log(statement)
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
+            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
+                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
                 props.setisError(true)
                 return
             }

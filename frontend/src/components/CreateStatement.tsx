@@ -22,29 +22,40 @@ import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
 
-import { submitStatement, checkDomainVerification, 
+import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api'
 
 import StatementForm from './StatementForm';
 
-const CreateStatement = props => {
+type Props = {
+    domain: string,
+    statementToJoin: any,
+    poll: any,
+    serverTime: Date,
+    onPostSuccess: () => void,
+}
+type domainOption = {domain: string, organisation: string}
+type ssl = {domain: string, O: string, issuer_o: string}
+type statedVerification = {verified_domain: string, name: string, verifier_domain: string}
+
+const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
     const [type, setType] = React.useState(props.poll ? "vote" : (props.statementToJoin?.type ? props.statementToJoin?.type : "statement"));
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
-    const [OVInfo, setOVInfo] = React.useState([{domain: null, O: null}]);
-    const [statedVerification, setStatedVerification] = React.useState([]);
+    const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
+    const [statedVerification, setStatedVerification] = React.useState([] as statedVerification[]);
     const [DNSSECInfo, setDNSSECInfo] = React.useState({domain: null, validated: null});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
-    const [viaAPI, setViaAPI] = React.useState("");
-    const [dnsResponse, setDnsResponse] = React.useState([]);
+    const [viaAPI, setViaAPI] = React.useState(false);
+    const [dnsResponse, setDnsResponse] = React.useState([] as string[]);
     const [statementHash, setStatementHash] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
 
-    const [domainOptions, setDomainOptions] = React.useState([{domain: null, organization: null}]);
+    const [domainOptions, setDomainOptions] = React.useState([] as domainOption[]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
 
     React.useEffect(()=>{
@@ -52,7 +63,7 @@ const CreateStatement = props => {
             if(!res || !res.result) {return}
             const domains = res.result.map(r => ({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
             const uniqueDomains = [...new Set(res.result.map(r => r.domain))].map(d => domains.find(r => r.domain === d))
-            setDomainOptions(uniqueDomains)
+            setDomainOptions(uniqueDomains as domainOption[])
         })
     },[domainInputValue])
 
@@ -60,14 +71,14 @@ const CreateStatement = props => {
         if(!domain || !domain.match(/\.[a-z]{2,18}$/i)) {
             setAuthor("")
             setDNSSECInfo({domain: null, validated: null})
-            setOVInfo([{domain: null, O: null}])
+            setOVInfo([])
             setStatedVerification([])
             return
         }
         getSSLOVInfo(domain, res  => {
-            const OVInfo = res ? (res.result || []).filter(r => 
-                r.status==="fulfilled").map(r => r.value) : []
-            const matchingOV = OVInfo.find(r => (r.domain === domain ||
+            const OVInfo = res ? (res.result || []).filter((r: PromiseSettledResult<ssl>) => 
+                r.status==="fulfilled").map((r:  PromiseFulfilledResult<ssl>) => r.value) : []
+            const matchingOV = OVInfo.find((r:ssl) => (r.domain === domain ||
                 r.domain === 'stated.' + domain ||
                 r.domain === 'www.' + domain) && r.O)
             if(matchingOV) { 
@@ -86,8 +97,8 @@ const CreateStatement = props => {
 
 
     const checkDomainVerificationAPI = () => {
-        checkDomainVerification({domain: "stated." + domain}, res => {
-            if ("records" in res) {
+        getTXTRecords("stated." + domain, res => {
+            if (res && "records" in res) {
                 setDnsResponse(res.records)
             } else {
                 setisError(true)
@@ -126,10 +137,10 @@ const CreateStatement = props => {
                 isOptionEqualToValue={(option, value) => option && value && !!(option.domain && option.domain === value.domain)}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
-                onChange={(event, newInputValue) => {
+                onChange={(event, newInputValue: string|domainOption) => {
                     setDomainIdendity(newInputValue)
                     setDomain(newInputValue.domain)
-                    setAuthor(newInputValue.organization)
+                    setAuthor(newInputValue.organisation)
                 }}
                 onInputChange={(event, newValue) => {
                     setDomainInputValue(newValue)
@@ -140,7 +151,7 @@ const CreateStatement = props => {
                 style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
                 />
                 { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
-                     (  OVInfo.reduce((acc, i) => acc || i.O, false) 
+                     (  OVInfo.reduce((acc, i) => acc || i.O, '') 
                         ?
                         OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
                             Verified via SSL certificate {i.domain +": "+ i.O + " by " + i.issuer_o}</Alert>))
@@ -150,10 +161,10 @@ const CreateStatement = props => {
                      )
                 }
                 { (statedVerification && statedVerification.reduce((acc, i) => acc || i.verified_domain === domain, false)) &&
-                     (  statedVerification.reduce((acc, i) => acc || i.verified_domain, false) 
+                     (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
                         ?
                         [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via stated verification {i.verified_domain +": "+ i.name + " by " + i.verifier_domain}</Alert>))
+                            Verified via stated verification {i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>
                             Not verified via stated verification.</Alert>)
@@ -180,7 +191,6 @@ const CreateStatement = props => {
             />
         </React.Fragment>
     )
-    console.log(OVInfo, "OVInfo")
 
     return (
         <div style={{ padding: "7%", backgroundColor: "white", borderRadius: 8, display:'flex',
@@ -251,6 +261,7 @@ const CreateStatement = props => {
                         label=""
                         multiline
                         value={statement}
+                        // @ts-ignore
                         readOnly={true}
                         sx={{width: "100%", overflowX: "scroll"}}
                             />
@@ -267,14 +278,14 @@ const CreateStatement = props => {
                         onChange={e => { setApiKey(e.target.value) }}
                         margin="normal"
                     />
-                    <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}
+                    <Button fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}
                     disabled={!apiKey}>
                         Submit</Button>
                 </React.Fragment>
                 )
             }
             {!viaAPI && (statementHash.length > 0) && (
-                    <div width="100%" style={{ paddingTop: "20px" }}>
+                    <div style={{ paddingTop: "20px", width: "100%" }}>
                         <span >Add the following TXT record in your {domain} domain settings to verify domain ownership: </span>
                         <TextField
                             multiline
@@ -282,26 +293,27 @@ const CreateStatement = props => {
                             inputProps={{ style: { fontSize: "12pt" } }}
                             style={{ fontSize: "12px" }} 
                             fullWidth variant="outlined" margin="normal" 
-                            readOnly id="verificationInstructions" 
+                            // @ts-ignore
+                            readOnly
+                            id="verificationInstructions" 
                             value={"stated TXT "+statementHash} 
                             // onClick={e => e.target.select()} 
                             />
-                        <Button fullWidth variant="contained" 
-                            margin="normal" onClick={() => { checkDomainVerificationAPI() }}>Check DNS records</Button>
+                        <Button fullWidth variant="contained" onClick={() => { checkDomainVerificationAPI() }}>Check DNS records</Button>
                     </div>)
                 }
                 {!viaAPI && (dnsResponse.length > 0) && (
-                    <div width="100%" style={{ paddingTop: "20px" }}>
+                    <div style={{ paddingTop: "20px", width: "100%" }}>
                         {dnsResponse.includes(statementHash) ?
                             (<div>
                                 <Alert severity='success' style={{marginTop: "10px", marginBottom: "10px"}}>Domain ownership verified.</Alert>
-                                <Button fullWidth variant="contained" margin="normal" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
+                                <Button fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
                             </div>)
                             :
                             (<div>
                                 <Alert severity='error' style={{marginTop: "10px", marginBottom: "10px"}}>Error: TXT records should include {statementHash}</Alert>
                                 <div style={{fontSize: "8pt", marginBottom: "10px"}}> TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</div>
-                                <Button fullWidth variant="contained" margin="normal" disabled>Submit</Button>    
+                                <Button fullWidth variant="contained" disabled>Submit</Button>    
                             </div>)
                         }
                     </div>)

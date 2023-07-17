@@ -17,7 +17,7 @@ For any stated enforced commitments in statements that satisfy all of the follow
 
 [//]: # (termintate list hack)
 In the event of failing to meet any contained stated enforced commitments, the user agrees to do the following: <br />
-- pay a penalty of 100 USD (unless specified) to the following arbitrarily chosen non profit organization which solely functions as a benign money sink to facilitate penalty payment: Wikimedia Foundation, Inc. (WMF).
+- pay a penalty of 100 USD (unless specified) to the following arbitrarily chosen non profit organisation which solely functions as a benign money sink to facilitate penalty payment: Wikimedia Foundation, Inc. (WMF).
 - publish a proof of payment with reference to the commitment
 - the user does not need to pay more that the maximum of 500 USD penalty within a 12 month period in case of multiple commitment failures
 

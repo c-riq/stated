@@ -11,7 +11,7 @@ import { TextField } from '@mui/material';
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 
-export const RatingForm = props => {
+export const RatingForm = (props:FormProps) => {
 
     const [organisation, setOrganisation] = React.useState("");
     const [domain, setDomain] = React.useState("");
@@ -20,10 +20,10 @@ export const RatingForm = props => {
 
     const options = ["1/5 Stars", "2/5 Stars", "3/5 Stars", "4/5 Stars", "5/5 Stars"]
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash:generateHash = ({viaAPI})  => {
         props.setViaAPI(viaAPI)
         const content = buildRating({organisation, domain, rating, comment})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
 
             const parsedStatement = parseStatement(statement)
             const parsedRating = parseRating(parsedStatement.content)
@@ -35,7 +35,7 @@ export const RatingForm = props => {
             props.setStatement(statement)
             sha256(statement).then((value) => { props.setStatementHash(value); });
         }
-        const handleChange = (event) => {
+        const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             setRating(event.target.value)
         }
         
@@ -63,8 +63,8 @@ export const RatingForm = props => {
 
         <div style={{marginTop: "12px", marginBottom:"12px"}}> <h5>Your rating: </h5> </div>
         <RadioGroup
-        value={rating}
-        onChange={handleChange}>
+            value={rating}
+            onChange={handleChange}>
             {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
         ))}
         </RadioGroup>
