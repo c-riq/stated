@@ -106,7 +106,7 @@ for (const i of array) {
       const statement = buildStatement({
           domain,
           author,
-          time: new Date().toUTCString(),
+          time: new Date(),
           ...(superseded_statement ? {supersededStatement: superseded_statement} : {}),
           content: bountyContent,
       })
