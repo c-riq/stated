@@ -21,13 +21,14 @@ Statement content: hi`
 });
 
 test('statement build & parse function compatibility: input=parse(build(input))', () => {
-	const [domain, author, time, content, representative, supersededStatement] = Array.from({ length: 6 },randomUnicodeString)
+	const [domain, author, content, representative, supersededStatement] = Array.from({ length: 5 },randomUnicodeString)
 	const tags = Array.from({ length: 4 },randomUnicodeString)
+	const time = new Date('Sun, 04 Sep 2022 14:48:50 GMT')
 	const statementContent = buildStatement({domain, author, time, content, representative, supersededStatement, tags})
 	const parsedStatement = parseStatement(statementContent)
 	expect(parsedStatement.domain).toBe(domain)
 	expect(parsedStatement.author).toBe(author)
-	expect(parsedStatement.time).toBe(time)
+	expect(parsedStatement.time.toUTCString()).toBe(time.toUTCString())
 	expect(parsedStatement.content).toBe(content)
 	expect(parsedStatement.representative).toBe(representative)
 	expect(parsedStatement.supersededStatement).toBe(supersededStatement)
@@ -158,7 +159,7 @@ test('person verification build & parse function compatibility: input=parse(buil
 	const countryOfBirth = 'Germany'
 	const cityOfBirth = 'Berlin'
 	const confidence = '' + Math.random()
-	const dateOfBirth = (new Date(0)).toString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ')
+	const dateOfBirth = new Date(0)
 	const personVerificationContent = buildPersonVerificationContent({ name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
 	dateOfBirth, jobTitle, employer, verificationMethod, confidence,
 	picture, reliabilityPolicy })
@@ -168,7 +169,7 @@ test('person verification build & parse function compatibility: input=parse(buil
 	expect(parsedVerification.name).toBe(name)
 	expect(parsedVerification.ownDomain).toBe(ownDomain)
 	expect(parsedVerification.foreignDomain).toBe(foreignDomain)
-	expect(parsedVerification.dateOfBirth).toBe(dateOfBirth)
+	expect(parsedVerification.dateOfBirth.toUTCString()).toBe(dateOfBirth.toUTCString())
 	expect(parsedVerification.jobTitle).toBe(jobTitle)
 	expect(parsedVerification.employer).toBe(employer)
 	expect(parsedVerification.verificationMethod).toBe(verificationMethod)
@@ -256,14 +257,14 @@ test('poll build & parse function compatibility: input=parse(build(input))', () 
 	const [country, city, legalEntity, judges, poll] = Array.from({ length: 8 },randomUnicodeString)
 	const options = Array.from({ length: 2 },randomUnicodeString)
 	const domainScope = ['rixdata.net']
-	const deadline = 'Thu, 01 Dec 2022 13:38:26 GMT'
+	const deadline = new Date('Thu, 01 Dec 2022 13:38:26 GMT')
 	const pollContent = buildPollContent({country, city, legalEntity, domainScope, judges, deadline, poll, options})
 	const parsedPoll = parsePoll(pollContent)
 	expect(parsedPoll.poll).toBe(poll)
 	expect(parsedPoll.country).toBe(country)
 	expect(parsedPoll.legalEntity).toBe(legalEntity)
 	expect(parsedPoll.judges).toBe(judges)
-	expect(parsedPoll.deadline?.toUTCString()).toBe(deadline)
+	expect(parsedPoll.deadline.toUTCString()).toBe(deadline.toUTCString())
 	expect(parsedPoll.options[0]).toEqual(options[0])
 	expect(parsedPoll.options[1]).toEqual(options[1])
 });
