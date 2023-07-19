@@ -11,6 +11,9 @@
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.3",
     "@testing-library/user-event": "^13.5.0",
+    "@types/node": "^20.4.2",
+    "@types/react": "^17.0.62",
+    "@types/react-dom": "^18.2.7",
     "buffer": "^6.0.3",
     "core-js": "^3.26.1",
     "cytoscape": "^3.23.0",
@@ -23,15 +26,20 @@
     "react-dom": "^17.0.2",
     "react-router-dom": "^6.4.0",
     "react-scripts": "5.0.0",
+    "typescript": "^5.1.6",
     "web-vitals": "^2.1.4",
     "web-worker": "^1.2.0",
     "xregexp": "^5.1.1"
   },
+  "overrides": {
+    "react-scripts": {
+      "typescript": "^5"
+    }
+  },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && npm run copyFiles && npm run jsToTs",
-    "copyFiles": "cp ./src/statementFormats.js ../backend/statementFormats.ts & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
-    "jsToTs": "for f in ../backend/constants/*.js; do mv -- \"$f\" \"${f%.js}.ts\"; done",
+    "build": "react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && npm run copyFiles",
+    "copyFiles": "cp ./src/statementFormats.ts ../backend/ & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -58,6 +66,8 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-named-capturing-groups-regex": "^7.19.1",
-    "@types/jest": "^29.5.2"
+    "@types/cytoscape": "^3.19.10",
+    "@types/cytoscape-fcose": "^2.2.1",
+    "@types/jest": "^29.5.3"
   }
 }

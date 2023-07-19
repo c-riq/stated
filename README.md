@@ -21,7 +21,7 @@ dig -t txt stated.rixdata.net +short | grep NF6irhgDU0F_HEgTRKnhnDlA2R8c9Ynjihhi
 # with DNSSEC
 delv @1.1.1.1 TXT stated.rixdata.net +short +trust | grep -e 'fully validated' -e 'NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
 ```
-and then publish the full text of the statement statement through another organizations stated web app.
+and then publish the full text of the statement statement through another organisations stated web app.
 4. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 ## Establishing online identities
 

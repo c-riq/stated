@@ -17,6 +17,9 @@ jobs:
       - name: Run tests
         run: npm test
         working-directory: ./frontend
+      - name: Transpile
+        run: npx tsc --noEmit
+        working-directory: ./frontend
 
   p2p_test:
     timeout-minutes: 10

@@ -9,7 +9,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
               ssl AS(
                 SELECT 
                   host domain,
-                  subject_o AS organization,
+                  subject_o AS organisation,
                   subject_c AS country,
                   subject_st AS state,
                   subject_l AS city,
@@ -26,7 +26,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
               _stated AS (
                 SELECT
                   verified_domain domain,
-                  name organization,
+                  name organisation,
                   country,
                   province state,
                   city,
