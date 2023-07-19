@@ -1,4 +1,4 @@
-type,motivation,bounty,reward,judge,judge_renumeration,superseded_statement,statement
+type,motivation,bounty,reward,judge,judge_pay,superseded_statement,statement
 bounty,Counteract corruption,First provides proof for an incident of corruption at suppliers and corporate customers,(Annual money flows between our organisation and the affected organisation) * (Bribe sum / revenue of the organisation),Global Witness Foundation,10% of the prospective bounty,,
 bounty,Enforce human rights,First provides proof for an incident of modern slavery at suppliers and suppliers of suppliers,(Annual money flows between our organisation and the affected organisation) * (Affected employees / total number of employees),Amnesty International,10% of the prospective bounty,,
 bounty,Aide international law enforcement,Successfully executes an arrest warrant by the International Criminal Court,0.5% of our annual salaries,International Criminal Court,,,

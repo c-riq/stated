@@ -501,17 +501,17 @@ export type bounty = {
 	bounty: string,
 	reward: string,
 	judge: string,
-	judgeRenumeration?: string,
+	judgePay?: string,
 }
-export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be renumerated per investigated case with a maxium of: )/
-export const buildBounty = ({motivation, bounty, reward, judge, judgeRenumeration}:bounty) => {
+export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be paid per investigated case with a maxium of: )/
+export const buildBounty = ({motivation, bounty, reward, judge, judgePay}:bounty) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +
 	(motivation ? "\t" + "In order to: " + motivation + "\n" : "") +
 	"\t" + "We will reward any entity that: " + bounty + "\n" +
 	"\t" + "The reward is: " + reward + "\n" +
 	"\t" + "In case of dispute, bounty claims are judged by: " + judge + "\n" +
-	(judgeRenumeration ? "\t" + "The judge will be renumerated per investigated case with a maxium of: " + judgeRenumeration + "\n" : "") +
+	(judgePay ? "\t" + "The judge will be paid per investigated case with a maxium of: " + judgePay + "\n" : "") +
 	""
 	return content
 }
@@ -522,7 +522,7 @@ export const parseBounty = (s: string):bounty => {
 	+ /\tWe will reward any entity that: (?<bounty>[^\n]*?)\n/.source
 	+ /\tThe reward is: (?<reward>[^\n]*?)\n/.source
 	+ /\tIn case of dispute, bounty claims are judged by: (?<judge>[^\n]*?)\n/.source
-	+ /(?:\tThe judge will be renumerated per investigated case with a maxium of: (?<judgeRenumeration>[^\n]*?)\n)?/.source
+	+ /(?:\tThe judge will be paid per investigated case with a maxium of: (?<judgePay>[^\n]*?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(bountyRegex)
@@ -532,7 +532,7 @@ export const parseBounty = (s: string):bounty => {
 		bounty: m[2],
 		reward: m[3],
 		judge: m[4],
-		judgeRenumeration: m[5]
+		judgePay: m[5]
 	}
 }
 
