@@ -45,10 +45,11 @@ export type statement = {
 export const buildStatement = ({domain, author, time, tags, content, representative, supersededStatement}: statement) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
 	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
+	if(typeof time !== 'object' || !time.toUTCString) throw(new Error("Time must be a Date object."))
 	const statement = "Publishing domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" + // organisation name
 			(representative && representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
-			"Time: " + time + "\n" +
+			"Time: " + time.toUTCString() + "\n" +
             (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
 			(supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
             "Statement content: " +  content;
@@ -314,11 +315,12 @@ export const buildPersonVerificationContent = (
 		picture, reliabilityPolicy}:personVerification) => {
 	console.log(name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain, dateOfBirth)
 	if(!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) return ""
+	const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j))
 	let content = "\n" +
 		"\t" + "Type: Person verification" + "\n" +
 		"\t" + "Description: We verified the following information about a person." + "\n" +
 		"\t" + "Name: " + name + "\n" +
-		"\t" + "Date of birth: " + dateOfBirth.toString().split(' ').filter((i,j)=>[1,2,3].includes(j)).join(' ') + "\n" +
+		"\t" + "Date of birth: " + [day.replace(/$0/, ''), month, year].join(' ') + "\n" +
 		"\t" + "City of birth: " + cityOfBirth + "\n" +
 		"\t" + "Country of birth: " + countryOfBirth + "\n" +
 		(jobTitle ? "\t" + "Job title: " + jobTitle + "\n" : "") +
@@ -333,6 +335,9 @@ export const buildPersonVerificationContent = (
 	console.log(content)
 	return content
 }
+
+const monthIndex = (month:string) => ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase().substr(0,3))
+const birthDateFormat:RegExp = /(?<d>\d{1,2})\s(?<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(?<y>\d{4})/
 
 export const parsePersonVerification = (s: string):personVerification => {
 	const domainVerificationRegex= new RegExp(''
@@ -355,10 +360,12 @@ export const parsePersonVerification = (s: string):personVerification => {
 	console.log(s)
 	const m = s.match(domainVerificationRegex)
 	if(!m) throw new Error("Invalid person verification format")
-	if(m[2] && !m[2].match(UTCFormat)) throw new Error("Invalid verification: birth date must be in UTC")
+	if(m[2] && !m[2].match(birthDateFormat)) throw new Error("Invalid birth date format: " + m[2])
+	let {d, month, y} = m[2].match(birthDateFormat)?.groups || {}
+	if(!d || !month || !y) throw new Error("Invalid birth date format: " + m[2])
 	return {
 		name: m[1],
-		dateOfBirth: new Date(m[2]),
+		dateOfBirth: new Date(Date.UTC(parseInt(y), monthIndex(month), parseInt(d))),
 		cityOfBirth: m[3],
 		countryOfBirth: m[4],
 		jobTitle: m[5],
