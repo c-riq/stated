@@ -495,7 +495,7 @@ type bounty = {
 	judge: string,
 	judgeRenumeration?: string,
 }
-export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |In case of dispute, bounty claims are judged by: |The judge will be renumerated per investigated case with a maxium of: )/
+export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be renumerated per investigated case with a maxium of: )/
 export const buildBounty = ({motivation, bounty, reward, judge, judgeRenumeration}:bounty) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +
