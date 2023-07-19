@@ -3,12 +3,11 @@ import cytoscape from "cytoscape";
 // @ts-ignore
 import elk from "cytoscape-elk";
 
-import { getSSLOVInfo, backendHost } from "../api";
+import { getSSLOVInfo, backendHost, statementDB } from "../api";
 
-import { statement } from "../statementFormats";
 
 cytoscape.use(elk);
-type node = {
+export type node = {
   data: {
     id: string;
     name: string;
@@ -16,9 +15,10 @@ type node = {
     backgroundColor?: string;
     size?: string;
     parent?: string;
+    color?: string;
   };
 };
-type edge = {
+export type edge = {
   data: {
     id: string;
     name: string;
@@ -31,7 +31,8 @@ type edge = {
 type props = {
     organisationVerifications: any[];
     personVerifications: any[];
-    statement: statement & {hash: string};
+    statement: statementDB;
+    lt850px: boolean;
 }
 type ssl = {domain: string, O: string, issuer_o: string, issuer_cn: string, sha256: string}
 export const VerificationGraph = (props:props) => {
@@ -138,7 +139,7 @@ export const VerificationGraph = (props:props) => {
       / /g,
       "_"
     ).toLowerCase();
-    const targetParentId = ("statement:" + statement.hash).replace(
+    const targetParentId = ("statement:" + statement.hash_b64).replace(
       / /g,
       "_"
     ).toLowerCase();
@@ -213,8 +214,8 @@ export const VerificationGraph = (props:props) => {
           id: sourceParentId + "-" + targetParentId,
           source: sourceParentId,
           target: targetParentId,
-          name: "stated:" + statement.hash?.substring(0, 5),
-          href: `${backendHost}/statement/${statement.hash}`,
+          name: "stated:" + statement.hash_b64?.substring(0, 5),
+          href: `${backendHost}/statement/${statement.hash_b64}`,
         },
       });
     }
@@ -328,7 +329,7 @@ export const VerificationGraph = (props:props) => {
 
     cy.userZoomingEnabled(false);
     //cy.userPanningEnabled(false);
-    cy.on("tap", "node", function (e) {
+    cy.on("tap", "node", (e) => {
       const node = e.target;
       if (!node.data("href")) return;
       try {
@@ -337,7 +338,7 @@ export const VerificationGraph = (props:props) => {
         window.location.href = node.data("href");
       }
     });
-    cy.on("tap", "edge", function (e) {
+    cy.on("tap", "edge", (e) => {
       const edge = e.target;
       if (!edge.data("href")) return;
       try {

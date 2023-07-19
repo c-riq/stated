@@ -35,18 +35,53 @@ const req = (method:method, path:string, body:any, cb:cb, reject:cb) => {
         .catch(error => reject({error}))
 }
 
-export const getStatement = (hash:string, cb:res<statement|any>) => {
+export type statementDB = {
+    id: number,
+    type: string,
+    domain: string,
+    author: string,
+    statement: string,
+    proclaimed_publication_time: string,
+    hash_b64: string,
+    referenced_statement: string,
+    tags: string,
+    content: string,
+    content_hash: string,
+    source_node_id: number,
+    first_verification_time: string,
+    latest_verification_time: string,
+    verification_method: string,
+    derived_entity_created: boolean,
+    derived_entity_creation_retry_count: number,
+    name: string
+}
+export const getStatement = (hash:string, cb:res<statementDB>) => {
     if (hash.length < 1) {
-        return cb({})
+        throw new Error('Hash missing')
     }
     req('GET',('statement?hash=' + hash), {}, (json) => {
-        if ("statements" in json) {
+        if (json?.statements?.length > 0) {
             cb(json.statements[0])
             window.scrollTo(0,0)
+        } else {
+            throw new Error('Statement not found')
         }
-    }, e => {console.log(e); return})
+    }, e => {console.log(e); throw new Error('Could not fetch statement')})
 }
-export const getStatements = (searchQuery:string|undefined, cb:res<statement[]>) => {
+export type statementWithDetails = {
+    content: string;
+    cotent_hash: string;
+    domain: string;
+    hash_b64: string;
+    id: number;
+    statement: string;
+    tags: string[];
+    repost_count: string;
+    type: string|undefined;
+    name: string|undefined;
+    votes: any[]|undefined;
+}
+export const getStatements = (searchQuery:string|undefined, cb:res<{statements: statementWithDetails[], time: string}>) => {
     req('GET',(searchQuery ? 'statements_with_details?search_query=' + searchQuery : 'statements_with_details'), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})

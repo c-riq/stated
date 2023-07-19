@@ -28,7 +28,8 @@ import { submitStatement, getTXTRecords,
 import StatementForm from './StatementForm';
 
 type Props = {
-    domain: string,
+    lt850px: boolean,
+    domain?: string,
     statementToJoin: any,
     poll: any,
     serverTime: Date,
@@ -139,7 +140,9 @@ const CreateStatement = (props:Props) => {
                 options={domainOptions}
                 onChange={(event, newInputValue: string|domainOption) => {
                     setDomainIdendity(newInputValue)
+                    // @ts-ignore
                     setDomain(newInputValue.domain)
+                    // @ts-ignore
                     setAuthor(newInputValue.organisation)
                 }}
                 onInputChange={(event, newValue) => {

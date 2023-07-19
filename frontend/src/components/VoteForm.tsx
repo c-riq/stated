@@ -41,7 +41,7 @@ export const VoteForm = (props:FormProps) => {
             props.setStatement(statement)
             sha256(statement).then((value) => {props.setStatementHash(value)})
         }
-        const handleChange = (event) => {
+        const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             setVote(event.target.value)
           }
         
@@ -51,10 +51,10 @@ export const VoteForm = (props:FormProps) => {
             <a target="blank" href={'/statement/'+props.poll.hash_b64}>{props.poll.hash_b64}</a></div>
         <FormLabel id="polllabel">{pollParsed.poll}</FormLabel>
         <RadioGroup
-        value={vote}
-        onChange={handleChange}>
-            {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
-        ))}
+            value={vote}
+            onChange={handleChange}>
+                {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
+            ))}
         </RadioGroup>
         {props.children}
         <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>

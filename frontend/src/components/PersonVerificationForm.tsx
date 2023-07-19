@@ -22,9 +22,9 @@ import { sha256 } from '../utils/hash';
 
 const PersonVerificationForm = (props:FormProps) => {
     const [birthCountry, setBirthCountry] = React.useState("");
-    const [countryObject, setCountryObject] = React.useState("");
+    const [countryObject, setCountryObject] = React.useState(undefined as string[]|undefined);
     const [birthCity, setBirthCity] = React.useState("");
-    const [cityObject, setCityObject] = React.useState("");
+    const [cityObject, setCityObject] = React.useState(undefined as string[]|undefined);
     const [birthDate, setBirthDate] = React.useState(
         moment.parseZone("1990-01-01T00:00:00Z"))
     const [ownsDomain, setOwnsDomain] = React.useState(true);
@@ -32,7 +32,7 @@ const PersonVerificationForm = (props:FormProps) => {
     const [foreignDomain, setForeignDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
         props.setViaAPI(viaAPI)
         let date = birthDate.toDate()
         date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -42,8 +42,8 @@ const PersonVerificationForm = (props:FormProps) => {
         console.log(statement)
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
+            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
+                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
                 props.setisError(true)
                 return
             }
@@ -100,7 +100,7 @@ const PersonVerificationForm = (props:FormProps) => {
             <DatePicker
             label="Date of birth"
             value={birthDate}
-            onChange={(v) => setBirthDate(v)}
+            onChange={(v) => setBirthDate(v as moment.Moment)}
             renderInput={(params) => <TextField {...params} />}
             />
         </LocalizationProvider>
@@ -110,7 +110,7 @@ const PersonVerificationForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setCountryObject(newvalue)}
+            onChange={(e,newvalue)=>setCountryObject(newvalue as string[])}
             value={countryObject}
             inputValue={birthCountry}
             onInputChange={(event, newInputValue) => setBirthCountry(newInputValue)}
@@ -140,12 +140,12 @@ const PersonVerificationForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setCityObject(newvalue)}
+            onChange={(e,newvalue)=>setCityObject(newvalue as string[])}
             value={cityObject}
             inputValue={birthCity}
             onInputChange={(event, newInputValue) => setBirthCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="City of birth" />}
-            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
+            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         {props.children}

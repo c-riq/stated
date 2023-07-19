@@ -22,11 +22,11 @@ import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildSta
 const PollForm = (props:FormProps) => {
     const province = ''
     const [country, setCountry] = React.useState("");
-    const [countryObject, setCountryObject] = React.useState("");
+    const [countryObject, setCountryObject] = React.useState(undefined as string[]|undefined);
     const [legalForm, setLegalForm] = React.useState("");
     const [legalFormObject, setLegalFormObject] = React.useState("");
     const [city, setCity] = React.useState("");
-    const [cityObject, setCityObject] = React.useState("");
+    const [cityObject, setCityObject] = React.useState(undefined as string[]|undefined);
     const [options, setOptions] = React.useState(['','']);
     const [domainScope, setDomainScope] = React.useState([]);
     const [nodes, setNodes] = React.useState("");
@@ -72,7 +72,7 @@ const PollForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setCountryObject(newvalue)}
+            onChange={(e,newvalue)=>setCountryObject(newvalue as string[])}
             value={countryObject}
             inputValue={country}
             onInputChange={(event, newInputValue) => setCountry(newInputValue)}
@@ -98,16 +98,16 @@ const PollForm = (props:FormProps) => {
         />
         <Autocomplete
             id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] == countryObject[4] ) : []}
+            options={countryObject ? cities.cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setCityObject(newvalue)}
+            onChange={(e,newvalue)=>setCityObject(newvalue as string[])}
             value={cityObject}
             inputValue={city}
             onInputChange={(event, newInputValue) => setCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Voting city (optional)" />}
-            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
+            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -116,19 +116,19 @@ const PollForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={option => option}
             freeSolo
-            onChange={(e,newvalue)=>setLegalFormObject(newvalue)}
+            onChange={(e,newvalue)=>setLegalFormObject(newvalue as string)}
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Voting legal entities (optional)" />}
-            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
+            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
             sx={{marginTop: "20px", marginBottom: "20px"}}
         />
         <LocalizationProvider dateAdapter={AdapterMoment}>
             <DateTimePicker
             label="deadline"
             value={votingDeadline}
-            onChange={(v) => setVotingDeadline(v)}
+            onChange={(v) => setVotingDeadline(v as moment.Moment)}
             renderInput={(params) => <TextField {...params} />}
             />
         </LocalizationProvider>

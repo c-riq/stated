@@ -17,6 +17,7 @@ import { statementTypes, parsePDFSigning } from '../statementFormats';
 import {VerificationGraph} from './VerificationGraph'
 
 import {filePath, getWorkingFileURL} from './SignPDFForm'
+import {statementDB} from '../api'
 
 type props = {
     lt850px: boolean,
@@ -26,9 +27,7 @@ type props = {
 const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState([]);
     const [votes, setVotes] = React.useState([]);
-    const [statement, setStatement] = React.useState({statement: undefined, 
-        type: undefined, domain: undefined, 
-        hash: undefined, content: undefined});
+    const [statement, setStatement] = React.useState(undefined as statementDB | undefined);
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
@@ -122,8 +121,8 @@ const Statement = (props:props) => {
                 <h4>1. Check the domain owners intention to publish the statement</h4>
                 <p>There are 2 supported methods for this: via a running stated server application on the authors website domain (1.1) and via DNS TXT entries of the authors domain (1.2).</p>
                 <h4>1.1 Via the domain owners website</h4>
-                <p>Check if the domain owner also published the domain under this URL: <Link href={`https://stated.${statement.domain}/statement/${statement.hash}`}>
-                    {`https://stated.${statement.domain}/statement/${statement.hash}`}</Link> or as part of a text file under this URL: <br />
+                <p>Check if the domain owner also published the domain under this URL: <Link href={`https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
+                    {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</Link> or as part of a text file under this URL: <br />
                     <Link href={`https://stated.${statement.domain}/statements.txt`}>{`https://stated.${statement.domain}/statements.txt`}</Link></p>
                 <h4>1.2 Via the domain DNS records</h4>
                 <h4>1.2.1 Generate the statement hash</h4>
@@ -136,7 +135,7 @@ const Statement = (props:props) => {
                 <h4>1.2.2 via DNS records </h4>
                 <p>Only the owner of a website domain should be able change the DNS records. If the hash representing the statement was added there, 
                     this implies that the domain owner is also the author of the statement. Running the following command in the mac terminal 
-                    allows you to verify that the statement hash <span style={{backgroundColor:"#cccccc"}}>{statement.hash}</span> is published in the domain's DNS records:</p>
+                    allows you to verify that the statement hash <span style={{backgroundColor:"#cccccc"}}>{statement.hash_b64}</span> is published in the domain's DNS records:</p>
                 <div>
                     <TextareaAutosize style={{width:"100%", fontSize: "15px", fontFamily:"Helvetica"}} value={"delv @1.1.1.1 TXT stated."+statement.domain+" +short +trust"}/>
                 </div>

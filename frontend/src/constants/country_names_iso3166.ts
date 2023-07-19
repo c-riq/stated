@@ -1,5 +1,6 @@
 // ["Country","Alpha-2 code","Alpha-3 code","Numeric","wikidata id"]
-export const countries = {
+type CountryObject = string[]
+export const countries: {countries: CountryObject[]} = {
     "countries" : [
         ["Afghanistan", "AF", "AFG", "004", "Q889"],
         ["Albania", "AL", "ALB", "008", "Q222"],

@@ -140,7 +140,7 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
 }
-type poll = {
+export type poll = {
 	country: string|undefined,
 	city: string|undefined,
 	legalEntity: string|undefined,
@@ -204,7 +204,7 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 		options
 	}
 }
-type organisationVerification = {
+export type organisationVerification = {
 	name: string,
 	englishName?: string,
 	country: string,
@@ -293,7 +293,7 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 	}
 }
 
-type personVerification = {
+export type personVerification = {
 	name: string,
 	countryOfBirth: string,
 	cityOfBirth: string,
@@ -372,7 +372,7 @@ export const parsePersonVerification = (s: string):personVerification => {
 	}
 }
 
-type vote = {
+export type vote = {
 	pollHash: string,
 	poll: string,
 	vote: string,
@@ -403,7 +403,8 @@ export const parseVote = (s: string):vote => {
 		vote: m[3]
 	}
 }
-type dispute = {
+
+export type dispute = {
 	hash: string,
 }
 export const buildDisputeContent = ({hash}:dispute) => {
@@ -427,7 +428,7 @@ export const parseDispute = (s: string):dispute => {
 		hash: m[1]
 	}
 }
-type PDFSigning = {
+export type PDFSigning = {
 	hash: string,
 }
 export const PDFSigningKeys = /(Type: |Description: |PDF file hash: )/
@@ -452,7 +453,7 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 		hash: m[1]
 	}
 }
-type rating = {
+export type rating = {
 	organisation: string,
 	domain: string,
 	rating: string,
@@ -488,14 +489,14 @@ export const parseRating = (s: string):rating => {
 		comment: m[4]
 	}
 }
-type bounty = {
+export type bounty = {
 	motivation?: string,
 	bounty: string,
 	reward: string,
 	judge: string,
 	judgeRenumeration?: string,
 }
-export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |In case of dispute, bounty claims are judged by: |The judge will be renumerated per investigated case with a maxium of: )/
+export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be renumerated per investigated case with a maxium of: )/
 export const buildBounty = ({motivation, bounty, reward, judge, judgeRenumeration}:bounty) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +

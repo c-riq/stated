@@ -21,7 +21,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Route, Routes, Link, useParams, useNavigate, Outlet } from 'react-router-dom';
 
-import { getStatements } from './api'
+import { getStatements, statementWithDetails } from './api'
+import { statement, poll } from "./statementFormats"
+
 // @ts-ignore
 import gh from './img/github.png'
 // @ts-ignore
@@ -29,7 +31,7 @@ import logo from './img/logo.png'
 
 type CenterModalProps = {
   lt850px: boolean,
-  text: string,
+  text?: string,
   modalOpen: boolean,
   onClose: Function,
   children: any
@@ -55,7 +57,8 @@ const CenterModal = (props: CenterModalProps) => {
       p: 0
     }}>
     {!lt850px&&(<div style={{height: 50, padding: '16px 16px 16px 16px'}}>
-      <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
+      <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}>
+        <CloseIcon sx={{fontSize: "30px"}} /></a>
     </div>)}
     <div style={{...(lt850px?{padding: '30px'}:{padding: '30px 50px 50px 50px'}), overflowY: 'scroll'}}>
       {
@@ -64,7 +67,8 @@ const CenterModal = (props: CenterModalProps) => {
     </div>
   </Box>
   {lt850px && (<div style={{position: 'fixed', top: "16px", left: "16px", height: "50px", width: "50px"}}>
-    <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}><CloseIcon sx={{fontSize: "30px"}} /></a>
+    <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}>
+      <CloseIcon sx={{fontSize: "30px"}} /></a>
   </div>)}
 </div>
 </Modal>)
@@ -73,16 +77,17 @@ const CenterModal = (props: CenterModalProps) => {
 type LayoutProps = {
   getStatementsAPI: Function,
   setSearchQuery: Function,
-  searchQuery: string,
+  searchQuery?: string,
   joinStatement: Function,
   voteOnPoll: Function,
   setModalOpen: Function,
-  setServerTime: Function,
-  posts: any,
+  setServerTime: (arg0: Date) => void,
+  serverTime: Date,
+  statements: any,
   lt850px: boolean
 }
 
-const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, setModalOpen, setServerTime, posts, lt850px}:LayoutProps) => {
+const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, setModalOpen, setServerTime, statements, lt850px}:LayoutProps) => {
   return(
     <React.Fragment>
       <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
@@ -97,7 +102,7 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
               placeholder='search'
               onChange={e => { setSearchQuery(e.target.value) }}
               onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
-              onBlur={() => (searchQuery.length === 0) && getStatementsAPI()}
+              onBlur={() => (searchQuery?.length === 0) && getStatementsAPI()}
               sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
                 '& label': { paddingLeft: (theme) => theme.spacing(2) },
                 '& input': { paddingLeft: (theme) => theme.spacing(3) },
@@ -110,7 +115,7 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
         </div>
       </div>
     </header>
-    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} posts={posts} lt850px={lt850px}
+    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
     setModalOpen={()=>{setModalOpen(true)}}>
       <Link to="/create-statement">
         <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
@@ -136,9 +141,9 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
 
 function App() {
   const [serverTime, setServerTime] = React.useState(new Date());
-  const [statementToJoin, setStatementToJoin] = React.useState(false);
-  const [poll, setPoll] = React.useState(false);
-  const [posts, setPosts] = React.useState([]);
+  const [statementToJoin, setStatementToJoin] = React.useState(undefined as statement | undefined);
+  const [poll, setPoll] = React.useState(undefined as poll | undefined);
+  const [statements, setStatements] = React.useState([] as statementWithDetails[]);
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
@@ -152,22 +157,22 @@ function App() {
 
   const getStatementsAPI = () => {
     console.log("getPosts", searchQuery)
-      getStatements(searchQuery, (s)=>{
+      getStatements(searchQuery, (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
           console.log(s)
-          if ("statements" in s) {
-              setPosts(s.statements)
+          if (s?.statements) {
+              setStatements(s.statements)
               window.scrollTo(0,0)
           } 
-          if ("time" in s) {
-              setServerTime(s.time)
+          if (s?.time) {
+              setServerTime(new Date(s.time))
           } 
       })
   }
-  const joinStatement = (statement) => {
+  const joinStatement = (statement: statement) => {
     setStatementToJoin(statement)
     setModalOpen(true)
   }
-  const voteOnPoll = (poll) => {
+  const voteOnPoll = (poll: poll) => {
     setPoll(poll)
     console.log('poll', poll)
     setModalOpen(true)
@@ -183,7 +188,7 @@ function App() {
     }
   })
   const resetState = () => {
-    navigate("/"); setModalOpen(false); setStatementToJoin(false); setPostToView(false)
+    navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false)
   }
   return (
     <div className="App" style={{overflow: modalOpen ? 'hidden': 'scroll'}}>
@@ -192,21 +197,22 @@ function App() {
       <Routes>
           <Route element={(<Layout getStatementsAPI={getStatementsAPI}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
-           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} posts={posts} lt850px={lt850px} />)} >
+           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} lt850px={lt850px} />)} >
+            {/* @ts-ignore */}
             <Route path='/' exact />
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <Statement hash_b64={useParams().statementId || ''} voteOnPoll={voteOnPoll} lt850px={lt850px}/>
+                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px}/>
               </CenterModal>)} 
             />
             <Route path='/create-statement' element={
-              <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}) => {warning ? setDialogOpen(true) : resetState() }}>
+              <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
                 <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} lt850px={lt850px}/>
               </CenterModal>} 
             />
           </Route>
-          <Route path='/full-verification-graph' element={<FullVerificationGraph style={{ width: "100vw", height: "100vh" }}/>} />
-          <Route path='/full-network-graph' element={<FullNetworkGraph style={{ width: "100vw", height: "100vh" }}/>} />
+          <Route path='/full-verification-graph' element={<FullVerificationGraph />} />
+          <Route path='/full-network-graph' element={<FullNetworkGraph/>} />
       </Routes>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */

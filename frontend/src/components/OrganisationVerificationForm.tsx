@@ -15,36 +15,35 @@ import { parseStatement, buildStatement, forbiddenStrings,
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 
-
 const OrganisationVerificationForm = (props:FormProps) => {
     const [country, setCountry] = React.useState("");
-    const [countryObject, setCountryObject] = React.useState("");
+    const [countryObject, setCountryObject] = React.useState(undefined as string[]|undefined);
     const [legalForm, setLegalForm] = React.useState(legalForms.corporation);
     const [legalFormObject, setLegalFormObject] = React.useState(legalForms.corporation);
     const [city, setCity] = React.useState("");
-    const [cityObject, setCityObject] = React.useState(null);
+    const [cityObject, setCityObject] = React.useState(undefined as string[]|undefined);
     const [province, setProvince] = React.useState("");
-    const [provinceObject, setProvinceObject] = React.useState(null);
+    const [provinceObject, setProvinceObject] = React.useState(undefined as string[]|undefined);
     const [serialNumber, setSerialNumber] = React.useState("");
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
     const [employeeCount, setEmployeeCount] = React.useState("");
-    const [employeeCountObject, setEmployeeCountObject] = React.useState(null);
+    const [employeeCountObject, setEmployeeCountObject] = React.useState(undefined as string|undefined);
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
-    const generateHash = ({viaAPI}) => {
+    const generateHash = ({viaAPI}:{viaAPI: boolean}) => {
         props.setViaAPI(viaAPI)
         try {
             const content = buildOrganisationVerificationContent({name: verifyName, domain: verifyDomain, city, country, province, serialNumber, legalForm,
-                foreignDomain: "", confidence, reliabilityPolicy, pictureHash: "", employeeCount})
+                foreignDomain: "", confidence: parseFloat(confidence), reliabilityPolicy, pictureHash: "", employeeCount})
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
             console.log(statement)
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement)).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement)))
+            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
+                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
                 props.setisError(true)
                 return
             }
@@ -56,8 +55,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             }
             props.setStatement(statement)
             sha256(statement).then((value) => { props.setStatementHash(value); });
-        } catch (e) {
-            props.setAlertMessage(e.message)
+        } catch (e: any) {
+            props.setAlertMessage('Error: ' + (e?.message??''))
             props.setisError(true)
         }
     }
@@ -90,7 +89,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setCountryObject(newvalue)}
+            onChange={(e,newvalue)=>setCountryObject(newvalue as string[])}
             value={countryObject}
             inputValue={country}
             onInputChange={(event, newInputValue) => setCountry(newInputValue)}
@@ -121,12 +120,12 @@ const OrganisationVerificationForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option}
             freeSolo
-            onChange={(e,newvalue)=>setLegalFormObject(newvalue)}
+            onChange={(e,newvalue)=>setLegalFormObject(newvalue as string)}
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Legal entity" required />}
-            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
+            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -135,12 +134,12 @@ const OrganisationVerificationForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setCityObject(newvalue)}
+            onChange={(e,newvalue)=>setCityObject(newvalue as string[]) }
             value={cityObject}
             inputValue={city}
             onInputChange={(event, newInputValue) => setCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Headquarter city" />}
-            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
+            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -149,12 +148,12 @@ const OrganisationVerificationForm = (props:FormProps) => {
             autoHighlight
             getOptionLabel={(option) => option ? option[2] : ''}
             freeSolo
-            onChange={(e,newvalue)=>setProvinceObject(newvalue)}
+            onChange={(e,newvalue)=>setProvinceObject(newvalue as string[])}
             value={provinceObject}
             inputValue={province}
             onInputChange={(event, newInputValue) => setProvince(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Province / state" />}
-            renderOption={(props, option) => (<Box {...props} id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
+            renderOption={(props, option) => (<Box id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -162,12 +161,12 @@ const OrganisationVerificationForm = (props:FormProps) => {
             options={Object.values(employeeCounts)}
             autoHighlight
             getOptionLabel={(option) => option}
-            onChange={(e,newvalue)=>setEmployeeCountObject(newvalue)}
+            onChange={(e,newvalue)=>setEmployeeCountObject(newvalue as string)}
             value={employeeCountObject}
             inputValue={employeeCount}
             onInputChange={(event, newInputValue) => setEmployeeCount(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Employee count" />}
-            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
+            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <TextField

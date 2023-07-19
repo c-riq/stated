@@ -3,13 +3,13 @@ import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
 
 import { getNodes } from "../api";
+import { node, edge } from "./VerificationGraph";
 
 cytoscape.use(fcose);
 
-const sample = (arr,n) => arr.map(a => [a,Math.random()]).sort((a,b) => {return a[1] < b[1] ? -1 : 1;}).slice(0,n).map(a => a[0])
+const sample = (arr: any[],n:number) => arr.map(a => [a,Math.random()]).sort((a,b) => {return a[1] < b[1] ? -1 : 1;}).slice(0,n).map(a => a[0])
 
-export const FullNetworkGraph = (props) => {
-  console.log("VerificationGraph", props);
+export const FullNetworkGraph = () => {
   const graphRef = useRef(null);
   const [p2pNodes, setP2pNodes] = React.useState([window.location.hostname]);
   const [dataFetched, setDataFetched] = React.useState(false);
@@ -26,8 +26,8 @@ export const FullNetworkGraph = (props) => {
   }})
 
   useEffect(() => {
-    let nodes = [];
-    let edges = [];
+    let nodes:node[] = [];
+    let edges:edge[] = [];
     let domains = [];
     p2pNodes.forEach(
       (
@@ -86,13 +86,16 @@ export const FullNetworkGraph = (props) => {
         {
           selector: "edge",
           css: {
+            // @ts-ignore
             "curve-style": "linear",
             "target-arrow-shape": "triangle",
            // label: "data(name)",
             "text-rotation": "autorotate",
             "color": "data(color)",
+            // @ts-ignore
             "text-margin-y": "-10px",
             "line-color": "data(color)",
+            // @ts-ignore
             "line-style": "data(style)",
           },
         },
@@ -112,30 +115,33 @@ export const FullNetworkGraph = (props) => {
         edges: edges,
       },
       layout: {
+        // @ts-ignore
         directed: false,
         name: "fcose",
         quality: "proof",
-        nodeRepulsion: node => 450000,
+        nodeRepulsion: () => 450000,
         minDist: 20,
         centerGraph: true,
         alignment: "center",
         padding: 50,
       },
     });
-    cy.on("tap", "node", function () {
-      if (!this.data("href")) return;
+    cy.on("tap", "node", (e) => {
+      const node = e.target;
+      if (!node.data("href")) return;
       try {
-        window.open(this.data("href"));
+        window.open(node.data("href"));
       } catch (e) {
-        window.location.href = this.data("href");
+        window.location.href = node.data("href");
       }
     });
-    cy.on("tap", "edge", function () {
-      if (!this.data("href")) return;
+    cy.on("tap", "edge", (e) => {
+      const edge = e.target;
+      if (!edge.data("href")) return;
       try {
-        window.open(this.data("href"));
+        window.open(edge.data("href"));
       } catch (e) {
-        window.location.href = this.data("href");
+        window.location.href = edge.data("href");
       }
     });
     cy.on("mouseover", "edge", () =>

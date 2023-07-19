@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import { Link } from 'react-router-dom';
 
 import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys } from '../statementFormats'
+import { statementWithDetails } from '../api';
 
 const highlightedStatement = (text: string, type:string) => {
     let regex = /(\nType: )/
@@ -33,8 +34,9 @@ const highlightedStatement = (text: string, type:string) => {
 }
 
 type props = {
-    posts: any[],
+    statements: statementWithDetails[],
     setStatementToJoin: any,
+    setServerTime: (arg0: Date) => void,
     setModalOpen: any,
     lt850px: boolean,
     children: any,
@@ -43,16 +45,17 @@ type props = {
 
 const Statements = (props:props) => {
     const { lt850px } = props
+    const statements = props.statements
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { padding: "7%",margin: "2%", borderRadius: 8 }}>
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
             <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
                 <h3>Statements</h3> {props.children}</div>
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
-                    {props.posts && props.posts.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
-                    {props.posts && props.posts.length > 0 && props.posts.map((s,i) => {
+                    {statements && statements.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
+                    {statements && statements.length > 0 && statements.map((s,i) => {
                         if ([statementTypes.statement,statementTypes.organisationVerification,
-                        statementTypes.signPdf, statementTypes.rating, statementTypes.bounty].includes(s.type)){
+                        statementTypes.signPdf, statementTypes.rating, statementTypes.bounty].includes(s.type || '')){
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>
@@ -67,7 +70,7 @@ const Statements = (props:props) => {
                                 <div className="statement" 
                                 // @ts-ignore 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
-                                    {s.content.split("\n").map((s1:string,i:number)=>(<div key={i}>{highlightedStatement(s1, s.type)}</div>))}
+                                    {s.content.split("\n").map((s1:string,i:number)=>(<div key={i}>{highlightedStatement(s1, s.type || '')}</div>))}
                                     <img src={'https://www.'+s.domain+'/favicon.ico'} style={{
                                     width: "20px", height: "20px", borderRadius: "10px", paddingTop: "8px", paddingRight: "3px"
                                 }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{s.name ? s.name : s.domain}</span>
@@ -88,6 +91,7 @@ const Statements = (props:props) => {
                             let votes: {[key: string]: number} = {} 
                             if (s.votes){
                                 for (let o of Object.keys(s.votes)){
+                                    // @ts-ignore
                                     votes[o] = s.votes[o]
                                 }
                             }

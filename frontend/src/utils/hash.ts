@@ -1,7 +1,7 @@
 
 import {Buffer} from 'buffer';
 
-export const sha256 = async (input) => {
+export const sha256 = async (input: string) => {
     var enc = new TextEncoder(); // utf-8
     const buf = enc.encode(input)
     const hashBuffer = await crypto.subtle.digest('SHA-256', buf)

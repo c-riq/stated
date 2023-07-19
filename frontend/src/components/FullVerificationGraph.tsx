@@ -5,36 +5,13 @@ import { legalForms } from "../constants/legalForms";
 import { employeeCounts, parseOrganisationVerification } from "../statementFormats";
 
 import { backendHost, getDomainVerifications } from "../api";
+import { node, edge } from "./VerificationGraph";
 
 cytoscape.use(fcose);
 
-type node = {
-  data: {
-    id: string;
-    name: string;
-    href?: string;
-    color?: string;
-    size?: string;
-  };
-};
-type edge = {
-  data: {
-    id: string;
-    name: string;
-    source: string;
-    href?: string;
-    target: string;
-    color?: string;
-  };
-};
-type props = {
-    organisationVerifications: any[];
-    domains: string[];
-}
 const sample = (arr:any[],n:number) => arr.map(a => [a,Math.random()]).sort((a,b) => {return a[1] < b[1] ? -1 : 1;}).slice(0,n).map(a => a[0])
 
-export const FullVerificationGraph = (props:props) => {
-  console.log("VerificationGraph", props);
+export const FullVerificationGraph = () => {
   const graphRef = useRef(null);
   const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
   const [dataFetched, setDataFetched] = React.useState(false);
