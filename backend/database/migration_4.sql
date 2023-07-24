@@ -3,7 +3,7 @@ CREATE TEMP TABLE to_delete AS (
 	from statements 
 	where id not in (
 		select min_id from (
-			SELECT min(s1.id) min_id FROM statements s1 INNER JOIN statements s2 
+			SELECT min(s1.id) min_id FROM statements s1 LEFT JOIN statements s2 
 				ON s1.domain=s2.domain 
 				AND s1.author=s2.author 
 				AND s1.content_hash=s2.content_hash

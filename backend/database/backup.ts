@@ -17,7 +17,10 @@ export const backup = () => {return new Promise((resolve: DBCallback, reject: DB
     }
     const fileName = __dirname + `/backups/` + `${new Date().toUTCString()}`.replace(/\W/g,'_') + `.sql`
     try {
-        // psql -h localhost -U sdf -d stated < Mon__24_Jul_2023_07_30_28_GMT.sql
+        /* 
+        to restore run
+        psql -h localhost -U sdf -d stated < xyz.sql
+        */
         const pgdump = cp.spawn(`pg_dump`,[`-h`,`${pgHost}`,`-U`,`${pgUser}`,`-d`,`${pgDatabase}`,`-f`,`${fileName}`], 
         {env: {PGPASSWORD: `${pgPassword}`, ...process.env}})
         pgdump.stdout.on('data', (data) => {

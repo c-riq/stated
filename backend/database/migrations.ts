@@ -132,12 +132,18 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
                       `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`,
                       [dbVersion, targetVersion],
                       (error, res) => {
-                        if (error) {
+                        try {
+                          if (error) {
+                            console.log(error);
+                            reject(error);
+                            return client.release();
+                          } else {
+                            resolve(res);
+                            return client.release();
+                          }
+                        } catch (error) {
+                          console.log(error);
                           reject(error);
-                          return client.release();
-                        } else {
-                          resolve(res);
-                          return client.release();
                         }
                       }
                     );
