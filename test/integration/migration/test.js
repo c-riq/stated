@@ -1,6 +1,6 @@
 const cp = require("child_process");
 
-const currentVersion = 3
+const currentVersion = 4
 
 const v1 = cp.spawnSync("node", ["../../../backend/index.js"], {
   env: {
@@ -41,3 +41,6 @@ const client = new Client(config);
     }
     await client.end()
 })();
+
+// TODO: compare schema
+// const pgdump = cp.spawn(`pg_dump`,[`-h localhost`,`-U sdf`,`-d stated`], {env: {PGPASSWORD: `sdf`}})
