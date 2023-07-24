@@ -53,7 +53,9 @@ export type statementDB = {
     verification_method: string,
     derived_entity_created: boolean,
     derived_entity_creation_retry_count: number,
-    name: string
+    name: string,
+    superseding_statement: string,
+    superseded_statement: string,
 }
 export const getStatement = (hash:string, cb:res<statementDB>) => {
     if (hash.length < 1) {

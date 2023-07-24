@@ -10,6 +10,7 @@ type statement = {
   content_hash_b64: string;
   verification_method?: string;
   source_node_id?: string;
+  supersededStatement?: string;
 };
 
 const log = false;
@@ -30,6 +31,7 @@ export const createStatementFactory =
     content_hash_b64,
     verification_method,
     source_node_id,
+    supersededStatement
   }: statement) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
@@ -45,16 +47,19 @@ export const createStatementFactory =
           content_hash_b64,
           verification_method,
           source_node_id,
+          supersededStatement
         });
         pool.query(
           `INSERT INTO statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
                                 tags,                  content,                content_hash,           verification_method,               source_node_id,
-                                first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count, author) 
+                                first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count, author,
+                                superseded_statement) 
                         VALUES ($1, $2, $3, TO_TIMESTAMP($4), $5,
                                 $6, $7, $8, $9, $10, 
-                                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0, $11)
-                      ON CONFLICT (hash_b64) DO NOTHING
-                      RETURNING *`,
+                                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0, $11,
+                                $12)
+            ON CONFLICT (hash_b64) DO NOTHING
+            RETURNING *`,
           [
             type,
             domain,
@@ -67,6 +72,7 @@ export const createStatementFactory =
             verification_method,
             source_node_id,
             author,
+            supersededStatement?? null
           ],
           (error, results) => {
             if (error) {
@@ -93,7 +99,7 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
                   SELECT 
                       s.*,
                       v.name
-                  FROM statements s        
+                  FROM statement_with_superseding s        
                     LEFT JOIN organisation_verifications v 
                       ON s.domain=v.verified_domain 
                       --AND v.verifier_domain='rixdata.net'
@@ -129,8 +135,10 @@ export const getStatementsWithDetailFactory =
                       first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
                       CAST($1 AS INTEGER) as input1,
                       $2 as input2
-                  FROM statements 
-                  WHERE (
+                  FROM statement_with_superseding 
+                  WHERE 
+                    superseding_statement IS NULL 
+                    AND (
                     type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'bounty' OR type = 'sign_pdf'
                     ${ searchQuery ? "OR type = 'organisation_verification' " : "" }
                     )
@@ -171,7 +179,7 @@ export const getStatementsWithDetailFactory =
                     s.content,
                     s.content_hash,
                     rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
-                  FROM statements s
+                  FROM statement_with_superseding s
                       JOIN reposts r
                           ON id=first_id
                       LEFT JOIN organisation_verifications v 
@@ -179,6 +187,7 @@ export const getStatementsWithDetailFactory =
                           AND v.verifier_domain='rixdata.net'
                       LEFT JOIN statements verification_statement
                           ON v.statement_hash = verification_statement.hash_b64
+                    WHERE superseding_statement IS NULL
                   ) AS results 
                   LEFT JOIN votes on results.hash_b64=votes.poll_hash
                 WHERE _rank=1

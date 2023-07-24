@@ -16,7 +16,7 @@ const test = process.env.TEST || false
 
 const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
-    const {domain, author, time, content, tags, type} = parsedStatement
+    const {domain, author, time, content, tags, type, supersededStatement} = parsedStatement
     if (!hashUtils.verify(statement, hash_b64)){
         throw(Error("invalid hash: "+statement+hash_b64))
     }
@@ -39,7 +39,8 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     if (!(proclaimed_publication_time > 0)){
         throw(Error("invalid publication timestamp (unix epoch):" + proclaimed_publication_time))
     }
-    let result = {content, domain, author, tags, type, content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time}
+    let result = {content, domain, author, tags, type, 
+        content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time, supersededStatement}
     if (type) {
         if([ statementTypes.organisationVerification, statementTypes.personVerification,
             statementTypes.poll, statementTypes.vote, statementTypes.bounty,
@@ -158,7 +159,8 @@ export const validateAndAddStatementIfMissing =
     let existsOrCreated = false
     try {
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
-        const {domain, author, proclaimed_publication_time, tags, content_hash_b64, type, content } = validationResult
+        const {domain, author, proclaimed_publication_time, tags, 
+            content_hash_b64, type, content, supersededStatement } = validationResult
         log && console.log('proclaimed_publication_time', proclaimed_publication_time)
         log && console.log('check if exsits', hash_b64)
         const result = await statementExists({hash_b64})
@@ -198,7 +200,7 @@ export const validateAndAddStatementIfMissing =
             console.log('verified', verified, verifiedByAPI)
             const dbResult = await createStatement({type: type || statementTypes.statement,
                 domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id})
+                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id, supersededStatement})
             if(dbResult.rows && dbResult.rows[0]){
                 existsOrCreated = true
             }
