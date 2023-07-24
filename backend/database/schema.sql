@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS unverified_statements (
     statement VARCHAR(1500) NOT NULL, 
     author VARCHAR(100) NOT NULL, 
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
-    source_node_id int,
+    source_node_id INT,
     received_time TIMESTAMP NOT NULL,
     source_verification_method verification_method,
-    verification_retry_count int
+    verification_retry_count INT
 );
 CREATE TABLE IF NOT EXISTS statements (
     id SERIAL PRIMARY KEY,
@@ -26,13 +26,15 @@ CREATE TABLE IF NOT EXISTS statements (
     referenced_statement VARCHAR(500), -- response, vote, dispute
     tags VARCHAR(1000),
     content VARCHAR(1000) NOT NULL, -- for search
-    content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements
-    source_node_id int,
+    content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements and preventing duplicates
+    source_node_id INT,
     first_verification_time TIMESTAMP,
     latest_verification_time TIMESTAMP,
-    verification_method VARCHAR(4), -- dns, api
+    verification_method verification_method, -- dns, api
     derived_entity_created BOOLEAN NOT NULL,
-    derived_entity_creation_retry_count int
+    derived_entity_creation_retry_count INT,
+    superseded_statement VARCHAR(500) NULL,
+    CONSTRAINT no_domain_author_content_duplicates UNIQUE (domain, author, content_hash)
 );
 CREATE TABLE IF NOT EXISTS organisation_verifications (
     id SERIAL PRIMARY KEY,
@@ -45,7 +47,10 @@ CREATE TABLE IF NOT EXISTS organisation_verifications (
     serial_number VARCHAR(100),
     country VARCHAR(100) NOT NULL,-- ISO 3166 country name
     province VARCHAR(100),
-    city VARCHAR(100)
+    city VARCHAR(100),
+    CONSTRAINT organisation_verifications_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 --    confidence DOUBLE PRECISION, TODO: Add migration sql
 );
 CREATE TABLE IF NOT EXISTS person_verifications (
@@ -57,7 +62,10 @@ CREATE TABLE IF NOT EXISTS person_verifications (
     name VARCHAR(100) NOT NULL,
     birth_country VARCHAR(100) NOT NULL,
     birth_city VARCHAR(100),
-    birth_date VARCHAR(100)
+    birth_date VARCHAR(100),
+    CONSTRAINT person_verifications_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS domain_ownership_beliefs (
     id SERIAL PRIMARY KEY,
@@ -87,7 +95,10 @@ CREATE TABLE IF NOT EXISTS votes (
     poll_hash VARCHAR(500) NOT NULL,
     option VARCHAR(500) NOT NULL,
     domain VARCHAR(100) NOT NULL,
-    qualified BOOLEAN
+    qualified BOOLEAN,
+    CONSTRAINT votes_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS polls (
     id SERIAL PRIMARY KEY,
@@ -95,22 +106,31 @@ CREATE TABLE IF NOT EXISTS polls (
     participants_entity_type VARCHAR(500),
     participants_country VARCHAR(500),
     participants_city VARCHAR(500),
-    deadline timestamp NOT NULL
+    deadline timestamp NOT NULL,
+    CONSTRAINT polls_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS ratings (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     organisation VARCHAR(500) NOT NULL,
     domain VARCHAR(500) NOT NULL,
-    rating int NOT NULL,
-    comment VARCHAR(500) NOT NULL
+    rating INT NOT NULL,
+    comment VARCHAR(500) NOT NULL,
+    CONSTRAINT ratings_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS disputes (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     disputed_statement_hash VARCHAR(500) NOT NULL,
     domain VARCHAR(500) NOT NULL,
-    p2p_node_id int
+    p2p_node_id INT,
+    CONSTRAINT disputes_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS p2p_nodes (
     id SERIAL PRIMARY KEY,
@@ -147,5 +167,5 @@ CREATE TABLE IF NOT EXISTS ssl_cert_cache (
     valid_to timestamp,
     first_seen timestamp,
     last_seen timestamp,
-    _rank int
+    _rank INT
 );
