@@ -1,3 +1,6 @@
+ALTER TABLE statements ALTER COLUMN verification_method TYPE verification_method
+    USING verification_method::text::verification_method;
+
 CREATE TEMP TABLE to_delete AS (
 	SELECT distinct id, hash_b64
 	from statements 

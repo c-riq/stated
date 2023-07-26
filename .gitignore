@@ -53,3 +53,5 @@ analysis/data/*
 analysis/stated_analysis
 
 documents/*.pdf
+
+test/integration/migration/*.sql

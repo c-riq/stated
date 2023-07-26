@@ -169,3 +169,10 @@ CREATE TABLE IF NOT EXISTS ssl_cert_cache (
     last_seen timestamp,
     _rank INT
 );
+CREATE VIEW statement_with_superseding AS (
+	SELECT s1.*, s2.hash_b64 superseding_statement 
+	FROM statements s1 
+	LEFT JOIN statements s2 
+		ON s1.hash_b64=s2.superseded_statement 
+		AND s1.domain=s2.domain AND s1.author=s2.author 
+);
