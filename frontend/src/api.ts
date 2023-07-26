@@ -1,5 +1,3 @@
-import { statement } from "./statementFormats"
-
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
     window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
  ) : 'https://'+ window.location.host 
@@ -61,7 +59,7 @@ export const getStatement = (hash:string, cb:res<statementDB>) => {
     if (hash.length < 1) {
         throw new Error('Hash missing')
     }
-    req('GET',('statement?hash=' + hash), {}, (json) => {
+    req('GET',('statement/' + hash), {}, (json) => {
         if (json?.statements?.length > 0) {
             cb(json.statements[0])
             window.scrollTo(0,0)

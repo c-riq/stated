@@ -1,11 +1,9 @@
 /* eslint-disable no-useless-concat */
 // copied from frotend to backend directory via 'npm run build'
 
-// TODO: use named matching groups, (did not work in the js bundle)
-
 import {countries} from './constants/country_names_iso3166'
 import {legalForms} from './constants/legalForms'
-//import {cities} from './constants/cities'
+// TODO: import {cities} from './constants/cities'
 import {subdivisions} from './constants/provinces_un_locode'
 
 export const statementTypes = {
@@ -17,6 +15,8 @@ export const statementTypes = {
     vote: 'vote',
     response: 'response',
     dispute: 'dispute_statement',
+// TODO: disputeContent: 'dispute_statement_content',
+// TODO: revoke: 'revoke_statement',
     rating: 'rating',
 	signPdf: "sign_pdf",
 	bounty: "bounty",

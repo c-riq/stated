@@ -52,10 +52,12 @@ export const sanitize = (o) => {
 import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFactory, 
   getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
   createUnverifiedStatementFactory, getJoiningStatementsFactory, getOwnStatementFactory,
-getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory } from './statements'
+  getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory,
+  deleteStatementFactory } from './statements'
 
 export const createStatement = createStatementFactory(pool)
 export const getStatement = getStatementFactory(pool)
+export const deleteStatement = deleteStatementFactory(pool)
 export const getStatements = getStatementsFactory(pool)
 export const getStatementsWithDetail = getStatementsWithDetailFactory(pool)
 export const getUnverifiedStatements = getUnverifiedStatementsFactory(pool)
