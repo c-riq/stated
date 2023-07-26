@@ -23,9 +23,9 @@ api.use((req, res, next) => {
     next()
 })
 
-api.post("/txt_records", async (req, res, next) => {
+api.get("/txt_records", async (req, res, next) => {
     try {
-        const records = await getTXTEntries(req.body.domain)
+        const records = await getTXTEntries(req.query.domain)
         res.end(JSON.stringify({ records: records }))
     } catch (error) {
         next(error)
@@ -33,7 +33,7 @@ api.post("/txt_records", async (req, res, next) => {
 })
 
 
-api.post("/submit_statement", async (req, res, next) => {
+api.post("/statement", async (req, res, next) => {
     try {
         const { statement, hash, api_key } = req.body
         if(!statement) return next(new Error('Statement missing'))

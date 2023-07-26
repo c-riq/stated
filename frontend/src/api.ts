@@ -165,7 +165,7 @@ export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
     req('GET', "txt_records?domain=" + domain, {}, cb, reject)
 }
 export const submitStatement = (body:any, cb:cb, reject:cb) => {
-    req('POST', 'submit_statement', body, cb, reject)
+    req('POST', 'statement', body, cb, reject)
 }
 
 export const uploadPdf = (body:any, cb:validatedResponseHandler<{sha256sum: string, filePath: string}>, reject:cb) => {
