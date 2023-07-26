@@ -4,21 +4,25 @@ import Button from '@mui/material/Button';
 
 type props = {
     serverTime: Date,
-    generateHash: generateHash
+    prepareStatement: prepareStatement
 }
 
 const GenerateStatement = (props:props) => {
     return (
         <React.Fragment>
             <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime.toUTCString()}</div>
-            <div style={{display: "flex", flexDirection:"row"}}>
-                <Button variant="contained" onClick={() => props.generateHash({viaAPI: false})}
-                    sx={{marginTop: "24px", flexGrow: 1, marginRight: "10px", marginBottom: "12px"}}>
+            <div style={{display: "flex", flexDirection:"row", flexWrap: "wrap"}}>
+                <Button variant="contained" onClick={() => props.prepareStatement({method: 'dns'})}
+                    sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
                     Authenticate via DNS
                 </Button>
-                <Button variant="contained" onClick={() => props.generateHash({viaAPI: true})}
-                    sx={{marginTop: "24px", flexGrow: 1, marginBottom: "12px"}}>
+                <Button variant="contained" onClick={() => props.prepareStatement({method: 'api'})}
+                    sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}}>
                     Publish as {window.location.hostname}
+                </Button>
+                <Button variant="contained" onClick={() => props.prepareStatement({method: 'represent'})}
+                    sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}}>
+                    Ask to be represented 
                 </Button>
             </div>
         </React.Fragment>

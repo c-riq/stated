@@ -207,7 +207,7 @@ function App() {
             />
             <Route path='/create-statement' element={
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
-                <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} key={Math.random()} poll={poll} lt850px={lt850px}/>
+                <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} poll={poll} lt850px={lt850px}/>
               </CenterModal>} 
             />
           </Route>

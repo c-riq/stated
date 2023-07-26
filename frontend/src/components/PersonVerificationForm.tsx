@@ -32,8 +32,8 @@ const PersonVerificationForm = (props:FormProps) => {
     const [foreignDomain, setForeignDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
-    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         let date = birthDate.toDate()
         date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
         const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
@@ -149,7 +149,7 @@ const PersonVerificationForm = (props:FormProps) => {
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

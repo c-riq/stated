@@ -33,8 +33,8 @@ const SignPDFForm = (props:FormProps) => {
   const [fileURL, setFileURL] = React.useState("");
   const [dragActive, setDragActive] = React.useState(false);
 
-  const generateHash:generateHash = ({viaAPI}) => {
-    props.setViaAPI(viaAPI);
+  const prepareStatement:prepareStatement = ({method}) => {
+    props.setViaAPI(method === 'api');
     const content = buildPDFSigningContent({ hash: fileHash });
     const statement = buildStatement({
       domain: props.domain,
@@ -166,7 +166,7 @@ const SignPDFForm = (props:FormProps) => {
       />
       {props.children}
       <GenerateStatement
-        generateHash={generateHash}
+        prepareStatement={prepareStatement}
         serverTime={props.serverTime}
       />
     </FormControl>

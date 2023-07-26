@@ -30,13 +30,13 @@ export const BountyForm = (props:FormProps) => {
     const [judge, setJudge] = React.useState(bountyToJoin?.judge);
     const [judgePay, setJudgePay] = React.useState(bountyToJoin?.judgePay);
 
-    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
+    const prepareStatement: prepareStatement = ({method}) => {
         if (!motivation || !bounty || !reward || !judge || !judgePay){
             props.setAlertMessage('Please fill in all required fields')
             props.setisError(true)
             return
         }
-        props.setViaAPI(viaAPI)
+        props.setViaAPI(method === 'api')
         const content = buildBounty({motivation, bounty, reward, judge, judgePay})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
         const parsedStatement = parseStatement(statement)
@@ -47,7 +47,19 @@ export const BountyForm = (props:FormProps) => {
             return
         }
         props.setStatement(statement)
-        sha256(statement).then((value) => {props.setStatementHash(value)})
+        sha256(statement).then((value) => {
+            props.setStatementHash(value)
+            if(method === 'represent'){
+                const email = `stated@${window.location.host.replace('stated.','')}`
+                const urlEncodedSubject = encodeURIComponent('Quotation request')
+                const intro = 'Please distribute the following statement on our behalf.\n' +
+                    'Below the statement, we provided authentication evidence below to link our email to the author identity in the statement.'
+                const urlEncodedbody = encodeURIComponent(statement + '\n\n\nhash:' + value)
+                const href = `mailto:${email}?subject=${urlEncodedSubject}&body=${urlEncodedbody}`
+                console.log(href)
+                window.location.href = href
+            }
+        })
     }
 
     return (
@@ -103,7 +115,7 @@ export const BountyForm = (props:FormProps) => {
             sx={{marginTop: '24px'}}
         />
             {props.children}
-            <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+            <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

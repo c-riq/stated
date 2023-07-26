@@ -26,8 +26,8 @@ export const VoteForm = (props:FormProps) => {
     console.log(pollParsed)
     const options = pollParsed.options
 
-    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         const content = buildVoteContent({pollHash: props.poll.hash_b64, poll: pollParsed.poll , vote})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
@@ -57,7 +57,7 @@ export const VoteForm = (props:FormProps) => {
             ))}
         </RadioGroup>
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

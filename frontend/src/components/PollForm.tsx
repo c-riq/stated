@@ -33,8 +33,8 @@ const PollForm = (props:FormProps) => {
     const [votingDeadline, setVotingDeadline] = React.useState(moment());
     const [poll, setPoll] = React.useState("");
 
-    const generateHash:generateHash = ({viaAPI}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
         const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
             console.log(statement)
@@ -167,7 +167,7 @@ const PollForm = (props:FormProps) => {
             sx={{marginTop: '24px'}}
         />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }
