@@ -21,11 +21,13 @@ import DisputeStatementForm from './DisputeStatementForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
+import { statementTypes } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api'
 
 import StatementForm from './StatementForm';
+import { BountyForm } from './BountyForm';
 
 type Props = {
     lt850px: boolean,
@@ -41,7 +43,7 @@ type statedVerification = {verified_domain: string, name: string, verifier_domai
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
-    const [type, setType] = React.useState(props.poll ? "vote" : (props.statementToJoin?.type ? props.statementToJoin?.type : "statement"));
+    const [type, setType] = React.useState(props.poll ? "vote" : /*(props.statementToJoin?.type ? props.statementToJoin?.type :*/ statementTypes.statement/*)*/);
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
@@ -211,47 +213,52 @@ const CreateStatement = (props:Props) => {
                     onChange={(e)=>setType(e.target.value)}
                     style={{marginBottom: "16px"}}
                 >
-                    <MenuItem value={"statement"}>Statement</MenuItem>
-                    <MenuItem value={"sign_pdf"}>Sign PDF</MenuItem>
-                    <MenuItem value={"organisation_verification"}>Verify an organisation</MenuItem>
-                    <MenuItem value={"person_verification"}>Verify a person</MenuItem>
-                    <MenuItem value={"rating"}>Rating</MenuItem>
-                    <MenuItem value={"poll"}>Poll</MenuItem>
-                    <MenuItem value={"vote"}>Vote</MenuItem>
-                    <MenuItem value={"dispute_statement"}>Dispute statement</MenuItem>
+                    <MenuItem value={statementTypes.statement}>Statement</MenuItem>
+                    <MenuItem value={statementTypes.signPdf}>Sign PDF</MenuItem>
+                    <MenuItem value={statementTypes.organisationVerification}>Verify an organisation</MenuItem>
+                    <MenuItem value={statementTypes.personVerification}>Verify a person</MenuItem>
+                    <MenuItem value={statementTypes.rating}>Rating</MenuItem>
+                    <MenuItem value={statementTypes.poll}>Poll</MenuItem>
+                    <MenuItem value={statementTypes.vote}>Vote</MenuItem>
+                    <MenuItem value={statementTypes.dispute}>Dispute statement</MenuItem>
+                    <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
                 </Select>
-            {type === "organisation_verification" &&(<OrganisationVerificationForm domain={domain} author={author}
+            {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</OrganisationVerificationForm>)}
-            {type === "person_verification" &&(<PersonVerificationForm domain={domain} author={author}
+            {type === statementTypes.personVerification &&(<PersonVerificationForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</PersonVerificationForm>)}
-            {type === "poll" &&(<PollForm domain={domain} author={author}
+            {type === statementTypes.poll &&(<PollForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
                 {authorFields()}</PollForm>)}
-            {type === "rating" &&(<RatingForm domain={domain} author={author}
+            {type === statementTypes.rating &&(<RatingForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
                 {authorFields()}</RatingForm>)}
-            {type === "vote" &&(<VoteForm domain={domain} poll={props.poll} author={author}
+            {type === statementTypes.vote &&(<VoteForm domain={domain} poll={props.poll} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</VoteForm>)}
-            {type === "dispute_statement" &&(<DisputeStatementForm domain={domain} author={author}
+            {type === statementTypes.dispute &&(<DisputeStatementForm domain={domain} author={author}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</DisputeStatementForm>)}
-            {type === "statement" &&(<StatementForm domain={domain} author={author} statementToJoin={props.statementToJoin}
+            {type === statementTypes.statement &&(<StatementForm domain={domain} author={author} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</StatementForm>)}
-            {type === "sign_pdf" &&(<SignPDFForm domain={domain} author={author} statementToJoin={props.statementToJoin}
+            {type === statementTypes.signPdf &&(<SignPDFForm domain={domain} author={author} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</SignPDFForm>)}
+            {type === statementTypes.bounty &&(<BountyForm domain={domain} author={author} statementToJoin={props.statementToJoin}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                {authorFields()}</BountyForm>)}
 
             {statement && (
                 <div>

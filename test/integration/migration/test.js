@@ -1,43 +1,135 @@
 const cp = require("child_process");
 
-const currentVersion = 3
+const fs = require("fs");
 
-const v1 = cp.spawnSync("node", ["../../../backend/index.js"], {
-  env: {
-    ...process.env,
-    TEST: "true",
-    POSTGRES_PORT: "5441",
-    POSTGRES_HOST: "localhost",
-    API_KEY: "XXX",
-    DOMAIN: "stated_1:7001",
-    MIGRATION_TEST_VERSION: '' + currentVersion,
-    DELETE_DATA: "true",
-    PORT: "7001",
-  },
-  timeout: 10 * 1000,
-  encoding: 'utf-8'
-});
+// Migration
+let migrationResultDBDump = ''
+let targetSchemaDBDump = ''
 
-console.log(v1.stdout, v1.stderr, v1.error)
+const currentVersion = 4
 
 const { Client } = require('pg')
-const config = {
+const config_1 = {
     user: "sdf",
     host: "localhost",
-    database: "stated",
+    database: "postgres",
     password: "sdf",
-    port: 5441,
+    port: 5451,
 }
-const client = new Client(config);
+let client_1 = new Client(config_1);
 
 (async () => {
-    await client.connect()
+    await client_1.connect()
+    let res = await client_1.query('DROP DATABASE stated;')
+    console.log(res)
+    res = await client_1.query('CREATE DATABASE stated;')
+    console.log(res)
+    await client_1.end()
+
+    client_1 = new Client({...config_1, database: 'stated'});
+    await client_1.connect()
+
+    const v1 = cp.spawnSync("node", ["../../../backend/index.js"], {
+      env: {
+        ...process.env,
+        TEST: "true",
+        POSTGRES_PORT: "5451",
+        POSTGRES_HOST: "localhost",
+        API_KEY: "XXX",
+        DOMAIN: "stated_1:7001",
+        MIGRATION_TEST_VERSION: '' + currentVersion,
+        DELETE_DATA: "true",
+        PORT: "7001",
+      },
+      timeout: 10 * 1000,
+      encoding: 'utf-8'
+    });
+    
+    console.log(v1.stdout, v1.stderr, v1.error)
+
     await new Promise((resolve, reject) => setTimeout(resolve, 10 * 1000))
     
-    const res = await client.query('SELECT MAX(to_version) max_version FROM migrations')
-    console.log(res.rows[0].max_version)
+    res = await client_1.query('SELECT MAX(to_version) max_version FROM migrations')
+    console.log('migrated to: ' + res.rows[0].max_version)
     if(('' + res.rows[0].max_version) !== '' + currentVersion) {
         throw new Error('Migration failed')
     }
-    await client.end()
+    await client_1.end()
+    try {
+      const pgdump = cp.spawn(`PGPASSWORD=sdf pg_dump -h localhost -p 5451 -U sdf -d stated --exclude-table=migrations`,[], {shell: true})
+      let sql = ''
+      pgdump.on('error', (err) => { console.log(err) })
+      pgdump.stderr.on('data', (data) => { console.log(data.toString()) })
+      pgdump.stdout.on('data', (data) => {
+        sql += data.toString()
+      });
+      pgdump.on('close', (code) => {
+        console.log(`child process exited with code ${code}`);
+        sql = sql.replace(/SELECT pg_catalog.setval\('public.migrations_id_seq', \d+, true\);/g, '')
+        fs.writeFileSync(__dirname + "/actual.sql", sql);
+        migrationResultDBDump = sql
+      });
+    } catch (e) {
+      console.log(e)
+    }
 })();
+
+// Target schema
+
+var targetSchema = fs
+  .readFileSync(__dirname + "/../../../backend/database/schema.sql", "utf8")
+  .toString();
+
+const config_2 = {
+  user: "sdf",
+  host: "localhost",
+  database: "postgres",
+  password: "sdf",
+  port: 5452,
+}
+let client_2 = new Client(config_2);
+
+(async () => {
+    await client_2.connect()
+    let res = await client_2.query('DROP DATABASE stated;')
+    console.log(res)
+    res = await client_2.query('CREATE DATABASE stated;')
+    console.log(res)
+    await client_2.end()
+
+    client_2 = new Client({...config_2, database: 'stated'});
+    await client_2.connect()
+    res = await client_2.query(targetSchema)
+    console.log(res)
+    await client_2.end()
+    try {
+      const pgdump = cp.spawn(`PGPASSWORD=sdf pg_dump -h localhost -p 5452 -U sdf -d stated --exclude-table=migrations`,[], {shell: true})
+      let sql = ''
+      pgdump.on('error', (err) => { console.log(err) })
+      pgdump.stderr.on('data', (data) => { console.log(data.toString()) })
+      pgdump.stdout.on('data', (data) => {
+        sql += data.toString()
+      });
+      pgdump.on('close', (code) => {
+        console.log(`child process exited with code ${code}`);
+        sql = sql.replace(/SELECT pg_catalog.setval\('public.migrations_id_seq', \d+, true\);/g, '')
+        fs.writeFileSync(__dirname + "/expected.sql", sql);
+        targetSchemaDBDump = sql
+      });
+    } catch (e) {
+      console.log(e)
+    }
+})();
+
+const interval = setInterval(() => {
+  if (migrationResultDBDump.length > 1000 && targetSchemaDBDump.length > 1000) {
+    clearInterval(interval);
+    if (migrationResultDBDump !== targetSchemaDBDump) {
+      console.log("Error: Migration result does not match target schema");
+      process.exit(1);
+    } else {
+      console.log("Success: Migration result matches target schema");
+      process.exit(0);
+    }
+  }
+}, 1000);

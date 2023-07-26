@@ -9,6 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
+import Alert from '@mui/material/Alert';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes } from '../api'
@@ -70,6 +71,16 @@ const Statement = (props:props) => {
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
+            {statement.superseding_statement && (<Alert severity="error">
+                This statement has been replaced by the author with another statement:
+                <RouterLink onClick={()=>setDataFetched(false)} 
+                    to={"/statement/"+statement.superseding_statement}> {statement.superseding_statement}</RouterLink>
+            </Alert>)}
+            {statement.superseded_statement && (<Alert severity="info">
+                This statement has a previous version:
+                <RouterLink onClick={()=>setDataFetched(false)} 
+                    to={"/statement/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
+            </Alert>)}
             <p>Raw statement</p>
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 

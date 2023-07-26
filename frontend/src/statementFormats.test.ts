@@ -326,7 +326,7 @@ Statement content:
 	We will reward any entity that: Finds an incident of corruption at suppliers and corporate customers
 	The reward is: (Annual money flows between our organisation and the affected organisation) * (Bribe sum / revenue of the organisation)
 	In case of dispute, bounty claims are judged by: Global Witness Foundation
-	The judge will be renumerated per investigated case with a maxium of: 10% of the prospective bounty
+	The judge will be paid per investigated case with a maxium of: 10% of the prospective bounty
 `
 	const parsedStatement = parseStatement(bounty)
 	const parsedBounty = parseBounty(parsedStatement.content)
@@ -335,8 +335,8 @@ Statement content:
 });
 
 test('bounty build & parse function compatibility: input=parse(build(input))', () => {
-	const [motivation, bounty, reward, judge, judgeRenumeration] = Array.from({ length: 5 },randomUnicodeString)
-	const bountyContent = buildBounty({motivation, bounty, reward, judge, judgeRenumeration})
+	const [motivation, bounty, reward, judge, judgePay] = Array.from({ length: 5 },randomUnicodeString)
+	const bountyContent = buildBounty({motivation, bounty, reward, judge, judgePay})
 	console.log(bountyContent)
 	const parsedBounty = parseBounty(bountyContent)
 	console.log(parsedBounty)
@@ -344,5 +344,5 @@ test('bounty build & parse function compatibility: input=parse(build(input))', (
 	expect(parsedBounty.bounty).toBe(bounty)
 	expect(parsedBounty.reward).toBe(reward)
 	expect(parsedBounty.judge).toBe(judge)
-	expect(parsedBounty.judgeRenumeration).toBe(judgeRenumeration)
+	expect(parsedBounty.judgePay).toBe(judgePay)
 });

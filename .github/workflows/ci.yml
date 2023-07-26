@@ -50,7 +50,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Start test nodes
+    - name: Start databases
       run: docker-compose -f "test/integration/migration/docker-compose.yml" up -d
 
     - name: Install node
@@ -69,6 +69,9 @@ jobs:
     - name: Install test dependencies
       working-directory: ./test/integration/migration
       run: npm i
+    
+    - name: Install postgres client
+      run: sudo apt-get install postgresql-client-14 -y
 
     - name: Run test
       working-directory: ./test/integration/migration

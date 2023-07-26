@@ -15,8 +15,11 @@ var migration2 = fs
 var migration3 = fs
   .readFileSync(__dirname + "/migration_3.sql", "utf8")
   .toString();
+var migration4 = fs
+  .readFileSync(__dirname + "/migration_4.sql", "utf8")
+  .toString();
 
-export const currentCodeVersion = 3;
+export const currentCodeVersion = 4;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 
@@ -27,6 +30,7 @@ const migrateToVersion = {
   1: { sql: migration1 },
   2: { sql: migration2 },
   3: { sql: migration3 },
+  4: { sql: migration4 },
 };
 
 const testMigrationTableExistence = (pool: Pool) =>
@@ -128,12 +132,18 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
                       `INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, $1, $2)`,
                       [dbVersion, targetVersion],
                       (error, res) => {
-                        if (error) {
+                        try {
+                          if (error) {
+                            console.log(error);
+                            reject(error);
+                            return client.release();
+                          } else {
+                            resolve(res);
+                            return client.release();
+                          }
+                        } catch (error) {
+                          console.log(error);
                           reject(error);
-                          return client.release();
-                        } else {
-                          resolve(res);
-                          return client.release();
                         }
                       }
                     );

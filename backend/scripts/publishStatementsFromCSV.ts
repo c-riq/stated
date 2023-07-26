@@ -88,7 +88,7 @@ for (const i of array) {
     // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,
     // ov_of_subsidiary,country,province,city,serial_number,vat_id,confidence
     const {
-        type, motivation, bounty, reward, judge, judge_renumeration, superseded_statement, statement 
+        type, motivation, bounty, reward, judge, judge_pay, superseded_statement, statement 
     } = i;
     if ((!type || !motivation || !bounty || !reward || !judge) && !statement) {
         continue;
@@ -100,13 +100,13 @@ for (const i of array) {
           bounty,
           reward,
           judge,
-          judgeRenumeration: judge_renumeration,
+          judgePay: judge_pay,
       });
       if(!bountyContent){ console.log("no bounty generated"); continue}
       const statement = buildStatement({
           domain,
           author,
-          time: new Date().toUTCString(),
+          time: new Date(),
           ...(superseded_statement ? {supersededStatement: superseded_statement} : {}),
           content: bountyContent,
       })

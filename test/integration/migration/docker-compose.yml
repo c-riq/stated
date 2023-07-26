@@ -3,7 +3,7 @@
 
 services:
   db_1:
-    image: postgres
+    image: postgres:14.8
     environment:
       POSTGRES_USER: sdf
       POSTGRES_PASSWORD: sdf
@@ -12,7 +12,21 @@ services:
        - vol_db_1:/data/postgres
        - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5441:5432"
+      - "5451:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  db_2:
+    image: postgres:14.8
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - vol_db_2:/data/postgres
+       - ../../../backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5452:5432"
     networks:
       - postgres
     restart: unless-stopped
@@ -23,3 +37,4 @@ networks:
 
 volumes:
     vol_db_1:
+    vol_db_2:

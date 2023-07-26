@@ -17,6 +17,11 @@ export const transaction = async (cb: (client: PoolClient) => void, pool: Pool) 
       await client.query("ROLLBACK");
     }
   } finally {
-    client.release();
+    try {
+      client.release();
+    } catch (error) {
+      console.log(error);
+      console.trace();
+    }
   }
 };
