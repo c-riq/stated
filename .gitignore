@@ -54,4 +54,5 @@ analysis/stated_analysis
 
 documents/*.pdf
 
-test/integration/migration/*.sql
+test/integration/migration/actual.sql
+test/integration/migration/expected.sql

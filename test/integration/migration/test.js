@@ -2,6 +2,13 @@ const cp = require("child_process");
 
 const fs = require("fs");
 
+var sampleDataCurrent = fs
+  .readFileSync(__dirname + "/sample_data_current.sql", "utf8")
+  .toString();
+var sampleDataV1 = fs
+  .readFileSync(__dirname + "/sample_data_v1.sql", "utf8")
+  .toString();
+
 // Migration
 let migrationResultDBDump = ''
 let targetSchemaDBDump = ''
@@ -29,7 +36,36 @@ let client_1 = new Client(config_1);
     client_1 = new Client({...config_1, database: 'stated'});
     await client_1.connect()
 
-    const v1 = cp.spawnSync("node", ["../../../backend/index.js"], {
+    let server = cp.spawn("node", ["../../../backend/index.js"], {
+      env: {
+        ...process.env,
+        TEST: "true",
+        POSTGRES_PORT: "5451",
+        POSTGRES_HOST: "localhost",
+        API_KEY: "XXX",
+        DOMAIN: "stated_1:7001",
+        MIGRATION_TEST_VERSION: '' + 1,
+        DELETE_DATA: "true",
+        PORT: "7001",
+      },
+      timeout: 10 * 1000,
+    });
+
+    server.on("error", (err) => {
+      console.log(err);
+    });
+    server.stderr.on("data", (data) => {
+      console.log(data.toString());
+    });
+
+    await new Promise((resolve, reject) => setTimeout(resolve, 5 * 1000))
+
+    server.kill()
+
+    res = await client_1.query(sampleDataV1)
+    console.log('insert sampleDataV1 response ', res)
+
+    server = cp.spawn("node", ["../../../backend/index.js"], {
       env: {
         ...process.env,
         TEST: "true",
@@ -38,14 +74,18 @@ let client_1 = new Client(config_1);
         API_KEY: "XXX",
         DOMAIN: "stated_1:7001",
         MIGRATION_TEST_VERSION: '' + currentVersion,
-        DELETE_DATA: "true",
+        DELETE_DATA: "false",
         PORT: "7001",
       },
       timeout: 10 * 1000,
-      encoding: 'utf-8'
     });
-    
-    console.log(v1.stdout, v1.stderr, v1.error)
+
+    server.on("error", (err) => {
+      console.log(err);
+    });
+    server.stderr.on("data", (data) => {
+      console.log(data.toString());
+    });
 
     await new Promise((resolve, reject) => setTimeout(resolve, 10 * 1000))
     
@@ -101,6 +141,8 @@ let client_2 = new Client(config_2);
     await client_2.connect()
     res = await client_2.query(targetSchema)
     console.log(res)
+    res = await client_2.query(sampleDataCurrent)
+    console.log('sampleDataCurrent response', res)
     await client_2.end()
     try {
       const pgdump = cp.spawn(`PGPASSWORD=sdf pg_dump -h localhost -p 5452 -U sdf -d stated --exclude-table=migrations`,[], {shell: true})
