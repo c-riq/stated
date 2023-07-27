@@ -119,7 +119,7 @@ const PersonVerificationForm = (props:FormProps) => {
             inputValue={birthCountry}
             onInputChange={(event, newInputValue) => setBirthCountry(newInputValue)}
             renderOption={(props, option) => (
-                <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                <Box {...props} id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                 <img
                     loading="lazy"
                     width="20"
@@ -149,7 +149,8 @@ const PersonVerificationForm = (props:FormProps) => {
             inputValue={birthCity}
             onInputChange={(event, newInputValue) => setBirthCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="City of birth" />}
-            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         {props.children}

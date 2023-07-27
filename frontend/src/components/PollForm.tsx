@@ -82,7 +82,7 @@ const PollForm = (props:FormProps) => {
             inputValue={country}
             onInputChange={(event, newInputValue) => setCountry(newInputValue)}
             renderOption={(props, option) => (
-                <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                <Box {...props} id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                 <img
                     loading="lazy"
                     width="20"
@@ -112,7 +112,8 @@ const PollForm = (props:FormProps) => {
             inputValue={city}
             onInputChange={(event, newInputValue) => setCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Voting city (optional)" />}
-            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -126,7 +127,8 @@ const PollForm = (props:FormProps) => {
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Voting legal entities (optional)" />}
-            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px", marginBottom: "20px"}}
         />
         <LocalizationProvider dateAdapter={AdapterMoment}>

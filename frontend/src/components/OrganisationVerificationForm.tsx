@@ -98,7 +98,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={country}
             onInputChange={(event, newInputValue) => setCountry(newInputValue)}
             renderOption={(props, option) => (
-                <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                <Box {...props} id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                 <img
                     loading="lazy"
                     width="20"
@@ -129,7 +129,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Legal entity" required />}
-            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -143,7 +144,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={city}
             onInputChange={(event, newInputValue) => setCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Headquarter city" />}
-            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -157,7 +159,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={province}
             onInputChange={(event, newInputValue) => setProvince(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Province / state" />}
-            renderOption={(props, option) => (<Box id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -170,7 +173,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={employeeCount}
             onInputChange={(event, newInputValue) => setEmployeeCount(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Employee count" />}
-            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <TextField
