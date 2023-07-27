@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import { sha256 } from '../utils/hash';
 import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 const DisputeStatementForm = (props:FormProps) => {
@@ -29,7 +30,10 @@ const DisputeStatementForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash);
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                } });
         }
 
     return (

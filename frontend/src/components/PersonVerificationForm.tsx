@@ -19,6 +19,7 @@ import { parseStatement, buildStatement, forbiddenStrings,
     parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
+import { generateEmail } from './generateEmail';
 
 const PersonVerificationForm = (props:FormProps) => {
     const [birthCountry, setBirthCountry] = React.useState("");
@@ -55,7 +56,10 @@ const PersonVerificationForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash);
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                } });
         }
 
     return (

@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 const StatementForm = (props:FormProps) => {
@@ -62,7 +63,10 @@ const StatementForm = (props:FormProps) => {
             }
 
             props.setStatement(statement)
-            sha256(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((hash) => {props.setStatementHash(hash)
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }})
     }
 
     return (

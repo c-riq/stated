@@ -18,6 +18,7 @@ import GenerateStatement from './GenerateStatement'
 import { sha256 } from '../utils/hash'
 
 import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
+import { generateEmail } from './generateEmail';
 
 const PollForm = (props:FormProps) => {
     const province = ''
@@ -52,7 +53,11 @@ const PollForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash)         
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }
+            });
         }
 
     return (

@@ -10,6 +10,7 @@ import { TextField } from '@mui/material';
 
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 export const RatingForm = (props:FormProps) => {
 
@@ -33,7 +34,11 @@ export const RatingForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash); 
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }
+            });
         }
         const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             setRating(event.target.value)

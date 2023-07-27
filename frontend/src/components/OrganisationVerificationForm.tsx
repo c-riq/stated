@@ -14,6 +14,7 @@ import { parseStatement, buildStatement, forbiddenStrings,
     buildOrganisationVerificationContent, parseOrganisationVerification, employeeCounts } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
+import { generateEmail } from './generateEmail';
 
 const OrganisationVerificationForm = (props:FormProps) => {
     const [country, setCountry] = React.useState("");
@@ -54,7 +55,10 @@ const OrganisationVerificationForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash);
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                } });
         } catch (e: any) {
             props.setAlertMessage('Error: ' + (e?.message??''))
             props.setisError(true)

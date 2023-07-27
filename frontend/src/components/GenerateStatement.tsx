@@ -22,7 +22,7 @@ const GenerateStatement = (props:props) => {
                 </Button>
                 <Button variant="contained" onClick={() => props.prepareStatement({method: 'represent'})}
                     sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}}>
-                    Ask to be represented 
+                    Ask us to publish for you
                 </Button>
             </div>
         </React.Fragment>

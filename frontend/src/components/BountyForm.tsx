@@ -7,6 +7,7 @@ import FormControl from '@mui/material/FormControl';
 
 import { parseStatement, parseBounty, buildStatement, buildBounty, bounty } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 
@@ -47,17 +48,10 @@ export const BountyForm = (props:FormProps) => {
             return
         }
         props.setStatement(statement)
-        sha256(statement).then((value) => {
-            props.setStatementHash(value)
+        sha256(statement).then((hash) => {
+            props.setStatementHash(hash)
             if(method === 'represent'){
-                const email = `stated@${window.location.host.replace('stated.','')}`
-                const urlEncodedSubject = encodeURIComponent('Quotation request')
-                const intro = 'Please distribute the following statement on our behalf.\n' +
-                    'Below the statement, we provided authentication evidence below to link our email to the author identity in the statement.'
-                const urlEncodedbody = encodeURIComponent(statement + '\n\n\nhash:' + value)
-                const href = `mailto:${email}?subject=${urlEncodedSubject}&body=${urlEncodedbody}`
-                console.log(href)
-                window.location.href = href
+                generateEmail({statement, hash})
             }
         })
     }

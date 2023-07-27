@@ -10,6 +10,7 @@ import FormLabel from '@mui/material/FormLabel';
 
 import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 
@@ -39,7 +40,10 @@ export const VoteForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((hash) => {props.setStatementHash(hash)
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }})
         }
         const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             setVote(event.target.value)
