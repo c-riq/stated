@@ -120,6 +120,28 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
         }
       }))
 
+export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+        log && console.log('deleteStatement', hash_b64)
+        try {
+          sanitize({ hash_b64 })
+          pool.query(`
+                  DELETE FROM statements WHERE hash_b64=$1;
+                  `,[hash_b64], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
 export const getStatementsWithDetailFactory =
   (pool) =>
   ({ minId, searchQuery }) =>

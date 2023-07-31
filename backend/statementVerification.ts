@@ -103,7 +103,7 @@ export const verifyTXTRecord = async (domain, record) => {
 }
 
 const verifyViaStatedApi = async (domain, hash_b64) => {
-    let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement?hash=' + hash_b64
+    let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement/' + hash_b64
     log && console.log('verifyViaStatedApi', url, hash_b64)
     try {
         const result = await axios({

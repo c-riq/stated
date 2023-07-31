@@ -346,5 +346,4 @@ const CreateStatement = (props:Props) => {
     )
 }
 
-
 export default CreateStatement

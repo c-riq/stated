@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 const StatementForm = (props:FormProps) => {
@@ -51,8 +52,8 @@ const StatementForm = (props:FormProps) => {
     }
 
 
-    const generateHash:generateHash = ({viaAPI}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, tags: tags, content})
             const parsedResult = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedResult) as string[]).length > 0) {
@@ -62,7 +63,10 @@ const StatementForm = (props:FormProps) => {
             }
 
             props.setStatement(statement)
-            sha256(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((hash) => {props.setStatementHash(hash)
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }})
     }
 
     return (
@@ -94,7 +98,7 @@ const StatementForm = (props:FormProps) => {
                 sx={{marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
             />
             {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

@@ -14,6 +14,7 @@ import { parseStatement, buildStatement, forbiddenStrings,
     buildOrganisationVerificationContent, parseOrganisationVerification, employeeCounts } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
+import { generateEmail } from './generateEmail';
 
 const OrganisationVerificationForm = (props:FormProps) => {
     const [country, setCountry] = React.useState("");
@@ -32,8 +33,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
-    const generateHash = ({viaAPI}:{viaAPI: boolean}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         try {
             const content = buildOrganisationVerificationContent({name: verifyName, domain: verifyDomain, city, country, province, serialNumber, legalForm,
                 foreignDomain: "", confidence: parseFloat(confidence), reliabilityPolicy, pictureHash: "", employeeCount})
@@ -54,7 +55,10 @@ const OrganisationVerificationForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash);
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                } });
         } catch (e: any) {
             props.setAlertMessage('Error: ' + (e?.message??''))
             props.setisError(true)
@@ -94,7 +98,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={country}
             onInputChange={(event, newInputValue) => setCountry(newInputValue)}
             renderOption={(props, option) => (
-                <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                <Box {...props} id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                 <img
                     loading="lazy"
                     width="20"
@@ -125,7 +129,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Legal entity" required />}
-            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -139,7 +144,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={city}
             onInputChange={(event, newInputValue) => setCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Headquarter city" />}
-            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -153,7 +159,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={province}
             onInputChange={(event, newInputValue) => setProvince(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Province / state" />}
-            renderOption={(props, option) => (<Box id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0] + "_" + option[1]} >{option[2]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -166,7 +173,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
             inputValue={employeeCount}
             onInputChange={(event, newInputValue) => setEmployeeCount(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Employee count" />}
-            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <TextField
@@ -209,7 +217,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

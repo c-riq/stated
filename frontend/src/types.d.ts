@@ -12,4 +12,5 @@ type FormProps = {
     setisError: (isError: boolean) => void,
     setViaAPI: (viaAPI: boolean) => void,
 }
-type generateHash = ({viaAPI}:{viaAPI:boolean}) => void
+type publishingMethod = 'api'|'dns'|'represent'
+type prepareStatement = ({method}:{method: publishingMethod}) => void

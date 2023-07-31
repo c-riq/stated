@@ -18,6 +18,7 @@ import GenerateStatement from './GenerateStatement'
 import { sha256 } from '../utils/hash'
 
 import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
+import { generateEmail } from './generateEmail';
 
 const PollForm = (props:FormProps) => {
     const province = ''
@@ -33,8 +34,8 @@ const PollForm = (props:FormProps) => {
     const [votingDeadline, setVotingDeadline] = React.useState(moment());
     const [poll, setPoll] = React.useState("");
 
-    const generateHash:generateHash = ({viaAPI}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
         const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
             console.log(statement)
@@ -52,7 +53,11 @@ const PollForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash)         
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }
+            });
         }
 
     return (
@@ -77,7 +82,7 @@ const PollForm = (props:FormProps) => {
             inputValue={country}
             onInputChange={(event, newInputValue) => setCountry(newInputValue)}
             renderOption={(props, option) => (
-                <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                <Box {...props} id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                 <img
                     loading="lazy"
                     width="20"
@@ -107,7 +112,8 @@ const PollForm = (props:FormProps) => {
             inputValue={city}
             onInputChange={(event, newInputValue) => setCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Voting city (optional)" />}
-            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         <Autocomplete
@@ -121,7 +127,8 @@ const PollForm = (props:FormProps) => {
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Voting legal entities (optional)" />}
-            renderOption={(props, option) => (<Box id={option} >{option}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px", marginBottom: "20px"}}
         />
         <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -167,7 +174,7 @@ const PollForm = (props:FormProps) => {
             sx={{marginTop: '24px'}}
         />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

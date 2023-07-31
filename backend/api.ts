@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
-    getVotes, checkIfMigrationsDone
+    getVotes, checkIfMigrationsDone, deleteStatement
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -23,9 +23,9 @@ api.use((req, res, next) => {
     next()
 })
 
-api.post("/txt_records", async (req, res, next) => {
+api.get("/txt_records", async (req, res, next) => {
     try {
-        const records = await getTXTEntries(req.body.domain)
+        const records = await getTXTEntries(req.query.domain)
         res.end(JSON.stringify({ records: records }))
     } catch (error) {
         next(error)
@@ -33,7 +33,7 @@ api.post("/txt_records", async (req, res, next) => {
 })
 
 
-api.post("/submit_statement", async (req, res, next) => {
+api.post("/statement", async (req, res, next) => {
     try {
         const { statement, hash, api_key } = req.body
         if(!statement) return next(new Error('Statement missing'))
@@ -83,11 +83,23 @@ api.get("/statements", async (req, res, next) => {
     }
 })
 
-api.get("/statement", async (req, res, next) => {
+api.get("/statement/:hash", async (req, res, next) => {
     try {
-        const dbResult = await getStatement({hash_b64: req.query.hash})
+        const hash_b64 = req.params.hash
+        const dbResult = await getStatement({hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     }catch(error){
+        next(error)
+    }
+})
+api.delete("/statement/:hash", async (req, res, next) => {
+    try {
+        const hash_b64 = req.params.hash
+        const { api_key } = req.body 
+        if(!api_key || (api_key !== process.env.API_KEY)) return res.statusCode = 401
+        const dbResult = await deleteStatement({hash_b64})
+        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
         next(error)
     }
 })
@@ -223,4 +235,3 @@ api.post("/upload_pdf", async (req, res, next) => {
 })
 
 export default api
-

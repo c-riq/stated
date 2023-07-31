@@ -6,13 +6,14 @@ import TextField from '@mui/material/TextField';
 import { sha256 } from '../utils/hash';
 import { parseDispute, buildDisputeContent, buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 const DisputeStatementForm = (props:FormProps) => {
     const [disputedStatementHash, setDisputedStatementHash] = React.useState("");
 
-    const generateHash:generateHash = ({viaAPI}) => {
-            props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+            props.setViaAPI(method === 'api')
             const content = buildDisputeContent({hash: disputedStatementHash})
             const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
@@ -29,7 +30,10 @@ const DisputeStatementForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash);
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                } });
         }
 
     return (
@@ -44,7 +48,7 @@ const DisputeStatementForm = (props:FormProps) => {
             sx={{marginBottom: "24px"}}
         />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

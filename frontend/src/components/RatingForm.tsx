@@ -10,6 +10,7 @@ import { TextField } from '@mui/material';
 
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 export const RatingForm = (props:FormProps) => {
 
@@ -20,8 +21,8 @@ export const RatingForm = (props:FormProps) => {
 
     const options = ["1/5 Stars", "2/5 Stars", "3/5 Stars", "4/5 Stars", "5/5 Stars"]
 
-    const generateHash:generateHash = ({viaAPI})  => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method})  => {
+        props.setViaAPI(method === 'api')
         const content = buildRating({organisation, domain, rating, comment})
         const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
 
@@ -33,7 +34,11 @@ export const RatingForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash); 
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }
+            });
         }
         const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             setRating(event.target.value)
@@ -82,7 +87,7 @@ export const RatingForm = (props:FormProps) => {
                     sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
                 />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

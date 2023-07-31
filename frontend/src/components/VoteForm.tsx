@@ -10,6 +10,7 @@ import FormLabel from '@mui/material/FormLabel';
 
 import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 
@@ -26,8 +27,8 @@ export const VoteForm = (props:FormProps) => {
     console.log(pollParsed)
     const options = pollParsed.options
 
-    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         const content = buildVoteContent({pollHash: props.poll.hash_b64, poll: pollParsed.poll , vote})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
 
@@ -39,7 +40,10 @@ export const VoteForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => {props.setStatementHash(value)})
+            sha256(statement).then((hash) => {props.setStatementHash(hash)
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }})
         }
         const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             setVote(event.target.value)
@@ -57,7 +61,7 @@ export const VoteForm = (props:FormProps) => {
             ))}
         </RadioGroup>
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

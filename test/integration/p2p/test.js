@@ -56,7 +56,7 @@ const request = (method, data, node, path, callback) => {
 
 const randomUnicodeString = () => Array.from(
 	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
-  ).join('').replace(/[\n;>=<"'’\\]/g, '')
+  ).join('').replace(/[\n;\0>=<"'’\\]/g, '')
 
 const generateContent = (node) => {
     return `Publishing domain: stated_${node}:${7000+node}
@@ -128,8 +128,8 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateStatement(node)
             //console.log(json)
-            request('POST', json, node, 'submit_statement', (res) => { console.log(res) })
-            //request('POST', json, node, 'submit_statement')
+            request('POST', json, node, 'statement', (res) => { console.log(res) })
+            //request('POST', json, node, 'statement')
             i = i+1
         }
 
@@ -138,8 +138,8 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateVerificationStatement(node)
             //console.log(json)
-            request('POST', json, node, 'submit_statement', (res) => { console.log(res) })
-            //request('POST', json, node, 'submit_statement')
+            request('POST', json, node, 'statement', (res) => { console.log(res) })
+            //request('POST', json, node, 'statement')
             i = i+1
         }
     })

@@ -7,6 +7,7 @@ import FormControl from '@mui/material/FormControl';
 
 import { parseStatement, parseBounty, buildStatement, buildBounty, bounty } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
+import { generateEmail } from './generateEmail';
 
 
 
@@ -30,13 +31,13 @@ export const BountyForm = (props:FormProps) => {
     const [judge, setJudge] = React.useState(bountyToJoin?.judge);
     const [judgePay, setJudgePay] = React.useState(bountyToJoin?.judgePay);
 
-    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
+    const prepareStatement: prepareStatement = ({method}) => {
         if (!motivation || !bounty || !reward || !judge || !judgePay){
             props.setAlertMessage('Please fill in all required fields')
             props.setisError(true)
             return
         }
-        props.setViaAPI(viaAPI)
+        props.setViaAPI(method === 'api')
         const content = buildBounty({motivation, bounty, reward, judge, judgePay})
         const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
         const parsedStatement = parseStatement(statement)
@@ -47,7 +48,12 @@ export const BountyForm = (props:FormProps) => {
             return
         }
         props.setStatement(statement)
-        sha256(statement).then((value) => {props.setStatementHash(value)})
+        sha256(statement).then((hash) => {
+            props.setStatementHash(hash)
+            if(method === 'represent'){
+                generateEmail({statement, hash})
+            }
+        })
     }
 
     return (
@@ -103,7 +109,7 @@ export const BountyForm = (props:FormProps) => {
             sx={{marginTop: '24px'}}
         />
             {props.children}
-            <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+            <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

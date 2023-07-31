@@ -19,6 +19,7 @@ import { parseStatement, buildStatement, forbiddenStrings,
     parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
+import { generateEmail } from './generateEmail';
 
 const PersonVerificationForm = (props:FormProps) => {
     const [birthCountry, setBirthCountry] = React.useState("");
@@ -32,8 +33,8 @@ const PersonVerificationForm = (props:FormProps) => {
     const [foreignDomain, setForeignDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
 
-    const generateHash = ({viaAPI}:{viaAPI:boolean}) => {
-        props.setViaAPI(viaAPI)
+    const prepareStatement:prepareStatement = ({method}) => {
+        props.setViaAPI(method === 'api')
         let date = birthDate.toDate()
         date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
         const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
@@ -55,7 +56,10 @@ const PersonVerificationForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((value) => { props.setStatementHash(value); });
+            sha256(statement).then((hash) => { props.setStatementHash(hash);
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                } });
         }
 
     return (
@@ -115,7 +119,7 @@ const PersonVerificationForm = (props:FormProps) => {
             inputValue={birthCountry}
             onInputChange={(event, newInputValue) => setBirthCountry(newInputValue)}
             renderOption={(props, option) => (
-                <Box id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                <Box {...props} id={option[0]} component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                 <img
                     loading="lazy"
                     width="20"
@@ -145,11 +149,12 @@ const PersonVerificationForm = (props:FormProps) => {
             inputValue={birthCity}
             onInputChange={(event, newInputValue) => setBirthCity(newInputValue)}
             renderInput={(params) => <TextField {...params} label="City of birth" />}
-            renderOption={(props, option) => (<Box id={option[0]} >{option[1]}</Box>)}
+            // @ts-ignore
+            renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[1]}</Box>)}
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement generateHash={generateHash} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>
     )
 }

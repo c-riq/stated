@@ -1,5 +1,3 @@
-import { statement } from "./statementFormats"
-
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
     window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
  ) : 'https://'+ window.location.host 
@@ -61,7 +59,7 @@ export const getStatement = (hash:string, cb:res<statementDB>) => {
     if (hash.length < 1) {
         throw new Error('Hash missing')
     }
-    req('GET',('statement?hash=' + hash), {}, (json) => {
+    req('GET',('statement/' + hash), {}, (json) => {
         if (json?.statements?.length > 0) {
             cb(json.statements[0])
             window.scrollTo(0,0)
@@ -167,7 +165,7 @@ export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
     req('GET', "txt_records?domain=" + domain, {}, cb, reject)
 }
 export const submitStatement = (body:any, cb:cb, reject:cb) => {
-    req('POST', 'submit_statement', body, cb, reject)
+    req('POST', 'statement', body, cb, reject)
 }
 
 export const uploadPdf = (body:any, cb:validatedResponseHandler<{sha256sum: string, filePath: string}>, reject:cb) => {

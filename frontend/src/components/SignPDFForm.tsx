@@ -13,6 +13,7 @@ import {
 } from "../statementFormats";
 import GenerateStatement from "./GenerateStatement";
 import { uploadPdf, backendHost } from "../api";
+import { generateEmail } from "./generateEmail";
 
 export const filePath = (hash:string, host:string|undefined) => (host || backendHost) + "/files/" + hash + ".pdf"
 
@@ -33,8 +34,8 @@ const SignPDFForm = (props:FormProps) => {
   const [fileURL, setFileURL] = React.useState("");
   const [dragActive, setDragActive] = React.useState(false);
 
-  const generateHash:generateHash = ({viaAPI}) => {
-    props.setViaAPI(viaAPI);
+  const prepareStatement:prepareStatement = ({method}) => {
+    props.setViaAPI(method === 'api');
     const content = buildPDFSigningContent({ hash: fileHash });
     const statement = buildStatement({
       domain: props.domain,
@@ -59,7 +60,10 @@ const SignPDFForm = (props:FormProps) => {
       return;
     }
     props.setStatement(statement);
-    sha256(statement).then((value) => { props.setStatementHash(value); });
+    sha256(statement).then((hash) => { props.setStatementHash(hash);
+      if(method === 'represent'){
+        generateEmail({statement, hash})
+    } });
   };
   const handleFiles = (file: Blob) => {
     console.log(file);
@@ -166,7 +170,7 @@ const SignPDFForm = (props:FormProps) => {
       />
       {props.children}
       <GenerateStatement
-        generateHash={generateHash}
+        prepareStatement={prepareStatement}
         serverTime={props.serverTime}
       />
     </FormControl>

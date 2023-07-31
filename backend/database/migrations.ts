@@ -23,7 +23,7 @@ export const currentCodeVersion = 4;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 
-const deleteData = process.env.TEST && process.env.DELETE_DATA 
+const deleteData = process.env.TEST && (process.env.DELETE_DATA=== "true")
 let dataDeleted = false
 
 const migrateToVersion = {
