@@ -96,7 +96,10 @@ api.delete("/statement/:hash", async (req, res, next) => {
     try {
         const hash_b64 = req.params.hash
         const { api_key } = req.body 
-        if(!api_key || (api_key !== process.env.API_KEY)) return res.statusCode = 401
+        if(!api_key || (api_key !== process.env.API_KEY)) {
+            res.status(401)
+            return res.end("Invalid API key")
+        }
         const dbResult = await deleteStatement({hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     } catch(error){
