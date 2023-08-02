@@ -38,8 +38,8 @@ type Props = {
     onPostSuccess: () => void,
 }
 type domainOption = {domain: string, organisation: string}
-type ssl = {domain: string, O: string, issuer_o: string}
-type statedVerification = {verified_domain: string, name: string, verifier_domain: string}
+type ssl = {domain: string, O: string, issuer_o: string, sha256: string}
+type statedVerification = {verified_domain: string, name: string, verifier_domain: string, statement_hash: string}
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
@@ -65,7 +65,9 @@ const CreateStatement = (props:Props) => {
         getDomainSuggestions(domainInputValue, res  => {
             if(!res || !res.result) {return}
             const domains = res.result.map(r => ({...r, domain: r.domain.replace(/^stated\./, '').replace(/^www\./, '')}))
-            const uniqueDomains = [...new Set(res.result.map(r => r.domain))].map(d => domains.find(r => r.domain === d))
+            const uniqueDomains = [...new Set(res.result.map(r => r.domain.replace(/^stated\./, '').replace(/^www\./, '')))].map(d => 
+                domains.find(r => 
+                    (r.domain === d)))
             setDomainOptions(uniqueDomains as domainOption[])
         })
     },[domainInputValue])
@@ -159,7 +161,7 @@ const CreateStatement = (props:Props) => {
                      (  OVInfo.reduce((acc, i) => acc || i.O, '') 
                         ?
                         OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via SSL certificate {i.domain +": "+ i.O + " by " + i.issuer_o}</Alert>))
+                            Verified via <a target='_blank' href={"https://crt.sh/?sha256=" + i.sha256}> SSL certificate {i.domain +": "+ i.O + " by " + i.issuer_o}</a></Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>
                             Organisation not verified via SSL certificate.</Alert>)
@@ -169,7 +171,7 @@ const CreateStatement = (props:Props) => {
                      (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
                         ?
                         [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via stated verification {i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</Alert>))
+                            Verified via stated verification <a target='_blank' href={window.location.host + '/statement/' + i!.statement_hash}>{i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</a></Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>
                             Not verified via stated verification.</Alert>)

@@ -22,7 +22,8 @@ import {statementDB} from '../api'
 
 type props = {
     lt850px: boolean,
-    voteOnPoll: (statement: any) => void
+    voteOnPoll: (statement: any) => void,
+    setStatementToJoin: (statement: any) => void,
 }
 
 const Statement = (props:props) => {
@@ -105,6 +106,13 @@ const Statement = (props:props) => {
                 <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
                 sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                     Vote
+                </Button>
+            </RouterLink>))}
+            {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
+                statementTypes.rating, statementTypes.dispute].includes(statement.type) && (<RouterLink to="/create-statement">
+                <Button onClick={()=>{props.setStatementToJoin(statement);}} variant='contained' 
+                sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
+                    Join statement
                 </Button>
             </RouterLink>))}
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
