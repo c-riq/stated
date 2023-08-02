@@ -202,7 +202,7 @@ function App() {
             <Route path='/' exact />
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px}/>
+                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px} setStatementToJoin={setStatementToJoin}/>
               </CenterModal>)} 
             />
             <Route path='/create-statement' element={
