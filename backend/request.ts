@@ -30,12 +30,13 @@ export const get = ({hostname, path, cache=false}) => new Promise((resolve: (res
         let ip = ''
         let data = ''
         const options = {
+            hostname: hostname,
             path: path,
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             ...(!cache && { 'agent': false })
         }
-        const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {  
+        const req = _https.request(options, res => {  
             let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
