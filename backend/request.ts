@@ -32,9 +32,9 @@ export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (
             res.setEncoding('utf8')
             res.on('data', chunk => {
                 // @ts-ignore
-                cert = !test && res.req.socket.getPeerCertificate()
+                cert = !test && res.req?.socket?.getPeerCertificate()
                 // @ts-ignore
-                ip = res.req.socket.remoteAddress
+                ip = res.req?.socket?.remoteAddress
                 rawData += chunk
             })
             res.on('end', () => {
