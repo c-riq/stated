@@ -1,5 +1,5 @@
-import http from 'http'
-import https from 'https'
+import http, { RequestOptions } from 'http'
+import https, { RequestOptions as RequestOptionsHttps } from 'https'
 
 const ownDomain = process.env.DOMAIN
 const test = process.env.TEST || false
@@ -12,7 +12,7 @@ type response = {
     ip?: any
 }
 
-export const get = ({hostname, path, cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
+export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -22,14 +22,12 @@ export const get = ({hostname, path, cache=false}) => new Promise((resolve: (res
         let cert = {}
         let ip = ''
         let data = ''
-        const options = {
-            hostname: hostname,
-            path: path,
+        const options: RequestOptions | RequestOptionsHttps = {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             ...(!cache && { 'agent': false })
         }
-        const req = (test ? http : https).request(options, res => {  
+        const req = (test ? http : https).request(`http${(test ? '' : 's')}://${hostname}${path}`, options, res => {  
             let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
@@ -61,15 +59,13 @@ export const post = ({hostname, path, data}) => new Promise((resolve, reject) =>
         resolve({error: 'skip request to own domain: ' + hostname})
         return
     }
-    const options = {
-        hostname,
-        path,
+    const options: RequestOptions | RequestOptionsHttps  = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     }
     let ip = ''
     let responseData = ''
-    const req = (test ? http : https).request(options, res => {
+    const req = (test ? http : https).request(`http${(test ? '' : 's')}://${hostname}${path}`, options, res => {
         let rawData = ''
         res.setEncoding('utf8')
         res.on('data', chunk => rawData += chunk)
