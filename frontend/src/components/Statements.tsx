@@ -25,7 +25,9 @@ const highlightedStatement = (text: string, type:string) => {
     }
     const parts = text.split(new RegExp(regex, 'g'));
     return <span>{ parts.map((v, i) => 
-        <><span key={i} style={regex.test(v) ? {backgroundColor: 'rgba(42, 74, 103, 0.3)', borderRadius: '3px'} : {}}>
+        <><span key={i} style={regex.test(v) ? 
+            {fontWeight: '200',color: 'rgb(58,58,58)', fontSize:'13px'} : 
+            {fontWeight: '550',color: 'rgb(42, 72, 103)'}}>
             {regex.test(v) ? v.replace(/: $/, ':') : v}
         </span>
         {regex.test(v) ? ' ' : '' }
@@ -47,7 +49,7 @@ const Statements = (props:props) => {
     const { lt850px } = props
     const statements = props.statements
     return (
-        <div style={lt850px ? {marginBottom : "10%" } : { padding: "7%",margin: "2%", borderRadius: 8 }}>
+        <div style={lt850px ? {marginBottom : "10%" } : {margin: "2%", borderRadius: 8 }}>
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
             <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
                 <h3>Statements</h3> {props.children}</div>
