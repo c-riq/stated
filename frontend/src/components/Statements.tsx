@@ -49,7 +49,7 @@ const Statements = (props:props) => {
     const { lt850px } = props
     const statements = props.statements
     return (
-        <div style={lt850px ? {marginBottom : "10%" } : {margin: "2%", borderRadius: 8 }}>
+        <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8 }}>
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
             <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
                 <h3>Statements</h3> {props.children}</div>
@@ -68,7 +68,7 @@ const Statements = (props:props) => {
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}}>
+                            <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}} onClick={()=>{props.setModalOpen()}} >
                                 <div className="statement" 
                                 // @ts-ignore 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 

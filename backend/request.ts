@@ -1,16 +1,9 @@
-import http from 'http'
-import https from 'https'
+import http, { RequestOptions } from 'http'
+import https, { RequestOptions as RequestOptionsHttps } from 'https'
 
 const ownDomain = process.env.DOMAIN
 const test = process.env.TEST || false
 const log = true
-
-let _https = https
-
-if (test) {
-    // @ts-ignore
-    _https = http
-}
 
 type response = {
     data?: any,
@@ -19,7 +12,7 @@ type response = {
     ip?: any
 }
 
-export const get = ({hostname, path, cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
+export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -29,20 +22,19 @@ export const get = ({hostname, path, cache=false}) => new Promise((resolve: (res
         let cert = {}
         let ip = ''
         let data = ''
-        const options = {
-            path: path,
+        const options: RequestOptions | RequestOptionsHttps = {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             ...(!cache && { 'agent': false })
         }
-        const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {  
+        const req = (test ? http : https).request(`http${(test ? '' : 's')}://${hostname}${path}`, options, res => {  
             let rawData = ''
             res.setEncoding('utf8')
             res.on('data', chunk => {
                 // @ts-ignore
-                cert = !test && res.req.socket.getPeerCertificate()
+                cert = !test && res.req?.socket?.getPeerCertificate()
                 // @ts-ignore
-                ip = res.req.socket.remoteAddress
+                ip = res.req?.socket?.remoteAddress
                 rawData += chunk
             })
             res.on('end', () => {
@@ -67,14 +59,13 @@ export const post = ({hostname, path, data}) => new Promise((resolve, reject) =>
         resolve({error: 'skip request to own domain: ' + hostname})
         return
     }
-    const options = {
-        path: path,
+    const options: RequestOptions | RequestOptionsHttps  = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     }
     let ip = ''
     let responseData = ''
-    const req = _https.request(`http${test ? '' : 's'}://` + hostname, options, res => {
+    const req = (test ? http : https).request(`http${(test ? '' : 's')}://${hostname}${path}`, options, res => {
         let rawData = ''
         res.setEncoding('utf8')
         res.on('data', chunk => rawData += chunk)
