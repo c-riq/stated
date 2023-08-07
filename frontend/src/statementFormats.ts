@@ -66,8 +66,14 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	+ /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
 	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?$)|(?<content>[\s\S]+?$))/.source
 	);
-	const m = s.match(statementRegex)?.groups
+	let m: any = s.match(statementRegex)
 	if(!m) throw new Error("Invalid statement format")
+	// if(m?.groups) {m = m.groups}
+	else{
+		m = {domain: m[1], author: m[2], representative: m[3], time: m[4], tags: m[5],
+			supersededStatement: m[6], content: m[7] || m[9],
+			type: m[8] ? m[8].toLowerCase().replace(' ','_') : undefined}
+	}
 	if(!(m['time'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
 	if(!m['domain']) throw new Error("Invalid statement format: domain is required")
 	if(!m['author']) throw new Error("Invalid statement format: author is required")
@@ -127,8 +133,14 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 	+ /(?:\tParaphrased statement: (?:(?<paraphrasedTypedStatement>\n\t\tType: (?<type>[^\n]+?)\n[\s\S]+?)|(?<paraphrasedStatement>[\s\S]+?)))/.source
 	+ /$/.source
 	);
-	const m = s.match(voteRegex)?.groups
+	let m: any = s.match(voteRegex)
 	if(!m) throw new Error("Invalid quotation format")
+	// if(m?.groups) {m = m.groups}
+	else{
+		m = {originalAuthor: m[1], authorVerification: m[2], originalTime: m[3], source: m[4],
+			picture: m[5], confidence: m[6], quotation: m[7], paraphrasedStatement: m[8] || m[10],
+			type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined}
+	}
 	return {
 		originalAuthor: m['originalAuthor'],
 		authorVerification: m['authorVerification'],
@@ -187,8 +199,14 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
 	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
 	+ /$/.source)
-	const m = s.match(pollRegex)?.groups
+	let m:any = s.match(pollRegex)
 	if(!m) throw new Error("Invalid poll format")
+	// if(m?.groups) {m = m.groups}
+	else{
+		m = {pollType: m[1], country: m[2], city: m[3], legalEntity: m[4], domainScope: m[5],
+			judges: m[6], deadline: m[7], poll: m[8], option1: m[9], option2: m[10], option3: m[11],
+			option4: m[12], option5: m[13]}
+	}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = m.domainScope?.split(', ')
 	const deadlineStr = m.deadline
