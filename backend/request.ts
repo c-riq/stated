@@ -12,7 +12,7 @@ type response = {
     ip?: any
 }
 
-export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
+export const get = ({hostname, path='', cache=false, text=false}) => new Promise((resolve: (res: response) => void, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -24,7 +24,7 @@ export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (
         let data = ''
         const options: RequestOptions | RequestOptionsHttps = {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': (text ? 'text/plain; charset=UTF-8' : 'application/json') },
             ...(!cache && { 'agent': false })
         }
         const req = (test ? http : https).request(`http${(test ? '' : 's')}://${hostname}${path}`, options, res => {  

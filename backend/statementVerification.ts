@@ -8,6 +8,7 @@ import {parseAndCreatePoll, parseAndCreateVote} from './poll'
 import {parseAndCreateRating} from './rating'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats'
+import {get} from './request'
 
 const log = true
 const ownAPIKey = process.env.API_KEY
@@ -123,22 +124,26 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
     }
 }
 
-// TODO: fix - 
-const verifyViaStaticTextFile = async (domain, statement) => {
-    let url = 'https://static.stated.' + domain + '/statements.txt'
+export const getStatementsFile = async (domain, _static=false) => {
+    let hostname = `${_static ? 'static.' : ''}stated.${domain}`
     try {
-        const result = await axios({
-            method: "GET",
-            url})
-        if (result.data.length > 0){
-            console.log(result.data.substring(0.100), 'result from ', domain)
-            if (result.data.match(statement)){
-                return true
-            }
-        }
+        const res = await get({hostname, path:'/statements.txt', text:true})
+        return res?.data
     } catch(e) {
         console.log(e)
         return false
+    }
+    return false
+}
+
+const verifyViaStaticTextFile = async (domain, statement) => {
+    const result = await getStatementsFile(domain)
+    if (result?.match(statement)){
+        return true
+    }
+    const staticResult = await getStatementsFile(domain, true)
+    if (staticResult?.match(statement)){
+        return true
     }
     return false
 }

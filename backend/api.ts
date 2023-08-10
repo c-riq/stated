@@ -7,7 +7,7 @@ import {matchDomain, getStatement, getStatements, getStatementsWithDetail,
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
-import {getTXTEntries, validateAndAddStatementIfMissing} from './statementVerification'
+import {getTXTEntries, validateAndAddStatementIfMissing, getStatementsFile} from './statementVerification'
 import {getTXTEntriesDNSSEC} from './dnssec'
 
 import {saveFile} from './upload'
@@ -32,6 +32,16 @@ api.get("/txt_records", async (req, res, next) => {
     }
 })
 
+api.get("/check_statements_file", async (req, res, next) => {
+    try {
+        const _static = req.query.static === 'true'
+        const domain = req.query.domain
+        const result = await getStatementsFile(domain, _static)
+        res.end(JSON.stringify({ result, domain, static: _static }))
+    } catch (error) {
+        next(error)
+    }
+})
 
 api.post("/statement", async (req, res, next) => {
     try {
