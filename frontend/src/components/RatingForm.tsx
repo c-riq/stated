@@ -24,7 +24,7 @@ export const RatingForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method})  => {
         props.setViaAPI(method === 'api')
         const content = buildRating({organisation, domain, rating, comment})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
+        const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: new Date(props.serverTime), content})
 
             const parsedStatement = parseStatement(statement)
             const parsedRating = parseRating(parsedStatement.content)

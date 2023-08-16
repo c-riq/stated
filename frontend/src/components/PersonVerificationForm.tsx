@@ -39,7 +39,7 @@ const PersonVerificationForm = (props:FormProps) => {
         date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
         const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
             cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: props.serverTime, content})
         console.log(statement)
 
             const parsedStatement = parseStatement(statement)

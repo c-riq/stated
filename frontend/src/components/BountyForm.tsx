@@ -39,7 +39,7 @@ export const BountyForm = (props:FormProps) => {
         }
         props.setViaAPI(method === 'api')
         const content = buildBounty({motivation, bounty, reward, judge, judgePay})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: props.serverTime, content})
+        const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: props.serverTime, content})
         const parsedStatement = parseStatement(statement)
         const parsedBounty = parseBounty(parsedStatement.content)
         if(!parsedBounty){

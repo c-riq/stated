@@ -6,7 +6,8 @@ import Stack from '@mui/material/Stack';
 
 import { Link } from 'react-router-dom';
 
-import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys } from '../statementFormats'
+import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
+    BoycottKeys, ObservationKeys } from '../statementFormats'
 import { statementWithDetails } from '../api';
 
 const highlightedStatement = (text: string, type:string) => {
@@ -22,6 +23,12 @@ const highlightedStatement = (text: string, type:string) => {
     }
     if (type === statementTypes.rating){
         regex = ratingKeys
+    }
+    if (type === statementTypes.boycott){
+        regex = BoycottKeys
+    }
+    if (type === statementTypes.observation){
+        regex = ObservationKeys
     }
     const parts = text.split(new RegExp(regex, 'g'));
     return <span>{ parts.map((v, i) => 
@@ -56,8 +63,11 @@ const Statements = (props:props) => {
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {statements && statements.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
                     {statements && statements.length > 0 && statements.map((s,i) => {
-                        if ([statementTypes.statement,statementTypes.organisationVerification,
-                        statementTypes.signPdf, statementTypes.rating, statementTypes.bounty].includes(s.type || '')){
+                        if ([
+                            statementTypes.statement,statementTypes.organisationVerification,
+                            statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
+                            statementTypes.boycott, statementTypes.observation
+                        ].includes(s.type || '')){
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>

@@ -37,7 +37,7 @@ const PollForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method}) => {
         props.setViaAPI(method === 'api')
         const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
-        const statement = buildStatement({domain: props.domain, author: props.author, time: new Date(props.serverTime), content})
+        const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: new Date(props.serverTime), content})
             console.log(statement)
 
             const parsedStatement = parseStatement(statement)
