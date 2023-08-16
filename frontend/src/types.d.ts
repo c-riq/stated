@@ -1,6 +1,7 @@
 type FormProps = {
     domain: string,
     author: string,
+    representative?: string,
     serverTime: Date,
     statementToJoin?: any,
     poll?: poll,
