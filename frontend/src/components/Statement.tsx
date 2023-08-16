@@ -109,7 +109,8 @@ const Statement = (props:props) => {
                 </Button>
             </RouterLink>))}
             {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
-                statementTypes.rating, statementTypes.dispute].includes(statement.type) && (<RouterLink to="/create-statement">
+                statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
+                statementTypes.boycott, statementTypes.observation].includes(statement.type) && (<RouterLink to="/create-statement">
                 <Button onClick={()=>{props.setStatementToJoin(statement);}} variant='contained' 
                 sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                     Join statement

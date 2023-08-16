@@ -1,10 +1,9 @@
 
 CREATE TYPE statement_type AS ENUM 
-    ('statement', 'dispute_statement_authenticity',
-    'dispute_statement_content', 'response',
+    ('statement', 'dispute_statement_authenticity', 'response',
     'organisation_verification', 'person_verification', 
-    'poll', 'vote', 'rating', 'sign_pdf', 'bounty'
-    'observation', 'boycott');
+    'poll', 'vote', 'rating', 'sign_pdf', 'bounty',
+    'dispute_statement_content', 'boycott', 'observation');
 CREATE TYPE verification_method AS ENUM 
     ('api', 'dns');
 CREATE TABLE IF NOT EXISTS unverified_statements (

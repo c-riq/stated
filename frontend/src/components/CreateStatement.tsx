@@ -233,7 +233,7 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.rating}>Rating</MenuItem>
                     <MenuItem value={statementTypes.poll}>Poll</MenuItem>
                     <MenuItem value={statementTypes.vote}>Vote</MenuItem>
-                    <MenuItem value={statementTypes.dispute}>Dispute statement</MenuItem>
+                    <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
                     <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
                 </Select>
             {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm domain={domain} author={author} representative={representative}
@@ -256,7 +256,7 @@ const CreateStatement = (props:Props) => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</VoteForm>)}
-            {type === statementTypes.dispute &&(<DisputeStatementForm domain={domain} author={author} representative={representative}
+            {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm domain={domain} author={author} representative={representative}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</DisputeStatementForm>)}

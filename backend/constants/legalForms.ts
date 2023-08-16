@@ -5,7 +5,7 @@ export const legalForms = // Wikidata ID: Q10541491
     state_government: 'state government', //'Q1802419'
     foreign_affairs_ministry: 'foreign affairs ministry', //'Q20901295'
     corporation: 'corporation', //'Q167037'
-    department: 'department', //'Q9261468' 'Q43229'
+    // department: 'department', //'Q9261468' 'Q43229'
 }
 
 /* 
