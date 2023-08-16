@@ -1,11 +1,9 @@
 /* eslint-disable no-useless-concat */
 // copied from frotend to backend directory via 'npm run build'
 
-// TODO: use named matching groups, (did not work in the js bundle)
-
 import {countries} from './constants/country_names_iso3166'
 import {legalForms} from './constants/legalForms'
-//import {cities} from './constants/cities'
+// TODO: import {cities} from './constants/cities'
 import {subdivisions} from './constants/provinces_un_locode'
 
 export const statementTypes = {
@@ -16,7 +14,10 @@ export const statementTypes = {
     poll: 'poll',
     vote: 'vote',
     response: 'response',
-    dispute: 'dispute_statement',
+    disputeContent: 'dispute_statement_content',
+    disputeAuthenticity: 'dispute_statement_authenticity',
+	boycott: 'boycott',
+	observation: 'observation',
     rating: 'rating',
 	signPdf: "sign_pdf",
 	bounty: "bounty",
@@ -66,8 +67,14 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	+ /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
 	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?$)|(?<content>[\s\S]+?$))/.source
 	);
-	const m = s.match(statementRegex)?.groups
+	let m: any = s.match(statementRegex)
 	if(!m) throw new Error("Invalid statement format")
+	// if(m?.groups) {m = m.groups}
+	else{
+		m = {domain: m[1], author: m[2], representative: m[3], time: m[4], tags: m[5],
+			supersededStatement: m[6], content: m[7] || m[9],
+			type: m[8] ? m[8].toLowerCase().replace(' ','_') : undefined}
+	}
 	if(!(m['time'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
 	if(!m['domain']) throw new Error("Invalid statement format: domain is required")
 	if(!m['author']) throw new Error("Invalid statement format: author is required")
@@ -90,27 +97,28 @@ export const parseStatement = (s: string):statement & { type: string } => {
 type quotation = {
 	originalAuthor: string,
 	authorVerification: string,
-	originalTime: string,
-	source: string,
-	quotation: string,
-	paraphrasedStatement: string,
-	picture: string,
-	confidence: string
+	originalTime?: string,
+	source?: string,
+	quotation?: string,
+	paraphrasedStatement?: string,
+	picture?: string,
+	confidence?: string
 }
 export const buildQuotationContent = ({originalAuthor, authorVerification, originalTime, source,
 		quotation, paraphrasedStatement, picture, confidence}: quotation) => {
 	if(quotation && quotation.match(/\n/)) throw(new Error("Quotation must not contain line breaks."))
+	if(!paraphrasedStatement && !quotation) throw(new Error("Quotation must contain either a quotation or a paraphrased statement."))
 	const content = "\n" +
 	"\t" + "Type: Quotation" + "\n" +
 	"\t" + "Original author: " + originalAuthor + "\n" +
 	"\t" + "Author verification: " + authorVerification + "\n" +
-	"\t" + "Original publication time: " + originalTime + "\n" +
-	"\t" + "Source: " + source + "\n" +
-	(picture?.length > 0 ? "\t" + "Picture proof: " + (picture || "") + "\n" : '') +
-	(confidence?.length > 0 ? "\t" + "Confidence: " + (confidence || "") + "\n" : '') +
-	(quotation?.length > 0 ? "\t" + "Quotation: " + (quotation || "") + "\n" : '') +
-	(paraphrasedStatement?.length > 0 ? "\t" + "Paraphrased statement: " + 
-		(paraphrasedStatement || "").replace('\n\t', '\n\t\t') + "\n" : '') +
+	(originalTime && originalTime?.length > 0 ? "\t" + "Original publication time: " + originalTime + "\n" : "") +
+	(source && source?.length > 0 ? "\t" + "Source: " + (source || "") + "\n" : '') +
+	(picture && picture.length > 0 ? "\t" + "Picture proof: " + (picture || "") + "\n" : '') +
+	(confidence && confidence?.length > 0 ? "\t" + "Confidence: " + (confidence || "") + "\n" : '') +
+	(quotation && quotation?.length > 0 ? "\t" + "Quotation: " + (quotation || "") + "\n" : '') +
+	(paraphrasedStatement && paraphrasedStatement?.length > 0 ? "\t" + "Paraphrased statement: " + 
+	(paraphrasedStatement || "").replace(/\n\t([^\t])/, '\n\t\t($1)') + "\n" : '') +
 	""
 	return content
 }
@@ -119,16 +127,22 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 	+ /^\n\tType: Quotation\n/.source
 	+ /\tOriginal author: (?<originalAuthor>[^\n]+?)\n/.source
 	+ /\tAuthor verification: (?<authorVerification>[^\n]+?)\n/.source
-	+ /\tOriginal publication time: (?<originalTime>[^\n]+?)\n/.source
-	+ /\tSource: (?<source>[^\n]+?)\n/.source
+	+ /(?:\tOriginal publication time: (?<originalTime>[^\n]+?)\n)?/.source
+	+ /(?:\tSource: (?<source>[^\n]+?)\n)?/.source
 	+ /(?:\tPicture proof: (?<picture>[^\n]+?)\n)?/.source
 	+ /(?:\tConfidence: (?<confidence>[^\n]+?)\n)?/.source
 	+ /(?:\tQuotation: (?<quotation>[^\n]+?)\n)?/.source
 	+ /(?:\tParaphrased statement: (?:(?<paraphrasedTypedStatement>\n\t\tType: (?<type>[^\n]+?)\n[\s\S]+?)|(?<paraphrasedStatement>[\s\S]+?)))/.source
 	+ /$/.source
 	);
-	const m = s.match(voteRegex)?.groups
+	let m: any = s.match(voteRegex)
 	if(!m) throw new Error("Invalid quotation format")
+	// if(m?.groups) {m = m.groups}
+	else{
+		m = {originalAuthor: m[1], authorVerification: m[2], originalTime: m[3], source: m[4],
+			picture: m[5], confidence: m[6], quotation: m[7], paraphrasedStatement: m[8] || m[10],
+			type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined}
+	}
 	return {
 		originalAuthor: m['originalAuthor'],
 		authorVerification: m['authorVerification'],
@@ -137,7 +151,7 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 		picture: m['picture'],
 		confidence: m['confidence'],
 		quotation: m['quotation'],
-		paraphrasedStatement: (m['paraphrasedStatement']||m['paraphrasedTypedStatement']?.replace(/\t\t/g, "	")),
+		paraphrasedStatement: (m['paraphrasedStatement']||m['paraphrasedTypedStatement']?.replace(/\n\t\t/g, "\n\t")),
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
 }
@@ -187,8 +201,14 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
 	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
 	+ /$/.source)
-	const m = s.match(pollRegex)?.groups
+	let m:any = s.match(pollRegex)
 	if(!m) throw new Error("Invalid poll format")
+	// if(m?.groups) {m = m.groups}
+	else{
+		m = {pollType: m[1], country: m[2], city: m[3], legalEntity: m[4], domainScope: m[5],
+			judges: m[6], deadline: m[7], poll: m[8], option1: m[9], option2: m[10], option3: m[11],
+			option4: m[12], option5: m[13]}
+	}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = m.domainScope?.split(', ')
 	const deadlineStr = m.deadline
@@ -212,6 +232,7 @@ export type organisationVerification = {
 	city: string,
 	province: string,
 	legalForm: string,
+	parent?: string,
 	domain: string,
 	foreignDomain: string,
 	serialNumber: string,
@@ -222,10 +243,9 @@ export type organisationVerification = {
 }
 
 export const buildOrganisationVerificationContent = (
-		{name, englishName, country, city, province, legalForm, domain, foreignDomain, serialNumber,
+		{name, englishName, country, city, province, legalForm, parent, domain, foreignDomain, serialNumber,
 		confidence, reliabilityPolicy, employeeCount, pictureHash} : organisationVerification) => {
 	/* Omit any fields that may have multiple values */
-	console.log(name, country, city, province, legalForm, domain)
 	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
 	const countryObject = countries.countries.find(c => c[0] === country)
@@ -242,6 +262,7 @@ export const buildOrganisationVerificationContent = (
 	(englishName ? "\t" + "English name: " + englishName + "\n" : "") + // wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
 	"\t" + "Legal entity: " + legalForm + "\n" +
+	(parent ? "\t" + "Parent: " + parent + "\n" : "") + // for departments
 	(domain ? "\t" + "Owner of the domain: " + domain + "\n" : "") +
 	(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
 	(province ? "\t" + "Province or state: " + province + "\n" : "") + // UN/LOCODE
@@ -254,7 +275,7 @@ export const buildOrganisationVerificationContent = (
 	""
 }
 
-export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
+export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Parent: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
 
 export const parseOrganisationVerification = (s:string):organisationVerification => {
 	const organisationVerificationRegex= new RegExp(''
@@ -264,6 +285,7 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 	+ /(?:\tEnglish name: (?<englishName>[^\n]+?)\n)?/.source
 	+ /\tCountry: (?<country>[^\n]+?)\n/.source
 	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
+	+ /(?:\tParent: (?<parent>[^\n]+?)\n)?/.source
 	+ /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
 	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
@@ -282,15 +304,16 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 		englishName: m[2],
 		country: m[3],
 		legalForm: m[4],
-		domain: m[5],
-		foreignDomain: m[6],
-		province: m[7],
-		serialNumber: m[8],
-		city: m[9],
-		pictureHash: m[10],
-		employeeCount: m[11],
-		reliabilityPolicy: m[12],
-		confidence: m[13] ? parseFloat(m[13]) : undefined,
+		parent: m[5],
+		domain: m[6],
+		foreignDomain: m[7],
+		province: m[8],
+		serialNumber: m[9],
+		city: m[10],
+		pictureHash: m[11],
+		employeeCount: m[12],
+		reliabilityPolicy: m[13],
+		confidence: m[14] ? parseFloat(m[14]) : undefined,
 	}
 }
 
@@ -313,7 +336,6 @@ export const buildPersonVerificationContent = (
 		{name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
 		dateOfBirth, jobTitle, employer, verificationMethod, confidence,
 		picture, reliabilityPolicy}:personVerification) => {
-	console.log(name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain, dateOfBirth)
 	if(!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) return ""
 	const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j))
 	let content = "\n" +
@@ -332,7 +354,6 @@ export const buildPersonVerificationContent = (
 		(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
 		(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 		""
-	console.log(content)
 	return content
 }
 
@@ -357,7 +378,6 @@ export const parsePersonVerification = (s: string):personVerification => {
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
-	console.log(s)
 	const m = s.match(domainVerificationRegex)
 	if(!m) throw new Error("Invalid person verification format")
 	if(m[2] && !m[2].match(birthDateFormat)) throw new Error("Invalid birth date format: " + m[2])
@@ -411,28 +431,68 @@ export const parseVote = (s: string):vote => {
 	}
 }
 
-export type dispute = {
+export type disputeAuthenticity = {
 	hash: string,
+	confidence?: number,
+	reliabilityPolicy?: string,
 }
-export const buildDisputeContent = ({hash}:dispute) => {
+export const buildDisputeAuthenticityContent = ({hash, confidence, reliabilityPolicy}:disputeAuthenticity) => {
 	const content = "\n" +
-	"\t" + "Type: Dispute statement" + "\n" +
-	"\t" + "Description: We are convinced that the referenced statement is not authentic.\n" +
+	"\t" + "Type: Dispute statement authenticity" + "\n" +
+	"\t" + "Description: We think that the referenced statement is not authentic.\n" +
 	"\t" + "Hash of referenced statement: " + hash + "\n" +
+	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
 	""
 	return content
 }
-export const parseDispute = (s: string):dispute => {
+export const parseDisputeAuthenticity = (s: string):disputeAuthenticity => {
 	const disputeRegex= new RegExp(''
-	+ /^\n\tType: Dispute statement\n/.source
-	+ /\tDescription: We are convinced that the referenced statement is not authentic.\n/.source
+	+ /^\n\tType: Dispute statement authenticity\n/.source
+	+ /\tDescription: We think that the referenced statement is not authentic.\n/.source
 	+ /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
+	+ /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
+	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(disputeRegex)
-	if(!m) throw new Error("Invalid dispute format")
+	if(!m) throw new Error("Invalid dispute authenticity format")
 	return {
-		hash: m[1]
+		hash: m[1],
+		confidence: m[2] ? parseFloat(m[2]) : undefined,
+		reliabilityPolicy: m[3]
+	}
+}
+export type disputeContent = {
+	hash: string,
+	confidence?: number,
+	reliabilityPolicy?: string,
+}
+export const buildDisputeContentContent = ({hash, confidence, reliabilityPolicy}:disputeContent) => {
+	const content = "\n" +
+	"\t" + "Type: Dispute statement content" + "\n" +
+	"\t" + "Description: We think that the content of the referenced statement is false.\n" +
+	"\t" + "Hash of referenced statement: " + hash + "\n" +
+	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+	""
+	return content
+}
+export const parseDisputeContent = (s: string):disputeContent => {
+	const disputeRegex= new RegExp(''
+	+ /^\n\tType: Dispute statement content\n/.source
+	+ /\tDescription: We think that the content of the referenced statement is false.\n/.source
+	+ /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
+	+ /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
+	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+	+ /$/.source
+	);
+	const m = s.match(disputeRegex)
+	if(!m) throw new Error("Invalid dispute content format")
+	return {
+		hash: m[1],
+		confidence: m[2] ? parseFloat(m[2]) : undefined,
+		reliabilityPolicy: m[3]
 	}
 }
 export type PDFSigning = {
@@ -533,6 +593,88 @@ export const parseBounty = (s: string):bounty => {
 		reward: m[3],
 		judge: m[4],
 		judgePay: m[5]
+	}
+}
+export type observation = {
+	description?: string,
+	approach?: string,
+	confidence?: number,
+	reliabilityPolicy?: string,
+	subject: string,
+	subjectReference?: string,
+	observationReference?: string,
+	observation: string,
+}
+export const ObservationKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observation: )/
+export const buildObservation = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, observation}: observation) => {
+	const content = "\n" +
+	"\t" + "Type: Observation" + "\n" +
+	(approach ? "\t" + "Approach: " + approach + "\n" : "") +
+	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+	"\t" + "Subject: " + subject + "\n" +
+	(subjectReference ? "\t" + "Subject identity reference: " + subjectReference + "\n" : "") +
+	(observationReference ? "\t" + "Observation reference: " + observationReference + "\n" : "") +
+	"\t" + "Observation: " + observation + "\n" +
+	""
+	return content
+}
+export const parseObservation = (s: string):observation => {
+	const observationRegex= new RegExp(''
+	+ /^\n\tType: Observation\n/.source
+	+ /\tApproach: (?<approach>[^\n]*?)\n/.source
+	+ /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
+	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+	+ /\tSubject: (?<subject>[^\n]*?)\n/.source
+	+ /(?:\tSubject identity reference: (?<subjectReference>[^\n]*?)\n)?/.source
+	+ /(?:\tObservation reference: (?<observationReference>[^\n]*?)\n)?/.source
+	+ /\tObservation: (?<observation>[^\n]*?)\n/.source
+	+ /$/.source
+	);
+	const m = s.match(observationRegex)
+	if(!m) throw new Error("Invalid observation format")
+	return {
+		approach: m[1],
+		confidence: m[2] ? parseFloat(m[2]) : undefined,
+		reliabilityPolicy: m[3],
+		subject: m[4],
+		subjectReference: m[5],
+		observationReference: m[6],
+		observation: m[7]
+	}
+}
+
+
+export type boycott = {
+	description?: string,
+	reliabilityPolicy?: string,
+	subject: string,
+	subjectReference?: string,
+}
+export const BoycottKeys = /(Type: |Description: |Subject: |Subject identity reference: )/
+export const buildBoycott = ({description, subject, subjectReference}: boycott) => {
+	const content = "\n" +
+	"\t" + "Type: Boycott" + "\n" +
+	(description ? "\t" + "Description: " + description + "\n" : "") +
+	"\t" + "Subject: " + subject + "\n" +
+	(subjectReference ? "\t" + "Subject identity reference: " + subjectReference + "\n" : "") +
+	""
+	return content
+}
+export const parseBoycott = (s: string):boycott => {
+	const observationRegex= new RegExp(''
+	+ /^\n\tType: Boycott\n/.source
+	+ /(?:\tDescription: (?<description>[^\n]*?)\n)?/.source
+	+ /\tSubject: (?<subject>[^\n]*?)\n/.source
+	+ /(?:\tSubject identity reference: (?<subjectReference>[^\n]*?)\n)?/.source
+	+ /$/.source
+	);
+	const m = s.match(observationRegex)
+	if(!m) throw new Error("Invalid observation format")
+	return {
+		description: m[1],
+		subject: m[2],
+		subjectReference: m[3],
 	}
 }
 

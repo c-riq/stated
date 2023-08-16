@@ -1,10 +1,10 @@
-const { parseRating, parseStatement, parseOrganisationVerification, parsePDFSigning,
-    parsePersonVerification, parseDispute, parseVote, parsePoll, parseQuotation,
-	parseBounty } = require('./statementFormats')
+import { parseRating, parseStatement, parseOrganisationVerification, parsePDFSigning,
+    parsePersonVerification, parseDisputeAuthenticity, parseDisputeContent, parseVote, parsePoll, parseQuotation,
+	parseBounty, parseBoycott, parseObservation } from './statementFormats'
 
-const { buildRating, buildStatement, buildBounty, buildDisputeContent, buildPDFSigningContent, 
+import { buildRating, buildStatement, buildBounty, buildDisputeAuthenticityContent, buildDisputeContentContent, buildPDFSigningContent, 
 	buildPersonVerificationContent, buildPollContent, buildQuotationContent, buildVoteContent,
-	buildOrganisationVerificationContent } = require('./statementFormats')
+	buildOrganisationVerificationContent, buildBoycott, buildObservation } from './statementFormats'
 
 const randomUnicodeString = () => Array.from(
 	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))
@@ -32,7 +32,7 @@ test('statement build & parse function compatibility: input=parse(build(input))'
 	expect(parsedStatement.content).toBe(content)
 	expect(parsedStatement.representative).toBe(representative)
 	expect(parsedStatement.supersededStatement).toBe(supersededStatement)
-	expect(parsedStatement.tags.sort()).toStrictEqual(tags.sort())
+	expect(parsedStatement.tags?.sort()).toStrictEqual(tags.sort())
 });
 
 
@@ -71,14 +71,13 @@ test('quotation build & parse function compatibility: input=parse(build(input))'
 		authorVerification, originalTime, source, picture, confidence, quotation, 
 		paraphrasedStatement})
 	const parsedQuotation = parseQuotation(quotationContent)
-	console.log(quotationContent, parsedQuotation)
 	expect(parsedQuotation.originalAuthor).toBe(originalAuthor)
 	expect(parsedQuotation.originalTime).toBe(originalTime)
 	expect(parsedQuotation.source).toBe(source)
 	expect(parsedQuotation.picture).toBe(picture)
 	expect(parsedQuotation.confidence).toBe(confidence)
 	expect(parsedQuotation.quotation).toBe(quotation)
-	expect(parsedQuotation.paraphrasedStatement.replace(/\n$/,'')).toBe(paraphrasedStatement)
+	expect(parsedQuotation.paraphrasedStatement?.replace(/\n$/,'')).toBe(paraphrasedStatement)
 	expect(parsedQuotation.authorVerification).toBe(authorVerification)
 });
 
@@ -109,13 +108,11 @@ test('organisation verification build & parse function compatibility: input=pars
 	const province = 'Bayern'
 	const legalForm = 'corporation'
 	const employeeCount = '100-1000'
-	const confidence = '0.8'
+	const confidence = 0.8
 	const verificationContent = buildOrganisationVerificationContent({
 		name, englishName, country, city, province, legalForm, domain, pictureHash,
 		foreignDomain, serialNumber, confidence, reliabilityPolicy, employeeCount })
-	console.log(verificationContent)
 	const parsedVerification = parseOrganisationVerification(verificationContent)
-	console.log(parsedVerification)
 	expect(parsedVerification.name).toBe(name)
 	expect(parsedVerification.englishName).toBe(englishName)
 	expect(parsedVerification.country).toBe(country)
@@ -125,7 +122,7 @@ test('organisation verification build & parse function compatibility: input=pars
 	expect(parsedVerification.domain).toBe(domain)
 	expect(parsedVerification.foreignDomain).toBe(foreignDomain)
 	expect(parsedVerification.serialNumber).toBe(serialNumber)
-	expect(parsedVerification.confidence).toBe(parseFloat(confidence))
+	expect(parsedVerification.confidence).toBe(confidence)
 	expect(parsedVerification.pictureHash).toBe(pictureHash)
 	expect(parsedVerification.reliabilityPolicy).toBe(reliabilityPolicy)
 	expect(parsedVerification.employeeCount).toBe(employeeCount)
@@ -158,14 +155,13 @@ test('person verification build & parse function compatibility: input=parse(buil
 		picture, reliabilityPolicy] = Array.from({ length: 12 },randomUnicodeString)
 	const countryOfBirth = 'Germany'
 	const cityOfBirth = 'Berlin'
-	const confidence = '' + Math.random()
+	const confidence = Math.random()
 	const dateOfBirth = new Date(0)
 	const personVerificationContent = buildPersonVerificationContent({ name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
 	dateOfBirth, jobTitle, employer, verificationMethod, confidence,
 	picture, reliabilityPolicy })
 	
 	const parsedVerification = parsePersonVerification(personVerificationContent)
-	console.log(parsedVerification)
 	expect(parsedVerification.name).toBe(name)
 	expect(parsedVerification.ownDomain).toBe(ownDomain)
 	expect(parsedVerification.foreignDomain).toBe(foreignDomain)
@@ -173,7 +169,7 @@ test('person verification build & parse function compatibility: input=parse(buil
 	expect(parsedVerification.jobTitle).toBe(jobTitle)
 	expect(parsedVerification.employer).toBe(employer)
 	expect(parsedVerification.verificationMethod).toBe(verificationMethod)
-	expect(parsedVerification.confidence).toBe(parseFloat(confidence))
+	expect(parsedVerification.confidence).toBe(confidence)
 	expect(parsedVerification.picture).toBe(picture)
 	expect(parsedVerification.reliabilityPolicy).toBe(reliabilityPolicy)
 	expect(parsedVerification.countryOfBirth).toBe(countryOfBirth)
@@ -202,7 +198,6 @@ test('rating build & parse function compatibility: input=parse(build(input))', (
 	const ratingInt = Math.ceil(Math.random() * 5)
 	const rating = `${ratingInt}/5 Stars`
 	const ratingContent = buildRating({organisation, domain, rating, comment})
-	console.log(ratingContent)
 	const parsedRating = parseRating(ratingContent)
 	expect(parsedRating.organisation).toBe(organisation)
 	expect(parsedRating.domain).toBe(domain)
@@ -210,26 +205,52 @@ test('rating build & parse function compatibility: input=parse(build(input))', (
 	expect(parsedRating.comment).toBe(comment)
 });
 
-test('parse dispute', () => {
+test('parse dispute authenticity', () => {
 	let dispute = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
-	Type: Dispute statement
-	Description: We are convinced that the referenced statement is not authentic.
+	Type: Dispute statement authenticity
+	Description: We think that the referenced statement is not authentic.
 	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 `
 	const parsedStatement = parseStatement(dispute)
-	const parsedDispute = parseDispute(parsedStatement.content)
+	const parsedDispute = parseDisputeAuthenticity(parsedStatement.content)
 	const hash = parsedDispute.hash
 	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
 });
 
 test('dispute build & parse function compatibility: input=parse(build(input))', () => {
 	const [hash] = Array.from({ length: 1 },randomUnicodeString)
-	const disputeContent = buildDisputeContent({hash})
-	const parsedDispute = parseDispute(disputeContent)
+	const disputeContent = buildDisputeAuthenticityContent({hash})
+	const parsedDispute = parseDisputeAuthenticity(disputeContent)
 	expect(parsedDispute.hash).toBe(hash)
+});
+
+test('parse dispute content', () => {
+	let dispute = `Publishing domain: rixdata.net
+Author: Example Inc.
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement content: 
+	Type: Dispute statement content
+	Description: We think that the content of the referenced statement is false.
+	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
+	Confidence: 0.8
+	Reliability policy: https://example.com/sdf
+`
+	const parsedStatement = parseStatement(dispute)
+	const parsedDispute = parseDisputeContent(parsedStatement.content)
+	const {hash, confidence, reliabilityPolicy} = parsedDispute
+	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
+	expect(confidence).toBe(0.8);
+	expect(reliabilityPolicy).toBe('https://example.com/sdf');
+});
+
+test('dispute content build & parse function compatibility: input=parse(build(input))', () => {
+	const [hash] = Array.from({ length: 1 },randomUnicodeString)
+	const disputeContentContent = buildDisputeContentContent({hash})
+	const parsedDisputeContent = parseDisputeContent(disputeContentContent)
+	expect(parsedDisputeContent.hash).toBe(hash)
 });
 
 test('parse poll', () => {
@@ -337,12 +358,68 @@ Statement content:
 test('bounty build & parse function compatibility: input=parse(build(input))', () => {
 	const [motivation, bounty, reward, judge, judgePay] = Array.from({ length: 5 },randomUnicodeString)
 	const bountyContent = buildBounty({motivation, bounty, reward, judge, judgePay})
-	console.log(bountyContent)
 	const parsedBounty = parseBounty(bountyContent)
-	console.log(parsedBounty)
 	expect(parsedBounty.motivation).toBe(motivation)
 	expect(parsedBounty.bounty).toBe(bounty)
 	expect(parsedBounty.reward).toBe(reward)
 	expect(parsedBounty.judge).toBe(judge)
 	expect(parsedBounty.judgePay).toBe(judgePay)
+});
+
+test('parse observation', () => {
+	let observation = `Publishing domain: rixdata.net
+Author: Rix Data NL B.V.
+Time: Wed, 16 Aug 2023 18:32:28 GMT
+Tags: Russian invasion of Ukraine
+Statement content: 
+	Type: Observation
+	Approach: A team of experts at the Yale Chief Executive Leadership Institute researched the response of international businesses to the Russian Invasion of Ukraine
+	Confidence: 0.7
+	Reliability policy: https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads
+	Subject: CISCO SYSTEMS, INC.
+	Subject identity reference: https://stated.rixdata.net/statement/jvbqqbyjPCb2nP9xNfSnVL9r79c-qf1wewLt5BW-AL4
+	Observation reference: https://www.yalerussianbusinessretreat.com/
+	Observation: Stopped business in Russia
+`
+	const parsedStatement = parseStatement(observation)
+	const parsedObservation = parseObservation(parsedStatement.content)
+	const {confidence, reliabilityPolicy} = parsedObservation
+	expect(confidence).toBe(0.7);
+	expect(reliabilityPolicy).toBe('https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads');
+});
+
+test('observation build & parse function compatibility: input=parse(build(input))', () => {
+	const [approach, reliabilityPolicy, subject, subjectReference, observationReference, observation] = Array.from({ length: 6 },randomUnicodeString)
+	const observationContent = buildObservation({approach, confidence: 0.7, reliabilityPolicy, subject, subjectReference, observationReference, observation})
+	const parsedObservation = parseObservation(observationContent)
+	expect(parsedObservation.approach).toBe(approach)
+	expect(parsedObservation.confidence).toBe(0.7)
+	expect(parsedObservation.reliabilityPolicy).toBe(reliabilityPolicy)
+	expect(parsedObservation.subject).toBe(subject)
+	expect(parsedObservation.subjectReference).toBe(subjectReference)
+	expect(parsedObservation.observationReference).toBe(observationReference)
+	expect(parsedObservation.observation).toBe(observation)
+});
+
+test('parse boycott', () => {
+	let dispute = `Publishing domain: rixdata.net
+Author: Example Inc.
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement content: 
+	Type: Boycott
+	Subject: example inc
+`
+	const parsedStatement = parseStatement(dispute)
+	const parsedBoycott = parseBoycott(parsedStatement.content)
+	const {subject} = parsedBoycott
+	expect(subject).toBe('example inc');
+});
+
+test('boycott build & parse function compatibility: input=parse(build(input))', () => {
+	const [description, subject, subjectReference] = Array.from({ length: 3 },randomUnicodeString)
+	const boycottContent = buildBoycott({description, subject, subjectReference})
+	const parsedBoycott = parseBoycott(boycottContent)
+	expect(parsedBoycott.description).toBe(description)
+	expect(parsedBoycott.subject).toBe(subject)
+	expect(parsedBoycott.subjectReference).toBe(subjectReference)
 });

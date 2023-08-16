@@ -162,6 +162,7 @@ export const getStatementsWithDetailFactory =
                     superseding_statement IS NULL 
                     AND (
                     type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'bounty' OR type = 'sign_pdf'
+                    OR type = 'observation' OR type = 'boycott'
                     ${ searchQuery ? "OR type = 'organisation_verification' " : "" }
                     )
                   ${minId ? "AND id > $1 " : ""}

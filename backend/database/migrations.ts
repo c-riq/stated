@@ -18,8 +18,11 @@ var migration3 = fs
 var migration4 = fs
   .readFileSync(__dirname + "/migration_4.sql", "utf8")
   .toString();
+var migration5 = fs
+  .readFileSync(__dirname + "/migration_5.sql", "utf8")
+  .toString();
 
-export const currentCodeVersion = 4;
+export const currentCodeVersion = 5;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 
@@ -31,6 +34,7 @@ const migrateToVersion = {
   2: { sql: migration2 },
   3: { sql: migration3 },
   4: { sql: migration4 },
+  5: { sql: migration5 },
 };
 
 const testMigrationTableExistence = (pool: Pool) =>

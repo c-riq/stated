@@ -128,13 +128,13 @@ for (const i of array) {
         legalForm: legalForms.corporation,
         confidence: confidence,
         employeeCount: employees_min && minEmployeeCountToRange(employees_min),
-        reliabilityPolicy: "https://stated.rixdata.net/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE",
+        reliabilityPolicy: "https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     if(!verification){ console.log("no verification generated"); continue}
     const statement = buildStatement({
         domain,
         author,
-        time: new Date().toUTCString(),
+        time: new Date(),
         content: verification,
     })
     const data = {
