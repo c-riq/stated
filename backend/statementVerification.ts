@@ -44,7 +44,8 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     if (type) {
         if([ statementTypes.organisationVerification, statementTypes.personVerification,
             statementTypes.poll, statementTypes.vote, statementTypes.bounty,
-            statementTypes.rating, statementTypes.signPdf ].includes(type)) {
+            statementTypes.rating, statementTypes.signPdf, statementTypes.observation, statementTypes.boycott,
+            statementTypes.disputeAuthenticity, statementTypes.disputeContent ].includes(type)) {
             return result
         } else {
             throw (Error('invalid type: ' + type))
