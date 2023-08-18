@@ -3,11 +3,14 @@ import PlusOneIcon from '@mui/icons-material/PlusOne';
 import PollIcon from '@mui/icons-material/Poll';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 
 import { Link } from 'react-router-dom';
+import { timeSince } from '../utils/time'
 
 import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
-    BoycottKeys, ObservationKeys } from '../statementFormats'
+    BoycottKeys, ObservationKeys, parseStatement } from '../statementFormats'
 import { statementWithDetails } from '../api';
 
 const highlightedStatement = (text: string, type:string) => {
@@ -63,6 +66,10 @@ const Statements = (props:props) => {
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {statements && statements.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
                     {statements && statements.length > 0 && statements.map((s,i) => {
+                        let author: string|undefined = undefined
+                        try {
+                            author = parseStatement(s.statement).author
+                        } catch(error) {}
                         if ([
                             statementTypes.statement,statementTypes.organisationVerification,
                             statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
@@ -82,10 +89,25 @@ const Statements = (props:props) => {
                                 <div className="statement" 
                                 // @ts-ignore 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
+
+                                    <span>{s.domain}</span>
+                                    {author && (<>
+                                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                                        <span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{author}</span>
+                                    </>)}
+                                    <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                                    <Tooltip title={s.proclaimed_publication_time}>
+                                        <span>{timeSince(new Date(s.proclaimed_publication_time))}</span>
+                                    </Tooltip>
+                                    
+                                    {!s.tags ? <></> :  (
+                                        <>
+                                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                                        <span>tags: </span>
+                                        { s.tags.split(',').map((t:string, i:number)=>(<Chip key={i} label={t} style={{margin: '5px'}}/>)) }
+                                        </>
+                                    )}
                                     {s.content.split("\n").map((s1:string,i:number)=>(<div key={i}>{highlightedStatement(s1, s.type || '')}</div>))}
-                                    <img src={'https://www.'+s.domain+'/favicon.ico'} style={{
-                                    width: "20px", height: "20px", borderRadius: "10px", paddingTop: "8px", paddingRight: "3px"
-                                }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{s.name ? s.name : s.domain}</span>
                                 </div>
                             </Link>
                         </div>
@@ -127,6 +149,24 @@ const Statements = (props:props) => {
                                 <div className="statement"
                                     // @ts-ignore
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
+                                    
+                                    <span>{s.domain}</span>
+                                    {author && (<>
+                                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                                        <span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{author}</span>
+                                    </>)}
+                                    <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                                    <Tooltip title={s.proclaimed_publication_time}>
+                                        <span>{timeSince(new Date(s.proclaimed_publication_time))}</span>
+                                    </Tooltip>
+                                    
+                                    {s.tags && (
+                                        <>
+                                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                                        <span>tags: </span>
+                                        { s.tags.split(',').map((t:string, i:number)=>(<Chip key={i} label={t} style={{margin: '5px'}}/>)) }
+                                        </>
+                                    )}
                                     <div>{parsedPoll.poll}</div>
                                     <Stack spacing={2} sx={{paddingTop: "10px", paddingBottom: "10px"}}>
                                         {Object.keys(votes).map(o=>(
@@ -145,10 +185,6 @@ const Statements = (props:props) => {
                                             </div>
                                         ))}
                                     </Stack>
-                                        
-                                    <img src={'https://www.'+s.domain+'/favicon.ico'} style={{
-                                    width: "20px", height: "20px", borderRadius: "10px", paddingTop: "8px", paddingRight: "3px"
-                                }}></img><span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{s.name ? s.name : s.domain}</span>
                                 </div>
                             </Link>
                         </div>
