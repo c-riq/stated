@@ -66,7 +66,7 @@ export const createStatementFactory =
             statement,
             proclaimed_publication_time,
             hash_b64,
-            tags,
+            tags ? tags.join(',') : undefined,
             content,
             content_hash_b64,
             verification_method,

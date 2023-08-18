@@ -72,10 +72,11 @@ export type statementWithDetails = {
     content: string;
     cotent_hash: string;
     domain: string;
+    proclaimed_publication_time: string;
     hash_b64: string;
     id: number;
     statement: string;
-    tags: string[];
+    tags: string;
     repost_count: string;
     type: string|undefined;
     name: string|undefined;
