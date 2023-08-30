@@ -190,10 +190,10 @@ const Statement = (props:props) => {
 
             
             {votes.length > 0 && (<div><h3>Qualified votes</h3>
-                {votes.map(({proclaimed_publication_time, domain, option, hash, name},i)=>(
+                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, name},i)=>(
                     <div key={i}>
-                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash}>
-                            {option + " | " + domain + " | " + (new Date(parseInt(proclaimed_publication_time)).toUTCString())}{name ? " | " + name + " ✅":  ""}
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                            {option + " | " + domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>
                     )
