@@ -148,6 +148,7 @@ const verifyViaAPIKey = async ({domain, api_key}) => {
     log && console.log('verifyViaAPIKey', domain, ownDomain, api_key, ownAPIKey)
     if(!domain){return false}
     if(!api_key){return false}
+    // for demos: allow any domain
     if(domain === ownDomain && api_key === ownAPIKey){
         return true
     }

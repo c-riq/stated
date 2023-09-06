@@ -1,3 +1,5 @@
+
+// For demos: backendHost = 'http://'+ window.location.host 
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
     window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
  ) : 'https://'+ window.location.host 
@@ -131,7 +133,11 @@ export const getDNSSECInfo = (domain:string, cb:cb) => {
         cb({validated, domain})
     }, e => {console.log(e); return})
 }
-export const getJoiningStatements = (hash:string, cb:cb) => {
+export type joiningStatementsResponse = {
+    statements: statementDB[]
+    time: string
+}
+export const getJoiningStatements = (hash:string, cb:res<joiningStatementsResponse>) => {
     hash && req('GET',('joining_statements?hash=' + hash), {}, (json) => {
         if ("statements" in json) {
             cb(json)
