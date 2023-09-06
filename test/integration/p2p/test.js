@@ -62,7 +62,8 @@ const generateContent = (node) => {
     return `Publishing domain: stated_${node}:${7000+node}
 Author: node_${node}
 Time: Thu, 30 Mar 2023 09:18:04 GMT
-Statement content: ${randomUnicodeString()}`
+Statement content: ${randomUnicodeString()}
+`
 }
 
 const buildOrganisationVerificationContent = (
