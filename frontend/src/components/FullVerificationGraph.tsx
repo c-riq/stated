@@ -19,7 +19,7 @@ export const FullVerificationGraph = () => {
   React.useEffect(() => { if(!dataFetched) {
     getDomainVerifications(undefined, ({result}) => {
       let verifications = result || []
-      verifications = sample(verifications, 80)
+      verifications = sample(verifications, 8000)
       setOrganisationVerifications(verifications)
     })
     setDataFetched(true)
@@ -68,7 +68,7 @@ export const FullVerificationGraph = () => {
               id: sourceId,
               name:
                 (!author) ? "author" : author.length > 17 ? author.substring(0, 15) + "..." : author,
-              color : "rgba(200,42,42,1)"
+              color :  "rgba(42,74,103,1)" // "rgba(147,159,173,1)" // "rgba(200,42,42,1)"
             },
           });
         }
@@ -81,7 +81,7 @@ export const FullVerificationGraph = () => {
               name: (name.length > 20 ? name.substring(0, 17) + "..." : name) + "\n" + domain,
               href: `${backendHost}/statement/${hash_b64}`,
               color: 
-                legal_entity_type === legalForms.foreign_affairs_ministry ? "rgba(42,100,103,1)" :
+                [legalForms.foreign_affairs_ministry, legalForms.local_government].includes(legal_entity_type) ? "rgba(42,100,103,1)" :
                 legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)":
                 "rgba(42,42,42,1)",
               size: 
@@ -164,6 +164,10 @@ export const FullVerificationGraph = () => {
         alignment: "center",
         padding: 50,
       },
+    });
+    cy.userZoomingEnabled(false);
+    cy.on("click", (e) => {
+      cy.userZoomingEnabled(true);
     });
     cy.on("tap", "node", function (e) {
       let node = e.target;
