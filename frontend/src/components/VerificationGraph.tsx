@@ -190,9 +190,9 @@ export const VerificationGraph = (props:props) => {
           data: {
             id: "author",
             name:
-              statement.author?.length > 20
-                ? statement.author?.substring(0, 17) + "..."
-                : statement.author,
+              statement.domain?.length > 20
+                ? statement.domain?.substring(0, 17) + "..."
+                : statement.domain,
                 backgroundColor: "rgba(42,74,103,1)",
                 parent: targetParentId,
           },
@@ -329,6 +329,9 @@ export const VerificationGraph = (props:props) => {
 
     cy.userZoomingEnabled(false);
     //cy.userPanningEnabled(false);
+    cy.on("click", (e) => {
+      cy.userZoomingEnabled(true);
+    });
     cy.on("tap", "node", (e) => {
       const node = e.target;
       if (!node.data("href")) return;
@@ -372,7 +375,7 @@ export const VerificationGraph = (props:props) => {
   return (
     <Fragment>
       <h3>Verification Graph</h3>
-      <div ref={graphRef} style={{ width: "100%", height: "30vh" }}></div>
+      <div ref={graphRef} style={{ width: "100%", height: "50vh" }}></div>
     </Fragment>
   );
 };

@@ -87,7 +87,8 @@ for (const row of rows) {
   });
   array.push(parsedRow);
 }
-console.log(array);
+console.dir(array, { maxArrayLength: null });
+
 ( async () => {
 for (const i of array) {
     // company,instrument,trading_symbol,isin,index,date,website,ssl_ov_verification,
