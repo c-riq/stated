@@ -137,7 +137,7 @@ export type joiningStatementsResponse = {
     statements: statementDB[]
     time: string
 }
-export const getJoiningStatements = (hash:string, cb:res<joiningStatementsResponse>) => {
+export const getJoiningStatements = (hash:string, cb:(arg0: joiningStatementsResponse)=>void) => {
     hash && req('GET',('joining_statements?hash=' + hash), {}, (json) => {
         if ("statements" in json) {
             cb(json)
