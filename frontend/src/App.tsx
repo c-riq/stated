@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import CloseIcon from '@mui/icons-material/Close';
-import { Route, Routes, Link, useParams, useNavigate, Outlet } from 'react-router-dom';
+import { Route, Routes, Link, useNavigate, Outlet } from 'react-router-dom';
 
 import { getStatements, statementWithDetails } from './api'
 import { statement, poll } from "./statementFormats"
@@ -129,7 +129,7 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
           <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>
             <img src={gh} style={{height: "40px", width: '30px', marginRight: "20px", paddingTop: "10px", flexGrow: 0}}></img>
           </a>
-          <a href="https://stated.link" style={{backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "10px", 
+          <a href="https://stated.ai" style={{backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "10px", 
           paddingLeft: "10px", borderRadius: "20px", textDecoration:"none"}}>
             <img src={logo} style={{height: "20px", width: '20px', flexGrow: 0}}></img>
           </a>

@@ -10,7 +10,7 @@ import { validateAndAddStatementIfMissing, createDerivedEntity } from './stateme
 
 const log = true
 
-const verificationRetryScheduleHours = [0, 0.1, 0.2, 1, 10, 24, 336]
+const verificationRetryScheduleHours = [0, 0.01, 0.05, 0.1, 0.2, 1, 10, 24, 100, 336, 744]
 
 const tryVerifyUnverifiedStatements = async () => {
     try {
@@ -20,7 +20,7 @@ const tryVerifyUnverifiedStatements = async () => {
         unverifiedStatements = unverifiedStatements.filter(s => {
             // @ts-ignore
             const diffTime = (new Date()) - s.received_time
-            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
+            const diffHours = diffTime / (1000 * 60 * 60)
             const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
             if (targetRetryCount > s.verification_retry_count) {
                 return true
@@ -48,9 +48,7 @@ const tryAddMissingDerivedEntitiesFromStatements = async () => {
         statements = statements.filter(s => {
             // @ts-ignore
             const diffTime = (new Date()) - s.first_verification_time
-            console.log(diffTime, new Date(), s.first_verification_time)
-            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
-            console.log(diffHours)
+            const diffHours = diffTime / (1000 * 60 * 60)
             const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
             if (targetRetryCount > s.derived_entity_creation_retry_count) {
                 return true

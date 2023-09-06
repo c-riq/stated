@@ -6,6 +6,7 @@ import {legalForms} from './constants/legalForms'
 // TODO: import {cities} from './constants/cities'
 import {subdivisions} from './constants/provinces_un_locode'
 
+export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
 export const statementTypes = {
     statement: 'statement',
     quotation: 'quotation',
@@ -53,7 +54,7 @@ export const buildStatement = ({domain, author, time, tags, content, representat
 			"Time: " + time.toUTCString() + "\n" +
             (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
 			(supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
-            "Statement content: " +  content;
+            "Statement content: " + content + (content.match(/\n$/) ? '' : "\n");
 	return statement
 }
 export const parseStatement = (s: string):statement & { type: string } => {
@@ -65,10 +66,10 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	+ /Time: (?<time>[^\n]+?)\n/.source
 	+ /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
 	+ /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
-	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?$)|(?<content>[\s\S]+?$))/.source
+	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?\n$)|(?<content>[\s\S]+?\n$))/.source
 	);
 	let m: any = s.match(statementRegex)
-	if(!m) throw new Error("Invalid statement format")
+	if(!m) throw new Error("Invalid statement format" + s)
 	// if(m?.groups) {m = m.groups}
 	else{
 		m = {domain: m[1], author: m[2], representative: m[3], time: m[4], tags: m[5],
@@ -163,12 +164,13 @@ export type poll = {
 	judges: string,
 	deadline: Date,
 	poll: string,
+	pollType: string|undefined,
 	options: string[]
 }
-export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, options}: poll) => {
+export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
-	"\t" + "Poll type: Majority vote wins" + "\n" +
+	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
 	(country ? "\t" + "Country scope: " + country + "\n" : "") +
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
@@ -187,7 +189,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 export const parsePoll = (s: string):poll &{pollType:string} => {
 	const pollRegex= new RegExp(''
 	+ /^\n\tType: Poll\n/.source
-	+ /\tPoll type: (?<pollType>[^\n]+?)\n/.source
+	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
 	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
 	+ /(?:\tLegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
