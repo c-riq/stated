@@ -21,7 +21,7 @@ import DisputeStatementForm from './DisputeStatementForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
-import { statementTypes } from '../statementFormats';
+import { statementTypes, statementTypeValue } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api'
@@ -61,6 +61,21 @@ const CreateStatement = (props:Props) => {
 
     const [domainOptions, setDomainOptions] = React.useState([] as domainOption[]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
+
+    const handleTypeChange = (t: statementTypeValue) => {
+        setType(t)
+        setStatement("")
+        setStatementHash("")
+        setDomain("")
+        setAuthor("")
+        setRepresentative("")
+        setViaAPI(false)
+        setDnsResponse([])
+        setAlertMessage("")
+        setisError(false)
+        setDNSSECInfo({domain: null, validated: null})
+        setOVInfo([])
+    }
 
     React.useEffect(()=>{
         getDomainSuggestions(domainInputValue, res  => {
@@ -223,7 +238,7 @@ const CreateStatement = (props:Props) => {
                     id="statement-type"
                     value={type}
                     label="Type"
-                    onChange={(e)=>setType(e.target.value)}
+                    onChange={(e)=>handleTypeChange(e.target.value as statementTypeValue)}
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={statementTypes.statement}>Statement</MenuItem>

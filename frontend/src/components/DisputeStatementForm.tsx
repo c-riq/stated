@@ -11,10 +11,12 @@ import { generateEmail } from './generateEmail';
 
 const DisputeStatementForm = (props:FormProps) => {
     const [disputedStatementHash, setDisputedStatementHash] = React.useState("");
+    const [confidence, setConfidence] = React.useState("");
+    const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
     const prepareStatement:prepareStatement = ({method}) => {
             props.setViaAPI(method === 'api')
-            const content = buildDisputeAuthenticityContent({hash: disputedStatementHash})
+            const content = buildDisputeAuthenticityContent({hash: disputedStatementHash, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
@@ -46,6 +48,30 @@ const DisputeStatementForm = (props:FormProps) => {
             onChange={e => { setDisputedStatementHash(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "24px"}}
+        />
+        <TextField
+            id="confidence"
+            variant="outlined"
+            placeholder='0.9'
+            label="Confidence (probability of correctness 0.0 - 1.0)"
+            value={confidence}
+            onChange={e => { 
+                const str = e.target.value.replace(/[^0-9.]/g, '')
+                if(parseFloat(str) < 0) return setConfidence("0")
+                if(parseFloat(str) > 1) return setConfidence("1.0")
+                setConfidence(str)
+            }}
+            sx={{marginTop: "20px"}}
+        />
+        <TextField
+            id="reliability"
+            variant="outlined"
+            placeholder='https://stated.example.com/statement/NF6irhgDU0F_HEgTRKnh'
+            label="Policy containing correctness guarantees"
+            onChange={e => { 
+                setReliabilityPolicy(e.target.value)
+            }}
+            sx={{marginTop: "20px"}}
         />
         {props.children}
         <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>

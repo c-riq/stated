@@ -15,21 +15,24 @@ test('parse statement', () => {
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
-Statement content: hi`
+Statement content: hi
+`
 	const parsedStatement = parseStatement(statement)
-	expect(parsedStatement.content).toBe('hi');
+	expect(parsedStatement.content).toBe(`hi
+`);
 });
 
 test('statement build & parse function compatibility: input=parse(build(input))', () => {
-	const [domain, author, content, representative, supersededStatement] = Array.from({ length: 5 },randomUnicodeString)
+	const [domain, author, representative, content, supersededStatement] = Array.from({ length: 5 },randomUnicodeString)
 	const tags = Array.from({ length: 4 },randomUnicodeString)
+	const contentWithTrailingNewline = content + (content.match(/\n$/) ? '' : '\n')
 	const time = new Date('Sun, 04 Sep 2022 14:48:50 GMT')
-	const statementContent = buildStatement({domain, author, time, content, representative, supersededStatement, tags})
+	const statementContent = buildStatement({domain, author, time, content: contentWithTrailingNewline, representative, supersededStatement, tags})
 	const parsedStatement = parseStatement(statementContent)
 	expect(parsedStatement.domain).toBe(domain)
 	expect(parsedStatement.author).toBe(author)
 	expect(parsedStatement.time.toUTCString()).toBe(time.toUTCString())
-	expect(parsedStatement.content).toBe(content)
+	expect(parsedStatement.content).toBe(contentWithTrailingNewline)
 	expect(parsedStatement.representative).toBe(representative)
 	expect(parsedStatement.supersededStatement).toBe(supersededStatement)
 	expect(parsedStatement.tags?.sort()).toStrictEqual(tags.sort())
@@ -279,7 +282,7 @@ test('poll build & parse function compatibility: input=parse(build(input))', () 
 	const options = Array.from({ length: 2 },randomUnicodeString)
 	const domainScope = ['rixdata.net']
 	const deadline = new Date('Thu, 01 Dec 2022 13:38:26 GMT')
-	const pollContent = buildPollContent({country, city, legalEntity, domainScope, judges, deadline, poll, options})
+	const pollContent = buildPollContent({country, city, legalEntity, domainScope, judges, deadline, poll, pollType: undefined, options})
 	const parsedPoll = parsePoll(pollContent)
 	expect(parsedPoll.poll).toBe(poll)
 	expect(parsedPoll.country).toBe(country)

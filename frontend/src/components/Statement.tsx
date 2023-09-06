@@ -18,7 +18,7 @@ import { statementTypes, parsePDFSigning } from '../statementFormats';
 import {VerificationGraph} from './VerificationGraph'
 
 import {filePath, getWorkingFileURL} from './SignPDFForm'
-import {statementDB} from '../api'
+import {statementDB, joiningStatementsResponse} from '../api'
 
 type props = {
     lt850px: boolean,
@@ -27,7 +27,7 @@ type props = {
 }
 
 const Statement = (props:props) => {
-    const [joiningStatements, setJoiningStatements] = React.useState([]);
+    const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([]);
     const [statement, setStatement] = React.useState(undefined as statementDB | undefined);
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
@@ -67,6 +67,7 @@ const Statement = (props:props) => {
 
     console.log('verifications',organisationVerifications, personVerifications)
     if (!statement) return (<div style={{marginTop: "20px"}}>Statement not found</div>)
+    console.log('joining statements', joiningStatements)
     return (
         <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
@@ -172,14 +173,12 @@ const Statement = (props:props) => {
             </Collapse>
             </Card>
 
-            
-            {joiningStatements.length > 0 && statement?.type && 
-                [statementTypes.statement, statementTypes.signPdf, statementTypes.personVerification, 
-                    statementTypes.organisationVerification].includes(statement.type) && 
+            {joiningStatements?.statements?.length > 0
+                 && 
             (<div><h3>Organisations that joined the statemet</h3>
-                {joiningStatements.map(({domain, proclaimed_publication_time, name, hash},i)=>(
+                {joiningStatements.statements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
-                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
                             {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>
@@ -190,10 +189,10 @@ const Statement = (props:props) => {
 
             
             {votes.length > 0 && (<div><h3>Qualified votes</h3>
-                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, name},i)=>(
+                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
-                            {option + " | " + domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
+                            {option + " | " + domain + " | " + author + " | " + (new Date(proclaimed_publication_time).toUTCString())}
                         </RouterLink>
                     </div>
                     )
