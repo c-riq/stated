@@ -164,7 +164,7 @@ export type poll = {
 	judges: string,
 	deadline: Date,
 	poll: string,
-	pollType: string|undefined,
+	pollType?: string,
 	options: string[]
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
