@@ -19,8 +19,10 @@ import { sha256 } from '../utils/hash'
 
 import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 import { generateEmail } from './generateEmail';
+import { Button } from '@mui/material';
 
 const PollForm = (props:FormProps) => {
+    const [showOptionalFields, setShowOptionalFields] = React.useState(false);
     const province = ''
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState(undefined as string[]|undefined);
@@ -36,10 +38,16 @@ const PollForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setViaAPI(method === 'api')
-        const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
-        const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: new Date(props.serverTime), content})
-            console.log(statement)
-
+        let content = ''
+        let statement = ''
+        try {
+            content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
+            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})
+        } catch (e) {
+            props.setAlertMessage('' + e)
+            props.setisError(true)
+            return
+        }
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
                 props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
@@ -63,13 +71,47 @@ const PollForm = (props:FormProps) => {
     return (
         <FormControl sx={{width: "100%"}}>
         <TextField
+            id="poll"
+            variant="outlined"
+            placeholder='What should ...'
+            label="Poll"
+            onChange={e => { setPoll(e.target.value) }}
+            margin="normal"
+            sx={{marginTop: '24px'}}
+        />
+        <TextField
+            id="option1"
+            variant="outlined"
+            placeholder=''
+            label="Option 1"
+            onChange={e => { 
+                let optionsNew = [...options]
+                optionsNew[0] = e.target.value
+                setOptions(optionsNew) }}
+            margin="normal"
+            sx={{marginTop: '24px'}}
+        />
+        <TextField
+            id="option2"
+            variant="outlined"
+            placeholder=''
+            label="Option 2"
+            onChange={e => { 
+                let optionsNew = [...options]
+                optionsNew[1] = e.target.value
+                setOptions(optionsNew) }}
+            margin="normal"
+            sx={{marginTop: '24px'}}
+        />
+        {showOptionalFields ? (<>
+        <TextField
             id="poll judges"
             variant="outlined"
             placeholder='rixdata.net'
-            label="Poll judging domains"
+            label="Poll judging domains, comma separated (optional)"
             onChange={e => { setNodes(e.target.value) }}
             margin="normal"
-            sx={{marginBottom: "24px"}}
+            sx={{marginBottom: "12px"}}
         />
         <Autocomplete
             id="country"
@@ -99,7 +141,7 @@ const PollForm = (props:FormProps) => {
                 label="Voting country (optional)"
                 />
             )}
-            sx={{marginTop: "20px"}}
+            sx={{marginTop: "12px"}}
         />
         <Autocomplete
             id="city"
@@ -139,40 +181,9 @@ const PollForm = (props:FormProps) => {
             renderInput={(params) => <TextField {...params} />}
             />
         </LocalizationProvider>
-
-        <TextField
-            id="poll"
-            variant="outlined"
-            placeholder='What should ...'
-            label="Poll"
-            onChange={e => { setPoll(e.target.value) }}
-            margin="normal"
-            sx={{marginTop: '24px'}}
-        />
-        <TextField
-            id="option1"
-            variant="outlined"
-            placeholder=''
-            label="Option 1"
-            onChange={e => { 
-                let optionsNew = [...options]
-                optionsNew[0] = e.target.value
-                setOptions(optionsNew) }}
-            margin="normal"
-            sx={{marginTop: '24px'}}
-        />
-        <TextField
-            id="option2"
-            variant="outlined"
-            placeholder=''
-            label="Option 2"
-            onChange={e => { 
-                let optionsNew = [...options]
-                optionsNew[1] = e.target.value
-                setOptions(optionsNew) }}
-            margin="normal"
-            sx={{marginTop: '24px'}}
-        />
+        </>) :
+        <Button onClick={() => setShowOptionalFields(true)}>Show optional fields</Button>
+        }
         {props.children}
         <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
         </FormControl>

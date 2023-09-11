@@ -161,13 +161,14 @@ export type poll = {
 	city: string|undefined,
 	legalEntity: string|undefined,
 	domainScope: string[]|undefined,
-	judges: string,
-	deadline: Date,
+	judges?: string,
+	deadline?: Date,
 	poll: string,
 	pollType?: string,
 	options: string[]
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
+	if(!poll) throw(new Error("Poll must contain a question."))
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
 	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
@@ -175,8 +176,8 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
 	(domainScope && domainScope?.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
-	"\t" + "The decision is finalized when the following nodes agree: " + judges + "\n" +
-	"\t" + "Voting deadline: " + deadline.toUTCString() + "\n" +
+	(judges ? "\t" + "The decision is finalized when the following nodes agree: " + judges + "\n" : "") +
+	(deadline ?"\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
 	"\t" + "Poll: " + poll + "\n" +
 	(options.length > 0 ? "\t" + "Option 1: " + options[0] + "\n" : "") +
 	(options.length > 1 ? "\t" + "Option 2: " + options[1] + "\n" : "") +
@@ -194,8 +195,8 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
 	+ /(?:\tLegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
 	+ /(?:\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
-	+ /\tThe decision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n/.source
-	+ /\tVoting deadline: (?<deadline>[^\n]+?)\n/.source
+	+ /(?:\tThe decision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
+	+ /(?:\tVoting deadline: (?<deadline>[^\n]+?)\n)?/.source
 	+ /\tPoll: (?<poll>[^\n]+?)\n/.source
 	+ /(?:\tOption 1: (?<option1>[^\n]+?)\n)?/.source
 	+ /(?:\tOption 2: (?<option2>[^\n]+?)\n)?/.source

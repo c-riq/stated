@@ -28,6 +28,7 @@ import { submitStatement, getTXTRecords,
 
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
+import { Chip } from '@mui/material';
 
 type Props = {
     lt850px: boolean,
@@ -51,6 +52,8 @@ const CreateStatement = (props:Props) => {
     const [DNSSECInfo, setDNSSECInfo] = React.useState({domain: null, validated: null});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
+    const [tags, setTags] = React.useState([] as string[]);
+    const [tagInput, setTagInput] = React.useState("")
     const [representative, setRepresentative] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
     const [viaAPI, setViaAPI] = React.useState(false);
@@ -69,12 +72,48 @@ const CreateStatement = (props:Props) => {
         setDomain("")
         setAuthor("")
         setRepresentative("")
+        setTags([])
+        setTagInput("")
         setViaAPI(false)
         setDnsResponse([])
         setAlertMessage("")
         setisError(false)
         setDNSSECInfo({domain: null, validated: null})
         setOVInfo([])
+    }
+    const onTagKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+        if (e.key === "Enter") {
+            const input = (e.target as HTMLTextAreaElement).value.trim().replace(',','')
+            if (!(input?.length)){return}
+            if (tags.indexOf(input) !== -1) {
+                setTagInput("")
+            } else {
+                setTags([...tags, input])
+                setTagInput("")
+            }
+        }
+        if (tags.length && !tagInput.length && e.key === "Backspace") {
+        setTags(tags.slice(0, tags.length - 1))
+        }
+    }
+    const onTagBlur = () => {
+        if (!tagInput){return}
+        const input = tagInput.trim().replace(',','')
+        if (!input.length){return}
+        if (tags.indexOf(input) !== -1) {
+            setTagInput("")
+        } else {
+            setTags([...tags, input])
+            setTagInput("")
+        }
+    }
+    const onTagDelete = (item:string) => () => {
+        const updatedTags = [...tags]
+        updatedTags.splice(updatedTags.indexOf(item), 1)
+        setTags(updatedTags)
+    }
+    function onTagInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setTagInput(event.target.value)
     }
 
     React.useEffect(()=>{
@@ -222,6 +261,20 @@ const CreateStatement = (props:Props) => {
                 margin="normal"
                 style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
             />
+            <TextField // TODO: fix tags
+                id="tags"
+                variant="outlined"
+                placeholder=''
+                label="Tags (optional)"
+
+                InputProps={{ 
+                    startAdornment: tags.map(item => (<Chip key={item} label={item} onDelete={onTagDelete(item)} style={{marginRight: "5px"}}/>))}}
+                onChange={onTagInputChange}
+                onBlur={onTagBlur}
+                onKeyDown={onTagKeyDown}
+                value={tagInput}
+                sx={{backgroundColor: '#eeeeee', marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
+            />
         </React.Fragment>
     )
 
@@ -251,39 +304,39 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
                     <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
                 </Select>
-            {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm domain={domain} author={author} representative={representative}
+            {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</OrganisationVerificationForm>)}
-            {type === statementTypes.personVerification &&(<PersonVerificationForm domain={domain} author={author} representative={representative}
+            {type === statementTypes.personVerification &&(<PersonVerificationForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</PersonVerificationForm>)}
-            {type === statementTypes.poll &&(<PollForm domain={domain} author={author} representative={representative}
+            {type === statementTypes.poll &&(<PollForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
                 {authorFields()}</PollForm>)}
-            {type === statementTypes.rating &&(<RatingForm domain={domain} author={author} representative={representative}
+            {type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
                 {authorFields()}</RatingForm>)}
-            {type === statementTypes.vote &&(<VoteForm domain={domain} poll={props.poll} author={author}
+            {type === statementTypes.vote &&(<VoteForm poll={props.poll} metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</VoteForm>)}
-            {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm domain={domain} author={author} representative={representative}
+            {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</DisputeStatementForm>)}
-            {type === statementTypes.statement &&(<StatementForm domain={domain} author={author} representative={representative} statementToJoin={props.statementToJoin}
+            {type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</StatementForm>)}
-            {type === statementTypes.signPdf &&(<SignPDFForm domain={domain} author={author} representative={representative} statementToJoin={props.statementToJoin}
+            {type === statementTypes.signPdf &&(<SignPDFForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</SignPDFForm>)}
-            {type === statementTypes.bounty &&(<BountyForm domain={domain} author={author} representative={representative} statementToJoin={props.statementToJoin}
+            {type === statementTypes.bounty &&(<BountyForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</BountyForm>)}

@@ -17,7 +17,7 @@ const DisputeStatementForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method}) => {
             props.setViaAPI(method === 'api')
             const content = buildDisputeAuthenticityContent({hash: disputedStatementHash, confidence: parseFloat(confidence), reliabilityPolicy})
-            const statement = buildStatement({domain: props.domain, author: props.author, representative: props.representative, time: props.serverTime, content})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
