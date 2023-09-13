@@ -22,6 +22,7 @@ export const statementTypes = {
     rating: 'rating',
 	signPdf: "sign_pdf",
 	bounty: "bounty",
+	unsupported: "unsupported",
 }
 export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000+"}
 export const minEmployeeCountToRange = (n: number) => {
@@ -496,6 +497,32 @@ export const parseDisputeContent = (s: string):disputeContent => {
 		hash: m[1],
 		confidence: m[2] ? parseFloat(m[2]) : undefined,
 		reliabilityPolicy: m[3]
+	}
+}
+export type responseContent = {
+	hash: string,
+	response: string,
+}
+export const buildResponseContent = ({hash, response}:responseContent) => {
+	const content = "\n" +
+	"\t" + "Type: Response" + "\n" +
+	"\t" + "Hash of referenced statement: " + hash + "\n" +
+	"\t" + "Response: " + response + "\n" +
+	""
+	return content
+}
+export const parseResponseContent = (s: string):responseContent => {
+	const disputeRegex= new RegExp(''
+	+ /^\n\tType: Response\n/.source
+	+ /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
+	+ /\tResponse: (?<response>[^\n]*?)\n/.source
+	+ /$/.source
+	);
+	const m = s.match(disputeRegex)
+	if(!m) throw new Error("Invalid response content format: " + s)
+	return {
+		hash: m[1],
+		response: m[2]
 	}
 }
 export type PDFSigning = {

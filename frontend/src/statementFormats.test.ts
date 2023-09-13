@@ -1,6 +1,6 @@
 import { parseRating, parseStatement, parseOrganisationVerification, parsePDFSigning,
     parsePersonVerification, parseDisputeAuthenticity, parseDisputeContent, parseVote, parsePoll, parseQuotation,
-	parseBounty, parseBoycott, parseObservation } from './statementFormats'
+	parseBounty, parseBoycott, parseObservation, parseResponseContent, buildResponseContent } from './statementFormats'
 
 import { buildRating, buildStatement, buildBounty, buildDisputeAuthenticityContent, buildDisputeContentContent, buildPDFSigningContent, 
 	buildPersonVerificationContent, buildPollContent, buildQuotationContent, buildVoteContent,
@@ -256,6 +256,30 @@ test('dispute content build & parse function compatibility: input=parse(build(in
 	expect(parsedDisputeContent.hash).toBe(hash)
 });
 
+test('parse response content', () => {
+	let responseInput = `Publishing domain: rixdata.net
+Author: Example Inc.
+Time: Sun, 04 Sep 2022 14:48:50 GMT
+Statement content: 
+	Type: Response
+	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
+	Response: No.
+`
+	const parsedStatement = parseStatement(responseInput)
+	const parsedResponse = parseResponseContent(parsedStatement.content)
+	const {hash, response} = parsedResponse
+	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
+	expect(response).toBe('No.');
+});
+
+test('response content build & parse function compatibility: input=parse(build(input))', () => {
+	const [hash, response] = Array.from({ length: 2 },randomUnicodeString)
+	const responseContent = buildResponseContent({hash, response})
+	const parsedResponse = parseResponseContent(responseContent)
+	expect(parsedResponse.hash).toBe(hash)
+	expect(parsedResponse.response).toBe(response)
+});
+
 test('parse poll', () => {
 let poll = `Publishing domain: rixdata.net
 Author: Example Inc.
@@ -405,14 +429,14 @@ test('observation build & parse function compatibility: input=parse(build(input)
 });
 
 test('parse boycott', () => {
-	let dispute = `Publishing domain: rixdata.net
+	let boycott = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Statement content: 
 	Type: Boycott
 	Subject: example inc
 `
-	const parsedStatement = parseStatement(dispute)
+	const parsedStatement = parseStatement(boycott)
 	const parsedBoycott = parseBoycott(parsedStatement.content)
 	const {subject} = parsedBoycott
 	expect(subject).toBe('example inc');
