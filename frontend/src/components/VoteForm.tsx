@@ -52,17 +52,13 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
     },[pollHash])
 
     const prepareStatement:prepareStatement = ({method}) => {
-        props.setViaAPI(method === 'api')
-        const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
-        const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
         try {
+            props.setViaAPI(method === 'api')
+            const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
+            representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
             const parsedStatement = parseStatement(statement)
-            const parsedVote = parseVote(parsedStatement.content)
-            if(!parsedVote){
-                props.setAlertMessage('Invalid vote format')
-                props.setisError(true)
-                return
-            }
+            parseVote(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => {props.setStatementHash(hash)
                 if(method === 'represent'){

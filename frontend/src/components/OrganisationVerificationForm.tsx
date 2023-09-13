@@ -48,12 +48,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
                 props.setisError(true)
                 return
             }
-            const parsedOrganisationVerification = parseOrganisationVerification(parsedStatement.content)
-            if(!parsedOrganisationVerification){
-                props.setAlertMessage('Invalid organisation verification (missing values)')
-                props.setisError(true)
-                return
-            }
+            parseOrganisationVerification(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash);
                 if(method === 'represent'){
