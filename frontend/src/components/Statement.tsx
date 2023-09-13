@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import Alert from '@mui/material/Alert';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
-    getPersonVerifications, getVotes } from '../api'
+    getPersonVerifications, getVotes, statementWithDetails } from '../api'
 import { statementTypes, parsePDFSigning } from '../statementFormats';
 
 import {VerificationGraph} from './VerificationGraph'
@@ -22,14 +22,14 @@ import {statementDB, joiningStatementsResponse} from '../api'
 
 type props = {
     lt850px: boolean,
-    voteOnPoll: (statement: any) => void,
-    setStatementToJoin: (statement: any) => void,
+    voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+    setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
 }
 
 const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([]);
-    const [statement, setStatement] = React.useState(undefined as statementDB | undefined);
+    const [statement, setStatement] = React.useState(undefined as statementDB | undefined );
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);

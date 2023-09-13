@@ -69,7 +69,7 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?\n$)|(?<content>[\s\S]+?\n$))/.source
 	);
 	let m: any = s.match(statementRegex)
-	if(!m) throw new Error("Invalid statement format" + s)
+	if(!m) throw new Error("Invalid statement format:" + s)
 	// if(m?.groups) {m = m.groups}
 	else{
 		m = {domain: m[1], author: m[2], representative: m[3], time: m[4], tags: m[5],
@@ -137,7 +137,7 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 	+ /$/.source
 	);
 	let m: any = s.match(voteRegex)
-	if(!m) throw new Error("Invalid quotation format")
+	if(!m) throw new Error("Invalid quotation format: " + s)
 	// if(m?.groups) {m = m.groups}
 	else{
 		m = {originalAuthor: m[1], authorVerification: m[2], originalTime: m[3], source: m[4],
@@ -162,13 +162,13 @@ export type poll = {
 	legalEntity: string|undefined,
 	domainScope: string[]|undefined,
 	judges?: string,
-	deadline?: Date,
+	deadline: Date,
 	poll: string,
 	pollType?: string,
 	options: string[]
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
-	if(!poll) throw(new Error("Poll must contain a question."))
+	if(!poll) throw(new Error("Poll must contain a poll question."))
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
 	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
@@ -179,11 +179,11 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	(judges ? "\t" + "The decision is finalized when the following nodes agree: " + judges + "\n" : "") +
 	(deadline ?"\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
 	"\t" + "Poll: " + poll + "\n" +
-	(options.length > 0 ? "\t" + "Option 1: " + options[0] + "\n" : "") +
-	(options.length > 1 ? "\t" + "Option 2: " + options[1] + "\n" : "") +
-	(options.length > 2 ? "\t" + "Option 3: " + options[2] + "\n" : "") +
-	(options.length > 3 ? "\t" + "Option 4: " + options[3] + "\n" : "") +
-	(options.length > 4 ? "\t" + "Option 5: " + options[4] + "\n" : "") +
+	(options.length > 0 && options[0] ? "\t" + "Option 1: " + options[0] + "\n" : "") +
+	(options.length > 1 && options[1] ? "\t" + "Option 2: " + options[1] + "\n" : "") +
+	(options.length > 2 && options[2] ? "\t" + "Option 3: " + options[2] + "\n" : "") +
+	(options.length > 3 && options[3] ? "\t" + "Option 4: " + options[3] + "\n" : "") +
+	(options.length > 4 && options[4] ? "\t" + "Option 5: " + options[4] + "\n" : "") +
 	""
 	return content
 }
@@ -205,7 +205,7 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
 	+ /$/.source)
 	let m:any = s.match(pollRegex)
-	if(!m) throw new Error("Invalid poll format")
+	if(!m) throw new Error("Invalid poll format: " + s)
 	// if(m?.groups) {m = m.groups}
 	else{
 		m = {pollType: m[1], country: m[2], city: m[3], legalEntity: m[4], domainScope: m[5],
@@ -215,7 +215,7 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = m.domainScope?.split(', ')
 	const deadlineStr = m.deadline
-	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll: deadline must be in UTC" + deadlineStr)
+	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
 	return {
 		pollType: m['pollType'],
 		country: m['country'],
@@ -301,7 +301,7 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 	+ /$/.source
 	);
 	const m = s.match(organisationVerificationRegex)
-	if(!m) throw new Error("Invalid organisation verification format")
+	if(!m) throw new Error("Invalid organisation verification format: " + s)
 	return {
 		name: m[1],
 		englishName: m[2],
@@ -382,7 +382,7 @@ export const parsePersonVerification = (s: string):personVerification => {
 	+ /$/.source
 	);
 	const m = s.match(domainVerificationRegex)
-	if(!m) throw new Error("Invalid person verification format")
+	if(!m) throw new Error("Invalid person verification format: " + s)
 	if(m[2] && !m[2].match(birthDateFormat)) throw new Error("Invalid birth date format: " + m[2])
 	let {d, month, y} = m[2].match(birthDateFormat)?.groups || {}
 	if(!d || !month || !y) throw new Error("Invalid birth date format: " + m[2])
@@ -426,7 +426,7 @@ export const parseVote = (s: string):vote => {
 	+ /$/.source
 	);
 	const m = s.match(voteRegex)
-	if(!m) throw new Error("Invalid vote format")
+	if(!m) throw new Error("Invalid vote format: " + s)
 	return {
 		pollHash: m[1],
 		poll: m[2],
@@ -459,7 +459,7 @@ export const parseDisputeAuthenticity = (s: string):disputeAuthenticity => {
 	+ /$/.source
 	);
 	const m = s.match(disputeRegex)
-	if(!m) throw new Error("Invalid dispute authenticity format")
+	if(!m) throw new Error("Invalid dispute authenticity format: " + s)
 	return {
 		hash: m[1],
 		confidence: m[2] ? parseFloat(m[2]) : undefined,
@@ -491,7 +491,7 @@ export const parseDisputeContent = (s: string):disputeContent => {
 	+ /$/.source
 	);
 	const m = s.match(disputeRegex)
-	if(!m) throw new Error("Invalid dispute content format")
+	if(!m) throw new Error("Invalid dispute content format: " + s)
 	return {
 		hash: m[1],
 		confidence: m[2] ? parseFloat(m[2]) : undefined,
@@ -518,7 +518,7 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 	+ /$/.source
 	);
 	const m = s.match(signingRegex)
-	if(!m) throw new Error("Invalid PDF signing format")
+	if(!m) throw new Error("Invalid PDF signing format: " + s)
 	return {
 		hash: m[1]
 	}
@@ -551,7 +551,7 @@ export const parseRating = (s: string):rating => {
 	+ /$/.source
 	);
 	const m = s.match(ratingRegex)
-	if(!m) throw new Error("Invalid rating format")
+	if(!m) throw new Error("Invalid rating format: " + s)
 	return {
 		organisation: m[1],
 		domain: m[2],
@@ -589,7 +589,7 @@ export const parseBounty = (s: string):bounty => {
 	+ /$/.source
 	);
 	const m = s.match(bountyRegex)
-	if(!m) throw new Error("Invalid bounty format")
+	if(!m) throw new Error("Invalid bounty format: " + s)
 	return {
 		motivation: m[1],
 		bounty: m[2],
@@ -635,7 +635,7 @@ export const parseObservation = (s: string):observation => {
 	+ /$/.source
 	);
 	const m = s.match(observationRegex)
-	if(!m) throw new Error("Invalid observation format")
+	if(!m) throw new Error("Invalid observation format: " + s)
 	return {
 		approach: m[1],
 		confidence: m[2] ? parseFloat(m[2]) : undefined,
@@ -673,7 +673,7 @@ export const parseBoycott = (s: string):boycott => {
 	+ /$/.source
 	);
 	const m = s.match(observationRegex)
-	if(!m) throw new Error("Invalid observation format")
+	if(!m) throw new Error("Invalid observation format: " + s)
 	return {
 		description: m[1],
 		subject: m[2],

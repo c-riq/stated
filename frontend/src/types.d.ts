@@ -8,7 +8,6 @@ type FormProps = {
   metaData: statementMetaData;
   serverTime: Date;
   statementToJoin?: any;
-  poll?: poll;
   children?: any;
   setStatement: (statement: string) => void;
   setStatementHash: (hash: string) => void;

@@ -11,7 +11,7 @@ import { timeSince } from '../utils/time'
 
 import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
     BoycottKeys, ObservationKeys, parseStatement } from '../statementFormats'
-import { statementWithDetails } from '../api';
+import { statementDB, statementWithDetails } from '../api';
 
 const highlightedStatement = (text: string, type:string) => {
     let regex = /(\nType: )/
@@ -47,12 +47,12 @@ const highlightedStatement = (text: string, type:string) => {
 
 type props = {
     statements: statementWithDetails[],
-    setStatementToJoin: any,
+    setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
     setServerTime: (arg0: Date) => void,
     setModalOpen: any,
     lt850px: boolean,
     children: any,
-    voteOnPoll: any,
+    voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
 }
 
 const Statements = (props:props) => {
@@ -69,7 +69,7 @@ const Statements = (props:props) => {
                         let author: string|undefined = undefined
                         try {
                             author = parseStatement(s.statement).author
-                        } catch(error) {}
+                        } catch(error) {return (<></>)}
                         if ([
                             statementTypes.statement,statementTypes.organisationVerification,
                             statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
@@ -139,7 +139,10 @@ const Statements = (props:props) => {
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>
                                 <Link to="/create-statement">
-                                    <Button onClick={()=>{props.voteOnPoll(s);props.setModalOpen()}} variant='contained' 
+                                    <Button onClick={()=>{
+                                        const {statement,hash_b64} = s
+                                        props.voteOnPoll({statement, hash_b64})
+                                        props.setModalOpen()}} variant='contained' 
                                     sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
                                         <PollIcon/>
                                     </Button>

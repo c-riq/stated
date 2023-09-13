@@ -21,8 +21,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Route, Routes, Link, useNavigate, Outlet } from 'react-router-dom';
 
-import { getStatements, statementWithDetails } from './api'
-import { statement, poll } from "./statementFormats"
+import { getStatements, statementDB, statementWithDetails } from './api'
 
 // @ts-ignore
 import gh from './img/github.png'
@@ -75,12 +74,12 @@ const CenterModal = (props: CenterModalProps) => {
 }
 
 type LayoutProps = {
-  getStatementsAPI: Function,
-  setSearchQuery: Function,
+  getStatementsAPI: ()=>void,
+  setSearchQuery: (arg0: string)=>void,
   searchQuery?: string,
-  joinStatement: Function,
-  voteOnPoll: Function,
-  setModalOpen: Function,
+  joinStatement: (arg0: statementWithDetails | statementDB) => void,
+  voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+  setModalOpen: (arg0: boolean)=>void,
   setServerTime: (arg0: Date) => void,
   serverTime: Date,
   statements: any,
@@ -141,13 +140,13 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
 
 function App() {
   const [serverTime, setServerTime] = React.useState(new Date());
-  const [statementToJoin, setStatementToJoin] = React.useState(undefined as statement | undefined);
-  const [poll, setPoll] = React.useState(undefined as poll | undefined);
+  const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
+  const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
   const [statements, setStatements] = React.useState([] as statementWithDetails[]);
   const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState(undefined);
+  const [searchQuery, setSearchQuery] = React.useState(undefined as string | undefined);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
@@ -168,11 +167,11 @@ function App() {
           } 
       })
   }
-  const joinStatement = (statement: statement) => {
+  const joinStatement = (statement: (statementWithDetails | statementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
   }
-  const voteOnPoll = (poll: poll) => {
+  const voteOnPoll = (poll: {statement: string, hash_b64: string}) => {
     setPoll(poll)
     console.log('poll', poll)
     setModalOpen(true)

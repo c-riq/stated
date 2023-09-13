@@ -33,40 +33,31 @@ const PollForm = (props:FormProps) => {
     const [options, setOptions] = React.useState(['','']);
     const [domainScope, setDomainScope] = React.useState([]);
     const [nodes, setNodes] = React.useState("");
-    const [votingDeadline, setVotingDeadline] = React.useState(moment());
+    const [votingDeadline, setVotingDeadline] = React.useState(moment().add(14,'days'));
     const [poll, setPoll] = React.useState("");
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setViaAPI(method === 'api')
-        let content = ''
-        let statement = ''
         try {
-            content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
-            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})
-        } catch (e) {
-            props.setAlertMessage('' + e)
-            props.setisError(true)
-            return
-        }
+            const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
-                props.setisError(true)
-                return
+                throw new Error('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
             }
-            const parsedDomainVerification = parsePoll(parsedStatement.content)
-            if(!parsedDomainVerification){
-                props.setAlertMessage('Invalid poll data (missing values)')
-                props.setisError(true)
-                return
-            }
+            parsePoll(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash)         
                 if(method === 'represent'){
                     generateEmail({statement, hash})
                 }
             });
+        } catch (e) {
+            props.setAlertMessage('' + e)
+            props.setisError(true)
+            return
         }
+    }
 
     return (
         <FormControl sx={{width: "100%"}}>
@@ -103,6 +94,14 @@ const PollForm = (props:FormProps) => {
             margin="normal"
             sx={{marginTop: '24px'}}
         />
+        <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DateTimePicker
+            label="deadline"
+            value={votingDeadline}
+            onChange={(v) => setVotingDeadline(v as moment.Moment)}
+            renderInput={(params) => <TextField {...params} style={{marginTop: '24px'}} />}
+            />
+        </LocalizationProvider>
         {showOptionalFields ? (<>
         <TextField
             id="poll judges"
@@ -111,7 +110,7 @@ const PollForm = (props:FormProps) => {
             label="Poll judging domains, comma separated (optional)"
             onChange={e => { setNodes(e.target.value) }}
             margin="normal"
-            sx={{marginBottom: "12px"}}
+            sx={{marginBottom: "12px", marginTop: "24px"}}
         />
         <Autocomplete
             id="country"
@@ -173,14 +172,6 @@ const PollForm = (props:FormProps) => {
             renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px", marginBottom: "20px"}}
         />
-        <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DateTimePicker
-            label="deadline"
-            value={votingDeadline}
-            onChange={(v) => setVotingDeadline(v as moment.Moment)}
-            renderInput={(params) => <TextField {...params} />}
-            />
-        </LocalizationProvider>
         </>) :
         <Button onClick={() => setShowOptionalFields(true)}>Show optional fields</Button>
         }
