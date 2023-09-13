@@ -23,16 +23,20 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
 
     const [pollHash, setPollId] = React.useState(props.poll?.hash_b64 || "");
     const [poll, setPoll] = React.useState(pollParsed?.poll || "");
-    const [statement, setStatement] = React.useState(undefined as statementDB| undefined);
+    const [pollStatement, setPollStatement] = React.useState(undefined as statementDB| undefined);
     const [options, setOptions] = React.useState((pollParsed?.options || []) as string[]);
     const [vote, setVote] = React.useState("");
 
     React.useEffect(()=>{
-        if(!pollHash){return}
+        if(!pollHash){
+            setPoll('No poll found')
+            setOptions([])
+            return
+        }
         const hashQuery = '' + pollHash
         getStatement(hashQuery, res => {
             if(hashQuery !== pollHash) {return}
-            setStatement(res)
+            setPollStatement(res)
             // @ts-ignore
             if (res?.content === undefined) {
                 setPoll('No poll found')
@@ -89,9 +93,9 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             sx={{marginBottom: "12px"}}
         />
         {
-        statement && (statement as statementDB)?.content
+        pollStatement && (pollStatement as statementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statement/${(statement as statementDB).hash_b64}`} target='blank'>
+            <a style={{color: '#0000ff'}} href={`/statement/${(pollStatement as statementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>No statement found.</div>

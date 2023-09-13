@@ -7,12 +7,29 @@ import { sha256 } from '../utils/hash';
 import { parseDisputeAuthenticity, buildDisputeAuthenticityContent, buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
+import { getStatement, statementDB } from '../api';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
 
 
 const DisputeStatementForm = (props:FormProps) => {
     const [disputedStatementHash, setDisputedStatementHash] = React.useState("");
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
+
+    const [referencedStatement, setReferencedStatement] = React.useState(undefined as statementDB| undefined);
+
+    React.useEffect(()=>{
+        if(!disputedStatementHash){
+            setReferencedStatement(undefined)
+            return
+        }
+        const hashQuery = '' + disputedStatementHash
+        getStatement(hashQuery, res => {
+            if(hashQuery !== disputedStatementHash) {return}
+            setReferencedStatement(res)
+        })
+    },[disputedStatementHash])
 
     const prepareStatement:prepareStatement = ({method}) => {
         try {
@@ -26,12 +43,7 @@ const DisputeStatementForm = (props:FormProps) => {
                 props.setisError(true)
                 return
             }
-            const parsedDispute = parseDisputeAuthenticity(parsedStatement.content)
-            if(!parsedDispute){
-                props.setAlertMessage('Invalid dispute statement (missing values)')
-                props.setisError(true)
-                return
-            }
+            parseDisputeAuthenticity(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 
                 props.setStatementHash(hash);
@@ -56,6 +68,14 @@ const DisputeStatementForm = (props:FormProps) => {
             margin="normal"
             sx={{marginBottom: "24px"}}
         />
+        {
+        referencedStatement && (referencedStatement as statementDB)?.content
+        ? 
+            <a style={{color: '#0000ff'}} href={`/statement/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
+        : 
+            <div>Referenced statement not found.</div>
+        }
         <TextField
             id="confidence"
             variant="outlined"
