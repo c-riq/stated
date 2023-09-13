@@ -8,30 +8,54 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
-import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
+import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement, poll, statement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
+import { TextField } from '@mui/material';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { getStatement, statementDB } from '../api';
 
 
+export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64: string}}) => {
 
-export const VoteForm = (props:FormProps) => {
+    const statementParsed = (props.poll?.statement && parseStatement(props.poll.statement)) as statement | undefined
+    const pollParsed = (statementParsed && parsePoll(statementParsed.content)) as poll | undefined
 
+    const [pollHash, setPollId] = React.useState(props.poll?.hash_b64 || "");
+    const [poll, setPoll] = React.useState(pollParsed?.poll || "");
+    const [statement, setStatement] = React.useState(undefined as statementDB| undefined);
+    const [options, setOptions] = React.useState((pollParsed?.options || []) as string[]);
     const [vote, setVote] = React.useState("");
 
-    console.log(props)
-    if (!props || !(props.poll)){return (<div>no poll referenced</div>)}
-
-
-    const statementParsed = parseStatement(props.poll.statement)
-    const pollParsed = parsePoll(statementParsed.content)
-    console.log(pollParsed)
-    const options = pollParsed.options
+    React.useEffect(()=>{
+        if(!pollHash){return}
+        const hashQuery = '' + pollHash
+        getStatement(hashQuery, res => {
+            if(hashQuery !== pollHash) {return}
+            setStatement(res)
+            // @ts-ignore
+            if (res?.content === undefined) {
+                setPoll('No poll found')
+                setOptions([])
+                return
+            }
+            try {
+                const pollParsedFromAPI = parsePoll((res as statementDB).content)
+                setPoll(pollParsedFromAPI.poll)
+                setOptions(pollParsedFromAPI.options)
+            } catch {
+                setPoll('Invalid poll')
+                setOptions([])
+                return
+            }
+        })
+    },[pollHash])
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setViaAPI(method === 'api')
-        const content = buildVoteContent({pollHash: props.poll.hash_b64, poll: pollParsed.poll , vote})
+        const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
         const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
-
+        try {
             const parsedStatement = parseStatement(statement)
             const parsedVote = parseVote(parsedStatement.content)
             if(!parsedVote){
@@ -43,17 +67,40 @@ export const VoteForm = (props:FormProps) => {
             sha256(statement).then((hash) => {props.setStatementHash(hash)
                 if(method === 'represent'){
                     generateEmail({statement, hash})
-                }})
+                }
+            })
         }
-        const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            setVote(event.target.value)
-          }
+        catch (e) {
+            props.setAlertMessage('' + e)
+            props.setisError(true)
+            return 
+        }
+    }
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setVote(event.target.value)
+    }
         
     return (
         <FormControl sx={{width: "100%"}}>
-        <div style={{marginTop: "12px", marginBottom:"24px"}}> <h5>Referenced poll: </h5>
-            <a target="blank" href={'/statement/'+props.poll.hash_b64}>{props.poll.hash_b64}</a></div>
-        <FormLabel id="polllabel">{pollParsed.poll}</FormLabel>
+        <TextField
+            id="poll id"
+            variant="outlined"
+            placeholder='xD9GzOjk...'
+            label="Poll id"
+            onChange={e => { setPollId(e.target.value) }}
+            value={pollHash}
+            margin="normal"
+            sx={{marginBottom: "12px"}}
+        />
+        {
+        statement && (statement as statementDB)?.content
+        ? 
+            <a style={{color: '#0000ff'}} href={`/statement/${(statement as statementDB).hash_b64}`} target='blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
+        : 
+            <div>No statement found.</div>
+        }
+        <FormLabel id="polllabel" style={{marginTop: '12px'}}>{poll}</FormLabel>
         <RadioGroup
             value={vote}
             onChange={handleChange}>

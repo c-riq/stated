@@ -57,7 +57,7 @@ export type statementDB = {
     superseding_statement: string,
     superseded_statement: string,
 }
-export const getStatement = (hash:string, cb:res<statementDB>) => {
+export const getStatement = (hash:string, cb:res<statementDB> ) => {
     if (hash.length < 1) {
         throw new Error('Hash missing')
     }
@@ -66,9 +66,9 @@ export const getStatement = (hash:string, cb:res<statementDB>) => {
             cb(json.statements[0])
             window.scrollTo(0,0)
         } else {
-            throw new Error('Statement not found')
+            cb(undefined)
         }
-    }, e => {console.log(e); throw new Error('Could not fetch statement')})
+    }, e => {console.log(e); cb(undefined)})
 }
 export type statementWithDetails = {
     content: string;

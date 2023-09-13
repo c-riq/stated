@@ -24,7 +24,7 @@ import {VoteForm} from './VoteForm';
 import { statementTypes, statementTypeValue } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
-    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications } from '../api'
+    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, statementWithDetails, statementDB } from '../api'
 
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
@@ -33,8 +33,8 @@ import { Chip } from '@mui/material';
 type Props = {
     lt850px: boolean,
     domain?: string,
-    statementToJoin: any,
-    poll: any,
+    statementToJoin?: statementWithDetails | statementDB,
+    poll?: {statement: string, hash_b64: string},
     serverTime: Date,
     onPostSuccess: () => void,
 }
@@ -419,7 +419,7 @@ const CreateStatement = (props:Props) => {
                     horizontal: "center"
                 }}>
                     <Alert onClose={() => {setAlertMessage('')}} severity={isError ? "error" : "success"} sx={{ width: '100%' }}>
-                        {alertMessage}
+                        {alertMessage.split('\n').map((t,i) => (<div key={i}>{t}</div>))}
                     </Alert>
                 </Snackbar>
             </Portal>
