@@ -48,11 +48,10 @@ const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
             statementTypes.disputeAuthenticity, statementTypes.disputeContent ].includes(type)) {
             return result
         } else {
-            throw (Error('invalid type: ' + type))
+            return {...result, type: statementTypes.unsupported}
         }
-    } else {
-        return result
     }
+    return result
 }
 
 export const getTXTEntries = (d) => new Promise((resolve: (entries: string[])=>void, reject) => {

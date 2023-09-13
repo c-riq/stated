@@ -13,7 +13,7 @@ var sampleDataV1 = fs
 let migrationResultDBDump = ''
 let targetSchemaDBDump = ''
 
-const currentVersion = 5
+const currentVersion = 6
 
 const { Client } = require('pg')
 const config_1 = {

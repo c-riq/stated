@@ -6,23 +6,26 @@ import { transaction } from "./transaction";
 
 import { Pool } from "pg";
 
-var migration1 = fs
+const migration1 = fs
   .readFileSync(__dirname + "/migration_1.sql", "utf8")
   .toString();
-var migration2 = fs
+const migration2 = fs
   .readFileSync(__dirname + "/migration_2.sql", "utf8")
   .toString();
-var migration3 = fs
+const migration3 = fs
   .readFileSync(__dirname + "/migration_3.sql", "utf8")
   .toString();
-var migration4 = fs
+const migration4 = fs
   .readFileSync(__dirname + "/migration_4.sql", "utf8")
   .toString();
-var migration5 = fs
+const migration5 = fs
   .readFileSync(__dirname + "/migration_5.sql", "utf8")
   .toString();
+const migration6 = fs
+  .readFileSync(__dirname + "/migration_6.sql", "utf8")
+  .toString();
 
-export const currentCodeVersion = 5;
+export const currentCodeVersion = 6;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 
@@ -35,6 +38,7 @@ const migrateToVersion = {
   3: { sql: migration3 },
   4: { sql: migration4 },
   5: { sql: migration5 },
+  6: { sql: migration6 },
 };
 
 const testMigrationTableExistence = (pool: Pool) =>
