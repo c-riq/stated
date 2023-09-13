@@ -18,6 +18,7 @@ import OrganisationVerificationForm from './OrganisationVerificationForm';
 import PersonVerificationForm from './PersonVerificationForm';
 import PollForm from './PollForm';
 import DisputeStatementForm from './DisputeStatementForm';
+import ResponseForm from './ResponseForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
@@ -302,6 +303,7 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.poll}>Poll</MenuItem>
                     <MenuItem value={statementTypes.vote}>Vote</MenuItem>
                     <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
+                    <MenuItem value={statementTypes.response}>Response</MenuItem>
                     <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
                 </Select>
             {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags}}
@@ -328,6 +330,10 @@ const CreateStatement = (props:Props) => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
                 {authorFields()}</DisputeStatementForm>)}
+            {type === statementTypes.response &&(<ResponseForm metaData={{domain, author, representative, tags}}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                {authorFields()}</ResponseForm>)}
             {type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
