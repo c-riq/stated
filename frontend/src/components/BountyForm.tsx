@@ -38,22 +38,23 @@ export const BountyForm = (props:FormProps) => {
             return
         }
         props.setViaAPI(method === 'api')
-        const content = buildBounty({motivation, bounty, reward, judge, judgePay})
-        const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
-        const parsedStatement = parseStatement(statement)
-        const parsedBounty = parseBounty(parsedStatement.content)
-        if(!parsedBounty){
+        try {
+            const content = buildBounty({motivation, bounty, reward, judge, judgePay})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
+                representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
+            const parsedStatement = parseStatement(statement)
+            parseBounty(parsedStatement.content)
+            props.setStatement(statement)
+            sha256(statement).then((hash) => {
+                props.setStatementHash(hash)
+                if(method === 'represent'){
+                    generateEmail({statement, hash})
+                }
+            })
+        } catch (error) {
             props.setAlertMessage('Invalid bounty format')
             props.setisError(true)
-            return
         }
-        props.setStatement(statement)
-        sha256(statement).then((hash) => {
-            props.setStatementHash(hash)
-            if(method === 'represent'){
-                generateEmail({statement, hash})
-            }
-        })
     }
 
     return (

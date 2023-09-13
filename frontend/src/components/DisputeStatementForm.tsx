@@ -15,6 +15,7 @@ const DisputeStatementForm = (props:FormProps) => {
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
     const prepareStatement:prepareStatement = ({method}) => {
+        try {
             props.setViaAPI(method === 'api')
             const content = buildDisputeAuthenticityContent({hash: disputedStatementHash, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
@@ -32,11 +33,17 @@ const DisputeStatementForm = (props:FormProps) => {
                 return
             }
             props.setStatement(statement)
-            sha256(statement).then((hash) => { props.setStatementHash(hash);
+            sha256(statement).then((hash) => { 
+                props.setStatementHash(hash);
                 if(method === 'represent'){
                     generateEmail({statement, hash})
-                } });
+                }
+            });
+        } catch (error) {
+            props.setAlertMessage('Invalid dispute statement format')
+            props.setisError(true)
         }
+    }
 
     return (
         <FormControl sx={{width: "100%"}}>

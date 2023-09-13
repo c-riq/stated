@@ -34,33 +34,31 @@ const PersonVerificationForm = (props:FormProps) => {
     const [verifyName, setVerifyName] = React.useState("");
 
     const prepareStatement:prepareStatement = ({method}) => {
-        props.setViaAPI(method === 'api')
-        let date = birthDate.toDate()
-        date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-        const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
-            cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
-        const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
-        console.log(statement)
-
+        try {
+            props.setViaAPI(method === 'api')
+            let date = birthDate.toDate()
+            date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+            const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
+                cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
                 props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
                 props.setisError(true)
                 return
             }
-            const parsedPersonVerification = parsePersonVerification(parsedStatement.content)
-            console.log(parsedPersonVerification)
-            if(!parsedPersonVerification){
-                props.setAlertMessage('Invalid person verification (missing values)')
-                props.setisError(true)
-                return
-            }
+            parsePersonVerification(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash);
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                } });
+            if(method === 'represent'){
+                generateEmail({statement, hash})
+            } });
         }
+        catch (e: any) {
+            props.setAlertMessage('Error: ' + (e?.message??''))
+            props.setisError(true)
+        }
+    }
 
     return (
         <FormControl sx={{width: "100%"}}>

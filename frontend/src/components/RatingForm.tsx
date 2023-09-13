@@ -22,27 +22,27 @@ export const RatingForm = (props:FormProps) => {
     const options = ["1/5 Stars", "2/5 Stars", "3/5 Stars", "4/5 Stars", "5/5 Stars"]
 
     const prepareStatement:prepareStatement = ({method})  => {
-        props.setViaAPI(method === 'api')
-        const content = buildRating({organisation, domain, rating, comment})
-        const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})
-
+        try {
+            props.setViaAPI(method === 'api')
+            const content = buildRating({organisation, domain, rating, comment})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
+                representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement(statement)
-            const parsedRating = parseRating(parsedStatement.content)
-            if(!parsedRating){
-                props.setAlertMessage('Invalid rating format')
-                props.setisError(true)
-                return
-            }
+            parseRating(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash); 
                 if(method === 'represent'){
                     generateEmail({statement, hash})
                 }
             });
+        } catch (e: any) {
+            props.setAlertMessage('Error: ' + (e?.message??''))
+            props.setisError(true)
         }
-        const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            setRating(event.target.value)
-        }
+    }
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRating(event.target.value)
+    }
         
     return (
         <FormControl sx={{width: "100%"}}>

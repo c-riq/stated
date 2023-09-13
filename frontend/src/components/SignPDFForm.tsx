@@ -35,35 +35,35 @@ const SignPDFForm = (props:FormProps) => {
   const [dragActive, setDragActive] = React.useState(false);
 
   const prepareStatement:prepareStatement = ({method}) => {
-    props.setViaAPI(method === 'api');
-    const content = buildPDFSigningContent({ hash: fileHash });
-    const statement = buildStatement({
-      domain: props.metaData.domain,
-      author: props.metaData.author,
-      time: new Date(props.serverTime),
-      content,
-    });
+    try {
+      props.setViaAPI(method === 'api');
+      const content = buildPDFSigningContent({ hash: fileHash });
+      const statement = buildStatement({
+        domain: props.metaData.domain,
+        author: props.metaData.author,
+        time: new Date(props.serverTime),
+        content,
+      });
 
-    const parsedStatement = parseStatement(statement);
-    if (forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-      props.setAlertMessage(
-        "Values contain forbidden Characters: " +
-          forbiddenStrings(Object.values(parsedStatement) as string[])
-      );
+      const parsedStatement = parseStatement(statement);
+      if (forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
+        props.setAlertMessage(
+          "Values contain forbidden Characters: " +
+            forbiddenStrings(Object.values(parsedStatement) as string[])
+        );
+        props.setisError(true);
+        return;
+      }
+      parsePDFSigning(parsedStatement.content);
+      props.setStatement(statement);
+      sha256(statement).then((hash) => { props.setStatementHash(hash);
+        if(method === 'represent'){
+          generateEmail({statement, hash})
+      } });
+    } catch (error) {
+      props.setAlertMessage("Invalid PDF signing statement format");
       props.setisError(true);
-      return;
     }
-    const parsedPDFSigning = parsePDFSigning(parsedStatement.content);
-    if (!parsedPDFSigning) {
-      props.setAlertMessage("Invalid PDF signing statement (missing values)");
-      props.setisError(true);
-      return;
-    }
-    props.setStatement(statement);
-    sha256(statement).then((hash) => { props.setStatementHash(hash);
-      if(method === 'represent'){
-        generateEmail({statement, hash})
-    } });
   };
   const handleFiles = (file: Blob) => {
     console.log(file);
