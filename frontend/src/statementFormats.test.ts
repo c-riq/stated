@@ -411,9 +411,12 @@ Statement content:
 `
 	const parsedStatement = parseStatement(observation)
 	const parsedObservation = parseObservation(parsedStatement.content)
-	const {confidence, reliabilityPolicy} = parsedObservation
+	const {confidence, reliabilityPolicy, property, value, subject} = parsedObservation
 	expect(confidence).toBe(0.7);
 	expect(reliabilityPolicy).toBe('https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads');
+	expect(subject).toBe('CISCO SYSTEMS, INC.');
+	expect(property).toBe('Did stop business in Russia as a response to the Russian invasion of Ukraine');
+	expect(value).toBe('No');
 });
 
 test('observation build & parse function compatibility: input=parse(build(input))', () => {
