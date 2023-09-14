@@ -5,6 +5,7 @@ import {countries} from './constants/country_names_iso3166'
 import {legalForms} from './constants/legalForms'
 // TODO: import {cities} from './constants/cities'
 import {subdivisions} from './constants/provinces_un_locode'
+console.log(subdivisions) 
 
 export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
 export const statementTypes = {
