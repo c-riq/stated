@@ -32,7 +32,7 @@ export const getStatementsToVerifyFactory = pool => ({n, ownDomain}) => (new Pro
             join statements on statements.hash_b64 = verification_log.statement_hash
             where statements.domain != $2
             GROUP BY 1,2,3
-            ORDER BY t asc
+            ORDER BY max_t asc
             LIMIT $1
         )
         SELECT
@@ -42,7 +42,7 @@ export const getStatementsToVerifyFactory = pool => ({n, ownDomain}) => (new Pro
         SELECT
             *
         FROM outdated_log
-        ORDER BY t asc
+        ORDER BY max_t, min_t asc
         LIMIT $1;
               `,[n, ownDomain], (error, results) => {
         if (error) {
