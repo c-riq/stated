@@ -25,9 +25,10 @@ const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
 const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
 const prefillSSLOVInfo = process.env.PREFILL_SSL_OV_INFO || false
 const enableVerificationLog = process.env.VERIFICATION_LOG || false
+const enableRetry = process.env.RETRY || true
 
 p2p.setupSchedule(pullIntervalSeconds)
-retryAndCleanUp.setupSchedule(retryIntervalSeconds)
+enableRetry===true && retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 prefillSSLOVInfo==="true" && fetchOVInfoForMostPopularDomains()
 enableVerificationLog==="true" && verificationLog.setupSchedule(retryIntervalSeconds)
 
