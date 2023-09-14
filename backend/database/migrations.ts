@@ -24,22 +24,26 @@ const migration5 = fs
 const migration6 = fs
   .readFileSync(__dirname + "/migration_6.sql", "utf8")
   .toString();
+const migration7 = fs
+  .readFileSync(__dirname + "/migration_7.sql", "utf8")
+  .toString();
 
-export const currentCodeVersion = 6;
+const migrateToVersion = {
+    1: { sql: migration1 },
+    2: { sql: migration2 },
+    3: { sql: migration3 },
+    4: { sql: migration4 },
+    5: { sql: migration5 },
+    6: { sql: migration6 },
+    7: { sql: migration7 },
+};
+
+export const currentCodeVersion = 7;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 
 const deleteData = process.env.TEST && (process.env.DELETE_DATA=== "true")
 let dataDeleted = false
-
-const migrateToVersion = {
-  1: { sql: migration1 },
-  2: { sql: migration2 },
-  3: { sql: migration3 },
-  4: { sql: migration4 },
-  5: { sql: migration5 },
-  6: { sql: migration6 },
-};
 
 const testMigrationTableExistence = (pool: Pool) =>
   new Promise((resolve, reject) => {

@@ -2,6 +2,8 @@ const cp = require("child_process");
 
 const fs = require("fs");
 
+import {currentCodeVersion} from "../../../backend/database/migrations.js";
+
 var sampleDataCurrent = fs
   .readFileSync(__dirname + "/sample_data_current.sql", "utf8")
   .toString();
@@ -12,8 +14,6 @@ var sampleDataV1 = fs
 // Migration
 let migrationResultDBDump = ''
 let targetSchemaDBDump = ''
-
-const currentVersion = 6
 
 const { Client } = require('pg')
 const config_1 = {
@@ -73,7 +73,7 @@ let client_1 = new Client(config_1);
         POSTGRES_HOST: "localhost",
         API_KEY: "XXX",
         DOMAIN: "stated_1:7001",
-        MIGRATION_TEST_VERSION: '' + currentVersion,
+        MIGRATION_TEST_VERSION: '' + currentCodeVersion,
         DELETE_DATA: "false",
         PORT: "7001",
       },
@@ -91,7 +91,7 @@ let client_1 = new Client(config_1);
     
     res = await client_1.query('SELECT MAX(to_version) max_version FROM migrations')
     console.log('migrated to: ' + res.rows[0].max_version)
-    if(('' + res.rows[0].max_version) !== '' + currentVersion) {
+    if(('' + res.rows[0].max_version) !== '' + currentCodeVersion) {
         throw new Error('Migration failed')
     }
     await client_1.end()
