@@ -674,7 +674,7 @@ export const parseObservation = (s: string):observation => {
 		subjectReference: m[5],
 		observationReference: m[6],
 		property: m[7],
-		value: m[7]
+		value: m[8]
 	}
 }
 
