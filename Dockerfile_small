@@ -15,4 +15,6 @@ RUN echo 'export const cities = {"cities":[["Q1353","Delhi","Q668"]]}' > 'consta
 RUN echo 'export const subdivisions = [["AD", "02", "Canillo"]]' > 'constants/provinces_un_locode.ts'
 RUN npm run build
 
+ENV RETRY=false
+
 CMD [ "node", "index.js"  ]
