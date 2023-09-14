@@ -8,6 +8,9 @@ const tsCode = fs
 // @ts-ignore
 const currentCodeVersion = parseInt(tsCode.match(/currentCodeVersion = (\d+)/)[1]);
 console.log('currentCodeVersion: ', currentCodeVersion)
+if (currentCodeVersion === undefined && currentCodeVersion < 7) {
+  throw new Error("Invalid currentCodeVersion");
+}
 
 var sampleDataCurrent = fs
   .readFileSync(__dirname + "/sample_data_current.sql", "utf8")
