@@ -28,7 +28,7 @@ export type DBErrorCallback = (error: Error) => void
 const log = false
 
 let migrationsDone = false;
-([100, 800, 1300, 1800, 2300, 3000, 3500, 5000, 15000, 20000]).map(ms => setTimeout(
+([100, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 13000, 13000, 15000, 20000]).map(ms => setTimeout(
   async () => {
     if(!migrationsDone){
       await performMigrations(pool, ()=>migrationsDone=true)

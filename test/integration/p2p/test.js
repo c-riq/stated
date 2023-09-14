@@ -198,4 +198,4 @@ const healthTestInterval = setInterval(() => {
             test()
         }
     })
-}, 1000)
+}, 5000)
