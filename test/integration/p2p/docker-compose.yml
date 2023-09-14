@@ -28,7 +28,9 @@ services:
       - TEST=true
       - PULL_INTERVAL_SECONDS=1
       - DELETE_DATA=true
-    build: ../../..
+    build: 
+      context: ../../..
+      dockerfile: Dockerfile_small
     ports:
       - '7001:7001'
     networks:
@@ -65,7 +67,9 @@ services:
       - TEST=true
       - PULL_INTERVAL_SECONDS=1
       - DELETE_DATA=true
-    build: ../../..
+    build: 
+      context: ../../..
+      dockerfile: Dockerfile_small
     ports:
       - '7002:7002'
     networks:
@@ -103,7 +107,9 @@ services:
       - TEST=true
       - PULL_INTERVAL_SECONDS=1
       - DELETE_DATA=true
-    build: ../../..
+    build: 
+      context: ../../..
+      dockerfile: Dockerfile_small
     ports:
       - '7003:7003'
     networks:
