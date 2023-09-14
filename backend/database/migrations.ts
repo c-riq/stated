@@ -38,7 +38,7 @@ const migrateToVersion = {
     7: { sql: migration7 },
 };
 
-export const currentCodeVersion = 7;
+const currentCodeVersion = 7;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 

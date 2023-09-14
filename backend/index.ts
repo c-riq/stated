@@ -9,6 +9,7 @@ import api from './api'
 
 import p2p from './p2p'
 import retryAndCleanUp from './retryAndCleanUp'
+import verificationLog from './verificationLog'
 
 import { fetchOVInfoForMostPopularDomains } from './prefillOV'
 
@@ -23,10 +24,12 @@ const certPath = process.env.SSL_CERT_PATH
 const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
 const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
 const prefillSSLOVInfo = process.env.PREFILL_SSL_OV_INFO || false
+const enableVerificationLog = process.env.VERIFICATION_LOG || false
 
 p2p.setupSchedule(pullIntervalSeconds)
 retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 prefillSSLOVInfo==="true" && fetchOVInfoForMostPopularDomains()
+enableVerificationLog==="true" && verificationLog.setupSchedule(retryIntervalSeconds)
 
 const app = express();
 

@@ -8,6 +8,7 @@ import {parseAndCreatePoll, parseAndCreateVote} from './poll'
 import {parseAndCreateRating} from './rating'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats'
+import { get } from './request'
 
 const log = true
 const ownAPIKey = process.env.API_KEY
@@ -89,7 +90,7 @@ export const getTXTEntries = (d) => new Promise((resolve: (entries: string[])=>v
     }
 })
 
-export const verifyTXTRecord = async (domain, record) => {
+export const verifyTXTRecord : (arg0:string, arg1:string) => Promise<boolean> = async (domain, record) => {
     log && console.log("verifyTXTRecord")
     try {
         const TXTEntries = await getTXTEntries(domain)
@@ -102,7 +103,7 @@ export const verifyTXTRecord = async (domain, record) => {
     return false
 }
 
-const verifyViaStatedApi = async (domain, hash_b64) => {
+export const verifyViaStatedApi : (arg0:string, arg1:string) => Promise<boolean> = async (domain, hash_b64) => {
     let url = (test ? 'http://' + domain : 'https://stated.' + domain ) + '/api/statement/' + hash_b64
     log && console.log('verifyViaStatedApi', url, hash_b64)
     try {
@@ -123,14 +124,10 @@ const verifyViaStatedApi = async (domain, hash_b64) => {
     }
 }
 
-// TODO: fix - 
-const verifyViaStaticTextFile = async (domain, statement) => {
-    let url = 'https://static.stated.' + domain + '/statements.txt'
+export const verifyViaStaticTextFile : (arg0:string, arg1:string) => Promise<boolean> = async (domain, statement) => {
     try {
-        const result = await axios({
-            method: "GET",
-            url})
-        if (result.data.length > 0){
+        const result = await get({hostname: 'static.stated.' + domain, path: '/statements.txt', json: false})
+        if (result.data?.length > 0){
             console.log(result.data.substring(0.100), 'result from ', domain)
             if (result.data.match(statement)){
                 return true
@@ -143,7 +140,7 @@ const verifyViaStaticTextFile = async (domain, statement) => {
     return false
 }
 
-const verifyViaAPIKey = async ({domain, api_key}) => {
+export const verifyViaAPIKey = async ({domain, api_key}) => {
     log && console.log('verifyViaAPIKey', domain, ownDomain, api_key, ownAPIKey)
     if(!domain){return false}
     if(!api_key){return false}
