@@ -77,7 +77,7 @@ export const matchDomain = matchDomainFactory(pool)
 
 import { checkIfVerificationExistsFactory, createOrganisationVerificationFactory, createPersonVerificationFactory, 
   getAllVerificationsFactory, getPersonVerificationsForStatementFactory, 
-  getVerificationsForDomainFactory, getOrganisationVerificationsForStatementFactory } from './verification'
+  getVerificationsForDomainFactory, getOrganisationVerificationsForStatementFactory, matchNameFactory } from './verification'
 
 export const checkIfVerificationExists = checkIfVerificationExistsFactory(pool)
 export const createOrganisationVerification = createOrganisationVerificationFactory(pool)
@@ -86,6 +86,7 @@ export const getAllVerifications = getAllVerificationsFactory(pool)
 export const getPersonVerificationsForStatement = getPersonVerificationsForStatementFactory(pool)
 export const getVerificationsForDomain = getVerificationsForDomainFactory(pool)
 export const getOrganisationVerificationsForStatement = getOrganisationVerificationsForStatementFactory(pool)
+export const matchName = matchNameFactory(pool)
 
 import { createRatingFactory } from './rating'
 

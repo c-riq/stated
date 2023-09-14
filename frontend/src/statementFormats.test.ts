@@ -406,7 +406,8 @@ Statement content:
 	Subject: CISCO SYSTEMS, INC.
 	Subject identity reference: https://stated.rixdata.net/statement/jvbqqbyjPCb2nP9xNfSnVL9r79c-qf1wewLt5BW-AL4
 	Observation reference: https://www.yalerussianbusinessretreat.com/
-	Observation: Stopped business in Russia
+	Observed property: Did stop business in Russia as a response to the Russian invasion of Ukraine
+	Observed value: No
 `
 	const parsedStatement = parseStatement(observation)
 	const parsedObservation = parseObservation(parsedStatement.content)
@@ -416,8 +417,8 @@ Statement content:
 });
 
 test('observation build & parse function compatibility: input=parse(build(input))', () => {
-	const [approach, reliabilityPolicy, subject, subjectReference, observationReference, observation] = Array.from({ length: 6 },randomUnicodeString)
-	const observationContent = buildObservation({approach, confidence: 0.7, reliabilityPolicy, subject, subjectReference, observationReference, observation})
+	const [approach, reliabilityPolicy, subject, subjectReference, observationReference, property, value] = Array.from({ length: 7 },randomUnicodeString)
+	const observationContent = buildObservation({approach, confidence: 0.7, reliabilityPolicy, subject, subjectReference, observationReference, property, value})
 	const parsedObservation = parseObservation(observationContent)
 	expect(parsedObservation.approach).toBe(approach)
 	expect(parsedObservation.confidence).toBe(0.7)
@@ -425,7 +426,8 @@ test('observation build & parse function compatibility: input=parse(build(input)
 	expect(parsedObservation.subject).toBe(subject)
 	expect(parsedObservation.subjectReference).toBe(subjectReference)
 	expect(parsedObservation.observationReference).toBe(observationReference)
-	expect(parsedObservation.observation).toBe(observation)
+	expect(parsedObservation.property).toBe(property)
+	expect(parsedObservation.value).toBe(value)
 });
 
 test('parse boycott', () => {

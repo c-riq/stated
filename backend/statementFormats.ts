@@ -633,10 +633,11 @@ export type observation = {
 	subject: string,
 	subjectReference?: string,
 	observationReference?: string,
-	observation: string,
+	property: string,
+	value: string,
 }
-export const ObservationKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observation: )/
-export const buildObservation = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, observation}: observation) => {
+export const ObservationKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observed property: |Observed value: )/
+export const buildObservation = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, property, value}: observation) => {
 	const content = "\n" +
 	"\t" + "Type: Observation" + "\n" +
 	(approach ? "\t" + "Approach: " + approach + "\n" : "") +
@@ -645,20 +646,22 @@ export const buildObservation = ({approach, confidence, reliabilityPolicy, subje
 	"\t" + "Subject: " + subject + "\n" +
 	(subjectReference ? "\t" + "Subject identity reference: " + subjectReference + "\n" : "") +
 	(observationReference ? "\t" + "Observation reference: " + observationReference + "\n" : "") +
-	"\t" + "Observation: " + observation + "\n" +
+	"\t" + "Observed property: " + property + "\n" +
+	"\t" + "Observed value: " + value + "\n" +
 	""
 	return content
 }
 export const parseObservation = (s: string):observation => {
 	const observationRegex= new RegExp(''
 	+ /^\n\tType: Observation\n/.source
-	+ /\tApproach: (?<approach>[^\n]*?)\n/.source
+	+ /(?:\tApproach: (?<approach>[^\n]*?)\n)?/.source
 	+ /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
 	+ /\tSubject: (?<subject>[^\n]*?)\n/.source
 	+ /(?:\tSubject identity reference: (?<subjectReference>[^\n]*?)\n)?/.source
 	+ /(?:\tObservation reference: (?<observationReference>[^\n]*?)\n)?/.source
-	+ /\tObservation: (?<observation>[^\n]*?)\n/.source
+	+ /\tObserved property: (?<property>[^\n]*?)\n/.source
+	+ /\tObserved value: (?<value>[^\n]*?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(observationRegex)
@@ -670,7 +673,8 @@ export const parseObservation = (s: string):observation => {
 		subject: m[4],
 		subjectReference: m[5],
 		observationReference: m[6],
-		observation: m[7]
+		property: m[7],
+		value: m[7]
 	}
 }
 

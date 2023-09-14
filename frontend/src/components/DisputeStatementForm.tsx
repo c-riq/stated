@@ -80,7 +80,7 @@ const DisputeStatementForm = (props:FormProps) => {
             id="confidence"
             variant="outlined"
             placeholder='0.9'
-            label="Confidence (probability of correctness 0.0 - 1.0)"
+            label="Confidence (probability of correctness of your judgement 0.0 - 1.0)"
             value={confidence}
             onChange={e => { 
                 const str = e.target.value.replace(/[^0-9.]/g, '')

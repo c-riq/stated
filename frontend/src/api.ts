@@ -103,6 +103,21 @@ export const getDomainSuggestions = (searchQuery:string, cb:res<domainSuggestion
         cb(json)
     }, e => {console.log(e); return})
 }
+export type nameSuggestionResponse = {
+    result: {
+        domain: string,
+        organisation: string,
+        statement_hash: string
+    }[]
+}
+export const getNameSuggestions = (searchQuery:string, cb:res<nameSuggestionResponse>) => {
+    if (searchQuery.length < 1) {
+        return cb(undefined)
+    }
+    req('GET',(searchQuery ? 'match_subject_name?name_substring=' + searchQuery : 'name_substring'), {}, (json) => {
+        cb(json)
+    }, e => {console.log(e); return})
+}
 export const getDomainVerifications = (domain:string|undefined, cb:cb) => {
     req('GET',(domain ? 'domain_verifications?domain=' + domain : 'domain_verifications'), {}, (json) => {
         cb(json)

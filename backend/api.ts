@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
-    getVotes, checkIfMigrationsDone, deleteStatement
+    getVotes, checkIfMigrationsDone, deleteStatement, matchName
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -220,6 +220,22 @@ api.get("/match_domain", async (req, res, next) => {
             return
         }
         const dbResult = await matchDomain({domain_substring})
+        res.end(JSON.stringify({result: dbResult.rows}))       
+
+    } catch (error) {
+        console.log(error)
+        next(error)
+    }
+})
+
+api.get("/match_subject_name", async (req, res, next) => {
+    try {
+        let name_substring = req.query && req.query.name_substring
+        if(!name_substring || name_substring.length == 0){
+            next(Error("missing parameter: name_substring"))
+            return
+        }
+        const dbResult = await matchName({name_substring})
         res.end(JSON.stringify({result: dbResult.rows}))       
 
     } catch (error) {
