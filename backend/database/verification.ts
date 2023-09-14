@@ -220,3 +220,36 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
     }
   }));
   
+
+  export const matchNameFactory = pool => ({name_substring}) => (new Promise((resolve: DBCallback, reject) => {
+    try {
+      pool.query(`
+        with regex AS ( SELECT '.*' || $1 || '.*' pattern)
+        SELECT
+          verified_domain domain,
+          name organisation,
+          country,
+          province state,
+          city,
+          statement_hash,
+          first_verification_time
+        FROM organisation_verifications
+          JOIN regex ON (name ~ regex.pattern OR verified_domain ~ regex.pattern)
+          JOIN statements ON organisation_verifications.statement_hash = statements.hash_b64
+        ORDER BY first_verification_time ASC
+        LIMIT 20;
+      `,[name_substring], (error, results) => {
+    if (error) {
+      console.log(error)
+      console.trace()
+      return reject(error)
+    } else {
+      return resolve(results)
+    }
+  })
+} catch (error) {
+  console.log(error)
+  console.trace()
+  return reject(error)
+}
+}));

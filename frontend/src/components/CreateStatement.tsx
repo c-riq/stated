@@ -30,6 +30,7 @@ import { submitStatement, getTXTRecords,
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
 import { Chip } from '@mui/material';
+import ObservationForm from './ObservationForm';
 
 type Props = {
     lt850px: boolean,
@@ -212,7 +213,7 @@ const CreateStatement = (props:Props) => {
                 renderInput={(params) => <TextField {...params} 
                   label="Your domain used for publishing/ authenticating" placeholder='example.com' required />}
                 style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
-                />
+            />
                 { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
                      (  OVInfo.reduce((acc, i) => acc || i.O, '') 
                         ?
@@ -305,6 +306,7 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
                     <MenuItem value={statementTypes.response}>Response</MenuItem>
                     <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
+                    <MenuItem value={statementTypes.observation}>Observation</MenuItem>
                 </Select>
             {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
@@ -346,6 +348,10 @@ const CreateStatement = (props:Props) => {
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
                 {authorFields()}</BountyForm>)}
+            {type === statementTypes.observation &&(<ObservationForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                {authorFields()}</ObservationForm>)}
 
             {statement && (
                 <div>
