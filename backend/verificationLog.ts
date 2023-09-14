@@ -1,57 +1,75 @@
 
-import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, } from './database'
-import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification'
+import { verifyViaStatedApi, verifyViaStaticTextFile, verifyTXTRecord } from './statementVerification'
+
+import { getStatementsToVerify, addLog } from './database'
 
 const log = true
+const ownDomain = process.env.DOMAIN
 
 const verificationRetryScheduleHours = [0, 0.01, 0.05, 0.1, 0.2, 1, 10, 24, 100, 336, 744]
 
-const tryVerifyUnverifiedStatements = async () => {
+const timeoutWithFalse = (promise, ms) => new Promise((resolve, reject) => {
+    promise()
+        .then((r) => {
+            log && console.log('result: ', r)
+            resolve(r)
+        })
+        .catch(e => {
+            log && console.log('error: ', e)
+            resolve(false)
+        });
+    setTimeout(() => {
+        log && console.log('timeout')
+        resolve(false)
+    }, ms)
+})
+
+const tryVerifications = ({domain, hash_b64, statement, s}) => new Promise((resolve, reject) => {
+    Promise.allSettled([
+        timeoutWithFalse(() => verifyViaStatedApi(domain, hash_b64), 0.5 * s * 1000),
+        timeoutWithFalse(() => verifyViaStaticTextFile(domain, statement), 10 * s * 1000),
+        timeoutWithFalse(() => verifyTXTRecord("stated." + domain, hash_b64), 10 * s * 1000)
+    ]).then((results) => {
+        // @ts-ignore
+        const [api, txt, dns] = results.map(r => r.value)
+        return resolve({api, dns, txt})
+    })
+})
+
+const logVerifications = async (retryIntervalSeconds) => {
     try {
-        const dbResult = await getUnverifiedStatements()
-        let unverifiedStatements = dbResult.rows
-        log && console.log('unverifiedStatements count ', unverifiedStatements.length)
-        unverifiedStatements = unverifiedStatements.filter(s => {
+        const dbResult = await getStatementsToVerify({n:20, ownDomain})
+        let outdatedVerifications = dbResult.rows
+        log && console.log('outdated verifications count ', outdatedVerifications.length)
+        outdatedVerifications = outdatedVerifications.filter(s => {
             // @ts-ignore
-            const diffTime = (new Date()) - s.received_time
-            const diffHours = diffTime / (1000 * 60 * 60)
-            const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-            if (targetRetryCount > s.verification_retry_count) {
+            const sinceFirst = (new Date()) - s.min_t
+            // @ts-ignore
+            const sinceLast = (new Date()) - s.min_t
+            const targetRetryCount = verificationRetryScheduleHours.filter(h => h < sinceFirst / (1000 * 60 * 60)).length
+            if (targetRetryCount > parseInt(s.n) || sinceLast > 744) {
+                if(s.domain === ownDomain){
+                    return false
+                }
                 return true
             } return false
         })
-        log && console.log('unverifiedStatements up for retry ', unverifiedStatements.length)
+        log && console.log('verifications to check ', outdatedVerifications.length)
 
-        const res = await Promise.allSettled(unverifiedStatements.map(({statement, hash_b64, source_node_id, verification_method}) =>
-            validateAndAddStatementIfMissing({statement, hash_b64, source_node_id,
-                verification_method, api_key: undefined })
+        const res = await Promise.allSettled(outdatedVerifications.map(({domain, hash_b64, statement}) =>
+            new Promise(async (resolve, reject) => {
+                // prevent DNS throttling
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 0.5 * retryIntervalSeconds * 1000))
+                return resolve(await tryVerifications({domain, hash_b64, statement, s: retryIntervalSeconds}))
+            })
         ))
-        return res
-    } catch (error) {
-        console.log(error)
-        console.trace()
-    }
-}
-
-const tryAddMissingDerivedEntitiesFromStatements = async () => {
-    /* Use cases: Poll might arrive after votes; version upgrades may be necessary. */
-    try {
-        const dbResult = await getStatements({onlyStatementsWithMissingEntities : true})
-        let statements = dbResult.rows
-        log && console.log('statements without entity ', statements.length)
-        statements = statements.filter(s => {
-            // @ts-ignore
-            const diffTime = (new Date()) - s.first_verification_time
-            const diffHours = diffTime / (1000 * 60 * 60)
-            const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-            if (targetRetryCount > s.derived_entity_creation_retry_count) {
-                return true
-            } return false
+        res.map((r, i) => {
+            if(r.status === 'fulfilled'){
+                // @ts-ignore
+                const {api, dns, txt} = r.value
+                addLog({hash_b64: outdatedVerifications[i].hash_b64, api, dns, txt})
+            }
         })
-        log && console.log('statements without entity up for retry ', statements.length)
-        const res = await Promise.allSettled(statements.map(({type, domain, content, hash_b64, proclaimed_publication_time}) => 
-            createDerivedEntity({statement_hash: hash_b64, domain, content, type, proclaimed_publication_time})
-        ))
         return res
     } catch (error) {
         console.log(error)
@@ -63,10 +81,7 @@ const setupSchedule = (retryIntervalSeconds) => {
     setInterval(async () => {
         log && console.log('verification log started')
         try {
-            await tryVerifyUnverifiedStatements()
-            await cleanUpUnverifiedStatements({max_age_hours: Math.max(...verificationRetryScheduleHours) | 1,
-                 max_verification_retry_count: verificationRetryScheduleHours.length | 1})
-            await tryAddMissingDerivedEntitiesFromStatements()
+            await logVerifications(retryIntervalSeconds)
         } catch (error) {
             console.log(error)
             console.trace()

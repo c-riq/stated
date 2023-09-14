@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
-    getVotes, checkIfMigrationsDone, deleteStatement, matchName
+    getVotes, checkIfMigrationsDone, deleteStatement, matchName, getLogsForStatement
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -129,6 +129,15 @@ api.get("/person_verifications", async (req, res, next) => {
     try {
         const dbResult = await getPersonVerificationsForStatement({hash_b64: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
+        next(error)
+    }
+})
+
+api.get("/verification_logs", async (req, res, next) => {
+    try {
+        const dbResult = await getLogsForStatement({hash_b64: req.query.hash})
+        res.end(JSON.stringify({result: dbResult.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
     }

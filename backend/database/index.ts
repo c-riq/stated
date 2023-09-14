@@ -105,3 +105,9 @@ export const addNode = addNodeFactory(pool)
 export const updateNode = updateNodeFactory(pool)
 export const getAllNodes = getAllNodesFactory(pool)
 
+import { getStatementsToVerifyFactory, addLogFactory, getLogsForStatementFactory } from './verificationLog'
+
+export const getStatementsToVerify = getStatementsToVerifyFactory(pool)
+export const addLog = addLogFactory(pool)
+export const getLogsForStatement = getLogsForStatementFactory(pool)
+

@@ -1,3 +1,4 @@
+import { raw } from 'express'
 import http, { RequestOptions } from 'http'
 import https, { RequestOptions as RequestOptionsHttps } from 'https'
 
@@ -12,7 +13,7 @@ type response = {
     ip?: any
 }
 
-export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (res: response) => void, reject) => {
+export const get = ({hostname, path='', cache=false, json=true}) => new Promise((resolve: (res: response) => void, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -39,7 +40,7 @@ export const get = ({hostname, path='', cache=false}) => new Promise((resolve: (
             })
             res.on('end', () => {
                 try {
-                    data = JSON.parse(rawData)
+                    data = json ? JSON.parse(rawData) : rawData
                     resolve({data, cert, ip})
                 } catch(error) {
                     resolve({error, data: rawData, cert, ip})

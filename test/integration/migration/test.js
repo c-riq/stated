@@ -2,7 +2,12 @@ const cp = require("child_process");
 
 const fs = require("fs");
 
-import {currentCodeVersion} from "../../../backend/database/migrations.js";
+const tsCode = fs
+  .readFileSync(__dirname + "/../../../backend/database/migrations.ts", "utf8")
+  .toString();
+// @ts-ignore
+const currentCodeVersion = parseInt(tsCode.match(/currentCodeVersion = (\d+)/)[1]);
+console.log('currentCodeVersion: ', currentCodeVersion)
 
 var sampleDataCurrent = fs
   .readFileSync(__dirname + "/sample_data_current.sql", "utf8")
