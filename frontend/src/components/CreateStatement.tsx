@@ -228,7 +228,8 @@ const CreateStatement = (props:Props) => {
                      (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
                         ?
                         [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via stated verification <a target='_blank' href={window.location.host + '/statement/' + i!.statement_hash}>{i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</a></Alert>))
+                            Verified via stated verification <a target='_blank' href={window.location.origin + '/statement/' + i!.statement_hash}>
+                                {i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</a></Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>
                             Not verified via stated verification.</Alert>)
