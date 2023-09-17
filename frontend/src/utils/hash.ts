@@ -11,3 +11,7 @@ export const sha256 = async (input: string) => {
         .replace(/\//g, '_')
     return urlSafe
 }
+
+export const fromUrlSafe = (urlSafe: string) => {
+    return urlSafe.replace(/-/g, "+").replace(/_/g, "/") + '='.repeat(urlSafe.length % 4);
+}
