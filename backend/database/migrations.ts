@@ -7,25 +7,28 @@ import { transaction } from "./transaction";
 import { Pool } from "pg";
 
 const migration1 = fs
-  .readFileSync(__dirname + "/migration_1.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_1.sql", "utf8")
   .toString();
 const migration2 = fs
-  .readFileSync(__dirname + "/migration_2.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_2.sql", "utf8")
   .toString();
 const migration3 = fs
-  .readFileSync(__dirname + "/migration_3.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_3.sql", "utf8")
   .toString();
 const migration4 = fs
-  .readFileSync(__dirname + "/migration_4.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_4.sql", "utf8")
   .toString();
 const migration5 = fs
-  .readFileSync(__dirname + "/migration_5.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_5.sql", "utf8")
   .toString();
 const migration6 = fs
-  .readFileSync(__dirname + "/migration_6.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_6.sql", "utf8")
   .toString();
 const migration7 = fs
-  .readFileSync(__dirname + "/migration_7.sql", "utf8")
+  .readFileSync(__dirname + "/sql/migration_7.sql", "utf8")
+  .toString();
+const migration8 = fs
+  .readFileSync(__dirname + "/sql/migration_8.sql", "utf8")
   .toString();
 
 const migrateToVersion = {
@@ -36,9 +39,10 @@ const migrateToVersion = {
     5: { sql: migration5 },
     6: { sql: migration6 },
     7: { sql: migration7 },
+    8: { sql: migration8 },
 };
 
-const currentCodeVersion = 7;
+const currentCodeVersion = 8;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 

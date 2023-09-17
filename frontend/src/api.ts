@@ -56,6 +56,7 @@ export type statementDB = {
     name: string,
     superseding_statement: string,
     superseded_statement: string,
+    hidden?: boolean,
 }
 export const getStatement = (hash:string, cb:res<statementDB> ) => {
     if (hash.length < 1) {

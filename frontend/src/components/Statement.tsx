@@ -19,6 +19,7 @@ import {VerificationGraph} from './VerificationGraph'
 
 import {filePath, getWorkingFileURL} from './SignPDFForm'
 import {statementDB, joiningStatementsResponse} from '../api'
+import { DecryptedContent } from './DecryptedContent';
 
 type props = {
     lt850px: boolean,
@@ -37,6 +38,10 @@ const Statement = (props:props) => {
     const [workingFileURL, setWorkingFileURL] = React.useState('');
 
     const hash = useParams().statementId || '';
+    const {search} = useLocation()
+    const queryParams = new URLSearchParams(search)
+    const key = queryParams.get('key')
+    const algorithm = queryParams.get('algorithm')
 
 
     React.useEffect(() => { if(!dataFetched) {
@@ -83,6 +88,9 @@ const Statement = (props:props) => {
                 <RouterLink onClick={()=>setDataFetched(false)} 
                     to={"/statement/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
             </Alert>)}
+            {statement.hidden && (<Alert severity="info">
+                This is a hidden statement.
+            </Alert>)}
             <p>Raw statement</p>
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
@@ -103,6 +111,8 @@ const Statement = (props:props) => {
                     )}
                 </div>
             )}
+            {key && algorithm &&
+            (<DecryptedContent statement={statement} decryptionKey={key} decryptionAlgorithm={algorithm} />)}
             {statement && (statement.type === statementTypes.poll && (<RouterLink to="/create-statement">
                 <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
                 sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>

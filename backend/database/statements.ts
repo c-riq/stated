@@ -91,6 +91,106 @@ export const createStatementFactory =
       }
     });
 
+export const createHiddenStatementFactory =
+    (pool) =>
+    ({
+      type,
+      domain,
+      author,
+      statement,
+      proclaimed_publication_time,
+      hash_b64,
+      tags,
+      content,
+      content_hash_b64,
+      verification_method,
+      source_node_id,
+      supersededStatement
+    }: statement) =>
+      new Promise((resolve: DBCallback, reject) => {
+        try {
+          sanitize({
+            type,
+            domain,
+            author,
+            statement,
+            proclaimed_publication_time,
+            hash_b64,
+            tags,
+            content,
+            content_hash_b64,
+            verification_method,
+            source_node_id,
+            supersededStatement
+          });
+          pool.query(
+            `INSERT INTO hidden_statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
+                                  tags,                  content,                content_hash,           verification_method,               source_node_id,
+                                  first_verification_time, latest_verification_time, derived_entity_created, derived_entity_creation_retry_count, author,
+                                  superseded_statement) 
+                          VALUES ($1, $2, $3, TO_TIMESTAMP($4), $5,
+                                  $6, $7, $8, $9, $10, 
+                                  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 0, $11,
+                                  $12)
+              ON CONFLICT (hash_b64) DO NOTHING
+              RETURNING *`,
+            [
+              type,
+              domain,
+              statement,
+              proclaimed_publication_time,
+              hash_b64,
+              tags ? tags.join(',') : undefined,
+              content,
+              content_hash_b64,
+              verification_method,
+              source_node_id,
+              author,
+              supersededStatement?? null
+            ],
+            (error, results) => {
+              if (error) {
+                console.log(error);
+                console.trace();
+                return reject(error);
+              } else {
+                return resolve(results);
+              }
+            }
+          );
+        } catch (error) {
+          console.log(error);
+          console.trace();
+          return reject(error);
+        }
+      });
+
+export const getHiddenStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+        log && console.log('getStatement', hash_b64)
+        try {
+          sanitize({ hash_b64 })
+          pool.query(`
+                  SELECT 
+                      *,
+                      TRUE hidden
+                  FROM hidden_statements
+                  WHERE hash_b64=$1;
+                  `,[hash_b64], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
 export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         log && console.log('getStatement', hash_b64)
         try {

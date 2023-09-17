@@ -125,7 +125,7 @@ let client_1 = new Client(config_1);
 // Target schema
 
 var targetSchema = fs
-  .readFileSync(__dirname + "/../../../backend/database/schema.sql", "utf8")
+  .readFileSync(__dirname + "/../../../backend/database/sql/schema.sql", "utf8")
   .toString();
 
 const config_2 = {
