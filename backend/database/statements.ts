@@ -171,7 +171,8 @@ export const getHiddenStatementFactory = pool => ({ hash_b64 }) => (new Promise(
           sanitize({ hash_b64 })
           pool.query(`
                   SELECT 
-                      *
+                      *,
+                      TRUE hidden
                   FROM hidden_statements
                   WHERE hash_b64=$1;
                   `,[hash_b64], (error, results) => {

@@ -88,6 +88,9 @@ const Statement = (props:props) => {
                 <RouterLink onClick={()=>setDataFetched(false)} 
                     to={"/statement/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
             </Alert>)}
+            {statement.hidden && (<Alert severity="info">
+                This is a hidden statement.
+            </Alert>)}
             <p>Raw statement</p>
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
