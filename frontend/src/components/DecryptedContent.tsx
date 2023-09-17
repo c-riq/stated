@@ -12,7 +12,7 @@ export const DecryptedContent = ({ statement, decryptionKey, decryptionAlgorithm
 
     const [key, setKey] = React.useState<string>(decryptionKey);
     const [algorithm, setAlgorithm] = React.useState<string>(decryptionAlgorithm);
-    const [algorithmObject, setAlgorithmObject] = React.useState<string[]>(["AES"]);
+    const [algorithmObject, setAlgorithmObject] = React.useState<string[]>(algorithm.toLowerCase() === "aes" ? ["AES", "AES"] : ['','']);
 
     let decryptedContent = statement?.content;
     try {
