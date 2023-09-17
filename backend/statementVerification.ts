@@ -1,6 +1,6 @@
 
 import axios from 'axios'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement} from './database'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement, createHiddenStatement} from './database'
 import * as hashUtils from './hash'
 import {createOrgVerification, createPersVerification} from './domainVerification'
 import {checkIfVerificationExists} from './database'
@@ -152,7 +152,7 @@ export const verifyViaAPIKey = async ({domain, api_key}) => {
 }
 
 export const validateAndAddStatementIfMissing = 
-    ({statement, hash_b64, source_node_id = null, verification_method, api_key }) => 
+    ({statement, hash_b64, source_node_id = null, verification_method, api_key, hidden=false }) => 
     (new Promise(async (resolve, reject) => {
     let existsOrCreated = false
     try {
@@ -168,6 +168,9 @@ export const validateAndAddStatementIfMissing =
         }
         let verified = false
         let verifiedByAPI = false
+        if (hidden && (!api_key || verification_method !== 'api')){
+            return reject(Error('hidden statements must be verified via api key'))
+        }
         if (verification_method && verification_method === 'api'){
             if (api_key) {
                 log && console.log('verifiy via api key', hash_b64)
@@ -196,7 +199,11 @@ export const validateAndAddStatementIfMissing =
         }
         if (verified) {
             console.log('verified', verified, verifiedByAPI)
-            const dbResult = await createStatement({type: type || statementTypes.statement,
+            const dbResult = hidden ?
+            await createHiddenStatement({type: type || statementTypes.statement,
+                domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
+                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id, supersededStatement})
+            : await createStatement({type: type || statementTypes.statement,
                 domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
                 verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id, supersededStatement})
             if(dbResult.rows && dbResult.rows[0]){
