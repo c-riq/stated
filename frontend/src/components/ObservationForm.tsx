@@ -144,6 +144,7 @@ const ObservationForm = (props:FormProps) => {
                 variant="outlined"
                 placeholder='Yes'
                 label="Observed value"
+                multiline
                 onChange={e => { setObervationValue(e.target.value) }}
                 margin="normal"
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}

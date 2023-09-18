@@ -661,7 +661,7 @@ export const parseObservation = (s: string):observation => {
 	+ /(?:\tSubject identity reference: (?<subjectReference>[^\n]*?)\n)?/.source
 	+ /(?:\tObservation reference: (?<observationReference>[^\n]*?)\n)?/.source
 	+ /\tObserved property: (?<property>[^\n]*?)\n/.source
-	+ /\tObserved value: (?<value>[^\n]*?)\n/.source
+	+ /\tObserved value: (?<value>[\s\S]+?)\n/.source
 	+ /$/.source
 	);
 	const m = s.match(observationRegex)
@@ -712,7 +712,7 @@ export const parseBoycott = (s: string):boycott => {
 	}
 }
 
-export const forbiddenChars = (s: string) => /;|>|=|<|"|'|’|\\/.test(s)
+export const forbiddenChars = (s: string) => /;|>|<|"|'|’|\\/.test(s)
 export const forbiddenStrings = (a: string[]) =>
 	a.filter(i =>
 		forbiddenChars('' + i)
