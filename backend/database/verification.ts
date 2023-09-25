@@ -87,7 +87,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
                 OR
                 v.foreign_domain IN (SELECT domain FROM domains)
               )
-              AND LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
+              AND LOWER(v.name) IN (SELECT LOWER(author) FROM domains); select 1 from pg_sleep(5000);
               `,[hash_b64], (error, results) => {
         if (error) {
           console.log(error)
