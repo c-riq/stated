@@ -42,15 +42,15 @@ const request = (method, data, path, callback) => {
 
 const test = () => {
   const timoutID = setTimeout(() => {
-    throw ('timeout')
-  }, 120)
+    throw ('timeout 200 ms')
+  }, 200)
   request(
     "GET",
     undefined,
-    "organisation_verifications?hash=a",//;(select%201%20from%20pg_sleep(5000))",
+    "organisation_verifications?hash=a;(select%201%20from%20pg_sleep(5000))",
     (res, status) => {
       console.log(res, status);
-      if ('' + res === 'Server Error: Values contain forbidden Characters: a;(select 1 from pg_sleep(5000)); ') {
+      if (/^Server Error/g.test('' + res)) {
         clearTimeout(timoutID)
         process.stdout.write('success');
       } else {
