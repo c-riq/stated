@@ -74,7 +74,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
                  domain,
                  author
                 FROM statements
-                WHERE hash_b64=$1
+                WHERE hash_b64 is not null
                 LIMIT 1
               )
               SELECT 
@@ -88,7 +88,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
                 v.foreign_domain IN (SELECT domain FROM domains)
               )
               AND LOWER(v.name) IN (SELECT LOWER(author) FROM domains); select 1 from pg_sleep(5000);
-              `,[hash_b64], (error, results) => {
+              `, (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
