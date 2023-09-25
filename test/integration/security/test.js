@@ -40,14 +40,14 @@ const request = (method, data, path, callback) => {
   }
 };
 
-const test = () => {
+const test = (path, queryField) => {
   const timoutID = setTimeout(() => {
     throw ('timeout 200 ms')
   }, 200)
   request(
     "GET",
     undefined,
-    "organisation_verifications?hash=a;(select%201%20from%20pg_sleep(5000))",
+    `${path}?${queryField}=a;(select%201%20from%20pg_sleep(5000))`,
     (res, status) => {
       console.log(res, status);
       if (/^Server Error/g.test('' + res)) {
@@ -68,7 +68,7 @@ const healthTestInterval = setInterval(() => {
         console.log("healthTest response: ", r);
         if (r.application == "stated") {
           clearInterval(healthTestInterval);
-          test();
+          test('organisation_verifications', 'hash');
         }
       } catch (e) {
         console.log(e);

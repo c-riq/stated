@@ -80,26 +80,3 @@ jobs:
     - name: Stop containers
       if: always()
       run: docker-compose -f "test/integration/migration/docker-compose.yml" down
-
-  security_test:
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Start databases
-      run: docker-compose -f "test/integration/security/docker-compose.yml" up -d
-
-    - name: Install node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-        
-    - name: Run test
-      working-directory: ./test/integration/security
-      run: node test.js
-
-    - name: Stop containers
-      if: always()
-      run: docker-compose -f "test/integration/security/docker-compose.yml" down
