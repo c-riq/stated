@@ -1,0 +1,42 @@
+
+services:
+  db_1:
+    image: postgres
+    environment:
+      POSTGRES_USER: sdf
+      POSTGRES_PASSWORD: sdf
+      PGDATA: /data/postgres
+    volumes:
+       - vol_db_1:/data/postgres
+       - ../../../backend/database/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  stated_1: 
+    environment:
+      - PORT=7766
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db_1
+      - API_KEY=XXX
+      - TEST=true
+      - DELETE_DATA=true
+    build: 
+      context: ../../..
+      dockerfile: Dockerfile_small
+    ports:
+      - '7766:7766'
+    networks:
+      - postgres
+    depends_on:
+      - db_1
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    vol_db_1:

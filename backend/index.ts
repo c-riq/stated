@@ -80,7 +80,7 @@ app.use((err, req, res, next) => {
     let message = "unknown error"
     if (err) {
         if (err.message || err.error) {
-            message = (err.message || err.error) + err.stack
+            message = (err.message || err.error) + '; ' + (err.stack ? err.stack : '')
         } else {
             try {
                 message = JSON.stringify(err)
