@@ -418,6 +418,8 @@ export const buildVoteContent = ({pollHash, poll, vote}:vote) => {
 	""
 	return content
 }
+export const voteKeys = /(Type: |Poll id: |Poll: |Option: )/g
+
 export const parseVote = (s: string):vote => {
 	const voteRegex= new RegExp(''
 	+ /^\n\tType: Vote\n/.source

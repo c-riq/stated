@@ -1,3 +1,8 @@
+/* 
+disable own domain check in backend API key verification
+run in root folder with
+HOST=localhost PORT=7766 ts-node backend/scripts/generateObservations.ts
+*/
 import {
   buildOrganisationVerificationContent,
   buildStatement,
@@ -203,9 +208,9 @@ async () => {
       hash: sha256(statement),
       api_key: apiKey,
     };
-    submitStatement(data, (res) => {
+    submitStatement( {data, host: 'localhost', useHttps: false, callback: (res) => {
       console.log(res);
-    });
+    }});
     //await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }; //();
@@ -238,9 +243,9 @@ async () => {
       hash: sha256(statement),
       api_key: apiKey,
     };
-    submitStatement(data, (res) => {
+    submitStatement( {data, host: 'localhost', useHttps: false, callback: (res) => {
       console.log(res);
-    });
+    }});
     //await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }; //();

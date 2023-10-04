@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { timeSince } from '../utils/time'
 
 import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
-    BoycottKeys, ObservationKeys, parseStatement } from '../statementFormats'
+    BoycottKeys, ObservationKeys, parseStatement, voteKeys } from '../statementFormats'
 import { statementDB, statementWithDetails } from '../api';
 
 const highlightedStatement = (text: string, type:string) => {
@@ -32,6 +32,9 @@ const highlightedStatement = (text: string, type:string) => {
     }
     if (type === statementTypes.observation){
         regex = ObservationKeys
+    }
+    if (type === statementTypes.vote){
+        regex = voteKeys
     }
     const parts = text.split(new RegExp(regex, 'g'));
     return <span>{ parts.map((v, i) => 
@@ -69,11 +72,13 @@ const Statements = (props:props) => {
                         let author: string|undefined = undefined
                         try {
                             author = parseStatement(s.statement).author
-                        } catch(error) {return (<></>)}
+                        } catch(error) {
+                            console.log(error)
+                        }
                         if ([
                             statementTypes.statement,statementTypes.organisationVerification,
                             statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
-                            statementTypes.boycott, statementTypes.observation
+                            statementTypes.boycott, statementTypes.observation, statementTypes.vote
                         ].includes(s.type || '')){
                             return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
