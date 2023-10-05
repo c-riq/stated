@@ -1,10 +1,10 @@
 /* eslint-disable no-useless-concat */
 // copied from frotend to backend directory via 'npm run build'
 
-import {countries} from './constants/country_names_iso3166'
-import {legalForms} from './constants/legalForms'
+import {countries} from '../../constants/country_names_iso3166'
+import {legalForms} from '../../constants/legalForms'
 // TODO: import {cities} from './constants/cities'
-import {subdivisions} from './constants/provinces_un_locode'
+import {subdivisions} from '../../constants/provinces_un_locode'
 
 const version = 2
 

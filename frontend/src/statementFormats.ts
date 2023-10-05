@@ -6,6 +6,8 @@ import {legalForms} from './constants/legalForms'
 // TODO: import {cities} from './constants/cities'
 import {subdivisions} from './constants/provinces_un_locode'
 
+const version = 2
+
 export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
 export const statementTypes = {
     statement: 'statement',

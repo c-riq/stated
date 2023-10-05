@@ -27,6 +27,17 @@
             "runtimeArgs": [
                 "run-script", "start"
             ],
+        },{
+            "name": "migrate",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal",
+            "runtimeExecutable": "ts-node",
+            "runtimeArgs": [
+                "backend/scripts/statementVersionMigration/migrateStatements.ts"
+            ],
+            "env": {"API_KEY":"XXX", "HOST":"stated.rixdata.net"}
         }
     ]
 }

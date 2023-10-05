@@ -74,8 +74,9 @@ api.get("/statements", async (req, res, next) => {
             // @ts-ignore
             minId = '' + (parseInt(req.query.min_id) || 0)
         }
+        const domain = req.query && req.query.domain
         // @ts-ignore
-        const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false})
+        const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false, domain})
         let statements = dbResult.rows.map(({id, statement, hash_b64}) => ({id, statement, hash_b64}))
         res.end(JSON.stringify({statements, time: new Date().toUTCString()}))       
     } catch(error) {

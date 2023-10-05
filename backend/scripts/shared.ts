@@ -4,7 +4,12 @@ import fs from "fs";
 
 const port = process.env.PORT || 80;
 
-export const submitStatement = ({data, host = 'localhost', useHttps = true, callback}) => {
+export const submitStatement = ({
+  data,
+  host = "localhost",
+  useHttps = true,
+  callback,
+}) => {
   console.log(data, host);
   try {
     var post_options = {
@@ -35,6 +40,54 @@ export const submitStatement = ({data, host = 'localhost', useHttps = true, call
     });
 
     post_req.write(JSON.stringify(data));
+    post_req.end();
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const fetchStatements = ({
+  host = "localhost",
+  useHttps = true,
+  publishingDomain = undefined,
+  callback,
+}: {
+  host: string;
+  useHttps: boolean;
+  publishingDomain: string | undefined;
+  callback: (string) => void;
+}) => {
+  console.log(host);
+  try {
+    var post_options = {
+      host: host,
+      port: useHttps ? 443 : port,
+      path:
+        "/api/statements/" +
+        (publishingDomain ? "?domain=" + publishingDomain : ""),
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    var post_req = (useHttps ? https : http).request(post_options, (res) => {
+      let rawData = "";
+      res.setEncoding("utf8");
+      res.on("data", function (chunk) {
+        //console.log('Response: ' + chunk);
+        rawData += chunk;
+      });
+      res.on("end", function () {
+        callback && callback(rawData);
+      });
+      res.on("error", function (e) {
+        console.log("Error: " + e.message);
+      });
+    });
+    post_req.on("error", function (e) {
+      console.log("Error: " + e.message);
+    });
+
     post_req.end();
   } catch (e) {
     console.log(e);
