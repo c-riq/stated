@@ -113,3 +113,6 @@ export const getStatementsToVerify = getStatementsToVerifyFactory(pool)
 export const addLog = addLogFactory(pool)
 export const getLogsForStatement = getLogsForStatementFactory(pool)
 
+import { deleteSupersededDerivedEntitiesFactory } from './cleanup'
+
+export const deleteSupersededDerivedEntities = deleteSupersededDerivedEntitiesFactory(pool)
