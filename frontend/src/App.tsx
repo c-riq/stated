@@ -27,6 +27,7 @@ import { getStatements, statementDB, statementWithDetails } from './api'
 import gh from './img/github.png'
 // @ts-ignore
 import logo from './img/logo.png'
+import DebugStatement from './components/DebugStatement';
 
 type CenterModalProps = {
   lt850px: boolean,
@@ -207,6 +208,11 @@ function App() {
             <Route path='/create-statement' element={
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
                 <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} poll={poll} lt850px={lt850px}/>
+              </CenterModal>} 
+            />
+            <Route path='/debug-statement' element={
+              <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
+                <DebugStatement lt850px={lt850px}/>
               </CenterModal>} 
             />
           </Route>
