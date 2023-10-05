@@ -31,22 +31,21 @@ const DebugStatement = (props: Props) => {
     const [statement, setStatement] = React.useState(defaultStatementStr);
     const [useCustomRegex, setUserCustomRegex] = React.useState(false);
     const [regex, setRegex] = React.useState(defaultRegexStr);
-    const [parsedStatement, setParsedStatement] = React.useState({});
+    const [result, setResult] = React.useState('');
 
     React.useEffect(() => {
         try {
             if(regex && useCustomRegex){
-                const regexObj = eval(regex.replace(/\\n/g, '\\n'));
-                //console.log(regexObj);
+                const regexObj = eval(regex.replace(/\\n/g, '\\n')) as RegExp;
                 const parsed = statement.match(regexObj)
-                setParsedStatement(parsed);
+                setResult(JSON.stringify(parsed, null, 2));
             } else {
                 const parsed = parseStatement(statement);
-                setParsedStatement(parsed);
+                setResult(JSON.stringify(parsed, null, 2));
             }
-        } catch (e) {
+        } catch (e: any) {
             console.log(e);
-            setParsedStatement(e.message);
+            setResult(e.message);
         }
     }, [statement, regex])
 
@@ -107,7 +106,7 @@ const DebugStatement = (props: Props) => {
                             label=""
                             rows={15}
                             multiline
-                            value={typeof parsedStatement === "object" ? JSON.stringify(parsedStatement, null, 2) : parsedStatement}
+                            value={result}
                             // @ts-ignore
                             sx={{ width: "100%", overflowX: "scroll" }}
                         />
