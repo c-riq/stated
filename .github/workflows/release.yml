@@ -30,7 +30,7 @@ jobs:
     
     - name: Archive
       working-directory: ./backend
-      run: sudo apt-get install zip && zip -r release.zip -x "node_modules" .
+      run: sudo apt-get install zip && zip -r release.zip . -x "node_modules"
     
     # - name: Archive production artifacts
     #   uses: actions/upload-artifact@v3
