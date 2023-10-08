@@ -34,3 +34,4 @@ jobs:
         makeLatest: "true"
         name: "Release v1.0.0"
         body: "Release v1.0.0_"
+        tag: "v1.0.0"
