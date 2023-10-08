@@ -1,11 +1,9 @@
 /* eslint-disable no-useless-concat */
 // copied from frotend to backend directory via 'npm run build'
 
-import {countries} from './constants/country_names_iso3166'
 import {legalForms} from './constants/legalForms'
-// TODO: import {cities} from './constants/cities'
-import {subdivisions} from './constants/provinces_un_locode'
 
+// eslint-disable-next-line
 const version = 2
 
 export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
@@ -254,9 +252,9 @@ export const buildOrganisationVerificationContent = (
 	/* Omit any fields that may have multiple values */
 	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
-	const countryObject = countries.countries.find(c => c[0] === country)
-	if(!countryObject) throw new Error("Invalid country " + country)
-	if(province && !subdivisions.filter(c => c[0] === countryObject[1]).map(c => c[2]).includes(province)) throw new Error("Invalid province " + province + ", " + country)
+	//const countryObject = countries.countries.find(c => c[0] === country)
+	//if(!countryObject) throw new Error("Invalid country " + country)
+	//if(province && !subdivisions.filter(c => c[0] === countryObject[1]).map(c => c[2]).includes(province)) throw new Error("Invalid province " + province + ", " + country)
 	if(!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal entity " + legalForm)
 	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 	if(confidence && !(''+confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
