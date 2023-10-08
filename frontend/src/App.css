@@ -63,3 +63,7 @@
   bottom: 0px;
   border-radius: 1rem;
 }
+
+.MuiPopper-root {
+  z-index: 9999;
+}
