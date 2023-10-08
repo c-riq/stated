@@ -29,4 +29,7 @@ jobs:
       with:
         artifacts: "release.tar.gz,foo/*.txt"
         bodyFile: "body.md"
+        commit: "true"
+        allowUpdates: "true"
+        
 
