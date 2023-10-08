@@ -1,0 +1,32 @@
+name: Create Github release
+on: 
+  push:
+    branches:
+      - master
+      - pre-transpile-ts
+
+jobs:
+  update_release:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+          node-version: 16.x
+          
+    - name: Transpile
+      working-directory: ./backend
+      run: npm i && npm run build 
+    
+    - name: Release to Github
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "release.tar.gz,foo/*.txt"
+        bodyFile: "body.md"
+
