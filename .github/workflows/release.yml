@@ -42,7 +42,7 @@ jobs:
     - name: Release to Github
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "backend"
+        artifacts: backend
         allowUpdates: "true"
         # makeLatest: "true"
         # name: "Release v1.0.0"
