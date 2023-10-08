@@ -2,6 +2,10 @@ import { render, screen } from "@testing-library/react";
 import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 
+jest.mock('d3-scale', () => ({}));
+jest.mock('d3-shape', () => ({}));
+jest.mock('d3-color', () => ({}));
+
 describe("Test", () => {
   test("renders learn react link", () => {
     window.matchMedia = jest.fn().mockImplementation((query) => ({
