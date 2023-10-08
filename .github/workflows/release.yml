@@ -1,9 +1,9 @@
 name: Create Github release
+
 on: 
   push:
-    branches:
-      - master
-      - pre-transpile-ts
+    tags:
+    - '*'
 
 jobs:
   update_release:
@@ -24,14 +24,16 @@ jobs:
       working-directory: ./backend
       run: npm i && npm run build 
     
+    - name: Archive
+      working-directory: ./backend
+      run: sudo apt-get install zip && zip -r release.zip .
+    
     - name: Release to Github
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "release.tar.gz,foo/*.txt"
-        bodyFile: "body.md"
-        commit: "true"
+        artifacts: "release.zip"
         allowUpdates: "true"
-        makeLatest: "true"
-        name: "Release v1.0.0"
-        body: "Release v1.0.0_"
-        tag: "v1.0.0"
+        # makeLatest: "true"
+        # name: "Release v1.0.0"
+        # body: "Release v1.0.0_"
+        # tag: "v1.0.0"
