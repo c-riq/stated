@@ -30,7 +30,7 @@ const enableRetry = process.env.RETRY || true
 p2p.setupSchedule(pullIntervalSeconds)
 enableRetry===true && retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 prefillSSLOVInfo==="true" && fetchOVInfoForMostPopularDomains()
-enableVerificationLog==="true" && verificationLog.setupSchedule(retryIntervalSeconds)
+enableVerificationLog==="true" && verificationLog.setupSchedule(pullIntervalSeconds)
 
 const app = express();
 

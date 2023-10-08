@@ -9,8 +9,8 @@ type res<T> = (arg0:T|undefined)=>void
 type validatedResponseHandler<T> = (arg0:T)=>void
 type cb = (arg0:any)=>void
 
-const req = (method:method, path:string, body:any, cb:cb, reject:cb) => {
-    const url = `${backendHost}/api/${path}`
+const req = (method:method, path:string, body:any, cb:cb, reject:cb, host?:string) => {
+    const url = `${host||backendHost}/api/${path}`
     const opts = {
         headers: {
             'accept': `application/json`,
@@ -189,6 +189,21 @@ export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
 }
 export const submitStatement = (body:any, cb:cb, reject:cb) => {
     req('POST', 'statement', body, cb, reject)
+}
+
+export type vLog = {
+    id: number,
+    statement_hash: string,
+    t: string,
+    api: boolean,
+    dns: boolean,
+    txt: boolean
+}
+export const getVerificationLog = (hash:string, cb:res<{results:vLog[]}>, reject:cb, host?:string) => {
+    host ?
+        req('GET', "verification_logs?hash=" + hash, {}, cb, reject, host)
+    :
+        req('GET', "verification_logs?hash=" + hash, {}, cb, reject)
 }
 
 export const uploadPdf = (body:any, cb:validatedResponseHandler<{sha256sum: string, filePath: string}>, reject:cb) => {

@@ -20,6 +20,7 @@ import {VerificationGraph} from './VerificationGraph'
 import {filePath, getWorkingFileURL} from './SignPDFForm'
 import {statementDB, joiningStatementsResponse} from '../api'
 import { DecryptedContent } from './DecryptedContent';
+import VerificationLogGraph from './VerificationLogGraph';
 
 type props = {
     lt850px: boolean,
@@ -128,6 +129,7 @@ const Statement = (props:props) => {
                 </Button>
             </RouterLink>))}
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
+            <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{
                 width: "100%",
                 minWidth: !props.lt850px ? "50vw": "70vw",

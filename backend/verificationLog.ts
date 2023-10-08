@@ -38,7 +38,7 @@ const tryVerifications = ({domain, hash_b64, statement, s}) => new Promise((reso
 
 const logVerifications = async (retryIntervalSeconds) => {
     try {
-        const dbResult = await getStatementsToVerify({n:20, ownDomain})
+        const dbResult = await getStatementsToVerify({n:5, ownDomain})
         let outdatedVerifications = dbResult.rows
         log && console.log('outdated verifications count ', outdatedVerifications.length)
         outdatedVerifications = outdatedVerifications.filter(s => {

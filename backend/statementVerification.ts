@@ -64,6 +64,10 @@ export const getTXTEntries = (d) => new Promise((resolve: (entries: string[])=>v
         }
         // TODO: use delv and require DNSSEC
         const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
+        setTimeout(() => {
+            dig.kill();
+            reject(Error('dig timeout'))
+        }, 10 * 1000)
         dig.stdout.on('data', (data) => {
             try {
                 log && console.log('data',data)
@@ -128,8 +132,8 @@ export const verifyViaStaticTextFile : (arg0:string, arg1:string) => Promise<boo
     try {
         const result = await get({hostname: 'static.stated.' + domain, path: '/statements.txt', json: false})
         if (result.data?.length > 0){
-            console.log(result.data.substring(0.100), 'result from ', domain)
-            if (result.data.match(statement)){
+            log && console.log(result.data.substring(0,100), 'result from ', domain)
+            if (result.data.includes(statement)){
                 return true
             }
         }
