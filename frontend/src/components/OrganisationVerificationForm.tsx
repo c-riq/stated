@@ -6,10 +6,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 
-import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
-import {cities} from '../constants/cities'
-import {subdivisions} from '../constants/provinces_un_locode'
 import { parseStatement, buildStatement, forbiddenStrings, 
     buildOrganisationVerificationContent, parseOrganisationVerification, employeeCounts } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
@@ -32,6 +29,28 @@ const OrganisationVerificationForm = (props:FormProps) => {
     const [employeeCountObject, setEmployeeCountObject] = React.useState(undefined as string|undefined);
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
+
+    const [countries, setCountries] = React.useState([] as [string,string,string,string][])
+    const [provinces, setProvinces] = React.useState([] as [string,string,string][])
+    const [cities, setCities] = React.useState([] as [string,string,string][])
+
+    React.useEffect(() => {
+        fetch('/countries.json')
+        .then(response => response.json())
+        .then(data => {
+            setCountries(data?.countries || [])
+        })
+        fetch('/provinces.json')
+        .then(response => response.json())
+        .then(data => {
+            setProvinces(data?.provinces || [])
+        })
+        fetch('/cities.json')
+        .then(response => response.json())
+        .then(data => {
+            setCities(data?.cities || [])
+        })
+    }, [])
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setViaAPI(method === 'api')
@@ -60,7 +79,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         }
     }
 
-    return (
+    return !(provinces.length && cities.length && countries.length) ? (<></>) : (
         <FormControl sx={{width: "100%"}}>
         <TextField
             id="website"
@@ -84,7 +103,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="country"
-            options={countries.countries}
+            options={countries}
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
@@ -130,7 +149,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] === countryObject[4] ) : []}
+            options={countryObject ? cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo
@@ -145,7 +164,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="province"
-            options={countryObject ? subdivisions.filter(l =>(l[0] === countryObject[1] )) : []}
+            options={countryObject ? provinces.filter(l =>(l[0] === countryObject[1] )) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[2] : ''}
             freeSolo
