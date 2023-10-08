@@ -11,9 +11,7 @@ import moment from 'moment'
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 
-import {countries} from '../constants/country_names_iso3166'
 import {legalForms} from '../constants/legalForms'
-import {cities} from '../constants/cities'
 import GenerateStatement from './GenerateStatement'
 import { sha256 } from '../utils/hash'
 
@@ -35,6 +33,21 @@ const PollForm = (props:FormProps) => {
     const [nodes, setNodes] = React.useState("");
     const [votingDeadline, setVotingDeadline] = React.useState(moment().add(14,'days'));
     const [poll, setPoll] = React.useState("");
+    const [countries, setCountries] = React.useState([] as [string, string, string ,string][])
+    const [cities, setCities] = React.useState([] as [string, string ,string][])
+
+    React.useEffect(() => {
+        fetch('/countries.json')
+        .then(response => response.json())
+        .then(data => {
+            setCountries(data?.countries || [])
+        })
+        fetch('/cities.json')
+        .then(response => response.json())
+        .then(data => {
+            setCities(data?.cities || [])
+        })
+    }, [])
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setViaAPI(method === 'api')
@@ -59,7 +72,7 @@ const PollForm = (props:FormProps) => {
         }
     }
 
-    return (
+    return !(cities.length && countries.length) ? (<></>) : (
         <FormControl sx={{width: "100%"}}>
         <TextField
             id="poll"
@@ -114,7 +127,7 @@ const PollForm = (props:FormProps) => {
         />
         <Autocomplete
             id="country"
-            options={countries.countries}
+            options={countries}
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
@@ -144,7 +157,7 @@ const PollForm = (props:FormProps) => {
         />
         <Autocomplete
             id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] === countryObject[4] ) : []}
+            options={countryObject ? cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo

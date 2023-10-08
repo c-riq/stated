@@ -13,8 +13,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from 'moment'
 
-import {countries} from '../constants/country_names_iso3166'
-import {cities} from '../constants/cities'
 import { parseStatement, buildStatement, forbiddenStrings, 
     parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
@@ -32,6 +30,21 @@ const PersonVerificationForm = (props:FormProps) => {
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [foreignDomain, setForeignDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
+    const [countries, setCountries] = React.useState({countries: []})
+    const [cities, setCities] = React.useState({cities: []})
+
+    React.useEffect(() => {
+        fetch('/countries.json')
+        .then(response => response.json())
+        .then(data => {
+            setCountries(data?.countries || [])
+        })
+        fetch('/cities.json')
+        .then(response => response.json())
+        .then(data => {
+            setCities(data?.cities || [])
+        })
+    }, [])
 
     const prepareStatement:prepareStatement = ({method}) => {
         try {

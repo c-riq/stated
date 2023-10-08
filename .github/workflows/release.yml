@@ -1,0 +1,40 @@
+name: Create Github release
+
+on: 
+  push:
+    tags:
+    - '*'
+
+jobs:
+  update_release:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+          node-version: 16.x
+          
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm i && npm run build 
+
+    - name: Build backend
+      working-directory: ./backend
+      run: npm i && npm run build 
+    
+    - name: Archive
+      working-directory: ./backend
+      run: sudo apt-get install zip && zip -r release.zip . -x "**/node_modules/*"
+
+    - name: Release to Github
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "backend/release.zip"
+        allowUpdates: "true"
+        makeLatest: "true"
