@@ -33,6 +33,7 @@ sudo certbot certonly --standalone
 ### Install dependencies
 
 ```bash
+# or follow instructions on https://github.com/nodesource/distributions#installation-instructions
 curl -sL https://deb.nodesource.com/setup_16.x -o /tmp/nodesource_setup.sh
 sudo bash /tmp/nodesource_setup.sh
 sudo apt-get update
@@ -45,13 +46,13 @@ CREATE DATABASE stated;
 ```
 Exit the sql promt with `exit`, and exit the postgres user shell session by running `exit` again. <br />
 ```bash
-git clone https://github.com/c-riq/stated.git
-cd stated/backend
-npm install 
-npm run build 
+sudo apt-get install unzip
+wget https://github.com/c-riq/stated/releases/download/v1.0.5/release.zip
+unzip file.zip -d stated
 # replace DOMAIN, API_KEY and SSL_CERT_PATH below
 tmux
-sudo NODE_ENV=production DOMAIN=2.rixdata.net API_KEY=dOhewi9GhjoLkgiXhnq0N1 SSL_CERT_PATH=/etc/letsencrypt/live/stated.2.rixdata.net/ node index.js 
+cd stated
+sudo NODE_ENV=production DOMAIN=2.rixdata.net API_KEY=dOhewi9GhjoLkgiXhnq0N1 SSL_CERT_PATH=/etc/letsencrypt/live/stated.2.rixdata.net/ node index.js
 ```
 Exit tmux by `CTRL + b` then `d`.
 
