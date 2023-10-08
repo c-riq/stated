@@ -10,7 +10,7 @@ backend/constants/*.js
 backend/constants/*.js.map
 backend/scripts/*.js
 backend/scripts/*.js.map
-backend/public/files/*.pdf
+backend/public/*
 
 backend/public/files/*.pdf
 

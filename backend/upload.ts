@@ -7,6 +7,10 @@ import {sha256} from './hash'
 
 const log=false
 
+if (!fs.existsSync(__dirname + '/public/files')){
+    fs.mkdirSync(__dirname + '/public/files');
+}
+
 export const saveFile = async(req) => {
     let result = {error: "File not saved"}
     try {
