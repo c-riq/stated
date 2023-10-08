@@ -199,7 +199,7 @@ export type vLog = {
     dns: boolean,
     txt: boolean
 }
-export const getVerificationLog = (hash:string, cb:res<{results:vLog[]}>, reject:cb, host?:string) => {
+export const getVerificationLog = (hash:string, cb:res<{result:vLog[]}>, reject:cb, host?:string) => {
     host ?
         req('GET', "verification_logs?hash=" + hash, {}, cb, reject, host)
     :
