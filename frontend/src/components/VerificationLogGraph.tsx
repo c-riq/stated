@@ -20,22 +20,29 @@ const getMonday = (d: Date) => {
 }
 
 const getWeeklyTimeSeries = (data: { result: vLog[] }): vLogWeekly[] => {
-  const withWeeks = data.result.map(i => ({ ...i, w: getMonday(new Date(i.t)) }))
-  const weekly = withWeeks.reduce((acc, i) => {
-    i = { ...i, api: i.api ? 1 : 0, dns: i.dns ? 1 : 0, txt: i.txt ? 1 : 0 }
-    if (!acc[i.w]) {
-      acc[i.w] = { api: i.api, dns: i.dns, txt: i.txt, count: 1 }
+  const withWeeks: (vLog & {w: string})[] = data.result.map(i => ({ ...i, w: getMonday(new Date(i.t)).toString() }))
+  const weekly: {[key: string]: vLogWeeklyFields} = withWeeks.reduce((acc: {[key: string]: vLogWeeklyFields}, i: vLog & {w: string}) => {
+    const _i = { ...i, api: i.api ? 1 : 0, dns: i.dns ? 1 : 0, txt: i.txt ? 1 : 0 }
+    if (!acc[_i.w]) {
+      acc[i.w] = { api: _i.api, dns: _i.dns, txt: _i.txt, count: 1 }
     }
     else {
-      acc[i.w]['api'] += i.api
-      acc[i.w]['dns'] += i.dns
-      acc[i.w]['txt'] += i.txt
-      acc[i.w]['count'] += 1
+      acc[_i.w]['api'] += _i.api
+      acc[_i.w]['dns'] += _i.dns
+      acc[_i.w]['txt'] += _i.txt
+      acc[_i.w]['count'] += 1
     }
     return acc
-  }, {})
-  const weeklySeries = Object.keys(weekly).map(i => ({ ...weekly[i], t: i }))
+  }, {} as {[key: string]: vLogWeeklyFields})
+  const weeklySeries = Object.keys(weekly).map(i => ({ ...weekly[i], t: new Date(i) }))
   return weeklySeries
+}
+
+type vLogWeeklyFields = {
+  api: number,
+  dns: number,
+  txt: number,
+  count: number
 }
 
 type vLogWeekly = {
