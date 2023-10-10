@@ -61,3 +61,6 @@ This statement can also be viewed under [https://stated.rixdata.net/statement/NF
 - [Server Installation Steps](https://github.com/c-riq/stated/blob/master/backend/README.md)
 - [Front end / User Interface development](https://github.com/c-riq/stated/blob/master/frontend/README.md)
 - [Domain ownership data analysis](https://github.com/c-riq/stated/blob/master/analysis/README.md)
+
+### Join the community
+- [Slack channel](https://join.slack.com/t/stated/shared_invite/zt-24r6gz86t-gy9TADMabaA0e1UQ1it~4g)
