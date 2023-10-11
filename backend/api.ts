@@ -68,16 +68,22 @@ api.get("/statements_with_details", async (req, res, next) => {
 
 api.get("/statements", async (req, res, next) => {
     let minId = '0'
+    let n = '50'
     try { 
         // @ts-ignore
         if ((req.query.min_id && req.query.min_id.length) > 0){
             // @ts-ignore
             minId = '' + (parseInt(req.query.min_id) || 0)
         }
+        // @ts-ignore
+        if ((req.query.n && req.query.n.length) > 0){
+            // @ts-ignore
+            minId = '' + (parseInt(req.query.min_id) || 0)
+        }
         const domain = req.query && req.query.domain
         // @ts-ignore
-        const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false, domain})
-        let statements = dbResult.rows.map(({id, statement, hash_b64}) => ({id, statement, hash_b64}))
+        const dbResult = await getStatements({minId, onlyStatementsWithMissingEntities: false, domain, n})
+        let statements = dbResult.rows.map(({id, statement, hash_b64, verification_method}) => ({id, statement, hash_b64, verification_method}))
         res.end(JSON.stringify({statements, time: new Date().toUTCString()}))       
     } catch(error) {
         next(error)

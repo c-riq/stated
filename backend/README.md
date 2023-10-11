@@ -48,7 +48,7 @@ Exit the sql promt with `exit`, and exit the postgres user shell session by runn
 ```bash
 sudo apt-get install unzip
 wget https://github.com/c-riq/stated/releases/download/v1.0.5/release.zip
-unzip file.zip -d stated
+unzip release.zip -d stated
 # replace DOMAIN, API_KEY and SSL_CERT_PATH below
 tmux
 cd stated
