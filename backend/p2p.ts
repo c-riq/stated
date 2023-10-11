@@ -90,7 +90,7 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
     console.log('fetch statements from ', domain)
     try {
         if (domain === 'stated.' + ownDomain) { resolve({}); return }
-        const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0) + '&n=20'})
+        const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0) + '&n=100'})
         if (res.error){
             log && console.log(domain, res.error)
             log && console.trace()
