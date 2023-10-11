@@ -118,7 +118,7 @@ const generateVerificationStatement = (node) => {
 let beforeCount = 1e9
 
 const test = () => {
-    request('GET', {}, 1, 'statements', (res) => {
+    request('GET', {}, 1, 'statements/n=10000', (res) => {
         console.log(res)
         const r = JSON.parse(res)
         beforeCount = r.statements.length
