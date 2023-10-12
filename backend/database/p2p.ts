@@ -7,9 +7,7 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
     try {
       pool.query(`
               SELECT 
-                  domain,
-                  id,
-                  last_received_statement_id
+                  *
               FROM p2p_nodes;
               `, (error, results) => {
         if (error) {

@@ -45,7 +45,8 @@ const addNodesOfPeer = ({domain}) => new Promise(async (resolve, reject) => {
     try {
         log && console.log('get nodes from', domain)
         const response = await get({hostname: domain, path: '/api/nodes'})
-        const result = await Promise.allSettled(response.data.domains.map(domain => validateAndAddNode({domain})))
+        const result = await Promise.allSettled(response.data?.result?.map((
+            {domain}) => validateAndAddNode({domain})))
         resolve(result)
     } catch(error) {
         reject(error)

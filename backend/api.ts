@@ -174,7 +174,7 @@ api.get("/votes", async (req, res, next) => {
 api.get("/nodes", async (req, res, next) => {
     try {
         const dbResult = await getAllNodes()
-        res.end(JSON.stringify({domains: dbResult.rows.map(r=>r.domain)})) 
+        res.end(JSON.stringify({result: dbResult.rows})) 
     } catch(error){
         next(error)
     }

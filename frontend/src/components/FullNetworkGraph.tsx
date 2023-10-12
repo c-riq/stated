@@ -11,16 +11,14 @@ const sample = (arr: any[],n:number) => arr.map(a => [a,Math.random()]).sort((a,
 
 export const FullNetworkGraph = () => {
   const graphRef = useRef(null);
-  const [p2pNodes, setP2pNodes] = React.useState([window.location.hostname]);
+  const [p2pNodes, setP2pNodes] = React.useState([{
+    domain: window.location.hostname, last_seen: new Date(), ip: undefined, fingerprint: undefined
+  }]);
   const [dataFetched, setDataFetched] = React.useState(false);
 
   React.useEffect(() => { if(!dataFetched) {
-    getNodes(({domains}) => {
-        console.log("domains", domains)
-      let allNodes = domains || []
-      allNodes = sample(allNodes, 80)
-      console.log("allNodes", allNodes, p2pNodes)
-      setP2pNodes([...(new Set([...allNodes, ...p2pNodes]))]) // @ts-ignore
+    getNodes(({result}) => {
+      setP2pNodes([...(new Set([...result, ...p2pNodes]))]) // @ts-ignore
     })
     setDataFetched(true)
   }})
@@ -31,22 +29,24 @@ export const FullNetworkGraph = () => {
     let domains = [];
     p2pNodes.forEach(
       (
-        domain
+        {domain, ip=undefined, last_seen=undefined, fingerprint=undefined}
       ) => {
         console.log("domain", domain)
         const sourceId = domain;
+        const daysSinceLastSeen = last_seen ? ((new Date()).getTime() - (new Date(last_seen)).getTime()) / (1000*60*60*24) : 1e9
         if (!nodes.map((n) => n?.data?.id).includes(sourceId)) {
           domains.push(sourceId);
           nodes.push({
             data: {
               id: sourceId,
-              name: sourceId,
-              color : "rgba(42,74,103,1)"
+              name: sourceId + (ip ? '\nip: ' + ip : '') + '\n ssl fingerprint: ' + (fingerprint ? (fingerprint).substring(0,7) + '...' : 'unknown')
+              + (daysSinceLastSeen > 3 ? '\nnot seen for >3 days' : ''),
+              color : daysSinceLastSeen > 3 ? "rgb(200,50,50)" : "rgba(42,74,103,1)",
             },
           });
         }
         for(let i = 0; i < p2pNodes.length; i++){
-            const targetId = p2pNodes[i];
+            const targetId = p2pNodes[i].domain;
             if (sourceId === targetId) {
                 continue
             }
@@ -79,7 +79,7 @@ export const FullNetworkGraph = () => {
             "text-halign": "center",
             color: "rgba(255,255,255,1)",
             backgroundColor: "data(color)",
-            height: "data(size)",
+            height: "70px",
             width: "100px",
           },
         },
