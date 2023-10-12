@@ -47,7 +47,7 @@ CREATE DATABASE stated;
 Exit the sql promt with `exit`, and exit the postgres user shell session by running `exit` again. <br />
 ```bash
 sudo apt-get install unzip
-wget https://github.com/c-riq/stated/releases/download/v1.0.5/release.zip
+wget https://github.com/c-riq/stated/releases/download/v1.0.8/release.zip
 unzip release.zip -d stated
 # replace DOMAIN, API_KEY and SSL_CERT_PATH below
 tmux
