@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/statements|statements.txt", async (req, res, next) => {
     try {
-        const dbResult = await getStatements({minId: 0, domain: ownDomain})
+        const dbResult = await getStatements({minId: 0, domain: ownDomain, n: 5000})
         res.setHeader('Content-Type', 'text/plain; charset=UTF-8');
         res.end(dbResult.rows.map(r=>r.statement).join("\n\n"))       
     } catch (err) {

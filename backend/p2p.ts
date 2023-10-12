@@ -45,7 +45,8 @@ const addNodesOfPeer = ({domain}) => new Promise(async (resolve, reject) => {
     try {
         log && console.log('get nodes from', domain)
         const response = await get({hostname: domain, path: '/api/nodes'})
-        const result = await Promise.allSettled(response.data.domains.map(domain => validateAndAddNode({domain})))
+        const result = await Promise.allSettled(response.data?.result?.map((
+            {domain}) => validateAndAddNode({domain})))
         resolve(result)
     } catch(error) {
         reject(error)
@@ -90,7 +91,7 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
     console.log('fetch statements from ', domain)
     try {
         if (domain === 'stated.' + ownDomain) { resolve({}); return }
-        const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0)})
+        const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0) + '&n=20'})
         if (res.error){
             log && console.log(domain, res.error)
             log && console.trace()
@@ -158,11 +159,28 @@ const fetchMissingStatementsFromNodes = async () => {
 
 const setupSchedule = (pullIntervalSeconds) => {
     setInterval(async () => {
+        let seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes 
         try {
-            const seedRes = await addSeedNodes()
-            const addNodesRes = await addNodesOfPeers()
-            const joinNetworkRes = await joinNetwork()
-            const fetchStatmentsRes = await fetchMissingStatementsFromNodes();
+            seedRes = await addSeedNodes()
+        } catch (error) {
+            console.log(error)
+            console.trace()
+        } try {
+            addNodesRes = await addNodesOfPeers()
+        } catch (error) {
+            console.log(error)
+            console.trace()
+        } try {
+            joinNetworkRes = await joinNetwork()
+        } catch (error) {
+            console.log(error)
+            console.trace()
+        } try {
+            fetchStatmentsRes = await fetchMissingStatementsFromNodes();
+        } catch (error) {
+            console.log(error)
+            console.trace()
+        }
             [seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes].map(i => {
                 // @ts-ignore
                 if(i && i.error){
@@ -179,10 +197,6 @@ const setupSchedule = (pullIntervalSeconds) => {
                     }
                 }
             })
-        } catch (error) {
-            console.log(error)
-            console.trace()
-        }
     }, pullIntervalSeconds * 1000)
 }
 

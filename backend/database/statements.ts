@@ -336,7 +336,7 @@ export const getStatementsWithDetailFactory =
 
 export const getStatementsFactory =
   (pool) =>
-  ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "" }) =>
+  ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20 }) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
         sanitize({ minId, onlyStatementsWithMissingEntities });
@@ -363,8 +363,10 @@ export const getStatementsFactory =
                       : ""
                   }
                   ${domain ? " AND domain = $2 " : ""}
+                  ORDER BY id ASC
+                  LIMIT $3
               `,
-          [minId, domain],
+          [minId, domain, n],
           (error, results) => {
             if (error) {
               console.log(error);

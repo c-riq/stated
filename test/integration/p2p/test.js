@@ -118,7 +118,7 @@ const generateVerificationStatement = (node) => {
 let beforeCount = 1e9
 
 const test = () => {
-    request('GET', {}, 1, 'statements', (res) => {
+    request('GET', {}, 1, 'statements?n=10000', (res) => {
         console.log(res)
         const r = JSON.parse(res)
         beforeCount = r.statements.length
@@ -149,15 +149,15 @@ const test = () => {
     setTimeout(() => {
         request('GET', {}, 1, 'nodes', (res) => {
             const r = JSON.parse(res)
-            console.log(nodes.length, r.domains.length)
-            if ((r.domains.length - (nodes.length - 1)) < 0) {
+            console.log(nodes.length, r.result.length)
+            if ((r.result.length - (nodes.length - 1)) < 0) {
                 throw(new Error('Not all nodes registered with node 1'))
             } else {
-                request('GET', {}, 1, 'statements', (res) => {
+                request('GET', {}, 1, 'statements?n=10000', (res) => {
                     const r = JSON.parse(res)
                     console.log('final count node 1: ' + r.statements.length)
                     if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
-                        console.log('count change in node 1: ' + (r.statements.length - beforeCount), 'sent statement count: ' + statementCount + verificationCount)
+                        console.log('count change in node 1: ' + (r.statements.length - beforeCount), 'sent statement count: ' + (statementCount + verificationCount))
                         throw(new Error('Not all statements propagated to node 1'))
                     } else {
                         process.stdout.write('success');
