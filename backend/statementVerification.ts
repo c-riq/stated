@@ -144,7 +144,7 @@ export const verifyViaStaticTextFile : (arg0:string, arg1:string) => Promise<boo
     return false
 }
 
-export const verifyViaAPIKey = async ({domain, api_key}) => {
+export const verifyViaAPIKey = ({domain, api_key}) => {
     log && console.log('verifyViaAPIKey', domain, ownDomain, api_key, ownAPIKey)
     if(!domain){return false}
     if(!api_key){return false}
@@ -176,29 +176,37 @@ export const validateAndAddStatementIfMissing =
             return reject(Error('hidden statements must be verified via api key'))
         }
         if (verification_method && verification_method === 'api'){
-            if (api_key) {
+            if (api_key) { // api key provided
                 log && console.log('verifiy via api key', hash_b64)
-                verified = await verifyViaAPIKey({domain, api_key})
+                verified = verifyViaAPIKey({domain, api_key})
                 if(!verified){
                     return reject(Error('invalid api key'))
                 }
                 verifiedByAPI = true
-            } else {
+            } else { // method is api, but no api key provided
                 log && console.log('validate via api', hash_b64)
                 verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
-                if (!verified){
+                if (verified){
+                    verifiedByAPI = true
+                }
+                if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
                     log && console.log('validate via static text file', hash_b64)
                     verified = await verifyViaStaticTextFile(validationResult.domain, statement)
                 }
-                verifiedByAPI = true
             }
-        } else { 
+        } else { // method != api -> try verify via dns
             log && console.log('verifiy via dns', hash_b64)
             verified = await verifyTXTRecord("stated." + validationResult.domain, hash_b64)
-            if (!verified){
+            if (!verified){ // if dns unsuccessfull try via stated api even though suggested method != api
                 log && console.log('verifiy via stated api', hash_b64)
                 verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
-                verifiedByAPI = true
+                if (verified){
+                    verifiedByAPI = true
+                }
+            }
+            if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
+                log && console.log('validate via static text file', hash_b64)
+                verified = await verifyViaStaticTextFile(validationResult.domain, statement)
             }
         }
         if (verified) {
@@ -217,7 +225,7 @@ export const validateAndAddStatementIfMissing =
                 await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, 
                     domain, content, type, proclaimed_publication_time})
             }
-        } else { // !verified
+        } else { // could not verify
             if (api_key){
                 throw(Error('could not verify statement ' + hash_b64 + ' on '+ validationResult.domain))
             } else {
