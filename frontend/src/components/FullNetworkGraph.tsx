@@ -45,22 +45,24 @@ export const FullNetworkGraph = () => {
             },
           });
         }
-        for(let i = 0; i < p2pNodes.length; i++){
-            const targetId = p2pNodes[i].domain;
-            if (sourceId === targetId) {
-                continue
-            }
-            edges.push({
-            data: {
-                id: sourceId + "-" + targetId,
-                source: sourceId,
-                target: targetId,
-                name: sourceId + "-" + targetId,
-            },
-            });
-         }
       }
     );
+    const sourceId = window.location.hostname
+    for(let i = 0; i < p2pNodes.length; i++){
+      const targetId = p2pNodes[i].domain;
+      if (targetId === sourceId) continue;
+      const last_seen = p2pNodes[i].last_seen;
+      const daysSinceLastSeen = last_seen ? ((new Date()).getTime() - (new Date(last_seen)).getTime()) / (1000*60*60*24) : 1e9
+      edges.push({
+      data: {
+          id: sourceId + "-" + targetId,
+          source: sourceId,
+          target: targetId,
+          name: sourceId + "-" + targetId,
+          color: daysSinceLastSeen > 3 ? "rgb(180,180,180)" : "rgb(40,40,40)",
+      },
+      });
+   }
     const cy = cytoscape({
       container: graphRef.current,
       boxSelectionEnabled: false,
