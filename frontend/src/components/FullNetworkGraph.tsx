@@ -39,7 +39,7 @@ export const FullNetworkGraph = () => {
           nodes.push({
             data: {
               id: sourceId,
-              name: sourceId + (ip ? '\nip: ' + ip : '') + '\n ssl fingerprint: ' + (fingerprint ? (fingerprint).substring(0,7) + '...' : 'unknown')
+              name: sourceId + (ip ? '\nip: ' + ip : '') + '\n ssl fingerprint: ' + (fingerprint ? (fingerprint as string).substring(0,7) + '...' : 'unknown')
               + (daysSinceLastSeen > 3 ? '\nnot seen for >3 days' : ''),
               color : daysSinceLastSeen > 3 ? "rgb(200,50,50)" : "rgba(42,74,103,1)",
             },
