@@ -153,7 +153,7 @@ const test = () => {
             if ((r.domains.length - (nodes.length - 1)) < 0) {
                 throw(new Error('Not all nodes registered with node 1'))
             } else {
-                request('GET', {}, 1, 'statements', (res) => {
+                request('GET', {}, 1, 'statements?n=10000', (res) => {
                     const r = JSON.parse(res)
                     console.log('final count node 1: ' + r.statements.length)
                     if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
