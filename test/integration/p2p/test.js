@@ -149,8 +149,8 @@ const test = () => {
     setTimeout(() => {
         request('GET', {}, 1, 'nodes', (res) => {
             const r = JSON.parse(res)
-            console.log(nodes.length, r.domains.length)
-            if ((r.domains.length - (nodes.length - 1)) < 0) {
+            console.log(nodes.length, r.result.length)
+            if ((r.result.length - (nodes.length - 1)) < 0) {
                 throw(new Error('Not all nodes registered with node 1'))
             } else {
                 request('GET', {}, 1, 'statements?n=10000', (res) => {
