@@ -78,7 +78,7 @@ api.get("/statements", async (req, res, next) => {
         // @ts-ignore
         if ((req.query.n && req.query.n.length) > 0){
             // @ts-ignore
-            minId = '' + (parseInt(req.query.min_id) || 0)
+            minId = '' + (parseInt(req.query.n) || 50)
         }
         const domain = req.query && req.query.domain
         // @ts-ignore
