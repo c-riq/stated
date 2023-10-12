@@ -7,7 +7,7 @@ import { forbiddenChars } from './statementFormats'
 
 import { get, post } from './request'
 
-const log = true
+const log = false
 
 const ownDomain = process.env.DOMAIN
 const seedNodesFromEnv = (process.env.SEED_NODES || '').split(',').filter(Boolean)
@@ -91,7 +91,7 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
     console.log('fetch statements from ', domain)
     try {
         if (domain === 'stated.' + ownDomain) { resolve({}); return }
-        const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0) + '&n=100'})
+        const res = await get({hostname: domain, path: '/api/statements?min_id=' + (last_received_statement_id || 0) + '&n=20'})
         if (res.error){
             log && console.log(domain, res.error)
             log && console.trace()
