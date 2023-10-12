@@ -157,7 +157,7 @@ const test = () => {
                     const r = JSON.parse(res)
                     console.log('final count node 1: ' + r.statements.length)
                     if ((r.statements.length - beforeCount) < (statementCount + verificationCount)) {
-                        console.log('count change in node 1: ' + (r.statements.length - beforeCount), 'sent statement count: ' + statementCount + verificationCount)
+                        console.log('count change in node 1: ' + (r.statements.length - beforeCount), 'sent statement count: ' + (statementCount + verificationCount))
                         throw(new Error('Not all statements propagated to node 1'))
                     } else {
                         process.stdout.write('success');

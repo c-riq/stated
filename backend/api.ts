@@ -67,18 +67,18 @@ api.get("/statements_with_details", async (req, res, next) => {
 })
 
 api.get("/statements", async (req, res, next) => {
-    let minId = '0'
-    let n = '50'
+    let minId = 0
+    let n = 50
     try { 
         // @ts-ignore
         if ((req.query.min_id && req.query.min_id.length) > 0){
             // @ts-ignore
-            minId = '' + (parseInt(req.query.min_id) || 0)
+            minId = parseInt(req.query.min_id) || 0
         }
         // @ts-ignore
         if ((req.query.n && req.query.n.length) > 0){
             // @ts-ignore
-            minId = '' + (parseInt(req.query.n) || 50)
+            n = parseInt(req.query.n) || 50
         }
         const domain = req.query && req.query.domain
         // @ts-ignore
