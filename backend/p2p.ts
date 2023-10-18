@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { p2p_seed } from './p2p_seed'
 import { getAllNodes, updateNode, addNode } from './database'
 import { validateAndAddStatementIfMissing } from './statementVerification'
@@ -100,32 +98,22 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
         const certificateAuthority = '' + cert?.infoAccess?.['OCSP - URI']?.[0]
         const fingerprint = cert?.fingerprint?.match(":") && ''+cert.fingerprint
         log && console.log(res.data.statements.length, ' new statements from ', domain)
-        const addStatementsResult = await Promise.allSettled(res.data.statements.map(s => { validateAndAddStatementIfMissing({...s, source_node_id: id})}))
+        const addStatementsResult: PromiseSettledResult<{existsOrCreated:boolean}>[] = await Promise.allSettled(
+            res.data.statements.map(s => validateAndAddStatementIfMissing({...s, source_node_id: id})))
         log && console.log(addStatementsResult, 'res2')
-        if(addStatementsResult?.length && addStatementsResult.reduce((c,i) => c || (i && i.error)), false){
-            const errors = addStatementsResult.filter((i) => i.error)
+        const allExistsOrCreated = addStatementsResult.reduce((acc,i) => acc && 
+            (i.status==='fulfilled' && i.value && i.value.existsOrCreated), true)
+        if(!allExistsOrCreated){
+            const errors = addStatementsResult.filter((i) => i.status==="rejected")
             console.trace()
             console.log(errors)
+            // TODO: prevent malformatted statedments from blocking syncing of other statements
             resolve(errors)
             return
         }
-        let allStatementsInDB = false
-        if(addStatementsResult && addStatementsResult.length && addStatementsResult.reduce((c,i) => c && (i && i.existsOrCreated)), true){
-            allStatementsInDB = true
-        }
-        if(!allStatementsInDB){
-            console.log('not all statements are in DB, and errors not handeled', domain)
-            resolve({error: 'not all statements added to DB'})
-            return
-        }
-        // TODO: check if all statements were added already before updating last_received_statement_id
         let lastReceivedStatementId = Math.max(...res.data.statements.map(s => s.id), last_received_statement_id)
         if (lastReceivedStatementId >= 0) {
-            let dbResult = await updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
-            if(dbResult.error) {
-                console.log(dbResult)
-                console.trace()
-            }
+            await updateNode({domain: domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip})
         }
         resolve(addStatementsResult)
     }

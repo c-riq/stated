@@ -30,7 +30,7 @@ export const createStatementFactory =
     content,
     content_hash_b64,
     verification_method,
-    source_node_id,
+    source_node_id = null,
     supersededStatement
   }: statement) =>
     new Promise((resolve: DBCallback, reject) => {
