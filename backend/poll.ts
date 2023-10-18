@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import {createPoll, getVerificationsForDomain, getPoll, createVote} from './database'
 import {parseVote, parsePoll} from './statementFormats'
 
@@ -9,27 +7,21 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
     log && console.log('createPoll', statement_hash, domain, content)
     try {
         const parsedPoll = parsePoll(content)
-        const { pollType, country, city, legalEntity, domainScope,
-		judges, deadline, poll, option1, option2, option3, option4, option5 } = parsedPoll
-        if (deadline.length < 1 ) {
-            resolve({error: "Missing required fields"})
+        const { country, city, legalEntity, deadline } = parsedPoll
+        if(!isNaN(deadline.getTime())) {
+            resolve({error: "Invalid deadline date"})
             return
         }
         const dbResult = await createPoll({ statement_hash, participants_entity_type: legalEntity, 
             participants_country: country, participants_city: city, deadline })   
-        if(dbResult.error){
-            console.log(dbResult.error)
-            console.trace()
-            reject(dbResult)
-            return
-        } 
         if(dbResult.rows[0]){
             resolve(dbResult)
         }
     } catch (error) {
         console.log(error)
         console.trace()
-        reject({error})
+        reject(error)
+        return
     }
 }))
 
@@ -45,10 +37,6 @@ export const parseAndCreateVote = ({statement_hash, domain, content, proclaimed_
             return reject({error: "Missing required fields"})
         }
         let dbResult = await getVerificationsForDomain({domain})
-        if(dbResult.error){
-            console.log(dbResult)
-            return reject(dbResult)
-        }
         if(dbResult.rows.length == 0){
             log && console.log("No verification for voting entity")
             return reject({error: "No verification for voting entity"})
@@ -84,11 +72,6 @@ export const parseAndCreateVote = ({statement_hash, domain, content, proclaimed_
         // TODO: remove vote qualification
         if(voteTimeQualified && votingEntityQualified){
             dbResult = await createVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified: true })
-            if(dbResult.error){
-                console.log(dbResult.error)
-                console.trace()
-                return reject(dbResult)
-            } 
             if(dbResult.rows[0]){
                 return resolve(dbResult)
             }

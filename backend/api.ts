@@ -264,11 +264,16 @@ api.get("/match_subject_name", async (req, res, next) => {
 })
 
 api.post("/upload_pdf", async (req, res, next) => {
-    const result = await saveFile(req)
-    if (!result || !result.error){
-        res.send(result)
-    } else {
-        next(result)
+    try {
+        const result = await saveFile(req)
+        if (result){
+            res.send(result)
+            return
+        } else {
+            next('could not save file')
+        }
+    } catch (error) {
+        next(error)
     }
 })
 
