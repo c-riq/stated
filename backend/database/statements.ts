@@ -197,7 +197,25 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
           sanitize({ hash_b64 })
           pool.query(`
                   SELECT 
-                      s.*,
+                      s.author,
+                      s.content,
+                      s.content_hash,
+                      s.derived_entity_created,
+                      s.derived_entity_creation_retry_count,
+                      s.domain,
+                      s.first_verification_time,
+                      s.hash_b64,
+                      s.id,
+                      s.latest_verification_time,
+                      s.referenced_statement,
+                      s.source_node_id,
+                      s.statement,
+                      s.superseded_statement,
+                      s.superseding_statement,
+                      s.tags,
+                      s.type,
+                      s.verification_method,
+                      s.proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
                       v.name
                   FROM statement_with_superseding s        
                     LEFT JOIN organisation_verifications v 
@@ -296,7 +314,7 @@ export const getStatementsWithDetailFactory =
                     v.name,
                     s.statement,
                     r.repost_count,
-                    s.proclaimed_publication_time,
+                    s.proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
                     s.hash_b64,
                     s.tags,
                     s.content,
@@ -351,7 +369,7 @@ export const getStatementsFactory =
                     domain,
                     hash_b64,
                     first_verification_time,
-                    proclaimed_publication_time,
+                    proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
                     derived_entity_creation_retry_count
                   FROM statements 
                   WHERE id > $1 
