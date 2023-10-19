@@ -57,7 +57,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
 
     const prepareStatement:prepareStatement = ({method}) => {
         try {
-            props.setViaAPI(method === 'api')
+            props.setPublishingMethod(method)
             const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
             representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})

@@ -48,7 +48,7 @@ const PersonVerificationForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method}) => {
         try {
-            props.setViaAPI(method === 'api')
+            props.setPublishingMethod(method)
             let date = birthDate.toDate()
             date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
             const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 

@@ -23,7 +23,7 @@ export const RatingForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method})  => {
         try {
-            props.setViaAPI(method === 'api')
+            props.setPublishingMethod(method)
             const content = buildRating({organisation, domain, rating, comment})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
                 representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})

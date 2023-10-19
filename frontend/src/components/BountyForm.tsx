@@ -37,7 +37,7 @@ export const BountyForm = (props:FormProps) => {
             props.setisError(true)
             return
         }
-        props.setViaAPI(method === 'api')
+        props.setPublishingMethod(method)
         try {
             const content = buildBounty({motivation, bounty, reward, judge, judgePay})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 

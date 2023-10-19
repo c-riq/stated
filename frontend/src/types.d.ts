@@ -11,10 +11,9 @@ type FormProps = {
   children?: any;
   setStatement: (statement: string) => void;
   setStatementHash: (hash: string) => void;
-  setViaAPI: (viaAPI: boolean) => void;
   setAlertMessage: (message: string) => void;
   setisError: (isError: boolean) => void;
-  setViaAPI: (viaAPI: boolean) => void;
+  setPublishingMethod: (arg0: publishingMethod) => void;
 };
-type publishingMethod = "api" | "dns" | "represent";
-type prepareStatement = ({ method }: { method: publishingMethod }) => void;
+type publishingMethod = "api" | "dns" | "represent" | "static";
+type prepareStatement = (arg0: { method: publishingMethod }) => void;

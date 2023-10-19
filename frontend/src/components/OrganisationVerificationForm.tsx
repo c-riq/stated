@@ -53,7 +53,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
     }, [])
 
     const prepareStatement:prepareStatement = ({method}) => {
-        props.setViaAPI(method === 'api')
+        props.setPublishingMethod(method)
         try {
             const content = buildOrganisationVerificationContent({name: verifyName, domain: verifyDomain, city, country, province, serialNumber, legalForm,
                 foreignDomain: "", confidence: parseFloat(confidence), reliabilityPolicy, pictureHash: "", employeeCount})

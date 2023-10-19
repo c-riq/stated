@@ -50,7 +50,7 @@ const PollForm = (props:FormProps) => {
     }, [])
 
     const prepareStatement:prepareStatement = ({method}) => {
-        props.setViaAPI(method === 'api')
+        props.setPublishingMethod(method)
         try {
             const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})

@@ -36,7 +36,7 @@ const SignPDFForm = (props:FormProps) => {
 
   const prepareStatement:prepareStatement = ({method}) => {
     try {
-      props.setViaAPI(method === 'api');
+      props.setPublishingMethod(method);
       const content = buildPDFSigningContent({ hash: fileHash });
       const statement = buildStatement({
         domain: props.metaData.domain,

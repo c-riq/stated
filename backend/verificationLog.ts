@@ -27,7 +27,7 @@ const timeoutWithFalse = (promise, ms) => new Promise((resolve, reject) => {
 const tryVerifications = ({domain, hash_b64, statement, s}) => new Promise((resolve, reject) => {
     Promise.allSettled([
         timeoutWithFalse(() => verifyViaStatedApi(domain, hash_b64), 0.5 * s * 1000),
-        timeoutWithFalse(() => verifyViaStaticTextFile(domain, statement), 10 * s * 1000),
+        timeoutWithFalse(() => verifyViaStaticTextFile({domain, statement, hash: hash_b64}), 10 * s * 1000),
         timeoutWithFalse(() => verifyTXTRecord("stated." + domain, hash_b64), 10 * s * 1000)
     ]).then((results) => {
         // @ts-ignore
