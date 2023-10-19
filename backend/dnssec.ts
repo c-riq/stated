@@ -20,8 +20,8 @@ export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve: (
             console.log('invalid domain', domain)
             reject(Error('invalid domain '+ domain))
         }
-        const dig = cp.spawn('delv', ['@1.1.1.1', 'TXT', `${domain}`, '+short', '+trust'])
-        dig.stdout.on('data', (data) => {
+        const delv = cp.spawn('delv', ['@1.1.1.1', 'TXT', `${domain}`, '+short', '+trust'])
+        delv.stdout.on('data', (data) => {
             try {
                 log && console.log('data',data)
                 const TXTEntries = (''+data).split('\n').map(s=>s.replace(/\"/g,''))
@@ -36,17 +36,17 @@ export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve: (
                 reject(error)
             }
         })
-        dig.stderr.on('data', (data) => {
+        delv.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`); 
             reject(Error(data))
         })
-        dig.on('error', (error) => { 
+        delv.on('error', (error) => { 
             reject(Error('dig process error: ' + error)) 
         })
-        dig.on('close', function (code) {
+        delv.on('close', function (code) {
             reject(Error('dig process exited with code ' + code))
         });
-          
+
     } catch (error){
         reject(error)
     }
