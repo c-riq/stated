@@ -110,7 +110,7 @@ export const BountyForm = (props:FormProps) => {
             sx={{marginTop: '24px'}}
         />
             {props.children}
-            <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
+            <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }
