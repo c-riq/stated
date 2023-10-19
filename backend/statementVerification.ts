@@ -130,7 +130,14 @@ export const verifyViaStatedApi : (arg0:string, arg1:string) => Promise<boolean>
 
 export const verifyViaStaticTextFile : (arg0:string, arg1:string) => Promise<boolean> = async (domain, statement) => {
     try {
-        const result = await get({hostname: 'static.stated.' + domain, path: '/statements.txt', json: false})
+        let result = await get({hostname: 'static.stated.' + domain, path: '/statements.txt', json: false})
+        if (result.data?.length > 0){
+            log && console.log(result.data.substring(0,100), 'result from ', domain)
+            if (result.data.includes(statement)){
+                return true
+            }
+        }
+        result = await get({hostname: 'www.' + domain, path: '/.well-known/statements.txt', json: false})
         if (result.data?.length > 0){
             log && console.log(result.data.substring(0,100), 'result from ', domain)
             if (result.data.includes(statement)){
