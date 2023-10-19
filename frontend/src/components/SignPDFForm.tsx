@@ -41,6 +41,8 @@ const SignPDFForm = (props:FormProps) => {
       const statement = buildStatement({
         domain: props.metaData.domain,
         author: props.metaData.author,
+        tags: props.metaData.tags,
+        representative: props.metaData.representative,
         time: new Date(props.serverTime),
         content,
       });
@@ -172,6 +174,7 @@ const SignPDFForm = (props:FormProps) => {
       <GenerateStatement
         prepareStatement={prepareStatement}
         serverTime={props.serverTime}
+        authorDomain={props.metaData.domain}
       />
     </FormControl>
   );

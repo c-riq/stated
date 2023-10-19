@@ -189,7 +189,7 @@ const PollForm = (props:FormProps) => {
         <Button onClick={() => setShowOptionalFields(true)}>Show optional fields</Button>
         }
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

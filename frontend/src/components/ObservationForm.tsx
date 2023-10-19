@@ -150,7 +150,7 @@ const ObservationForm = (props:FormProps) => {
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
             /> 
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

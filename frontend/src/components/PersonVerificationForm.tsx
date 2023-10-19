@@ -165,7 +165,7 @@ const PersonVerificationForm = (props:FormProps) => {
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }
