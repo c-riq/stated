@@ -190,6 +190,9 @@ export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
 export const submitStatement = (body:any, cb:cb, reject:cb) => {
     req('POST', 'statement', body, cb, reject)
 }
+export const checkStaticStatement = (body:{domain:string, statement:string, hash: string}, cb:cb, reject:cb) => {
+    req('POST', 'check_static_statement', body, cb, reject)
+}
 
 export type vLog = {
     id: number,

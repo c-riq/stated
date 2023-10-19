@@ -52,7 +52,7 @@ const ObservationForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method}) => {
         try {
-            props.setViaAPI(method === 'api')
+            props.setPublishingMethod(method)
             const content = buildObservation({subject, subjectReference: referencedHash, property: observationProperty, value: obervationValue})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
 

@@ -27,7 +27,7 @@ statements.forEach((statement, index) => {
     statementWithTrailingNewline = statementWithTrailingNewline.replace(/^\n/, '')
     const hash = sha256(statementWithTrailingNewline)
     fs.writeFileSync(
-        __dirname + "/public/statements/" + hash + ".txt",
+        __dirname + "/public/statement/" + hash + ".txt",
         statementWithTrailingNewline
     );
 });

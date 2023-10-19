@@ -25,7 +25,8 @@ import {VoteForm} from './VoteForm';
 import { statementTypes, statementTypeValue } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
-    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, statementWithDetails, statementDB } from '../api'
+    getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, 
+    statementWithDetails, statementDB, checkStaticStatement } from '../api'
 
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
@@ -58,8 +59,9 @@ const CreateStatement = (props:Props) => {
     const [tagInput, setTagInput] = React.useState("")
     const [representative, setRepresentative] = React.useState("");
     const [apiKey, setApiKey] = React.useState("");
-    const [viaAPI, setViaAPI] = React.useState(false);
+    const [publishingMethod, setPublishingMethod] = React.useState(undefined as publishingMethod|undefined);
     const [dnsResponse, setDnsResponse] = React.useState([] as string[]);
+    const [staticResponse, setStaticResponse] = React.useState(undefined as {validated:boolean, response?:string}|undefined);
     const [statementHash, setStatementHash] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState("");
     const [isError, setisError] = React.useState(false);
@@ -76,8 +78,9 @@ const CreateStatement = (props:Props) => {
         setRepresentative("")
         setTags([])
         setTagInput("")
-        setViaAPI(false)
+        setPublishingMethod(undefined)
         setDnsResponse([])
+        setStaticResponse(undefined)
         setAlertMessage("")
         setisError(false)
         setDNSSECInfo({domain: null, validated: null})
@@ -171,7 +174,14 @@ const CreateStatement = (props:Props) => {
             setAlertMessage("Could not check domain")
         })
     }
-
+    const checkStaticStatementAPI = () => {
+        checkStaticStatement({hash: statementHash, statement: statement, domain}, res => {
+            setStaticResponse(res)
+        }, e => {
+            setisError(true)
+            setAlertMessage("Could not retrieve text file: " + e)
+        })
+    }
     const submitStatementAPI = () => {
         if(statement?.length >= 1500){
             setAlertMessage("Error: Statement cannot exceed 1500 characters ")
@@ -311,47 +321,47 @@ const CreateStatement = (props:Props) => {
                 </Select>
             {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</OrganisationVerificationForm>)}
             {type === statementTypes.personVerification &&(<PersonVerificationForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</PersonVerificationForm>)}
             {type === statementTypes.poll &&(<PollForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</PollForm>)}
             {type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI } >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</RatingForm>)}
             {type === statementTypes.vote &&(<VoteForm poll={props.poll} metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</VoteForm>)}
             {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</DisputeStatementForm>)}
             {type === statementTypes.response &&(<ResponseForm metaData={{domain, author, representative, tags}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI} >
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</ResponseForm>)}
             {type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</StatementForm>)}
             {type === statementTypes.signPdf &&(<SignPDFForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</SignPDFForm>)}
             {type === statementTypes.bounty &&(<BountyForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</BountyForm>)}
             {type === statementTypes.observation &&(<ObservationForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setViaAPI={setViaAPI}>
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</ObservationForm>)}
 
             {statement && (
@@ -372,7 +382,8 @@ const CreateStatement = (props:Props) => {
                     </div>
                 </div>)
             }
-            {statement && viaAPI && (
+            {/*API key*/}
+            {statement && publishingMethod === 'api' && (
                 <React.Fragment>
                     <TextField
                         id="api-key"
@@ -388,39 +399,62 @@ const CreateStatement = (props:Props) => {
                 </React.Fragment>
                 )
             }
-            {!viaAPI && (statementHash.length > 0) && (
-                    <div style={{ paddingTop: "20px", width: "100%" }}>
-                        <span >Add the following TXT record in your {domain} domain settings to verify domain ownership: </span>
-                        <TextField
-                            multiline
-                            rows={3}
-                            inputProps={{ style: { fontSize: "12pt" } }}
-                            style={{ fontSize: "12px" }} 
-                            fullWidth variant="outlined" margin="normal" 
-                            // @ts-ignore
-                            readOnly
-                            id="verificationInstructions" 
-                            value={"stated TXT "+statementHash} 
-                            // onClick={e => e.target.select()} 
-                            />
-                        <Button fullWidth variant="contained" onClick={() => { checkDomainVerificationAPI() }}>Check DNS records</Button>
+            {/*DNS*/}
+            {publishingMethod === 'dns' && (statementHash.length > 0) && (
+                <div style={{ paddingTop: "20px", width: "100%" }}>
+                    <span >Add the following TXT record in your {domain} domain settings to verify domain ownership: </span>
+                    <TextField
+                        multiline
+                        rows={3}
+                        inputProps={{ style: { fontSize: "12pt" } }}
+                        style={{ fontSize: "12px" }} 
+                        fullWidth variant="outlined" margin="normal" 
+                        // @ts-ignore
+                        readOnly
+                        id="verificationInstructions" 
+                        value={"stated TXT "+statementHash} 
+                        // onClick={e => e.target.select()} 
+                        />
+                    <Button fullWidth variant="contained" onClick={() => { checkDomainVerificationAPI() }}>Check DNS records</Button>
+                </div>)
+            }
+            {publishingMethod === 'dns' && (dnsResponse.length > 0) && (
+                <div style={{ paddingTop: "20px", width: "100%" }}>
+                    {dnsResponse.includes(statementHash) ?
+                        (<div>
+                            <Alert severity='success' style={{marginTop: "10px", marginBottom: "10px"}}>Domain ownership verified.</Alert>
+                            <Button fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
+                        </div>)
+                        :
+                        (<div>
+                            <Alert severity='error' style={{marginTop: "10px", marginBottom: "10px"}}>Error: TXT records should include {statementHash}</Alert>
+                            <div style={{fontSize: "8pt", marginBottom: "10px"}}> TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</div>
+                            <Button fullWidth variant="contained" disabled>Submit</Button>    
+                        </div>)
+                    }
+                </div>)
+            }
+            {/*static*/}
+            {publishingMethod === 'static' && (statementHash.length > 0) && (
+                <div style={{ paddingTop: "20px", width: "100%" }}>
+                    <span> Publish this <a download={statementHash+'.txt'} 
+                    href={"data:application/octet-stream;charset=utf-8;base64,"+window.btoa(statement)}><Button>text file </Button></a>
+ under <a target='_blank ' href={`https://static.stated.${domain}/statements/${statementHash}.txt`}>{`https://static.stated.${domain}/statements/${statementHash}.txt`}</a> to verify domain ownership.</span>
+                    <Button fullWidth variant="contained" onClick={() => { checkStaticStatementAPI() }}>Check if the file can be retrieved</Button>
+                </div>)
+            }
+            {publishingMethod === 'static' && (staticResponse) && (
+                <div style={{ paddingTop: "20px", width: "100%" }}>
+                    {staticResponse.validated ? (<div>
+                        <Alert severity='success' style={{marginTop: "10px", marginBottom: "10px"}}>Domain ownership verified.</Alert>
+                        <Button fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
                     </div>)
-                }
-                {!viaAPI && (dnsResponse.length > 0) && (
-                    <div style={{ paddingTop: "20px", width: "100%" }}>
-                        {dnsResponse.includes(statementHash) ?
-                            (<div>
-                                <Alert severity='success' style={{marginTop: "10px", marginBottom: "10px"}}>Domain ownership verified.</Alert>
-                                <Button fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}>Submit</Button>
-                            </div>)
-                            :
-                            (<div>
-                                <Alert severity='error' style={{marginTop: "10px", marginBottom: "10px"}}>Error: TXT records should include {statementHash}</Alert>
-                                <div style={{fontSize: "8pt", marginBottom: "10px"}}> TXT record for stated.{domain} : {dnsResponse.map((r,i)=>(<div key={i}>{r}</div>))}</div>
-                                <Button fullWidth variant="contained" disabled>Submit</Button>    
-                            </div>)
-                        }
-                    </div>)
+                    :
+                    (<div>
+                        <Alert severity='error' style={{marginTop: "10px", marginBottom: "10px"}}>Could not retrieve statement. Response: {staticResponse.response}</Alert>
+                        <Button fullWidth variant="contained" disabled>Submit</Button>    
+                    </div>)}
+                </div>)
                 }
             </FormControl>
             </div>

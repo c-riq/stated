@@ -11,7 +11,6 @@ import { getStatement, statementDB } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 
-
 const ResponseForm = (props:FormProps) => {
     const [referencedHash, setReferencedHash] = React.useState("");
     const [response, setResponse] = React.useState("");
@@ -32,7 +31,7 @@ const ResponseForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method}) => {
         try {
-            props.setViaAPI(method === 'api')
+            props.setPublishingMethod(method)
             const content = buildResponseContent({hash: referencedHash, response})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
 

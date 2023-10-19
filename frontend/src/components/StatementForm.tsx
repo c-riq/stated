@@ -13,7 +13,7 @@ const StatementForm = (props:FormProps) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
 
     const prepareStatement:prepareStatement = ({method}) => {
-        props.setViaAPI(method === 'api')
+        props.setPublishingMethod(method)
         let statement = ''
         let parsedResult = {}
         try {
@@ -53,7 +53,7 @@ const StatementForm = (props:FormProps) => {
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
             />
             {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime}/>
+        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

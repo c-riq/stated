@@ -128,7 +128,8 @@ export const verifyViaStatedApi : (arg0:string, arg1:string) => Promise<boolean>
     }
 }
 
-export const verifyViaStaticTextFile : (arg0:string, arg1:string) => Promise<boolean> = async (domain, statement) => {
+export const verifyViaStaticBulkTextFile : (arg0:string, arg1:string) => Promise<boolean> = async (domain, statement) => {
+    // very inefficient as the whole file containing all statements may be quite large
     try {
         const result = await get({hostname: 'static.stated.' + domain, path: '/statements.txt', json: false})
         if (result.data?.length > 0){
@@ -142,6 +143,25 @@ export const verifyViaStaticTextFile : (arg0:string, arg1:string) => Promise<boo
         return false
     }
     return false
+}
+
+export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, statement:string}) => 
+    Promise<{validated:boolean, response?: string}> = async ({domain, hash, statement}) => {
+    try {
+        const result = await get({hostname: 'static.stated.' + domain,
+            path: `/statement/${hash}.txt`, json: false})
+        if (result.data?.length > 0){
+            log && console.log(result.data.substring(0,100), 'result from ', domain)
+            if (result.data === statement){
+                return {validated: true, response: result.data}
+            }
+            return {validated: false, response: result.data}
+        }
+    } catch(e) {
+        console.log(e)
+        return {validated: false, response: e}
+    }
+    return {validated: false}
 }
 
 export const verifyViaAPIKey = ({domain, api_key}) => {
@@ -193,7 +213,8 @@ export const validateAndAddStatementIfMissing: (arg0: {
                 }
                 if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
                     log && console.log('validate via static text file', hash_b64)
-                    verified = await verifyViaStaticTextFile(validationResult.domain, statement)
+                    const response = await verifyViaStaticTextFile({domain: validationResult.domain, statement, hash: hash_b64})
+                    verified = response.validated
                 }
             }
         } else { // method != api -> try verify via dns
@@ -208,7 +229,8 @@ export const validateAndAddStatementIfMissing: (arg0: {
             }
             if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
                 log && console.log('validate via static text file', hash_b64)
-                verified = await verifyViaStaticTextFile(validationResult.domain, statement)
+                const response = await verifyViaStaticTextFile({domain: validationResult.domain, statement, hash: hash_b64})
+                verified = response.validated
             }
         }
         if (verified) {
