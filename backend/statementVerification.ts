@@ -156,7 +156,7 @@ export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, state
     Promise<{validated:boolean, response?: string}> = async ({domain, hash, statement}) => {
     try {
         const result = await get({hostname: 'static.stated.' + domain,
-            path: `/statement/${hash}.txt`, json: false})
+            path: `/statements/${hash}.txt`, json: false})
         if (result.data?.length > 0){
             log && console.log(result.data.substring(0,100), 'result from ', domain)
             if (result.data === statement){
