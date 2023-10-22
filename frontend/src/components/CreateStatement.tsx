@@ -30,7 +30,7 @@ import { submitStatement, getTXTRecords,
 
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
-import { Chip } from '@mui/material';
+import { Chip, Link } from '@mui/material';
 import ObservationForm from './ObservationForm';
 
 type Props = {
@@ -439,8 +439,20 @@ const CreateStatement = (props:Props) => {
                 <div style={{ paddingTop: "20px", width: "100%" }}>
                     <span> Publish this <a download={statementHash+'.txt'} 
                     href={"data:application/octet-stream;charset=utf-8;base64,"+window.btoa(statement)}><Button>text file </Button></a>
- under <a target='_blank ' href={`https://static.stated.${domain}/statements/${statementHash}.txt`}>{`https://static.stated.${domain}/statements/${statementHash}.txt`}</a> to verify domain ownership.</span>
-                    <Button fullWidth variant="contained" onClick={() => { checkStaticStatementAPI() }}>Check if the file can be retrieved</Button>
+                        under<span>&nbsp;</span>
+                        <Link target='_blank' style={{ wordWrap: 'break-word'}} 
+                        href={`https://static.stated.${domain}/statements/${statementHash}.txt`}>
+                            {`https://static.stated.${domain}/statements/${statementHash}.txt`}</Link>
+                            <span>&nbsp;</span>to verify domain ownership.</span>
+                    <p>
+                        You can follow these instructions to publish the file and link it with your 'static.stated.' subdomain:
+                        <ul>
+                            <li><Link href='https://github.com/c-riq/stated/blob/master/static/netlify/README.md'>Instructions for hosting on Netlify</Link></li>
+                            <li><Link href='https://github.com/c-riq/stated/blob/master/static/github-pages/README.md'>Instructions for hosting on Github Pages</Link></li>
+                        </ul>
+                    </p>
+                    <Button style={{marginTop: '12px'}}fullWidth variant="contained" onClick={() => {
+                        checkStaticStatementAPI() }}>Check if the file can be retrieved</Button>
                 </div>)
             }
             {publishingMethod === 'static' && (staticResponse) && (

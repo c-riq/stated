@@ -1,7 +1,5 @@
 ### Publish statements using Github pages for hosting
 
-Summary based on https://docs.github.com/en/pages/quickstart
-
 - Create a public repository on github.com with the name `username.github.io` (replacing 'username' with your actual Github user name)
 - In the repository `Settings` click on `Pages`
 - Select deploy from branch and select main or master
