@@ -1,17 +1,17 @@
 ### Stated
 Stated enables large groups of organisations to make decisions collectively.<br />
-An example decision would be a set of private sanctions by companies to enforce international laws or to promote peace.<br />
+A decision could be for example a set of private sanctions by companies to enforce international laws or to promote peace.<br />
 To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/statements.txt). This standardization allows for automated verification and aggregation of signatures.<br/>
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system more resillient against censorship and manipulation.<br/>
 The identity of the signature authors are established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
- - Cross verifications among participating organisations within stated (such as this [verification](https://stated.rixdata.net/statement/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
+ - Cross verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statement/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
 
 ## Supported statement publication methods
 
 For publishing a statement, organisations or individuals can use the following options:
 1. Publish it on their website domain in a text file (such as [https://stated.rixdata.net/statements.txt](https://stated.rixdata.net/statements.txt))
-2. Make sure individual statements can be retrieved by the hash of it's contents via the stated API under their domain:
+2. Make sure individual statements can be retrieved by the hash of it's contents via the Stated API under their domain:
 ```bash
 curl 'https://stated.rixdata.net/api/statement?hash=NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
 ```
@@ -31,7 +31,7 @@ and then publish the full text of the statement statement through another organi
 ## Independant verifiability of decisions
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/diagram.png?raw=true)
-<b>Fig.2: Steps for validating a collective decision</b> Any internet user should be able to independently verify collective actions on stated.
+<b>Fig.2: Steps for validating a collective decision</b> Any internet user should be able to independently verify collective actions on Stated.
 <br />
 Statements can either contain plain text messages or a strucutured message such as an Organisation Verification, for associating another website domain with an organisation
 

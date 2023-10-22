@@ -8,7 +8,7 @@ docker-compose -f database/docker-compose.yml up
 ```
 ## Installation on Ubuntu
 
-### Setup server and Domain
+### 1. Setup server and Domain
 #### AWS
 In the AWS console navigate to EC2 and launch an instance with the following properties
 - Ubuntu version 22 
@@ -22,15 +22,15 @@ ssh -i ./key.pem ubuntu@54.175.130.112
 This instance costs around (0.006 USD per hour)[https://aws.amazon.com/ec2/instance-types/t2/], so around 4 USD per month.
 #### Domain name setup
 Add an `A` record for the `stated.` subdomain in your domain name management (such as godaddy.com) with the IP address of the server.
-### Create a let's encrypt SSL certificate 
-Skip, if you already have a certificate
+### 2. Create a <i>let's encrypt</i> SSL certificate for HTTPS
+Skip this part, if you already have a certificate
 ```bash
 sudo apt-get update
 sudo apt install -y certbot
 sudo certbot certonly --standalone
 ```
 
-### Install dependencies
+### 3. Install dependencies
 
 ```bash
 # or follow instructions on https://github.com/nodesource/distributions#installation-instructions
@@ -45,6 +45,9 @@ CREATE USER sdf WITH SUPERUSER PASSWORD 'sdf';
 CREATE DATABASE stated;
 ```
 Exit the sql promt with `exit`, and exit the postgres user shell session by running `exit` again. <br />
+
+### 4. Install Stated
+
 ```bash
 sudo apt-get install unzip
 wget https://github.com/c-riq/stated/releases/download/v1.0.8/release.zip
@@ -55,6 +58,8 @@ cd stated
 sudo NODE_ENV=production DOMAIN=2.rixdata.net API_KEY=dOhewi9GhjoLkgiXhnq0N1 SSL_CERT_PATH=/etc/letsencrypt/live/stated.2.rixdata.net/ node index.js
 ```
 Exit tmux by `CTRL + b` then `d`.
+
+### Maintenance
 
 ## Renewing lets encrypt certificate after 90 days
 
