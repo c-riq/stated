@@ -46,10 +46,10 @@ export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve: (
             reject(Error(data))
         })
         delv.on('error', (error) => { 
-            reject(Error('dig process error: ' + error)) 
+            reject(Error('delv process error: ' + error)) 
         })
         delv.on('close', function (code) {
-            reject(Error('dig process exited with code ' + code))
+            reject(Error('delv process exited with code ' + code))
         });
 
     } catch (error){

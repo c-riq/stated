@@ -1,6 +1,7 @@
 
 import axios from 'axios'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, updateStatement, createHiddenStatement} from './database'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, 
+    createStatement, updateStatement, createHiddenStatement} from './database'
 import * as hashUtils from './hash'
 import {createOrgVerification, createPersVerification} from './domainVerification'
 import {checkIfVerificationExists} from './database'
@@ -184,7 +185,7 @@ export const verifyViaAPIKey = ({domain, api_key}) => {
 
 export const validateAndAddStatementIfMissing: (arg0: {
     statement: string, hash_b64: string, source_node_id?: string, 
-    verification_method: string, api_key: string, hidden?: boolean}) => Promise<{existsOrCreated:boolean}> = 
+    verification_method: string, api_key?: string, hidden?: boolean}) => Promise<{existsOrCreated:boolean}> = 
     ({statement, hash_b64, source_node_id = null, verification_method, api_key, hidden=false }) => 
     (new Promise(async (resolve, reject) => {
     let existsOrCreated = false
