@@ -15,7 +15,7 @@ const ownAPIKey = process.env.API_KEY
 const ownDomain = process.env.DOMAIN
 const test = process.env.TEST || false
 
-const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
+export const validateStatementMetadata = ({ statement, hash_b64, source_node_id }) => {
     const parsedStatement = parseStatement(statement)
     const {domain, author, time, content, tags, type, supersededStatement} = parsedStatement
     if (!hashUtils.verify(statement, hash_b64)){

@@ -6,6 +6,8 @@
 # This script is a workaround to keep the server running.
 # It checks if node server is running and healthy every 5 seconds and restarts if needed.
 
+# TODO: fix, instance still crashes occasionally on EC2 nano
+
 MAX_MEMORY_MB=80
 DOMAIN=gritapp.info
 API_KEY=XXX
