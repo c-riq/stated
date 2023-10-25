@@ -21,6 +21,26 @@ jobs:
         run: npx tsc --noEmit
         working-directory: ./frontend
 
+  backend_tests:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run tests
+        run: npm test
+        working-directory: ./backend
+      - name: Transpile
+        run: npx tsc --noEmit
+        working-directory: ./backend
+
   p2p_test:
     timeout-minutes: 5
     runs-on: ubuntu-latest
