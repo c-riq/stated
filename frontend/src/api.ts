@@ -58,13 +58,13 @@ export type statementDB = {
     superseded_statement: string,
     hidden?: boolean,
 }
-export const getStatement = (hash:string, cb:res<statementDB> ) => {
-    if (hash.length < 1) {
-        throw new Error('Hash missing')
+export const getStatement = (hash:string, cb:res<statementDB[]> ) => {
+    if ((hash?.length || 0) < 1) {
+        cb(undefined)
     }
     req('GET',('statements/' + hash), {}, (json) => {
         if (json?.statements?.length > 0) {
-            cb(json.statements[0])
+            cb(json.statements)
             window.scrollTo(0,0)
         } else {
             cb(undefined)

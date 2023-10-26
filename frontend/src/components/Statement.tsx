@@ -32,28 +32,53 @@ const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([]);
     const [statement, setStatement] = React.useState(undefined as statementDB | undefined );
+    const [statementCollision, setStatementCollision] = React.useState(undefined as statementDB[] | undefined );
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
 
-    const hash = useParams().statementId || '';
+    const hashInURL = useParams().statementId || ''
+    const [hash, setHash] = React.useState(hashInURL)
     const {search} = useLocation()
     const queryParams = new URLSearchParams(search)
     const key = queryParams.get('key')
     const algorithm = queryParams.get('algorithm')
 
+    React.useEffect(() => {
+        if (hashInURL !== hash) {
+            setHash(hashInURL)
+            setDataFetched(false)
+        }
+    }, [hashInURL])
 
     React.useEffect(() => { if(!dataFetched) {
-        getStatement(hash, s => setStatement(s))
+        getStatement(hash, s => {
+            if((s?.length || 0) > 1) {
+                setStatementCollision(s)
+                setStatement(undefined)
+                return
+            } 
+            if ((s?.length || 0) === 1) {
+                setStatement(s![0])
+                setStatementCollision(undefined)
+                if (hash !== s![0].hash_b64) {
+                    setHash(s![0].hash_b64)
+                    setDataFetched(false)
+                }
+                return
+            }
+            setStatement(undefined)
+            setStatementCollision(undefined)
+        })
         getJoiningStatements(hash, s => setJoiningStatements(s))
         getVotes(hash, v => setVotes(v))
         getOrganisationVerifications(hash, v => setOrganisationVerifications(v))
         getPersonVerifications(hash, v => setPersonVerifications(v))
         setDataFetched(true)
       }
-    })
+    }, [dataFetched, hash])
     let location = useLocation()
     React.useEffect(() => {
         setDataFetched(false)
@@ -70,10 +95,24 @@ const Statement = (props:props) => {
         const parsedSigning = parsePDFSigning(statement.content)
         fileURL = filePath(parsedSigning.hash, undefined)
     }
-
-    console.log('verifications',organisationVerifications, personVerifications)
+    if (statementCollision) return (
+        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
+         flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
+            <div>
+            <h3>Multiple statements found</h3>
+            <p>To avoid confusion, use the complete statement id when referencing.</p>
+            {statementCollision.map((s,i) => (
+                <div key={i}>
+                    <RouterLink key={i} onClick={()=>setDataFetched(false)} 
+                        to={"/statements/"+s.hash_b64}>
+                        {s.hash_b64 + " | " + s.domain + " | " + (new Date(s.proclaimed_publication_time).toUTCString())}
+                    </RouterLink>
+                </div>
+            ))}
+            </div>
+        </div>
+    )
     if (!statement) return (<div style={{marginTop: "20px"}}>Statement not found</div>)
-    console.log('joining statements', joiningStatements)
     return (
         <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>

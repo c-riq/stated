@@ -101,6 +101,7 @@ api.get("/statements", async (req, res, next) => {
 })
 
 api.get("/statements/:hash", async (req, res, next) => {
+    if(!req.params.hash || req.params.hash.length < 1) return next(new Error('Hash too short'))
     try {
         const hash_b64 = req.params.hash
         let dbResult = await getStatement({hash_b64})

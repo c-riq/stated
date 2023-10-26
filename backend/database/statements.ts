@@ -196,7 +196,7 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
         try {
           sanitize({ hash_b64 })
           pool.query(`
-                  SELECT 
+                  SELECT DISTINCT
                       s.author,
                       s.content,
                       s.content_hash,
@@ -216,12 +216,12 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
                       s.type,
                       s.verification_method,
                       s.proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
-                      v.name
+                      FIRST_VALUE(v.name) OVER(ORDER BY v.id DESC) name
                   FROM statement_with_superseding s        
                     LEFT JOIN organisation_verifications v 
                       ON s.domain=v.verified_domain 
                       --AND v.verifier_domain='rixdata.net'
-                  WHERE hash_b64=$1;
+                  WHERE hash_b64 LIKE $1||'%';
                   `,[hash_b64], (error, results) => {
             if (error) {
               console.log(error)
