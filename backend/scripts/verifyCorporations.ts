@@ -129,7 +129,7 @@ for (const i of array) {
         legalForm: legalForms.corporation,
         confidence: confidence,
         employeeCount: employees_min && minEmployeeCountToRange(employees_min),
-        reliabilityPolicy: "https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
+        reliabilityPolicy: "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     if(!verification){ console.log("no verification generated"); continue}
     const statement = buildStatement({

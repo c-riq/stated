@@ -12,7 +12,7 @@ Statement content:
 	Business register number: 41-0255900
 	City: Minneapolis
 	Employee count: 10,000-100,000
-	Reliability policy: https://stated.rixdata.net/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
+	Reliability policy: https://stated.rixdata.net/statements/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
 	Confidence: 0.9
 ', '2023-06-28 14:04:14', 'PAqLRdXkY5UymL4u6gWIPxqrR9jf5oeStLEnOPkzozE', NULL, NULL, '
 	Type: Organisation verification
@@ -25,7 +25,7 @@ Statement content:
 	Business register number: 41-0255900
 	City: Minneapolis
 	Employee count: 10,000-100,000
-	Reliability policy: https://stated.rixdata.net/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
+	Reliability policy: https://stated.rixdata.net/statements/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
 	Confidence: 0.9
 ', 's2t1m7D4gsG8xf6AuQ2yiv8xp2uKjzgMZBfcx7avs3c', 1, '2023-06-28 14:04:16.812896', '2023-06-28 14:04:16.812896', 'api', true, 0, NULL);
 INSERT INTO public.p2p_nodes (id, domain, ip, first_seen, last_seen, reputation, last_received_statement_id, certificate_authority, fingerprint) VALUES (32, 'stated.3.rixdata.net', '34.197.238.43', '2023-05-18 21:47:41.334961', '2023-07-20 08:02:02.844655', NULL, 145, 'http://r3.o.lencr.org', 'C6:08:08:0A:3B:61:7C:50:AF:AE:25:58:09:04:31:B5:7D:CD:8D:42');

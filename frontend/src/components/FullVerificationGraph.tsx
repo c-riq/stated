@@ -79,7 +79,7 @@ export const FullVerificationGraph = () => {
             data: {
               id: targetId,
               name: (name.length > 20 ? name.substring(0, 17) + "..." : name) + "\n" + domain,
-              href: `${backendHost}/statement/${hash_b64}`,
+              href: `${backendHost}/statements/${hash_b64}`,
               color: 
                 [legalForms.foreign_affairs_ministry, legalForms.local_government].includes(legal_entity_type) ? "rgba(42,100,103,1)" :
                 legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)":
@@ -95,7 +95,7 @@ export const FullVerificationGraph = () => {
             source: sourceId,
             target: targetId,
             name: "stated:" + hash_b64.substring(0, 5),
-            href: `${backendHost}/statement/${hash_b64}`,
+            href: `${backendHost}/statements/${hash_b64}`,
             color: (parsedOrganisationVerification && (parsedOrganisationVerification.confidence?? 0 >= 0.8)) ? "rgb(150,150,150)" : "rgb(200,200,200)",
           },
         });

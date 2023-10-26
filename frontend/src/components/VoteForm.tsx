@@ -95,7 +95,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
         {
         pollStatement && (pollStatement as statementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statement/${(pollStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(pollStatement as statementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>No statement found.</div>

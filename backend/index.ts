@@ -55,7 +55,7 @@ app.use("/api",api)
 
 app.all([
     "/statements|statements.txt",
-    "/text/statement/:hash",
+    "/text/statements/:hash",
     "/verifications|verifications.txt",
     "/nodes|nodes.txt",
 ],humanReadableEndpoints)

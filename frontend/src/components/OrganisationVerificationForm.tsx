@@ -223,7 +223,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         <TextField
             id="reliability"
             variant="outlined"
-            placeholder='https://stated.example.com/statement/NF6irhgDU0F_HEgTRKnh'
+            placeholder='https://stated.example.com/statements/NF6irhgDU0F_HEgTRKnh'
             label="Policy containing correctness guarantees"
             onChange={e => { 
                 setReliabilityPolicy(e.target.value)

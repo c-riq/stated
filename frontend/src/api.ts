@@ -62,7 +62,7 @@ export const getStatement = (hash:string, cb:res<statementDB> ) => {
     if (hash.length < 1) {
         throw new Error('Hash missing')
     }
-    req('GET',('statement/' + hash), {}, (json) => {
+    req('GET',('statements/' + hash), {}, (json) => {
         if (json?.statements?.length > 0) {
             cb(json.statements[0])
             window.scrollTo(0,0)
@@ -188,7 +188,7 @@ export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
     req('GET', "txt_records?domain=" + domain, {}, cb, reject)
 }
 export const submitStatement = (body:any, cb:cb, reject:cb) => {
-    req('POST', 'statement', body, cb, reject)
+    req('POST', 'statements', body, cb, reject)
 }
 export const checkStaticStatement = (body:{domain:string, statement:string, hash: string}, cb:cb, reject:cb) => {
     req('POST', 'check_static_statement', body, cb, reject)

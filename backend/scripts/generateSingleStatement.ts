@@ -38,7 +38,7 @@ Statement content:
 	Business register number: 41-9929150
 	City: Chicago
 	Employee count: 10,000-100,000
-	Reliability policy: https://stated.a.com/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
+	Reliability policy: https://stated.a.com/statements/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE
 	Confidence: 0.9
 `,
 `Publishing domain: y.com

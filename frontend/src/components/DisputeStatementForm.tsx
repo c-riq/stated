@@ -71,7 +71,7 @@ const DisputeStatementForm = (props:FormProps) => {
         {
         referencedStatement && (referencedStatement as statementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statement/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>Referenced statement not found.</div>
@@ -93,7 +93,7 @@ const DisputeStatementForm = (props:FormProps) => {
         <TextField
             id="reliability"
             variant="outlined"
-            placeholder='https://stated.example.com/statement/NF6irhgDU0F_HEgTRKnh'
+            placeholder='https://stated.example.com/statements/NF6irhgDU0F_HEgTRKnh'
             label="Policy containing correctness guarantees"
             onChange={e => { 
                 setReliabilityPolicy(e.target.value)

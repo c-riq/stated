@@ -129,7 +129,7 @@ export const VerificationGraph = (props:props) => {
             source: sourceParentId,
             target: targetParentId,
             name: "stated:" + hash_b64.substring(0, 5),
-            href: `${backendHost}/statement/${hash_b64}`,
+            href: `${backendHost}/statements/${hash_b64}`,
           },
         });
       }
@@ -215,7 +215,7 @@ export const VerificationGraph = (props:props) => {
           source: sourceParentId,
           target: targetParentId,
           name: "stated:" + statement.hash_b64?.substring(0, 5),
-          href: `${backendHost}/statement/${statement.hash_b64}`,
+          href: `${backendHost}/statements/${statement.hash_b64}`,
         },
       });
     }
