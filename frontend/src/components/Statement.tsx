@@ -157,10 +157,10 @@ const Statement = (props:props) => {
                 <p>Check if the domain owner also published the domain under this URL: <Link href={
                     `https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
                     {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</Link>
-                     or under this URL: <br />
+                     <span>&nbsp;</span>or under this URL: <br />
                     <Link href={
-                        `https://static.stated.${statement.domain}/statement/${statement.hash_b64}.txt`}>
-                        {`https://static.stated.${statement.domain}/statement/${statement.hash_b64}.txt`}</Link></p>
+                        `https://static.stated.${statement.domain}/statements/${statement.hash_b64}.txt`}>
+                        {`https://static.stated.${statement.domain}/statements/${statement.hash_b64}.txt`}</Link></p>
                 <h4>1.2 Via the domain DNS records</h4>
                 <h4>1.2.1 Generate the statement hash</h4>
                 <p>The SHA256 hash (in URL compatible base 64 representation) is a transformed version of the above statement text. 
