@@ -5,4 +5,4 @@
 - Upload the zip file in the Netlify web app under the `sites` section, when logged into your Netlify account
 - Configure the new project to be linked to your `static.stated.` subdomain, which requires adding a `CNAME` entry in your Domain name settings in your domain registrar / domain name server provider (this may take a few minutes and retries)
 - Configure a TLS/SSL certificate for enabling more secure HTTPS connections (this may also take some time and a few retries)
-- Verify that you can access statements under https://static.stated.<your-domain.com>/statements/<statemetn_id>.txt
+- Verify that you can access statements under https://static.stated.<your-domain.com>/statements/<statement_id>.txt
