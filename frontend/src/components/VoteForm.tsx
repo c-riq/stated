@@ -60,7 +60,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             props.setPublishingMethod(method)
             const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
-                representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
+                representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement(statement)
             parseVote(parsedStatement.content)
             props.setStatement(statement)

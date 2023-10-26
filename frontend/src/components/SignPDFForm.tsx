@@ -41,7 +41,7 @@ const SignPDFForm = (props:FormProps) => {
       const statement = buildStatement({
         domain: props.metaData.domain,
         author: props.metaData.author,
-        tags: props.metaData.tags,
+        tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement,
         representative: props.metaData.representative,
         time: new Date(props.serverTime),
         content,

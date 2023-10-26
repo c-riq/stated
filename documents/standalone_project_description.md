@@ -11,7 +11,7 @@ Author: Rix Data NL B.V.
 Time: Sat, 22 Apr 2023 18:52:40 GMT
 Content: hello world
 ```
-This statement can also be viewed under [https://stated.rixdata.net/statement/rQ4vsAVjQWfrb2WXYtgE4weBXAFe5qbJPvVlnrN_y-8](https://stated.rixdata.net/statement/rQ4vsAVjQWfrb2WXYtgE4weBXAFe5qbJPvVlnrN_y-8)
+This statement can also be viewed under [https://stated.rixdata.net/statements/rQ4vsAVjQWfrb2WXYtgE4weBXAFe5qbJPvVlnrN_y-8](https://stated.rixdata.net/statements/rQ4vsAVjQWfrb2WXYtgE4weBXAFe5qbJPvVlnrN_y-8)
 
 Organisations publish statements by distributing them to the P2P network. Each node saves the statement and retransmits it, if publication on the authors domain has been verified.
 Each node forms beliefs on the identities of domains/nodes based on SSL OV certificates and P2P verifications (i.e. who owns a domain). Nodes also form beliefs concerning the credibility of other nodes. According to these beliefs, nodes aggregated and publish statistics of statements (i.e. poll results, open letter signature lists, collective contracts...).

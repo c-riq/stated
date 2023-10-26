@@ -53,7 +53,7 @@ const PersonVerificationForm = (props:FormProps) => {
             date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
             const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
                 cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
-            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
                 props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))

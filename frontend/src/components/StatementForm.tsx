@@ -17,7 +17,7 @@ const StatementForm = (props:FormProps) => {
         let statement = ''
         let parsedResult = {}
         try {
-            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
+            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             parsedResult = parseStatement(statement)
         } catch (e) {
             props.setAlertMessage('' + e)
