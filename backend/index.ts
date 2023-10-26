@@ -22,6 +22,7 @@ const prod = process.env.NODE_ENV === "production"
 const port = parseInt(process.env.PORT || '7766')
 const certPath = process.env.SSL_CERT_PATH
 const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
+const logIntervalSeconds = process.env.LOG_INTERVAL_SECONDS || 60 * 60
 const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
 const prefillSSLOVInfo = process.env.PREFILL_SSL_OV_INFO || false
 const enableVerificationLog = process.env.VERIFICATION_LOG || false
@@ -30,7 +31,7 @@ const enableRetry = process.env.RETRY || true
 p2p.setupSchedule(pullIntervalSeconds)
 enableRetry===true && retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 prefillSSLOVInfo==="true" && fetchOVInfoForMostPopularDomains()
-enableVerificationLog==="true" && verificationLog.setupSchedule(pullIntervalSeconds)
+enableVerificationLog==="true" && verificationLog.setupSchedule(logIntervalSeconds)
 
 const app = express();
 
