@@ -15,7 +15,7 @@ export const submitStatement = ({
     var post_options = {
       host: host,
       port: useHttps ? 443 : port,
-      path: "/api/statement",
+      path: "/api/statements",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

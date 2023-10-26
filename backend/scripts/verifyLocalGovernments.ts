@@ -22,7 +22,7 @@ const submitStatement = (data, callback) => {
     var post_options = {
       host: host,
       port: port,
-      path: "/api/statement",
+      path: "/api/statements",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
