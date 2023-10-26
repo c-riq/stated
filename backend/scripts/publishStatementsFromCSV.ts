@@ -27,7 +27,7 @@ const submitStatement = (data, callback) => {
     var post_options = {
       host: domain === "localhost" ? "localhost" : "stated." + domain,
       port: port,
-      path: "/api/statement",
+      path: "/api/statements",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

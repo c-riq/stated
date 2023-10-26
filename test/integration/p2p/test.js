@@ -129,7 +129,7 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateStatement(node)
             //console.log(json)
-            request('POST', json, node, 'statement', (res) => { console.log(res) })
+            request('POST', json, node, 'statements', (res) => { console.log(res) })
             //request('POST', json, node, 'statement')
             i = i+1
         }
@@ -139,7 +139,7 @@ const test = () => {
             const node = (i % nodes.length) + 1
             const json = generateVerificationStatement(node)
             //console.log(json)
-            request('POST', json, node, 'statement', (res) => { console.log(res) })
+            request('POST', json, node, 'statements', (res) => { console.log(res) })
             //request('POST', json, node, 'statement')
             i = i+1
         }
