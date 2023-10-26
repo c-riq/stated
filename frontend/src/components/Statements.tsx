@@ -90,7 +90,7 @@ const Statements = (props:props) => {
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}} onClick={()=>{props.setModalOpen()}} >
+                            <Link to={"/statements/" + s.hash_b64} style={{flexGrow: 1}} onClick={()=>{props.setModalOpen()}} >
                                 <div className="statement" 
                                 // @ts-ignore 
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
@@ -153,7 +153,7 @@ const Statements = (props:props) => {
                                     </Button>
                                 </Link>
                             </div>
-                            <Link to={"/statement/" + s.hash_b64} style={{flexGrow: 1}}>
+                            <Link to={"/statements/" + s.hash_b64} style={{flexGrow: 1}}>
                                 <div className="statement"
                                     // @ts-ignore
                                     style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 

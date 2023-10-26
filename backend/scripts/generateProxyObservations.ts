@@ -107,7 +107,7 @@ for (const i of array) {
       confidence: '0.8',
       source: 'https://www.yalerussianbusinessretreat.com/',
       originalTime: '2022-2023',
-      authorVerification: 'https://stated.rixdata.net/statement/u8mL8-6sRUkhBSMR0JPTorMatYUg8WOQwHw3AYaBbbg',
+      authorVerification: 'https://stated.rixdata.net/statements/u8mL8-6sRUkhBSMR0JPTorMatYUg8WOQwHw3AYaBbbg',
       paraphrasedStatement: observationContent.replace(/\n\t([^\t])/g, '\n\t\t$1')
     });
      // console.log(quotation);

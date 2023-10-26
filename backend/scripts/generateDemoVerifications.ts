@@ -190,7 +190,7 @@ async () => {
       confidence: confidence,
       employeeCount: employees_min && minEmployeeCountToRange(employees_min),
       reliabilityPolicy:
-        "https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
+        "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     if (!verification) {
       console.log("no verification generated");
@@ -306,7 +306,7 @@ const createP2PVerification = async (company1, company2) => {
     legalForm: legalForms.corporation,
     confidence: confidence,
     employeeCount: employees_min && minEmployeeCountToRange(employees_min),
-    reliabilityPolicy: `https://stated.${author_domain}/statement/${shuffle(
+    reliabilityPolicy: `https://stated.${author_domain}/statements/${shuffle(
       "MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads"
     )}`,
   });

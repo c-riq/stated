@@ -33,8 +33,8 @@ fetchStatements({
         console.log(e);
         try {
           let v2Statement = v1.v1toV2(statement, hash_b64);
-          v2Statement = v2Statement.replace('https://stated.rixdata.net/statement/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE',
-            'https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads')
+          v2Statement = v2Statement.replace('https://stated.rixdata.net/statements/rXoVsm2CdF5Ri-SEAr33RNkG3DBuehvFoDBQ_pO9CXE',
+            'https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads')
           const data = {
             statement: v2Statement,
             hash: sha256(v2Statement),

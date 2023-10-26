@@ -47,7 +47,7 @@ type statedVerification = {verified_domain: string, name: string, verifier_domai
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
-    const [type, setType] = React.useState(props.poll ? "vote" : /*(props.statementToJoin?.type ? props.statementToJoin?.type :*/ statementTypes.statement/*)*/);
+    const [type, setType] = React.useState(props.poll ? "vote" : /*(props.statementToJoin?.type ? props.statementToJoin?.type :*/ statementTypes.statements/*)*/);
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
@@ -238,7 +238,7 @@ const CreateStatement = (props:Props) => {
                      (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
                         ?
                         [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via stated verification <a target='_blank' href={window.location.origin + '/statement/' + i!.statement_hash}>
+                            Verified via stated verification <a target='_blank' href={window.location.origin + '/statements/' + i!.statement_hash}>
                                 {i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</a></Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>

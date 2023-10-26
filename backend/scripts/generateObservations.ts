@@ -98,7 +98,7 @@ for (const i of array) {
       observationReference: observation_reference,
       approach,    
       confidence,
-      reliabilityPolicy: "https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
+      reliabilityPolicy: "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     const statement = buildStatement({
         domain: "localhost", // rixdata.net

@@ -200,7 +200,13 @@ function App() {
            voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} lt850px={lt850px} />)} >
             {/* @ts-ignore */}
             <Route path='/' exact />
+            {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
+              <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
+                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px} setStatementToJoin={setStatementToJoin}/>
+              </CenterModal>)} 
+            />
+            <Route path='/statements/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
                 <Statement voteOnPoll={voteOnPoll} lt850px={lt850px} setStatementToJoin={setStatementToJoin}/>
               </CenterModal>)} 

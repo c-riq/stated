@@ -69,7 +69,7 @@ const ResponseForm = (props:FormProps) => {
         {
         referencedStatement && (referencedStatement as statementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statement/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>Referenced statement not found.</div>

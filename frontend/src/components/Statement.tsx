@@ -82,12 +82,12 @@ const Statement = (props:props) => {
             {statement.superseding_statement && (<Alert severity="error">
                 This statement has been replaced by the author with another statement:
                 <RouterLink onClick={()=>setDataFetched(false)} 
-                    to={"/statement/"+statement.superseding_statement}> {statement.superseding_statement}</RouterLink>
+                    to={"/statements/"+statement.superseding_statement}> {statement.superseding_statement}</RouterLink>
             </Alert>)}
             {statement.superseded_statement && (<Alert severity="info">
                 This statement has a previous version:
                 <RouterLink onClick={()=>setDataFetched(false)} 
-                    to={"/statement/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
+                    to={"/statements/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
             </Alert>)}
             {statement.hidden && (<Alert severity="info">
                 This is a hidden statement.
@@ -155,8 +155,8 @@ const Statement = (props:props) => {
                 <p>There are 2 supported methods for this: via a running stated server application on the authors website domain (1.1) and via DNS TXT entries of the authors domain (1.2).</p>
                 <h4>1.1 Via the domain owners website</h4>
                 <p>Check if the domain owner also published the domain under this URL: <Link href={
-                    `https://stated.${statement.domain}/statement/${statement.hash_b64}`}>
-                    {`https://stated.${statement.domain}/statement/${statement.hash_b64}`}</Link>
+                    `https://stated.${statement.domain}/statements/${statement.hash_b64}`}>
+                    {`https://stated.${statement.domain}/statements/${statement.hash_b64}`}</Link>
                      <span>&nbsp;</span>or under this URL: <br />
                     <Link href={
                         `https://static.stated.${statement.domain}/statements/${statement.hash_b64}.txt`}>
@@ -194,7 +194,7 @@ const Statement = (props:props) => {
             (<div><h3>Organisations that joined the statemet</h3>
                 {joiningStatements.statements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
-                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
                             {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>
@@ -207,7 +207,7 @@ const Statement = (props:props) => {
             {votes.length > 0 && (<div><h3>Qualified votes</h3>
                 {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
                     <div key={i}>
-                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statement/"+hash_b64}>
+                        <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
                             {option + " | " + domain + " | " + author + " | " + (new Date(proclaimed_publication_time).toUTCString())}
                         </RouterLink>
                     </div>

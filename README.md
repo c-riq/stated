@@ -6,7 +6,7 @@ To achieve a collective decision, participating organisations publish digital co
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system more resillient against censorship and manipulation.<br/>
 The identity of the signature authors are established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
- - Verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statement/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
+ - Verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statements/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
 
 ## Supported statement publication methods
 
@@ -14,7 +14,7 @@ For publishing a statement, organisations or individuals can use the following o
 1. Publish it on their website domain in a text file (such as [https://stated.rixdata.net/statements.txt](https://stated.rixdata.net/statements.txt))
 2. Make sure individual statements can be retrieved by the hash of it's contents via the Stated API under their domain:
 ```bash
-curl 'https://stated.rixdata.net/api/statement?hash=NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
+curl 'https://stated.rixdata.net/api/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA'
 ```
 3. Add the statement's URL-safe-base64 encoded hash as a TXT record for the subdomain  `stated.` in their DNS domain records, such that it can be verified by shell commands such as:
 ```bash
@@ -45,7 +45,7 @@ Author: Rix Data NL B.V.
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Statement content: hello world
 ```
-This statement can also be viewed under [https://stated.rixdata.net/statement/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statement/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
+This statement can also be viewed under [https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
 
 ## Design principles
 #### Everyone should be able to inspect how the system works

@@ -43,7 +43,7 @@ api.post("/check_static_statement", async (req, res, next) => {
     }
 })
 
-api.post("/statement", async (req, res, next) => {
+api.post("/statements", async (req, res, next) => {
     try {
         const { statement, hash, api_key, hidden } = req.body
         if(!statement) return next(new Error('Statement missing'))
@@ -100,7 +100,7 @@ api.get("/statements", async (req, res, next) => {
     }
 })
 
-api.get("/statement/:hash", async (req, res, next) => {
+api.get("/statements/:hash", async (req, res, next) => {
     try {
         const hash_b64 = req.params.hash
         let dbResult = await getStatement({hash_b64})
@@ -112,7 +112,7 @@ api.get("/statement/:hash", async (req, res, next) => {
         next(error)
     }
 })
-api.delete("/statement/:hash", async (req, res, next) => {
+api.delete("/statements/:hash", async (req, res, next) => {
     try {
         const hash_b64 = req.params.hash
         const { api_key } = req.body 

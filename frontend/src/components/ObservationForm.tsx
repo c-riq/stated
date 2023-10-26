@@ -114,7 +114,7 @@ const ObservationForm = (props:FormProps) => {
         referencedVerificationStatement && (referencedVerificationStatement as statementDB)?.content
         && ['organisation_verification', 'person_verification'].includes((referencedVerificationStatement as statementDB)?.type)
         ? 
-            <a style={{color: '#0000ff'}} href={`/statement/${(referencedVerificationStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(referencedVerificationStatement as statementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a>
         : 
             <div>Verification statement not found.</div>
