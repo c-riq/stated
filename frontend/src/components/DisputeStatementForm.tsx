@@ -35,7 +35,7 @@ const DisputeStatementForm = (props:FormProps) => {
         try {
             props.setPublishingMethod(method)
             const content = buildDisputeAuthenticityContent({hash: disputedStatementHash, confidence: parseFloat(confidence), reliabilityPolicy})
-            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
             if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {

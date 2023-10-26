@@ -26,7 +26,7 @@ export const RatingForm = (props:FormProps) => {
             props.setPublishingMethod(method)
             const content = buildRating({organisation, domain, rating, comment})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
-                representative: props.metaData.representative, tags: props.metaData.tags, time: new Date(props.serverTime), content})
+                representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement(statement)
             parseRating(parsedStatement.content)
             props.setStatement(statement)

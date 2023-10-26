@@ -41,7 +41,7 @@ export const BountyForm = (props:FormProps) => {
         try {
             const content = buildBounty({motivation, bounty, reward, judge, judgePay})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
-                representative: props.metaData.representative, tags: props.metaData.tags, time: props.serverTime, content})
+                representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement(statement)
             parseBounty(parsedStatement.content)
             props.setStatement(statement)

@@ -2,6 +2,7 @@ type statementMetaData = {
   domain: string;
   author: string;
   representative?: string;
+  supersededStatement?: string;
   tags?: string[];
 };
 type FormProps = {

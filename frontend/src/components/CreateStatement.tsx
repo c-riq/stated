@@ -47,7 +47,7 @@ type statedVerification = {verified_domain: string, name: string, verifier_domai
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
-    const [type, setType] = React.useState(props.poll ? "vote" : /*(props.statementToJoin?.type ? props.statementToJoin?.type :*/ statementTypes.statements/*)*/);
+    const [type, setType] = React.useState(props.poll ? "vote" : /*(props.statementToJoin?.type ? props.statementToJoin?.type :*/ statementTypes.statement/*)*/);
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
@@ -58,6 +58,8 @@ const CreateStatement = (props:Props) => {
     const [tags, setTags] = React.useState([] as string[]);
     const [tagInput, setTagInput] = React.useState("")
     const [representative, setRepresentative] = React.useState("");
+    const [supersededStatement, setSupersededStatement] = React.useState("");
+    const [showAdditionalFields, setShowAdditionalFields] = React.useState(false);
     const [apiKey, setApiKey] = React.useState("");
     const [publishingMethod, setPublishingMethod] = React.useState(undefined as publishingMethod|undefined);
     const [dnsResponse, setDnsResponse] = React.useState([] as string[]);
@@ -264,6 +266,7 @@ const CreateStatement = (props:Props) => {
                 style={{backgroundColor: '#eeeeee'}}
                 required
             />
+            { showAdditionalFields ? ( <>
             <TextField
                 id="signing_representative"
                 variant="outlined"
@@ -271,6 +274,16 @@ const CreateStatement = (props:Props) => {
                 label="Authorized signing representative (optional)"
                 value={representative}
                 onChange={e => { setRepresentative(e.target.value) }}
+                margin="normal"
+                style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
+            />
+            <TextField
+                id="superseded_statement"
+                variant="outlined"
+                placeholder="vX8Bhd9..."
+                label="Superseded statement hash (optional)"
+                value={supersededStatement}
+                onChange={e => { setSupersededStatement(e.target.value) }}
                 margin="normal"
                 style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
             />
@@ -288,6 +301,11 @@ const CreateStatement = (props:Props) => {
                 value={tagInput}
                 sx={{backgroundColor: '#eeeeee', marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
             />
+            </>
+            ):
+            (<Button variant="outlined" color="primary" onClick={()=>setShowAdditionalFields(true)} style={{marginTop: "12px"}}>
+                Show additional fields</Button>
+            )}
         </React.Fragment>
     )
 
@@ -319,47 +337,47 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
                     <MenuItem value={statementTypes.observation}>Observation</MenuItem>
                 </Select>
-            {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags}}
+            {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</OrganisationVerificationForm>)}
-            {type === statementTypes.personVerification &&(<PersonVerificationForm metaData={{domain, author, representative, tags}}
+            {type === statementTypes.personVerification &&(<PersonVerificationForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</PersonVerificationForm>)}
-            {type === statementTypes.poll &&(<PollForm metaData={{domain, author, representative, tags}}
+            {type === statementTypes.poll &&(<PollForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</PollForm>)}
-            {type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags}}
+            {type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</RatingForm>)}
-            {type === statementTypes.vote &&(<VoteForm poll={props.poll} metaData={{domain, author, representative, tags}}
+            {type === statementTypes.vote &&(<VoteForm poll={props.poll} metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</VoteForm>)}
-            {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm metaData={{domain, author, representative, tags}}
+            {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</DisputeStatementForm>)}
-            {type === statementTypes.response &&(<ResponseForm metaData={{domain, author, representative, tags}}
+            {type === statementTypes.response &&(<ResponseForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</ResponseForm>)}
-            {type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
+            {type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</StatementForm>)}
-            {type === statementTypes.signPdf &&(<SignPDFForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
+            {type === statementTypes.signPdf &&(<SignPDFForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</SignPDFForm>)}
-            {type === statementTypes.bounty &&(<BountyForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
+            {type === statementTypes.bounty &&(<BountyForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</BountyForm>)}
-            {type === statementTypes.observation &&(<ObservationForm metaData={{domain, author, representative, tags}} statementToJoin={props.statementToJoin}
+            {type === statementTypes.observation &&(<ObservationForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</ObservationForm>)}

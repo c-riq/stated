@@ -402,9 +402,9 @@ Statement content:
 	Type: Observation
 	Approach: A team of experts at the Yale Chief Executive Leadership Institute researched the response of international businesses to the Russian Invasion of Ukraine
 	Confidence: 0.7
-	Reliability policy: https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads
+	Reliability policy: https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads
 	Subject: CISCO SYSTEMS, INC.
-	Subject identity reference: https://stated.rixdata.net/statement/jvbqqbyjPCb2nP9xNfSnVL9r79c-qf1wewLt5BW-AL4
+	Subject identity reference: https://stated.rixdata.net/statements/jvbqqbyjPCb2nP9xNfSnVL9r79c-qf1wewLt5BW-AL4
 	Observation reference: https://www.yalerussianbusinessretreat.com/
 	Observed property: Did stop business in Russia as a response to the Russian invasion of Ukraine
 	Observed value: No
@@ -413,7 +413,7 @@ Statement content:
 	const parsedObservation = parseObservation(parsedStatement.content)
 	const {confidence, reliabilityPolicy, property, value, subject} = parsedObservation
 	expect(confidence).toBe(0.7);
-	expect(reliabilityPolicy).toBe('https://stated.rixdata.net/statement/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads');
+	expect(reliabilityPolicy).toBe('https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads');
 	expect(subject).toBe('CISCO SYSTEMS, INC.');
 	expect(property).toBe('Did stop business in Russia as a response to the Russian invasion of Ukraine');
 	expect(value).toBe('No');
