@@ -1,4 +1,5 @@
 ### Stated
+![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/video_preview.jpg?raw=true)
 [Check the intro video](https://www.youtube.com/watch?v=TTRtQjeuIAE)<br/>
 Stated enables large groups of organisations to make decisions collectively.<br />
 A decision could be for example a set of private sanctions by companies to enforce international laws or to promote peace.<br />
