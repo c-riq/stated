@@ -27,7 +27,7 @@ const DisputeStatementForm = (props:FormProps) => {
         const hashQuery = '' + disputedStatementHash
         getStatement(hashQuery, res => {
             if(hashQuery !== disputedStatementHash) {return}
-            setReferencedStatement(res)
+            setReferencedStatement(res?.length === 1 ? res[0] : undefined)
         })
     },[disputedStatementHash])
 

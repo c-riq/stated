@@ -303,7 +303,7 @@ const CreateStatement = (props:Props) => {
             />
             </>
             ):
-            (<Button variant="outlined" color="primary" onClick={()=>setShowAdditionalFields(true)} style={{marginTop: "12px"}}>
+            (<Button color="primary" onClick={()=>setShowAdditionalFields(true)} style={{marginTop: "12px"}}>
                 Show additional fields</Button>
             )}
         </React.Fragment>

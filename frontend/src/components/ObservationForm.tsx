@@ -46,7 +46,7 @@ const ObservationForm = (props:FormProps) => {
         const hashQuery = '' + referencedHash
         getStatement(hashQuery, res => {
             if(hashQuery !== referencedHash) {return}
-            setReferencedVerificationStatement(res)
+            setReferencedVerificationStatement(res?.length === 1 ? res[0] : undefined)
         })
     },[referencedHash])
 
