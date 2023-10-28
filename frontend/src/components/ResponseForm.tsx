@@ -25,7 +25,7 @@ const ResponseForm = (props:FormProps) => {
         const hashQuery = '' + referencedHash
         getStatement(hashQuery, res => {
             if(hashQuery !== referencedHash) {return}
-            setReferencedStatement(res)
+            setReferencedStatement(res?.length === 1 ? res[0] : undefined)
         })
     },[referencedHash])
 

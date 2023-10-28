@@ -36,7 +36,10 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
         const hashQuery = '' + pollHash
         getStatement(hashQuery, res => {
             if(hashQuery !== pollHash) {return}
-            setPollStatement(res)
+            if(! ((0 || res?.length) !== 1)) {
+                return
+            }
+            setPollStatement(res![0])
             // @ts-ignore
             if (res?.content === undefined) {
                 setPoll('No poll found')
@@ -44,7 +47,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
                 return
             }
             try {
-                const pollParsedFromAPI = parsePoll((res as statementDB).content)
+                const pollParsedFromAPI = parsePoll((res[0] as statementDB).content)
                 setPoll(pollParsedFromAPI.poll)
                 setOptions(pollParsedFromAPI.options)
             } catch {
