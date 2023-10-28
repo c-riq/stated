@@ -53,13 +53,15 @@ import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFa
   getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
   createUnverifiedStatementFactory, getJoiningStatementsFactory, getOwnStatementFactory,
   getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory,
-  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory} from './statements'
+  deleteStatementFactory, archiveStatementFactory, createHiddenStatementFactory, 
+  getHiddenStatementFactory} from './statements'
 
 export const createStatement = createStatementFactory(pool)
 export const createHiddenStatement = createHiddenStatementFactory(pool)
 export const getStatement = getStatementFactory(pool)
 export const getHiddenStatement = getHiddenStatementFactory(pool)
 export const deleteStatement = deleteStatementFactory(pool)
+export const archiveStatement = archiveStatementFactory(pool)
 export const getStatements = getStatementsFactory(pool)
 export const getStatementsWithDetail = getStatementsWithDetailFactory(pool)
 export const getUnverifiedStatements = getUnverifiedStatementsFactory(pool)

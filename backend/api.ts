@@ -113,6 +113,7 @@ api.get("/statements/:hash", async (req, res, next) => {
         next(error)
     }
 })
+
 api.delete("/statements/:hash", async (req, res, next) => {
     try {
         const hash_b64 = req.params.hash
@@ -123,6 +124,27 @@ api.delete("/statements/:hash", async (req, res, next) => {
         }
         const dbResult = await deleteStatement({hash_b64})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+    } catch(error){
+        next(error)
+    }
+})
+
+
+api.patch("/statements/:hash", async (req, res, next) => {
+    try {
+        const hash_b64 = req.params.hash
+        const { api_key, action } = req.body 
+        if(!api_key || (api_key !== process.env.API_KEY)) {
+            res.status(401)
+            return res.end("Invalid API key")
+        }
+        if (action === 'archive'){
+            // archive action stops further propagation in the network and hides the statement from the user interface
+            // hidden statements on the other hand can still be viewed in the UI if the viewer knows of the hash
+            const dbResult = await deleteStatement({hash_b64})
+            return res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
+        }
+        next('invalid action: ' + action)
     } catch(error){
         next(error)
     }
