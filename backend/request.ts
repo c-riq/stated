@@ -48,7 +48,7 @@ export const get = ({hostname, path='', cache=false, json=true}) => new Promise(
         })
         req.on('error', (error) => resolve({error}))
         req.end()
-    }catch (error) {
+    } catch (error) {
         resolve({error})
     }
 })
