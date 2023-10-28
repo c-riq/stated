@@ -156,7 +156,7 @@ export const verifyViaStaticBulkTextFile : (arg0:string, arg1:string) => Promise
 export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, statement:string}) => 
     Promise<{validated:boolean, response?: string}> = async ({domain, hash, statement}) => {
     try {
-        const result = await get({hostname: 'static.stated.' + domain,
+        let result = await get({hostname: 'static.stated.' + domain,
             path: `/statements/${hash}.txt`, json: false})
         if (result.data?.length > 0){
             log && console.log(result.data.substring(0,100), 'result from ', domain)
@@ -164,6 +164,22 @@ export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, state
                 return {validated: true, response: result.data}
             }
             return {validated: false, response: result.data}
+        }
+        result = await get({hostname: 'www.' + domain, 
+            path: `/.well-known/statements/${hash}.txt`, json: false})
+        if (result.data?.length > 0){
+            log && console.log(result.data.substring(0,100), 'result from ', domain)
+            if (result.data.includes(statement)){
+                return {validated: true, response: result.data}
+            }
+        }
+        result = await get({hostname: domain, 
+            path: `/.well-known/statements/${hash}.txt`, json: false})
+        if (result.data?.length > 0){
+            log && console.log(result.data.substring(0,100), 'result from ', domain)
+            if (result.data.includes(statement)){
+                return {validated: true, response: result.data}
+            }
         }
     } catch(e) {
         console.log(e)

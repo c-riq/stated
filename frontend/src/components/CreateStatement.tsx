@@ -457,10 +457,14 @@ const CreateStatement = (props:Props) => {
                 <div style={{ paddingTop: "20px", width: "100%" }}>
                     <span> Publish this <a download={statementHash+'.txt'} 
                     href={"data:application/octet-stream;charset=utf-8;base64,"+window.btoa(statement)}><Button>text file </Button></a>
-                        under<span>&nbsp;</span>
+                        <span>&nbsp;</span>under<span>&nbsp;</span>
                         <Link target='_blank' style={{ wordWrap: 'break-word'}} 
                         href={`https://static.stated.${domain}/statements/${statementHash}.txt`}>
                             {`https://static.stated.${domain}/statements/${statementHash}.txt`}</Link>
+                        <span>&nbsp;</span>or<span>&nbsp;</span>
+                        <Link target='_blank' style={{ wordWrap: 'break-word'}} 
+                        href={`https://www.${domain}/.well-known/statements/${statementHash}.txt`}>
+                            {`https://www.${domain}/.well-known/statements/${statementHash}.txt`}</Link>
                             <span>&nbsp;</span>to verify domain ownership.</span>
                     <p>
                         You can follow these instructions to publish the file and link it with your 'static.stated.' subdomain:
