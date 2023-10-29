@@ -1,6 +1,6 @@
 
-### Generate PDFs
-```bash
-npm i -g md-to-pdf
-md-to-pdf ./*.md
-```
+### Contents
+
+- Collection of ideas and possible applications 
+- Images used for documentation
+- Temporary files that may be removed soon
