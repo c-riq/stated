@@ -3,11 +3,8 @@
 [Check the intro video](https://www.youtube.com/watch?v=TTRtQjeuIAE)<br/>
 Stated enables large groups of organisations to make decisions collectively.<br />
 A decision could be for example a set of private sanctions by companies to enforce international laws or to promote peace.<br />
-To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format (such as https://stated.rixdata.net/statements.txt). This standardization enables automated verification and aggregation of signatures.<br/>
+To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format. This standardization enables automated verification and aggregation of signatures.<br/>
 The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system more resillient against censorship and manipulation.<br/>
-The identity of the signature authors are established by:
- - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
- - Verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statements/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
 
 ## Supported statement publication methods
 
@@ -21,6 +18,10 @@ For publishing a statement, organisations or individuals can use the following o
 4. [Run a stated instance and publish](https://github.com/c-riq/stated/blob/master/backend/README.md)
 
 ## Establishing online identities
+
+The identity of the signature authors are established by:
+ - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
+ - Verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statements/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/example_verification_graph.png?raw=true)<br />
 <b>Fig.1: Example of a verification graph for a associating a domain to an organisation.</b> The Certificate Authority Sectigo issued a SSL OV certificate, validating that Rix Data NL B.V. owns rixdata.net. Rix Data NL B.V. verified that Rix Data UG owns gritapp.info, which published a PDF signature statement using their domain. Rix Data UG also verified their own identity, represented by the loop, which is useful for reducing naming inconsistencies.
