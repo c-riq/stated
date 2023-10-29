@@ -1,4 +1,5 @@
 ### Stated
+[![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/video_preview.jpg?raw=true)](https://www.youtube.com/watch?v=TTRtQjeuIAE)</br>
 [Check the intro video](https://www.youtube.com/watch?v=TTRtQjeuIAE)<br/>
 Stated enables large groups of organisations to make decisions collectively.<br />
 A decision could be for example a set of private sanctions by companies to enforce international laws or to promote peace.<br />
@@ -26,12 +27,12 @@ and then publish the full text of the statement statement through another organi
 4. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 ## Establishing online identities
 
-![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/example_verification_graph.png?raw=true)<br />
+![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/example_verification_graph.png?raw=true)<br />
 <b>Fig.1: Example of a verification graph for a associating a domain to an organisation.</b> The Certificate Authority Sectigo issued a SSL OV certificate, validating that Rix Data NL B.V. owns rixdata.net. Rix Data NL B.V. verified that Rix Data UG owns gritapp.info, which published a PDF signature statement using their domain. Rix Data UG also verified their own identity, represented by the loop, which is useful for reducing naming inconsistencies.
 
 ## Independant verifiability of decisions
 
-![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/diagram.png?raw=true)
+![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/diagram.png?raw=true)
 <b>Fig.2: Steps for validating a collective decision</b> Any internet user should be able to independently verify collective actions on Stated.
 <br />
 Statements can either contain plain text messages or a strucutured message such as an Organisation Verification, for associating another website domain with an organisation
