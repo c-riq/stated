@@ -23,12 +23,12 @@ The identity of the signature authors are established by:
  - Verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statements/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/example_verification_graph.png?raw=true)<br />
-<b>Fig.1: Example of a verification graph for a associating a domain to an organisation.</b> The Certificate Authority Sectigo issued a SSL OV certificate, validating that Rix Data NL B.V. owns rixdata.net. Rix Data NL B.V. verified that Rix Data UG owns gritapp.info, which published a PDF signature statement using their domain. Rix Data UG also verified their own identity, represented by the loop, which is useful for reducing naming inconsistencies.
+<b>Fig.1: Example of a verification graph for a associating a domain to an organisation.</b><br />The Certificate Authority Sectigo issued a SSL OV certificate, validating that Rix Data NL B.V. owns rixdata.net. Rix Data NL B.V. verified that Rix Data UG owns gritapp.info, which published a PDF signature statement using their domain. Rix Data UG also verified their own identity, represented by the loop, which is useful for reducing naming inconsistencies.
 
 ## Independant verifiability of decisions
 
 ![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/diagram.png?raw=true)
-<b>Fig.2: Steps for validating a collective decision</b> Any internet user should be able to independently verify collective actions on Stated.
+<b>Fig.2: Steps for validating a collective decision</b><br />Any internet user should be able to independently verify collective actions on Stated.<br />
 <br />
 Statements can either contain plain text messages or a strucutured message such as an Organisation Verification, for associating another website domain with an organisation
 
