@@ -8,13 +8,12 @@ Many researches working on AI have expressed this concern, however without effic
 
 ## Accelerate the creation of rules
 
-Recommendations to legislators will have a higher chance of success, if they are publicly endorsed by many organizations.
+Recommendations to legislators will have a higher chance of success, if they are publicly supported by many organizations.
 These endorsements should to be independently verifiable to mitigate fake endorsements.
 An example recommendation could be:
-“Ban large AI training runs using more than 10^23 FLOP.” - endorsed by 100 organizations
+“Ban large AI training runs using more than 10^23 FLOP.” - signed by 100 organizations
 
 ## International enforcement of rules
 An example for this could be:
-“We will boycott any business with companies that do not comply with guideline XYZ for safe AI development”
-endorsed by 5000 companies
+“We will boycott any business with companies that do not comply with guideline XYZ for safe AI development” - signed by 5000 companies
 

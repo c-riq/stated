@@ -2,8 +2,8 @@ set x
 trap "exit" INT
 
 aws_profile=rixdata-s3
-s3_bucket=static.stated.example.com
-cloudfront_id=E1ZUKQCZEZMBSD
+s3_bucket=static.stated.rixdata.net
+cloudfront_id=E36SIAKIKWG8E8
 
 echo Profile: $aws_profile
 echo S3_Bucket: $s3_bucket

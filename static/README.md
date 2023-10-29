@@ -1,11 +1,8 @@
 ### Static statement deployment
-Not ready; currently being developed.
-<br />
-Static deployments are cheaper and easier to maintain. This method is only used for publishing statements and do not monitor, verify or aggregate other participants statements.
+Static text file publishing is cheaper and easier to maintain than running a server with a full stated p2p node (which also verifies, re-transmitts and aggregates other parties statements).
 
 ### Components
 - Instructions how to publish statements using Github Pages hosting
-- Terraform files to setup cloud infrastructure (AWS)
+- Terraform files to setup cloud infrastructure (AWS, work in progress)
 - Scripts for generating statement text files locally
 - Scripts for deploying statements
-
