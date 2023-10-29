@@ -54,7 +54,7 @@ app.options('/*', function (req, res, next) {
 app.use("/api",api)
 
 app.all([
-    "/statements|statements.txt",
+    "/statements$|/statements/$|statements.txt",
     "/text/statements/:hash",
     "/verifications|verifications.txt",
     "/nodes|nodes.txt",
