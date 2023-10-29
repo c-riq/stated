@@ -12,6 +12,7 @@ For publishing a statement, organisations or individuals can use the following o
     - [https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
     - [https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt](https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt)
     - [https://www.rixdata.net/.well-known/statements.txt](https://www.rixdata.net/.well-known/statements.txt)
+    If you don't know how to host static text files, check our [instructions](https://github.com/c-riq/stated/blob/master/static/README.md)
 2. [Using DNS records](https://github.com/c-riq/stated/blob/master/documents/dns_authentication/README.md)
 3. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 4. [Run a stated instance and publish](https://github.com/c-riq/stated/blob/master/backend/README.md)

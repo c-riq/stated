@@ -11,7 +11,7 @@ import { sha256 } from "../hash";
 
 import { legalForms } from "../constants/legalForms";
 /*
-HOST=localhost PORT=7766 FILE_NAME=organisations_list.csv ts-node backend/scripts/verifyCorporations.ts
+HOST=localhost DOMAIN=localhost PROTOCOL=http PORT=7766 FILE_NAME=organisations_list.csv ts-node backend/scripts/verifyCorporations.ts
 
 API_KEY=XXX FILE_NAME=company_list.csv ts-node backend/scripts/verifyCorporations.ts
 company_list_ukraine.csv
