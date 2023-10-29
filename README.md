@@ -1,4 +1,3 @@
-### Stated
 [![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/video_preview.jpg?raw=true)](https://www.youtube.com/watch?v=TTRtQjeuIAE)</br>
 [Check the intro video](https://www.youtube.com/watch?v=TTRtQjeuIAE)<br/>
 Stated enables large groups of organisations to make decisions collectively.<br />
@@ -17,7 +16,7 @@ For publishing a statement, organisations or individuals can use the following o
 3. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 4. [Run a stated instance and publish](https://github.com/c-riq/stated/blob/master/backend/README.md)
 
-## Establishing online identities
+## Online identities
 
 The identity of the signature authors are established by:
  - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
@@ -54,13 +53,13 @@ This statement can also be viewed under [https://stated.rixdata.net/statements/N
 - Third party dependency count should be kept small
 - Complex applications building on top of the stated system should be in a separate project
 
-### Getting started
+## Getting started
 - [Server Installation Steps](https://github.com/c-riq/stated/blob/master/backend/README.md)
 - [Front end / User Interface development](https://github.com/c-riq/stated/blob/master/frontend/README.md)
 - [Domain ownership data analysis](https://github.com/c-riq/stated/blob/master/analysis/README.md)
 
-### Applications
+## Applications
 - [NGO coordination for AI safety](https://github.com/c-riq/stated/blob/master/documents/ai_safety/README.md)
 
-### Join the community
+## Join the community
 - [Slack channel](https://join.slack.com/t/stated/shared_invite/zt-24r6gz86t-gy9TADMabaA0e1UQ1it~4g)
