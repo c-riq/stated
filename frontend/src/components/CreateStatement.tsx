@@ -457,7 +457,7 @@ const CreateStatement = (props:Props) => {
                 <div style={{ paddingTop: "20px", width: "100%" }}>
                     <span> Publish this <a download={statementHash+'.txt'} 
                     href={"data:application/octet-stream;charset=utf-8;base64,"+window.btoa(statement)}><Button>text file </Button></a>
-                        <span>&nbsp;</span>under<span>&nbsp;</span>
+                        under<span>&nbsp;</span>
                         <Link target='_blank' style={{ wordWrap: 'break-word'}} 
                         href={`https://static.stated.${domain}/statements/${statementHash}.txt`}>
                             {`https://static.stated.${domain}/statements/${statementHash}.txt`}</Link>

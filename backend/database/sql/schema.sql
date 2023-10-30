@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS statements (
     derived_entity_created BOOLEAN NOT NULL,
     derived_entity_creation_retry_count INT,
     superseded_statement VARCHAR(500) NULL,
+    archived BOOLEAN DEFAULT FALSE,
     CONSTRAINT no_domain_author_content_duplicates UNIQUE (domain, author, content_hash)
 );
 CREATE TABLE IF NOT EXISTS hidden_statements (
@@ -208,5 +209,6 @@ CREATE VIEW statement_with_superseding AS (
 	FROM statements s1 
 	LEFT JOIN statements s2 
 		ON s1.hash_b64=s2.superseded_statement 
-		AND s1.domain=s2.domain AND s1.author=s2.author 
+		AND s1.domain=s2.domain AND s1.author=s2.author
+    WHERE s1.archived<>TRUE
 );
