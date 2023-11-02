@@ -288,7 +288,7 @@ Statement content:
 	Type: Poll
 	Poll type: majority vote wins
 	Country scope: United Kingdom of Great Britain and Northern Ireland (the)
-	Legal entity scope: limited liability corporation
+	Legal form scope: limited liability corporation
 	The decision is finalized when the following nodes agree: rixdata.net
 	Voting deadline: Thu, 01 Dec 2022 13:38:26 GMT
 	Poll: Should the UK join the EU

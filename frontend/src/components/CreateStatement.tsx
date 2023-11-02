@@ -41,9 +41,9 @@ type Props = {
     serverTime: Date,
     onPostSuccess: () => void,
 }
-type domainOption = {domain: string, organisation: string}
+type domainOption = {domain: string, organisation: string, department: string}
 type ssl = {domain: string, O: string, issuer_o: string, sha256: string}
-type statedVerification = {verified_domain: string, name: string, verifier_domain: string, statement_hash: string}
+type statedVerification = {verified_domain: string, name: string, verifier_domain: string, statement_hash: string, department: string}
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
@@ -214,9 +214,9 @@ const CreateStatement = (props:Props) => {
                 onChange={(event, newInputValue: string|domainOption) => {
                     setDomainIdendity(newInputValue)
                     // @ts-ignore
-                    setDomain(newInputValue.domain)
+                    setDomain(newInputValue?.domain)
                     // @ts-ignore
-                    setAuthor(newInputValue.organisation)
+                    setAuthor(newInputValue?.department ? newInputValue.department : newInputValue?.organisation)
                 }}
                 onInputChange={(event, newValue) => {
                     setDomainInputValue(newValue)
@@ -241,7 +241,7 @@ const CreateStatement = (props:Props) => {
                         ?
                         [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
                             Verified via stated verification <a target='_blank' href={window.location.origin + '/statements/' + i!.statement_hash}>
-                                {i!.verified_domain +": "+ i!.name + " by " + i!.verifier_domain}</a></Alert>))
+                                {i!.verified_domain +": " + (i!.department? i!.department + ' at ' : '') + i!.name + " by " + i!.verifier_domain}</a></Alert>))
                         : 
                         (<Alert severity="warning" style={{marginTop: "10px"}}>
                             Not verified via stated verification.</Alert>)

@@ -29,6 +29,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
     const [employeeCountObject, setEmployeeCountObject] = React.useState(undefined as string|undefined);
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
+    const [department, setDepartment] = React.useState("");
 
     const [countries, setCountries] = React.useState([] as [string,string,string,string][])
     const [provinces, setProvinces] = React.useState([] as [string,string,string][])
@@ -56,7 +57,8 @@ const OrganisationVerificationForm = (props:FormProps) => {
         props.setPublishingMethod(method)
         try {
             const content = buildOrganisationVerificationContent({name: verifyName, domain: verifyDomain, city, country, province, serialNumber, legalForm,
-                foreignDomain: "", confidence: parseFloat(confidence), reliabilityPolicy, pictureHash: "", employeeCount})
+                foreignDomain: "", confidence: parseFloat(confidence), reliabilityPolicy, pictureHash: "", employeeCount, department,
+            })
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, 
                 tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
@@ -143,11 +145,22 @@ const OrganisationVerificationForm = (props:FormProps) => {
             value={legalFormObject}
             inputValue={legalForm}
             onInputChange={(event, newInputValue) => setLegalForm(newInputValue)}
-            renderInput={(params) => <TextField {...params} label="Legal entity" required />}
+            renderInput={(params) => <TextField {...params} label="Legal form" required />}
             // @ts-ignore
             renderOption={(props, option) => (<Box {...props} id={option} >{option}</Box>)}
             sx={{marginTop: "20px"}}
         />
+        {legalForm === legalForms.corporation && (
+        <TextField
+            id="department"
+            variant="outlined"
+            placeholder='Research group X'
+            label="Department (optional)"
+            onChange={e => { 
+                setDepartment(e.target.value)
+            }}
+            sx={{marginTop: "20px"}}
+        />)}
         <Autocomplete
             id="city"
             options={countryObject ? cities.filter(l => l[2] === countryObject[4] ) : []}

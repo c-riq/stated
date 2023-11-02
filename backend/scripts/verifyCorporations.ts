@@ -104,7 +104,9 @@ for (const i of array) {
         serial_number,
         employees_min,
         confidence,
-        employer_identification_number
+        employer_identification_number,
+        superseded,
+        department
     } = i;
     if (!(name) || !website_domain || !country || !province || !city) {
         continue;
@@ -120,6 +122,7 @@ for (const i of array) {
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
         name,
+        department,
         englishName: english_name,
         domain: website_domain,
         country,
@@ -137,6 +140,7 @@ for (const i of array) {
         author,
         time: new Date(),
         content: verification,
+        supersededStatement: superseded,
     })
     const data = {
         statement,

@@ -4,19 +4,22 @@ const log = false;
 import { DBCallback, DBErrorCallback, sanitize } from ".";
 
 export const createOrganisationVerificationFactory = (pool) => ({ statement_hash, verifier_domain, verified_domain, 
-    name, legal_entity_type, country, province, city, serialNumber, foreignDomain=null }) => (new Promise((resolve: DBCallback, reject) => {
+    name, legal_entity_type, country, province, city, serialNumber, foreignDomain=null, confidence=null, department=null }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain })
+      sanitize({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain
+      ,confidence, department })
       pool.query(`
               INSERT INTO organisation_verifications 
                 (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
-                  country, province, city, serial_number, foreign_domain) 
+                  country, province, city, serial_number, foreign_domain, confidence, department) 
               VALUES 
                 ($1, $2, $3, $4, $5, 
-                  $6, $7, $8, $9, $10)
+                  $6, $7, $8, $9, $10,
+                  $11, $12)
               ON CONFLICT (statement_hash) DO NOTHING
               RETURNING *`,
-        [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, serialNumber, foreignDomain], (error, results) => {
+        [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city,
+           serialNumber, foreignDomain, confidence, department], (error, results) => {
           if (error) {
             console.log(error)
             console.trace()
