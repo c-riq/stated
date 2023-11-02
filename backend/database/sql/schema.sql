@@ -82,10 +82,11 @@ CREATE TABLE IF NOT EXISTS organisation_verifications (
     country VARCHAR(100) NOT NULL,-- ISO 3166 country name
     province VARCHAR(100),
     city VARCHAR(100),
+    department VARCHAR(100),
+    confidence DOUBLE PRECISION,
     CONSTRAINT organisation_verifications_statement_hash_fkey
         FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
         ON DELETE CASCADE
---    confidence DOUBLE PRECISION, TODO: Add migration sql
 );
 CREATE TABLE IF NOT EXISTS person_verifications (
     id SERIAL PRIMARY KEY,

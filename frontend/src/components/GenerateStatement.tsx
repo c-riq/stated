@@ -9,14 +9,17 @@ type props = {
 }
 
 const GenerateStatement = (props:props) => {
+    const [showAdditionalOptions, setShowAdditionalOptions] = React.useState(false);
     return (
         <React.Fragment>
             <div style={{textAlign: "left", marginTop: "16px"}}>Time: {props.serverTime.toUTCString()}</div>
             <div style={{display: "flex", flexDirection:"row", flexWrap: "wrap"}}>
-                {props.authorDomain && (<Button variant="contained" onClick={() => props.prepareStatement({method: 'static'})}
+                <Button variant="contained" onClick={() => props.prepareStatement({method: 'static'})}
+                    disabled={!props.authorDomain}
                     sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
-                    Authenticate by publishing a file on {props.authorDomain}
-                </Button>)}
+                    Authenticate by publishing a file on {props.authorDomain || 'your website'}
+                </Button>
+                {showAdditionalOptions ? (<>
                 {props.authorDomain && (<Button variant="contained" onClick={() => props.prepareStatement({method: 'dns'})}
                     sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
                     Authenticate by adding a DNS record on {props.authorDomain}
@@ -29,6 +32,10 @@ const GenerateStatement = (props:props) => {
                     sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}}>
                     Ask {window.location.hostname} to publish for you via email
                 </Button>
+                </>) : (props.authorDomain && (<Button onClick={() => setShowAdditionalOptions(true)}
+                    sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
+                    Show additional options
+                </Button>))}
             </div>
         </React.Fragment>
     )

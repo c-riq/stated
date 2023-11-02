@@ -8,7 +8,7 @@ export const createOrgVerification = ({statement_hash, domain: verifier_domain, 
         log && console.log(content)
         const parsedOrganisationVerification = parseOrganisationVerification(content)
         log && console.log(parsedOrganisationVerification)
-        const { domain, foreignDomain, name, country, province, city, legalForm, serialNumber } = parsedOrganisationVerification
+        const { domain, foreignDomain, name, country, province, city, legalForm, serialNumber, confidence, department } = parsedOrganisationVerification
         if ((
                 (!domain || domain.length < 1) &&
                 (!foreignDomain || foreignDomain.length < 1)
@@ -19,7 +19,7 @@ export const createOrgVerification = ({statement_hash, domain: verifier_domain, 
                 return reject(new Error("Missing required fields"))
         }
         const dbResult = await createOrganisationVerification({statement_hash, verifier_domain, verified_domain: domain, 
-            name, legal_entity_type: legalForm, country, province, city, serialNumber})
+            name, foreignDomain, legal_entity_type: legalForm, country, province, city, serialNumber, confidence, department})
         if(dbResult.rows[0]){
             return resolve({entityCreated: true})
         }

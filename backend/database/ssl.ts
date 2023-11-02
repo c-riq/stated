@@ -13,6 +13,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
                   subject_c AS country,
                   subject_st AS state,
                   subject_l AS city,
+                  '' department,
                   '' statement_hash,
                   first_seen first_verification_time
                 FROM ssl_cert_cache
@@ -30,6 +31,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
                   country,
                   province state,
                   city,
+                  department,
                   statement_hash,
                   first_verification_time
                 FROM organisation_verifications

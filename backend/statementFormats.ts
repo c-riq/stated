@@ -175,7 +175,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
 	(country ? "\t" + "Country scope: " + country + "\n" : "") +
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
-	(legalEntity ? "\t" + "Legal entity scope: " + legalEntity + "\n" : "") +
+	(legalEntity ? "\t" + "Legal form scope: " + legalEntity + "\n" : "") +
 	(domainScope && domainScope?.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
 	(judges ? "\t" + "The decision is finalized when the following nodes agree: " + judges + "\n" : "") +
 	(deadline ?"\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
@@ -194,7 +194,7 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
 	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
-	+ /(?:\tLegal entity scope: (?<legalEntity>[^\n]+?)\n)?/.source
+	+ /(?:\tLegal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
 	+ /(?:\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
 	+ /(?:\tThe decision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
 	+ /(?:\tVoting deadline: (?<deadline>[^\n]+?)\n)?/.source
@@ -236,7 +236,7 @@ export type organisationVerification = {
 	city: string,
 	province: string,
 	legalForm: string,
-	parent?: string,
+	department?: string,
 	domain: string,
 	foreignDomain: string,
 	serialNumber: string,
@@ -247,7 +247,7 @@ export type organisationVerification = {
 }
 
 export const buildOrganisationVerificationContent = (
-		{name, englishName, country, city, province, legalForm, parent, domain, foreignDomain, serialNumber,
+		{name, englishName, country, city, province, legalForm, department, domain, foreignDomain, serialNumber,
 		confidence, reliabilityPolicy, employeeCount, pictureHash} : organisationVerification) => {
 	/* Omit any fields that may have multiple values */
 	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
@@ -255,7 +255,7 @@ export const buildOrganisationVerificationContent = (
 	//const countryObject = countries.countries.find(c => c[0] === country)
 	//if(!countryObject) throw new Error("Invalid country " + country)
 	//if(province && !subdivisions.filter(c => c[0] === countryObject[1]).map(c => c[2]).includes(province)) throw new Error("Invalid province " + province + ", " + country)
-	if(!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal entity " + legalForm)
+	if(!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal form " + legalForm)
 	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
 	if(confidence && !(''+confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
 
@@ -265,10 +265,10 @@ export const buildOrganisationVerificationContent = (
 	"\t" + "Name: " + name + "\n" + // Full name as in business register
 	(englishName ? "\t" + "English name: " + englishName + "\n" : "") + // wikidata english name if available
 	"\t" + "Country: " + country + "\n" + // ISO 3166-1 english
-	"\t" + "Legal entity: " + legalForm + "\n" +
-	(parent ? "\t" + "Parent: " + parent + "\n" : "") + // for departments
+	"\t" + "Legal form: " + legalForm + "\n" +
 	(domain ? "\t" + "Owner of the domain: " + domain + "\n" : "") +
 	(foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
+	(department ? "\t" + "Department using the domain: " + department + "\n" : "") + 
 	(province ? "\t" + "Province or state: " + province + "\n" : "") + // UN/LOCODE
 	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
 	(city ? "\t" + "City: " + city + "\n" : "") + // wikidata english name, if available
@@ -279,7 +279,7 @@ export const buildOrganisationVerificationContent = (
 	""
 }
 
-export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Parent: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
+export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
 
 export const parseOrganisationVerification = (s:string):organisationVerification => {
 	const organisationVerificationRegex= new RegExp(''
@@ -288,10 +288,10 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 	+ /\tName: (?<name>[^\n]+?)\n/.source
 	+ /(?:\tEnglish name: (?<englishName>[^\n]+?)\n)?/.source
 	+ /\tCountry: (?<country>[^\n]+?)\n/.source
-	+ /\tLegal entity: (?<legalForm>[^\n]+?)\n/.source
-	+ /(?:\tParent: (?<parent>[^\n]+?)\n)?/.source
+	+ /\tLegal (?:form|entity): (?<legalForm>[^\n]+?)\n/.source
 	+ /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
 	+ /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
+	+ /(?:\tDepartment using the domain: (?<department>[^\n]+?)\n)?/.source
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
@@ -308,9 +308,9 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 		englishName: m[2],
 		country: m[3],
 		legalForm: m[4],
-		parent: m[5],
-		domain: m[6],
-		foreignDomain: m[7],
+		domain: m[5],
+		foreignDomain: m[6],
+		department: m[7],
 		province: m[8],
 		serialNumber: m[9],
 		city: m[10],
@@ -714,7 +714,7 @@ export const parseBoycott = (s: string):boycott => {
 	}
 }
 
-export const forbiddenChars = (s: string) => /;|>|<|"|'|’|\\/.test(s)
+export const forbiddenChars = (s: string) => /;|>|<|"|\\/.test(s)
 export const forbiddenStrings = (a: string[]) =>
 	a.filter(i =>
 		forbiddenChars('' + i)
