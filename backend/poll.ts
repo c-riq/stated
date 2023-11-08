@@ -8,7 +8,7 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
     try {
         const parsedPoll = parsePoll(content)
         const { country, city, legalEntity, deadline } = parsedPoll
-        if(!isNaN(deadline.getTime())) {
+        if(isNaN(deadline.getTime())) {
             resolve({error: "Invalid deadline date"})
             return
         }
