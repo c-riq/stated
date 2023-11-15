@@ -7,7 +7,7 @@ import {
   buildOrganisationVerificationContent,
   buildStatement,
   buildVoteContent,
-  minEmployeeCountToRange,
+  minPeopleCountToRange,
   parsePoll,
   parseStatement,
 } from "../statementFormats";
@@ -188,7 +188,7 @@ async () => {
       serialNumber: serial_number,
       legalForm: legalForms.corporation,
       confidence: confidence,
-      employeeCount: employees_min && minEmployeeCountToRange(employees_min),
+      employeeCount: employees_min ? minPeopleCountToRange(employees_min) : undefined,
       reliabilityPolicy:
         "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
@@ -305,7 +305,7 @@ const createP2PVerification = async (company1, company2) => {
     serialNumber: serial_number || employer_identification_number,
     legalForm: legalForms.corporation,
     confidence: confidence,
-    employeeCount: employees_min && minEmployeeCountToRange(employees_min),
+    employeeCount: employees_min && minPeopleCountToRange(employees_min),
     reliabilityPolicy: `https://stated.${author_domain}/statements/${shuffle(
       "MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads"
     )}`,

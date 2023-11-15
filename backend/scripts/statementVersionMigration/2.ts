@@ -27,7 +27,7 @@ export const statementTypes = {
 	unsupported: "unsupported",
 }
 export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000+"}
-export const minEmployeeCountToRange = (n: number) => {
+export const minPeopleCountToRange = (n: number) => {
 	if(n >= 100000) return employeeCounts["100000"]
 	if(n >= 10000) return employeeCounts["10000"]
 	if(n >= 1000) return employeeCounts["1000"]

@@ -5,7 +5,7 @@ import http from "http";
 
 import {
   buildOrganisationVerificationContent,
-  buildStatement, minEmployeeCountToRange} from "../statementFormats";
+  buildStatement, minPeopleCountToRange} from "../statementFormats";
 
 import { sha256 } from "../hash";
 
@@ -108,7 +108,10 @@ for (const i of array) {
         superseded,
         department
     } = i;
-    if (!(name) || !website_domain || !country || !province || !city) {
+    if (!province) {
+        console.log('province missing: ', name);
+    }
+    if (!(name) || !website_domain || !country || !city) {
         continue;
     }
     if (city.match(/\|/g)){
@@ -131,7 +134,7 @@ for (const i of array) {
         serialNumber: serial_number || employer_identification_number,
         legalForm: legalForms.corporation,
         confidence: confidence,
-        employeeCount: employees_min && minEmployeeCountToRange(employees_min),
+        employeeCount: employees_min && minPeopleCountToRange(employees_min),
         reliabilityPolicy: "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     if(!verification){ console.log("no verification generated"); continue}
@@ -150,7 +153,7 @@ for (const i of array) {
     submitStatement(data, (res) => {
         console.log(res);
     });
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 }
 })();
 console.log(array.filter((i) => i.website));
