@@ -7,13 +7,13 @@ import { sha256 } from '../utils/hash';
 import { parseDisputeAuthenticity, buildDisputeAuthenticityContent, buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
-import { getStatement, statementDB } from '../api';
+import { getStatement, statementDB, statementWithDetails } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 
 
-const DisputeStatementForm = (props:FormProps) => {
-    const [disputedStatementHash, setDisputedStatementHash] = React.useState("");
+const DisputeStatementAuthenticityForm = (props:FormProps & {statementToDisputeAuthenticity?: statementDB | statementWithDetails}) => {
+    const [disputedStatementHash, setDisputedStatementHash] = React.useState(props.statementToDisputeAuthenticity?.hash_b64 ||"");
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
@@ -64,6 +64,7 @@ const DisputeStatementForm = (props:FormProps) => {
             variant="outlined"
             placeholder='imdba856CQZlcZVhxFt4RP/SmYQpP75NYer4PylIUOs='
             label="Statement Hash"
+            value={disputedStatementHash}
             onChange={e => { setDisputedStatementHash(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "24px"}}
@@ -106,4 +107,4 @@ const DisputeStatementForm = (props:FormProps) => {
     )
 }
 
-export default DisputeStatementForm
+export default DisputeStatementAuthenticityForm

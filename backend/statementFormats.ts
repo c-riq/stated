@@ -24,14 +24,18 @@ export const statementTypes = {
 	bounty: "bounty",
 	unsupported: "unsupported",
 }
-export const employeeCounts = {"0": "0-10", "10": "10-100", "100": "100-1000", "1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000+"}
-export const minEmployeeCountToRange = (n: number) => {
-	if(n >= 100000) return employeeCounts["100000"]
-	if(n >= 10000) return employeeCounts["10000"]
-	if(n >= 1000) return employeeCounts["1000"]
-	if(n >= 100) return employeeCounts["100"]
-	if(n >= 10) return employeeCounts["10"]
-	if(n >= 0) return employeeCounts["0"]
+export const peopleCountBuckets = {"0": "0-10", "10": "10-100", "100": "100-1000", 
+"1000": "1000-10,000", "10000": "10,000-100,000", "100000": "100,000+",
+"1000000": "1,000,000+", "10000000": "10,000,000+"}
+export const minPeopleCountToRange = (n: number) => {
+	if(n >= 10000000) return peopleCountBuckets["10000000"]
+	if(n >= 1000000) return peopleCountBuckets["1000000"]
+	if(n >= 100000) return peopleCountBuckets["100000"]
+	if(n >= 10000) return peopleCountBuckets["10000"]
+	if(n >= 1000) return peopleCountBuckets["1000"]
+	if(n >= 100) return peopleCountBuckets["100"]
+	if(n >= 10) return peopleCountBuckets["10"]
+	if(n >= 0) return peopleCountBuckets["0"]
 }
 
 const UTCFormat:RegExp = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/
@@ -243,12 +247,15 @@ export type organisationVerification = {
 	confidence?: number,
 	reliabilityPolicy?: string,
 	employeeCount?: string,
-	pictureHash?: string
+	pictureHash?: string,
+	latitude?: number,
+	longitude?: number,
+	population?: string,
 }
 
 export const buildOrganisationVerificationContent = (
 		{name, englishName, country, city, province, legalForm, department, domain, foreignDomain, serialNumber,
-		confidence, reliabilityPolicy, employeeCount, pictureHash} : organisationVerification) => {
+		confidence, reliabilityPolicy, employeeCount, pictureHash, latitude, longitude, population} : organisationVerification) => {
 	/* Omit any fields that may have multiple values */
 	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
@@ -256,7 +263,8 @@ export const buildOrganisationVerificationContent = (
 	//if(!countryObject) throw new Error("Invalid country " + country)
 	//if(province && !subdivisions.filter(c => c[0] === countryObject[1]).map(c => c[2]).includes(province)) throw new Error("Invalid province " + province + ", " + country)
 	if(!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal form " + legalForm)
-	if(employeeCount && !Object.values(employeeCounts).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
+	if(employeeCount && !Object.values(peopleCountBuckets).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
+	if(population && !Object.values(peopleCountBuckets).includes(population)) throw new Error("Invalid population " + population)
 	if(confidence && !(''+confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
 
 	return "\n" +
@@ -272,6 +280,9 @@ export const buildOrganisationVerificationContent = (
 	(province ? "\t" + "Province or state: " + province + "\n" : "") + // UN/LOCODE
 	(serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
 	(city ? "\t" + "City: " + city + "\n" : "") + // wikidata english name, if available
+	(latitude ? "\t" + "Latitude: " + latitude + "\n" : "") +
+	(longitude ? "\t" + "Longitude: " + longitude + "\n" : "") +
+	(population ? "\t" + "Population: " + population + "\n" : "") +
 	(pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
 	(employeeCount ? "\t" + "Employee count: " + employeeCount + "\n" : "") +
 	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
@@ -279,7 +290,7 @@ export const buildOrganisationVerificationContent = (
 	""
 }
 
-export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
+export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Longitude: |Latitude: |Population: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
 
 export const parseOrganisationVerification = (s:string):organisationVerification => {
 	const organisationVerificationRegex= new RegExp(''
@@ -295,6 +306,9 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 	+ /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
 	+ /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
 	+ /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
+	+ /(?:\tLatitude: (?<latitude>[^\n]+?)\n)?/.source
+	+ /(?:\tLongitude: (?<longitude>[^\n]+?)\n)?/.source
+	+ /(?:\tPopulation: (?<population>[^\n]+?)\n)?/.source
 	+ /(?:\tLogo: (?<pictureHash>[^\n]+?)\n)?/.source
 	+ /(?:\tEmployee count: (?<employeeCount>[01,+-]+?)\n)?/.source
 	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
@@ -314,10 +328,13 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 		province: m[8],
 		serialNumber: m[9],
 		city: m[10],
-		pictureHash: m[11],
-		employeeCount: m[12],
-		reliabilityPolicy: m[13],
-		confidence: m[14] ? parseFloat(m[14]) : undefined,
+		latitude: m[11] ? parseFloat(m[11]) : undefined,
+		longitude: m[12] ? parseFloat(m[12]) : undefined,
+		population: m[13],
+		pictureHash: m[14],
+		employeeCount: m[15],
+		reliabilityPolicy: m[16],
+		confidence: m[17] ? parseFloat(m[17]) : undefined,
 	}
 }
 

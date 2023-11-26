@@ -12,7 +12,7 @@ version: '3.5'
 services:
   postgres:
     container_name: postgres
-    image: postgres
+    image: postgres:15
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-sdf}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sdf}

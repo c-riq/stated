@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 
 import {legalForms} from '../constants/legalForms'
 import { parseStatement, buildStatement, forbiddenStrings, 
-    buildOrganisationVerificationContent, parseOrganisationVerification, employeeCounts } from '../statementFormats'
+    buildOrganisationVerificationContent, parseOrganisationVerification, peopleCountBuckets } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 import { generateEmail } from './generateEmail';
@@ -193,7 +193,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="employeeCount"
-            options={Object.values(employeeCounts)}
+            options={Object.values(peopleCountBuckets)}
             autoHighlight
             getOptionLabel={(option) => option}
             onChange={(e,newvalue)=>setEmployeeCountObject(newvalue as string)}

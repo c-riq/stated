@@ -142,6 +142,10 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
 function App() {
   const [serverTime, setServerTime] = React.useState(new Date());
   const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
+  const [statementToRespond, setStatementToRepsond] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
+  const [statementToDisputeAuthenticity, setStatementToDisputeAuthenticity] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
+  const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
+  const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
   const [statements, setStatements] = React.useState([] as statementWithDetails[]);
   const [postsFetched, setPostsFetched] = React.useState(false);
@@ -156,9 +160,7 @@ function App() {
   React.useEffect(() => {window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));}, []);
 
   const getStatementsAPI = () => {
-    console.log("getPosts", searchQuery)
       getStatements(searchQuery, (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
-          console.log(s)
           if (s?.statements) {
               setStatements(s.statements)
               window.scrollTo(0,0)
@@ -172,9 +174,24 @@ function App() {
     setStatementToJoin(statement)
     setModalOpen(true)
   }
+  const respondToStatement = (statement: (statementWithDetails | statementDB)) => {
+    setStatementToRepsond(statement)
+    setModalOpen(true)
+  }
+  const disputeStatementAuthenticity = (statement: (statementWithDetails | statementDB)) => {
+    setStatementToDisputeAuthenticity(statement)
+    setModalOpen(true)
+  }
+  const disputeStatementContent = (statement: (statementWithDetails | statementDB)) => {
+    setStatementToDisputeContent(statement)
+    setModalOpen(true)
+  }
+  const supersedeStatement = (statement: (statementWithDetails | statementDB)) => {
+    setStatementToSupersede(statement)
+    setModalOpen(true)
+  }
   const voteOnPoll = (poll: {statement: string, hash_b64: string}) => {
     setPoll(poll)
-    console.log('poll', poll)
     setModalOpen(true)
   }
   const onPostSuccess = () => {
@@ -182,13 +199,14 @@ function App() {
     getStatementsAPI()
   }
   React.useEffect(() => { if(!postsFetched) {
-    console.log("useEffect")
       getStatementsAPI()
       setPostsFetched(true)
     }
   })
   const resetState = () => {
-    navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false)
+    navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
+    setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
+    setStatementToSupersede(undefined); setPoll(undefined);
   }
   return (
     <div className="App" style={{overflow: modalOpen ? 'hidden': 'scroll'}}>
@@ -203,17 +221,30 @@ function App() {
             {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px} setStatementToJoin={setStatementToJoin}/>
+                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px}
+                setStatementToJoin={setStatementToJoin}
+                disputeStatementAuthenticity={disputeStatementAuthenticity}
+                disputeStatementContent={disputeStatementContent}
+                supersedeStatement={supersedeStatement}
+                respondToStatement={respondToStatement} />
               </CenterModal>)} 
             />
             <Route path='/statements/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px} setStatementToJoin={setStatementToJoin}/>
+                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px}
+                setStatementToJoin={setStatementToJoin}
+                disputeStatementAuthenticity={disputeStatementAuthenticity}
+                disputeStatementContent={disputeStatementContent}
+                supersedeStatement={supersedeStatement}
+                respondToStatement={respondToStatement} />
               </CenterModal>)} 
             />
             <Route path='/create-statement' element={
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
-                <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} onPostSuccess={onPostSuccess} poll={poll} lt850px={lt850px}/>
+                <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} statementToRespond={statementToRespond} 
+                statementToDisputeAuthenticity={statementToDisputeAuthenticity} statementToDisputeContent={statementToDisputeContent}
+                statementToSupersede={statementToSupersede}
+                 onPostSuccess={onPostSuccess} poll={poll} lt850px={lt850px}/>
               </CenterModal>} 
             />
             <Route path='/debug-statement' element={

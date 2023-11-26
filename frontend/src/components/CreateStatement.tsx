@@ -17,7 +17,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import OrganisationVerificationForm from './OrganisationVerificationForm';
 import PersonVerificationForm from './PersonVerificationForm';
 import PollForm from './PollForm';
-import DisputeStatementForm from './DisputeStatementForm';
+import DisputeStatementAuthenticityForm from './DisputeStatementAuthenticityForm';
+import DisputeStatementContentForm from './DisputeStatementContentForm';
 import ResponseForm from './ResponseForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
@@ -37,6 +38,10 @@ type Props = {
     lt850px: boolean,
     domain?: string,
     statementToJoin?: statementWithDetails | statementDB,
+    statementToRespond?: statementWithDetails | statementDB,
+    statementToDisputeAuthenticity?: statementWithDetails | statementDB,
+    statementToDisputeContent?: statementWithDetails | statementDB,
+    statementToSupersede?: statementWithDetails | statementDB,
     poll?: {statement: string, hash_b64: string},
     serverTime: Date,
     onPostSuccess: () => void,
@@ -47,7 +52,13 @@ type statedVerification = {verified_domain: string, name: string, verifier_domai
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
-    const [type, setType] = React.useState(props.poll ? "vote" : /*(props.statementToJoin?.type ? props.statementToJoin?.type :*/ statementTypes.statement/*)*/);
+    const [_type, setType] = React.useState(
+        props.poll ? statementTypes.vote
+        : (props.statementToRespond ? statementTypes.response 
+            : (props.statementToDisputeAuthenticity ? statementTypes.disputeAuthenticity 
+                : (props.statementToDisputeContent ? statementTypes.disputeContent 
+                    : (props.statementToSupersede ? statementTypes.statement 
+                    : statementTypes.statement)))));
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
@@ -58,7 +69,7 @@ const CreateStatement = (props:Props) => {
     const [tags, setTags] = React.useState([] as string[]);
     const [tagInput, setTagInput] = React.useState("")
     const [representative, setRepresentative] = React.useState("");
-    const [supersededStatement, setSupersededStatement] = React.useState("");
+    const [supersededStatement, setSupersededStatement] = React.useState(props.statementToSupersede?.hash_b64?? "");
     const [showAdditionalFields, setShowAdditionalFields] = React.useState(false);
     const [apiKey, setApiKey] = React.useState("");
     const [publishingMethod, setPublishingMethod] = React.useState(undefined as publishingMethod|undefined);
@@ -149,7 +160,6 @@ const CreateStatement = (props:Props) => {
                 r.domain === 'stated.' + domain ||
                 r.domain === 'www.' + domain) && r.O)
             if(matchingOV) { 
-                console.log(matchingOV, matchingOV.O)
                 setAuthor(matchingOV.O)
                 setOVInfo(OVInfo)
             }
@@ -266,7 +276,7 @@ const CreateStatement = (props:Props) => {
                 style={{backgroundColor: '#eeeeee'}}
                 required
             />
-            { showAdditionalFields ? ( <>
+            { showAdditionalFields && (
             <TextField
                 id="signing_representative"
                 variant="outlined"
@@ -276,7 +286,8 @@ const CreateStatement = (props:Props) => {
                 onChange={e => { setRepresentative(e.target.value) }}
                 margin="normal"
                 style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
-            />
+            />)}
+            { showAdditionalFields || props.statementToSupersede && (
             <TextField
                 id="superseded_statement"
                 variant="outlined"
@@ -286,7 +297,8 @@ const CreateStatement = (props:Props) => {
                 onChange={e => { setSupersededStatement(e.target.value) }}
                 margin="normal"
                 style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
-            />
+            />)}
+            { showAdditionalFields ? (
             <TextField // TODO: fix tags
                 id="tags"
                 variant="outlined"
@@ -300,9 +312,8 @@ const CreateStatement = (props:Props) => {
                 onKeyDown={onTagKeyDown}
                 value={tagInput}
                 sx={{backgroundColor: '#eeeeee', marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
-            />
-            </>
-            ):
+            />)
+            :
             (<Button color="primary" onClick={()=>setShowAdditionalFields(true)} style={{marginTop: "12px"}}>
                 Show additional fields</Button>
             )}
@@ -320,7 +331,7 @@ const CreateStatement = (props:Props) => {
                 <Select
                     labelId="statement-type-label"
                     id="statement-type"
-                    value={type}
+                    value={_type}
                     label="Type"
                     onChange={(e)=>handleTypeChange(e.target.value as statementTypeValue)}
                     style={{marginBottom: "16px"}}
@@ -333,51 +344,59 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.poll}>Poll</MenuItem>
                     <MenuItem value={statementTypes.vote}>Vote</MenuItem>
                     <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
+                    <MenuItem value={statementTypes.disputeContent}>Dispute statement content</MenuItem>
                     <MenuItem value={statementTypes.response}>Response</MenuItem>
                     <MenuItem value={statementTypes.bounty}>Bounty</MenuItem>
                     <MenuItem value={statementTypes.observation}>Observation</MenuItem>
                 </Select>
-            {type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags, supersededStatement}}
+            {_type === statementTypes.organisationVerification &&(<OrganisationVerificationForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</OrganisationVerificationForm>)}
-            {type === statementTypes.personVerification &&(<PersonVerificationForm metaData={{domain, author, representative, tags, supersededStatement}}
+            {_type === statementTypes.personVerification &&(<PersonVerificationForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</PersonVerificationForm>)}
-            {type === statementTypes.poll &&(<PollForm metaData={{domain, author, representative, tags, supersededStatement}}
+            {_type === statementTypes.poll &&(<PollForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</PollForm>)}
-            {type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags, supersededStatement}}
+            {_type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</RatingForm>)}
-            {type === statementTypes.vote &&(<VoteForm poll={props.poll} metaData={{domain, author, representative, tags, supersededStatement}}
+            {_type === statementTypes.vote &&(<VoteForm poll={props.poll} metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</VoteForm>)}
-            {type === statementTypes.disputeAuthenticity &&(<DisputeStatementForm metaData={{domain, author, representative, tags, supersededStatement}}
+            {_type === statementTypes.disputeAuthenticity &&(<DisputeStatementAuthenticityForm metaData={{domain, author, representative, tags, supersededStatement}}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
-                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
-                {authorFields()}</DisputeStatementForm>)}
-            {type === statementTypes.response &&(<ResponseForm metaData={{domain, author, representative, tags, supersededStatement}}
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}
+                statementToDisputeAuthenticity={props.statementToDisputeAuthenticity}>
+                {authorFields()}</DisputeStatementAuthenticityForm>)}
+            {_type === statementTypes.disputeContent &&(<DisputeStatementContentForm metaData={{domain, author, representative, tags, supersededStatement}}
+                setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
+                setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}
+                statementToDisputeContent={props.statementToDisputeContent}>
+                {authorFields()}</DisputeStatementContentForm>)}
+            {_type === statementTypes.response &&(<ResponseForm metaData={{domain, author, representative, tags, supersededStatement}}
+                statementToRespond={props.statementToRespond}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod} >
                 {authorFields()}</ResponseForm>)}
-            {type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
+            {_type === statementTypes.statement &&(<StatementForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</StatementForm>)}
-            {type === statementTypes.signPdf &&(<SignPDFForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
+            {_type === statementTypes.signPdf &&(<SignPDFForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</SignPDFForm>)}
-            {type === statementTypes.bounty &&(<BountyForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
+            {_type === statementTypes.bounty &&(<BountyForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</BountyForm>)}
-            {type === statementTypes.observation &&(<ObservationForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
+            {_type === statementTypes.observation &&(<ObservationForm metaData={{domain, author, representative, tags, supersededStatement}} statementToJoin={props.statementToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod}>
                 {authorFields()}</ObservationForm>)}
@@ -468,11 +487,12 @@ const CreateStatement = (props:Props) => {
                             <span>&nbsp;</span>to verify domain ownership.</span>
                     <p>
                         You can follow these instructions to publish the file and link it with your 'static.stated.' subdomain:
+                    </p>
                         <ul>
                             <li><Link href='https://github.com/c-riq/stated/blob/master/static/netlify/README.md'>Instructions for hosting on Netlify</Link></li>
                             <li><Link href='https://github.com/c-riq/stated/blob/master/static/github-pages/README.md'>Instructions for hosting on Github Pages</Link></li>
                         </ul>
-                    </p>
+                    
                     <Button style={{marginTop: '12px'}}fullWidth variant="contained" onClick={() => {
                         checkStaticStatementAPI() }}>Check if the file can be retrieved</Button>
                 </div>)

@@ -5,7 +5,8 @@ import http from "http";
 
 import {
   buildOrganisationVerificationContent,
-  buildStatement} from "../statementFormats";
+  buildStatement,
+  minPeopleCountToRange} from "../statementFormats";
 
 import { sha256 } from "../hash";
 
@@ -56,7 +57,7 @@ const submitStatement = (data, callback) => {
 
 var daxCompanies = fs
   .readFileSync(
-    __dirname + "/../../analysis/verifications/cities.csv",
+    __dirname + "/../../analysis/verifications/cities_list.csv",
     "utf8"
   )
   .toString();
@@ -80,26 +81,45 @@ for (const row of rows) {
   array.push(parsedRow);
 }
 
+(async () => {
 for (const i of array) {
     // country,code,government_website_domain,source_domain,confidence_domain,ssl_ov_subject_org,google_search_term_first_result,
     // foreign_affairs_ministry_domain,source_fa_domain,confidence_fa_domain,Population_2022_million,gdp_2022_billion_usd,source_population_gdp
     const {
-        city,
+        name,
+        english_name,
         province,
         country,
-        government_website_domain,
-        confidence
+        domain,
+        confidence,
+        latitude,
+        longitude,
+        population,
+        skip
     } = i;
-    if (!country || !province || !country || !government_website_domain || !confidence) {
+    if(skip) {
+      console.log('skip: ', name)
+      continue
+    }
+    if (!country || !province || !domain || !confidence) {
         continue;
     }
+    const population_bucket = population ? minPeopleCountToRange(parseFloat(population)) : undefined
+    const latitude_number = latitude ? parseFloat(latitude) : undefined
+    const longitude_number = longitude ? parseFloat(longitude) : undefined
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        name: city,
-        domain: government_website_domain,
+        name,
+        englishName: english_name,
+        domain: domain,
         country,
+        latitude: latitude_number,
+        longitude: longitude_number,
+        population: population_bucket,
+        province,
         legalForm: legalForms.local_government,
         confidence: confidence,
+        reliabilityPolicy: "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     const statement = buildStatement({
       domain: "rixdata.net",//"rixdata.net", // rixdata.net
@@ -115,6 +135,8 @@ for (const i of array) {
     submitStatement(data, (res) => {
         console.log(res);
     });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 }
+})();
 
-console.log(array.filter((i) => i.government_website_domain));
+console.log(array.filter((i) => i.domain));

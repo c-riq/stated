@@ -10,6 +10,12 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 import Alert from '@mui/material/Alert';
+import ReplyIcon from '@mui/icons-material/Reply';
+import AddIcon from '@mui/icons-material/Add';
+import ReportIcon from '@mui/icons-material/Report';
+import Tooltip from '@mui/material/Tooltip';
+import DangerousIcon from '@mui/icons-material/Dangerous';
+import UpdateIcon from '@mui/icons-material/Update';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes, statementWithDetails } from '../api'
@@ -21,11 +27,16 @@ import {filePath, getWorkingFileURL} from './SignPDFForm'
 import {statementDB, joiningStatementsResponse} from '../api'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
+import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
 
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
     setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
+    respondToStatement: (arg0: statementWithDetails | statementDB) => void,
+    disputeStatementAuthenticity: (arg0: statementWithDetails | statementDB) => void,
+    disputeStatementContent: (arg0: statementWithDetails | statementDB) => void,
+    supersedeStatement: (arg0: statementWithDetails | statementDB) => void,
 }
 
 const Statement = (props:props) => {
@@ -38,6 +49,7 @@ const Statement = (props:props) => {
     const [personVerifications, setPersonVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
+    const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
 
     const hashInURL = useParams().statementId || ''
     const [hash, setHash] = React.useState(hashInURL)
@@ -45,6 +57,11 @@ const Statement = (props:props) => {
     const queryParams = new URLSearchParams(search)
     const key = queryParams.get('key')
     const algorithm = queryParams.get('algorithm')
+
+    const deleteStatement = () => {
+        console.log('delete statement')
+        setOpenDeleteDialog(true)
+    }
 
     React.useEffect(() => {
         if (hashInURL !== hash) {
@@ -161,12 +178,46 @@ const Statement = (props:props) => {
             </RouterLink>))}
             {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
                 statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
-                statementTypes.boycott, statementTypes.observation].includes(statement.type) && (<RouterLink to="/create-statement">
-                <Button onClick={()=>{props.setStatementToJoin(statement);}} variant='contained' 
-                sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
-                    Join statement
-                </Button>
-            </RouterLink>))}
+                statementTypes.boycott, statementTypes.observation].includes(statement.type) && (
+                <>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Join statement">
+                            <IconButton aria-label="join statement" onClick={()=>{props.setStatementToJoin(statement);}}>
+                                <AddIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Respond to statement">
+                            <IconButton aria-label="Respond to statement" onClick={()=>{props.respondToStatement(statement);}}>
+                                <ReplyIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Dispute statement authenticity">
+                            <IconButton aria-label="Dispute statement authenticity" onClick={()=>{props.disputeStatementAuthenticity(statement);}}>
+                                <DangerousIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Dispute statement content">
+                            <IconButton aria-label="Dispute statement content" onClick={()=>{props.disputeStatementContent(statement);}}>
+                                <ReportIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Replace with a new statement">
+                            <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement(statement);}}>
+                                <UpdateIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
+                </>
+            ))}
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
             <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{

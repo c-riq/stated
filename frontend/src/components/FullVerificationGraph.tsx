@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
 import { legalForms } from "../constants/legalForms";
-import { employeeCounts, parseOrganisationVerification } from "../statementFormats";
+import { peopleCountBuckets, parseOrganisationVerification } from "../statementFormats";
 
 import { backendHost, getDomainVerifications } from "../api";
 import { node, edge } from "./VerificationGraph";
@@ -85,7 +85,7 @@ export const FullVerificationGraph = () => {
                 legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)":
                 "rgba(42,42,42,1)",
               size: 
-              parsedOrganisationVerification.employeeCount === employeeCounts["100000"] ? "50px" : "30px"
+              parsedOrganisationVerification.employeeCount === peopleCountBuckets["100000"] ? "50px" : "30px"
             },
           });
         }
