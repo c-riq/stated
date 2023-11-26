@@ -7,6 +7,7 @@ import { getSSLOVInfo, backendHost, statementDB } from "../api";
 
 
 cytoscape.use(elk);
+cytoscape.warnings(false)
 export type node = {
   data: {
     id: string;
@@ -221,13 +222,11 @@ export const VerificationGraph = (props:props) => {
     }
 
     [...new Set(sslCerts)].filter(d=>d?.domain && d?.O && (d.issuer_o || d.issuer_cn)).forEach((d) => {
-      console.log(d,"domaindomain");
       const issuer = d.issuer_o || d.issuer_cn
       const sourceParentId = "CA:" + issuer.replace(/ /g, "_").toLowerCase();
       const {O, domain} = d
       const baseDomain = domain.replace(/^stated.|^www./,'')
       const targetParentId = (baseDomain + ":" + O).replace(/ /g, "_").toLowerCase();
-      console.log(baseDomain, 'baseDomain', domain, O, targetParentId, nodes.map((n) => n?.data?.id))
       if (nodes.map((n) => n?.data?.id).includes(targetParentId)) {
       if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
         nodes.push({
