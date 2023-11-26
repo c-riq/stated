@@ -31,7 +31,6 @@ export const FullNetworkGraph = () => {
       (
         {domain, ip=undefined, last_seen=undefined, fingerprint=undefined}
       ) => {
-        console.log("domain", domain)
         const sourceId = domain;
         const daysSinceLastSeen = last_seen ? ((new Date()).getTime() - (new Date(last_seen)).getTime()) / (1000*60*60*24) : 1e9
         if (!nodes.map((n) => n?.data?.id).includes(sourceId)) {

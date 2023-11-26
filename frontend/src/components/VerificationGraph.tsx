@@ -260,7 +260,6 @@ export const VerificationGraph = (props:props) => {
       },true);});
       setFetchedSslCerts(true);
     }
-    console.log(nodes, edges, domains, sslCerts);
 
     const cy = cytoscape({
       container: graphRef.current,

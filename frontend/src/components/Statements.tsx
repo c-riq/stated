@@ -38,13 +38,13 @@ const highlightedStatement = (text: string, type:string) => {
     }
     const parts = text.split(new RegExp(regex, 'g'));
     return <span>{ parts.map((v, i) => 
-        <><span key={i} style={regex.test(v) ? 
+        <span key={i}><span style={regex.test(v) ? 
             {fontWeight: '200',color: 'rgb(58,58,58)', fontSize:'13px'} : 
             {fontWeight: '550',color: 'rgb(42, 72, 103)'}}>
             {regex.test(v) ? v.replace(/: $/, ':') : v}
         </span>
         {regex.test(v) ? ' ' : '' }
-        </>)
+        </span>)
     } </span>;
 }
 
@@ -73,7 +73,7 @@ const Statements = (props:props) => {
                         try {
                             author = parseStatement(s.statement).author
                         } catch(error) {
-                            console.log(error)
+                            // console.log(error)
                         }
                         if ([
                             statementTypes.statement,statementTypes.organisationVerification,
