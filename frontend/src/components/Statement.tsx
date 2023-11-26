@@ -10,6 +10,12 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 import Alert from '@mui/material/Alert';
+import ReplyIcon from '@mui/icons-material/Reply';
+import AddIcon from '@mui/icons-material/Add';
+import ReportIcon from '@mui/icons-material/Report';
+import Tooltip from '@mui/material/Tooltip';
+import DangerousIcon from '@mui/icons-material/Dangerous';
+import UpdateIcon from '@mui/icons-material/Update';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes, statementWithDetails } from '../api'
@@ -175,26 +181,39 @@ const Statement = (props:props) => {
                 statementTypes.boycott, statementTypes.observation].includes(statement.type) && (
                 <>
                     <RouterLink to="/create-statement">
-                        <Button onClick={()=>{props.setStatementToJoin(statement);}} variant='contained' 
-                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>
-                            Join statement
-                        </Button>
+                        <Tooltip title="Join statement">
+                            <IconButton aria-label="join statement" onClick={()=>{props.setStatementToJoin(statement);}}>
+                                <AddIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </RouterLink>
                     <RouterLink to="/create-statement">
-                        <Button onClick={()=>{props.respondToStatement(statement);}} variant='contained' 
-                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Respond</Button>
+                        <Tooltip title="Respond to statement">
+                            <IconButton aria-label="Respond to statement" onClick={()=>{props.respondToStatement(statement);}}>
+                                <ReplyIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </RouterLink>
                     <RouterLink to="/create-statement">
-                        <Button onClick={()=>{props.disputeStatementAuthenticity(statement);}} variant='contained' 
-                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Dispute statement authenticity</Button>
+                        <Tooltip title="Dispute statement authenticity">
+                            <IconButton aria-label="Dispute statement authenticity" onClick={()=>{props.disputeStatementAuthenticity(statement);}}>
+                                <DangerousIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </RouterLink>
                     <RouterLink to="/create-statement">
-                        <Button onClick={()=>{props.disputeStatementContent(statement);}} variant='contained' 
-                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Dispute statement content</Button>
+                        <Tooltip title="Dispute statement content">
+                            <IconButton aria-label="Dispute statement content" onClick={()=>{props.disputeStatementContent(statement);}}>
+                                <ReportIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </RouterLink>
                     <RouterLink to="/create-statement">
-                        <Button onClick={()=>{props.supersedeStatement(statement);}} variant='contained' 
-                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Create a new version</Button>
+                        <Tooltip title="Replace with a new statement">
+                            <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement(statement);}}>
+                                <UpdateIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </RouterLink>
                     <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
                 </>

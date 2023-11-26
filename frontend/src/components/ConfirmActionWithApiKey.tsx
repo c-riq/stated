@@ -1,6 +1,7 @@
 import React from 'react'
 import Button from '@mui/material/Button';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField, Tooltip } from '@mui/material';
 import { deleteStatement } from '../api';
 
 type props = {
@@ -30,8 +31,11 @@ export const ConfirmActionWithApiKey = (props: props) => {
     };
     return (
         <React.Fragment>
-            <Button onClick={handleClickOpen} variant='contained' 
-                sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Delete</Button>
+            <Tooltip title="Delete statement">
+                <IconButton aria-label="delete" onClick={handleClickOpen}>
+                    <DeleteIcon />
+                </IconButton>
+            </Tooltip>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Delete statement</DialogTitle>
                 <DialogContent>
