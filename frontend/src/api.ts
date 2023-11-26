@@ -19,12 +19,12 @@ const req = (method:method, path:string, body:any, cb:cb, reject:cb, host?:strin
         method: method,
         ...(method === 'GET' ? {} : {body: JSON.stringify(body)})
     }
-    console.log(url, opts)
+    // console.log(url, opts)
     fetch(url, opts)
         .then(res => {
             if(res.status === 200) {
                 res.json().then(json => {
-                    console.log("json", json)
+                    //console.log("json", json)
                     cb(json)
                 })
                 .catch(error => reject(error))
@@ -130,7 +130,6 @@ export const getNodes = (cb:cb) => {
     }, e => {console.log(e); return})
 }
 export const getSSLOVInfo = (domain:string, cb:cb, cacheOnly?:boolean) => {
-    console.log("getSSLOVInfo", domain)
     if (!domain || domain.length < 1) {
         cb([])
         return
@@ -189,6 +188,9 @@ export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
 }
 export const submitStatement = (body:any, cb:cb, reject:cb) => {
     req('POST', 'statements', body, cb, reject)
+}
+export const deleteStatement = (hash:string, body:any, cb:cb, reject:cb) => {
+    req('DELETE', ('statements/' + hash), body, cb, reject)
 }
 export const checkStaticStatement = (body:{domain:string, statement:string, hash: string}, cb:cb, reject:cb) => {
     req('POST', 'check_static_statement', body, cb, reject)

@@ -21,11 +21,16 @@ import {filePath, getWorkingFileURL} from './SignPDFForm'
 import {statementDB, joiningStatementsResponse} from '../api'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
+import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
 
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
     setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
+    respondToStatement: (arg0: statementWithDetails | statementDB) => void,
+    disputeStatementAuthenticity: (arg0: statementWithDetails | statementDB) => void,
+    disputeStatementContent: (arg0: statementWithDetails | statementDB) => void,
+    supersedeStatement: (arg0: statementWithDetails | statementDB) => void,
 }
 
 const Statement = (props:props) => {
@@ -38,6 +43,7 @@ const Statement = (props:props) => {
     const [personVerifications, setPersonVerifications] = React.useState([]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
+    const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
 
     const hashInURL = useParams().statementId || ''
     const [hash, setHash] = React.useState(hashInURL)
@@ -45,6 +51,11 @@ const Statement = (props:props) => {
     const queryParams = new URLSearchParams(search)
     const key = queryParams.get('key')
     const algorithm = queryParams.get('algorithm')
+
+    const deleteStatement = () => {
+        console.log('delete statement')
+        setOpenDeleteDialog(true)
+    }
 
     React.useEffect(() => {
         if (hashInURL !== hash) {
@@ -161,12 +172,33 @@ const Statement = (props:props) => {
             </RouterLink>))}
             {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
                 statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
-                statementTypes.boycott, statementTypes.observation].includes(statement.type) && (<RouterLink to="/create-statement">
-                <Button onClick={()=>{props.setStatementToJoin(statement);}} variant='contained' 
-                sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
-                    Join statement
-                </Button>
-            </RouterLink>))}
+                statementTypes.boycott, statementTypes.observation].includes(statement.type) && (
+                <>
+                    <RouterLink to="/create-statement">
+                        <Button onClick={()=>{props.setStatementToJoin(statement);}} variant='contained' 
+                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>
+                            Join statement
+                        </Button>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Button onClick={()=>{props.respondToStatement(statement);}} variant='contained' 
+                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Respond</Button>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Button onClick={()=>{props.disputeStatementAuthenticity(statement);}} variant='contained' 
+                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Dispute statement authenticity</Button>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Button onClick={()=>{props.disputeStatementContent(statement);}} variant='contained' 
+                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Dispute statement content</Button>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Button onClick={()=>{props.supersedeStatement(statement);}} variant='contained' 
+                        sx={{backgroundColor:"rgba(42,74,103,1)", margin: "5px", borderRadius: 8}}>Create a new version</Button>
+                    </RouterLink>
+                    <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
+                </>
+            ))}
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
             <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{
