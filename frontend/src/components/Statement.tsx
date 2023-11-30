@@ -15,7 +15,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ReportIcon from '@mui/icons-material/Report';
 import Tooltip from '@mui/material/Tooltip';
 import DangerousIcon from '@mui/icons-material/Dangerous';
-import UpdateIcon from '@mui/icons-material/Update';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes, statementWithDetails } from '../api'
@@ -178,7 +178,8 @@ const Statement = (props:props) => {
             </RouterLink>))}
             {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
                 statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
-                statementTypes.boycott, statementTypes.observation].includes(statement.type) && (
+                statementTypes.boycott, statementTypes.observation, statementTypes.organisationVerification,
+                statementTypes.personVerification, statementTypes.vote].includes(statement.type) && (
                 <>
                     <RouterLink to="/create-statement">
                         <Tooltip title="Join statement">
@@ -211,7 +212,7 @@ const Statement = (props:props) => {
                     <RouterLink to="/create-statement">
                         <Tooltip title="Replace with a new statement">
                             <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement(statement);}}>
-                                <UpdateIcon/>
+                                <EditIcon/>
                             </IconButton>
                         </Tooltip>
                     </RouterLink>
