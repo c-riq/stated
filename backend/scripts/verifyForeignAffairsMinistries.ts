@@ -1,5 +1,6 @@
 /*
 HOST=localhost DOMAIN=localhost PROTOCOL=http PORT=7766 ts-node ./scripts/verifyForeignAffairsMinistries.ts
+HOST=stated.rixdata.net DOMAIN=rixdata.net ts-node ./scripts/verifyForeignAffairsMinistries.ts
 */
 import fs from "fs";
 
@@ -97,6 +98,7 @@ for (const i of array) {
         //vat_id,
     } = i;
     let confidence = Number.parseFloat(confidence_mfa_domain) || 0
+    confidence = Math.min(0.95, confidence);
     if (
       confidence < 0.8
       || !country || !mfa_name || !foreign_affairs_ministry_domain) {
