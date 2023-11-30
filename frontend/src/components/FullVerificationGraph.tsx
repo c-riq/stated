@@ -81,9 +81,10 @@ export const FullVerificationGraph = () => {
               name: (name.length > 20 ? name.substring(0, 17) + "..." : name) + "\n" + domain,
               href: `${backendHost}/statements/${hash_b64}`,
               color: 
-                [legalForms.foreign_affairs_ministry, legalForms.local_government].includes(legal_entity_type) ? "rgba(42,100,103,1)" :
-                legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)":
-                "rgba(42,42,42,1)",
+              legal_entity_type === legalForms.corporation ? "rgba(42,74,103,1)" : (
+              legal_entity_type === legalForms.local_government ? "rgba(42,100,103,1)" : (
+              legal_entity_type === legalForms.foreign_affairs_ministry ? "rgba(200,42,42,1)" : (
+                "rgba(42,42,42,1)" ))),
               size: 
               parsedOrganisationVerification.employeeCount === peopleCountBuckets["100000"] ? "50px" : "30px"
             },
@@ -165,7 +166,8 @@ export const FullVerificationGraph = () => {
         padding: 50,
       },
     });
-    cy.userZoomingEnabled(false);
+    const embeddedInIframe = window.self !== window.top;
+    cy.userZoomingEnabled(embeddedInIframe ? false : true);
     cy.on("click", (e) => {
       cy.userZoomingEnabled(true);
     });
