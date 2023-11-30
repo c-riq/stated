@@ -38,6 +38,17 @@
                 "backend/scripts/statementVersionMigration/migrateStatements.ts"
             ],
             "env": {"API_KEY":"XXX", "HOST":"stated.rixdata.net"}
+        },{
+            "name": "batchVerify",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal",
+            "runtimeExecutable": "ts-node",
+            "runtimeArgs": [
+                "backend/scripts/verifyForeignAffairsMinistries.ts"
+            ],
+            "env": {"API_KEY":"XXX", "HOST":"localhost", "DOMAIN": "localhost", "PORT": "7766", "PROTOCOL": "http"}
         }
     ]
 }

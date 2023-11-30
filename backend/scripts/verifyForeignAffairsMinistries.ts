@@ -1,6 +1,11 @@
+/*
+HOST=localhost DOMAIN=localhost PROTOCOL=http PORT=7766 ts-node ./scripts/verifyForeignAffairsMinistries.ts
+HOST=stated.rixdata.net DOMAIN=rixdata.net ts-node ./scripts/verifyForeignAffairsMinistries.ts
+*/
 import fs from "fs";
 
 import https from "https";
+import http from "http";
 
 import {
   buildOrganisationVerificationContent,
@@ -12,7 +17,10 @@ import { legalForms } from "../constants/legalForms";
 
 const host = process.env.HOST || "stated.rixdata.net";
 const port = process.env.PORT || 443;
+const author = process.env.AUTHOR || "Rix Data NL B.V."
+const domain = process.env.DOMAIN || "rixdata.net"
 const apiKey = process.env.API_KEY || "XXX";
+const useHttps = (process.env.PROTOCOL || "https") === "https";
 
 const submitStatement = (data, callback) => {
   console.log(data);
@@ -26,7 +34,7 @@ const submitStatement = (data, callback) => {
         "Content-Type": "application/json",
       },
     };
-    var post_req = https.request(post_options, (res) => {
+    var post_req = (useHttps ? https : http).request(post_options, (res) => {
       let rawData = "";
       res.setEncoding("utf8");
       res.on("data", function (chunk) {
@@ -77,6 +85,7 @@ for (const row of rows) {
   array.push(parsedRow);
 }
 
+(async () => {
 for (const i of array) {
     // country,code,government_website_domain,source_domain,confidence_domain,ssl_ov_subject_org,google_search_term_first_result,
     // foreign_affairs_ministry_domain,source_fa_domain,confidence_fa_domain,Population_2022_million,gdp_2022_billion_usd,source_population_gdp
@@ -84,35 +93,42 @@ for (const i of array) {
         mfa_name,
         country,
         foreign_affairs_ministry_domain,
-        confidence_fa_domain
+        confidence_mfa_domain
         //isin,
         //vat_id,
     } = i;
-    if (Number.parseFloat(confidence_fa_domain) < 0.8 || !country || !mfa_name || !foreign_affairs_ministry_domain) {
+    let confidence = Number.parseFloat(confidence_mfa_domain) || 0
+    confidence = Math.min(0.95, confidence);
+    if (
+      confidence < 0.8
+      || !country || !mfa_name || !foreign_affairs_ministry_domain) {
         continue;
     }
     // @ts-ignore
     const verification = buildOrganisationVerificationContent({
-        name: mfa_name,
-        domain: foreign_affairs_ministry_domain,
-        country,
-        legalForm: legalForms.foreign_affairs_ministry,
-        confidence: confidence_fa_domain,
+        name: mfa_name as string,
+        domain: foreign_affairs_ministry_domain as string,
+        country: country  as string,
+        legalForm: legalForms.foreign_affairs_ministry as string,
+        confidence,
+        reliabilityPolicy: "https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads",
     });
     const statement = buildStatement({
-      domain: "rixdata.net", // rixdata.net
+      domain: domain, // rixdata.net
       author: "Rix Data NL B.V.", // Rix Data NL B.V.
-        time: new Date().toUTCString(),
+        time: new Date(),
         content: verification,
     })
     const data = {
         statement,
-        hash_b64: sha256(statement),
+        hash: sha256(statement),
         api_key: apiKey
     }
     submitStatement(data, (res) => {
         console.log(res);
     });
-}
+    await new Promise((resolve,_) => setTimeout(resolve, 500))
+  }
+  console.log(array.filter((i) => i.website));
+})()
 
-console.log(array.filter((i) => i.website));
