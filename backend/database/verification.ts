@@ -157,7 +157,9 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
               SELECT 
                   *
               FROM organisation_verifications
-              JOIN statements ON organisation_verifications.statement_hash=statements.hash_b64
+              JOIN statement_with_superseding 
+                ON organisation_verifications.statement_hash=statement_with_superseding.hash_b64
+                AND superseding_statement IS NULL
               WHERE true
               ${domain ? 'AND verified_domain = $1' : ''} LIMIT 2000;
               `,[domain], (error, results) => {
