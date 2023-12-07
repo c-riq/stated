@@ -8,7 +8,7 @@ CREATE TYPE verification_method AS ENUM
     ('api', 'dns');
 CREATE TABLE IF NOT EXISTS unverified_statements (
     id SERIAL PRIMARY KEY,
-    statement VARCHAR(1500) NOT NULL, 
+    statement VARCHAR(3000) NOT NULL, 
     author VARCHAR(100) NOT NULL, 
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
     source_node_id INT,
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS statements (
     type statement_type NOT NULL,
     domain VARCHAR(100) NOT NULL,
     author VARCHAR(100) NOT NULL, 
-    statement VARCHAR(1500) NOT NULL, 
+    statement VARCHAR(3000) NOT NULL, 
     proclaimed_publication_time TIMESTAMP,
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
     referenced_statement VARCHAR(500), -- response, vote, dispute
     tags VARCHAR(1000),
-    content VARCHAR(1000) NOT NULL, -- for search
+    content VARCHAR(3000) NOT NULL, -- for search
     content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements and preventing duplicates
     source_node_id INT,
     first_verification_time TIMESTAMP,
@@ -42,12 +42,12 @@ CREATE TABLE IF NOT EXISTS hidden_statements (
     type statement_type NOT NULL,
     domain VARCHAR(100) NOT NULL,
     author VARCHAR(100) NOT NULL, 
-    statement VARCHAR(1500) NOT NULL, 
+    statement VARCHAR(3000) NOT NULL, 
     proclaimed_publication_time TIMESTAMP,
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
     referenced_statement VARCHAR(500), -- response, vote, dispute
     tags VARCHAR(1000),
-    content VARCHAR(1000) NOT NULL, -- for search
+    content VARCHAR(3000) NOT NULL, -- for search
     content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements and preventing duplicates
     source_node_id INT,
     first_verification_time TIMESTAMP,

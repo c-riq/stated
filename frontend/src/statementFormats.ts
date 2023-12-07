@@ -60,9 +60,11 @@ export const buildStatement = ({domain, author, time, tags, content, representat
             (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
 			(supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
             "Statement content: " + content + (content.match(/\n$/) ? '' : "\n");
+	if (statement.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	return statement
 }
 export const parseStatement = (s: string):statement & { type: string } => {
+	if (s.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	if(s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
 	const statementRegex= new RegExp(''
 	+ /^Publishing domain: (?<domain>[^\n]+?)\n/.source
