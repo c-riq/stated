@@ -295,7 +295,7 @@ const Statement = (props:props) => {
             )}
 
             
-            {votes.length > 0 && (<div><h3>Qualified votes</h3>
+            {votes.length > 0 && (<div><h3>Votes</h3>
                 {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
