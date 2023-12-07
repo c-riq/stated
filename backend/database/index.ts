@@ -28,13 +28,13 @@ export type DBErrorCallback = (error: Error) => void
 const log = false
 
 let migrationsDone = false;
-([100, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 13000, 13000, 15000, 20000]).map(ms => setTimeout(
-  async () => {
+const migrationIntervalId = setInterval(async () => {
     if(!migrationsDone){
       await performMigrations(pool, ()=>migrationsDone=true)
+    } else {
+      clearInterval(migrationIntervalId)
     }
-  }, ms
-))
+  }, 500)
 
 export const checkIfMigrationsDone = () => migrationsDone
 export const sanitize = (o) => {
