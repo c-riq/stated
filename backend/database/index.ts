@@ -1,5 +1,4 @@
 import { Pool, QueryResult } from 'pg'
-import {forbiddenStrings} from '../statementFormats'
 import {performMigrations} from './migrations'
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
@@ -36,16 +35,9 @@ const migrationIntervalId = setInterval(async () => {
     }
   }, 500)
 
-export const checkIfMigrationsDone = () => migrationsDone
-export const sanitize = (o) => {
-  // sql&xss satitize all input to exported functions, checking all string values of a single input object
+export const checkIfMigrationsAreDone = () => {
     if (!migrationsDone){
       throw { error: 'Migrations not done yet'}
-    }
-    if (typeof o != 'undefined') {
-      if(forbiddenStrings(Object.values(o)).length > 0) {
-        throw { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
-      }
     }
 }
 

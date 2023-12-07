@@ -8,7 +8,6 @@ import {
   buildPDFSigningContent,
   buildStatement,
   parseStatement,
-  forbiddenStrings,
   parsePDFSigning,
 } from "../statementFormats";
 import GenerateStatement from "./GenerateStatement";
@@ -48,14 +47,6 @@ const SignPDFForm = (props:FormProps) => {
       });
 
       const parsedStatement = parseStatement(statement);
-      if (forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-        props.setAlertMessage(
-          "Values contain forbidden Characters: " +
-            forbiddenStrings(Object.values(parsedStatement) as string[])
-        );
-        props.setisError(true);
-        return;
-      }
       parsePDFSigning(parsedStatement.content);
       props.setStatement(statement);
       sha256(statement).then((hash) => { props.setStatementHash(hash);

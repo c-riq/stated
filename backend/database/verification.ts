@@ -1,13 +1,12 @@
 
 const log = false;
 
-import { DBCallback, DBErrorCallback, sanitize } from ".";
+import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 export const createOrganisationVerificationFactory = (pool) => ({ statement_hash, verifier_domain, verified_domain, 
     name, legal_entity_type, country, province, city, serialNumber, foreignDomain=null, confidence=null, department=null }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city, foreignDomain
-      ,confidence, department })
+      checkIfMigrationsAreDone()
       pool.query(`
               INSERT INTO organisation_verifications 
                 (statement_hash, verifier_domain, verified_domain, name, legal_entity_type, 
@@ -39,8 +38,7 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
      name,
      countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ statement_hash, verifier_domain, verified_domain, name,
-        countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})
+      checkIfMigrationsAreDone()
       pool.query(`
               INSERT INTO person_verifications 
                 (statement_hash, verifier_domain, verified_domain, name, 
@@ -70,7 +68,7 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
 
 export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ hash_b64 })
+      checkIfMigrationsAreDone()
       pool.query(`
               WITH domains AS (
                 SELECT 
@@ -110,7 +108,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
   
   export const getPersonVerificationsForStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ hash_b64 })
+      checkIfMigrationsAreDone()
       pool.query(`
               WITH domains AS (
                 SELECT 
@@ -151,7 +149,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
   
   export const getVerificationsForDomainFactory = pool => ({ domain = null }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ domain })
+      checkIfMigrationsAreDone()
       pool.query(`
               WITH _ AS( SELECT $1 as _)
               SELECT 

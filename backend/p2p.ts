@@ -1,7 +1,6 @@
 import { p2p_seed } from './p2p_seed'
 import { getAllNodes, updateNode, addNode } from './database'
 import { validateAndAddStatementIfMissing } from './statementVerification'
-import { forbiddenChars } from './statementFormats'
 
 import { get, post } from './request'
 
@@ -10,6 +9,8 @@ const log = false
 const ownDomain = process.env.DOMAIN
 const seedNodesFromEnv = (process.env.SEED_NODES || '').split(',').filter(Boolean)
 const test = process.env.TEST || false
+
+export const forbiddenChars = (s: string) => /;|>|<|"|\\/.test(s)
 
 console.log('seedNodesFromEnv', seedNodesFromEnv, 'p2p_seed', p2p_seed)
 

@@ -4,7 +4,7 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
-import { parseResponseContent, buildResponseContent, buildStatement, parseStatement, forbiddenStrings } from '../statementFormats'
+import { parseResponseContent, buildResponseContent, buildStatement, parseStatement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { getStatement, statementDB, statementWithDetails } from '../api';
@@ -36,11 +36,6 @@ const ResponseForm = (props:(FormProps & {statementToRespond?: statementDB | sta
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
-                props.setisError(true)
-                return
-            }
             parseResponseContent(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 

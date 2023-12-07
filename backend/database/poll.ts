@@ -1,12 +1,12 @@
 
 const log = false;
 
-import { DBCallback, sanitize } from ".";
+import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 export const createPollFactory = pool => (o) => 
 (new Promise((resolve: DBCallback, reject) => {
   try {
-    sanitize(o)
+    checkIfMigrationsAreDone()
     const { statement_hash, participants_entity_type, participants_country, participants_city, deadline } = o
     log && console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
     pool.query(`
@@ -36,7 +36,7 @@ export const createPollFactory = pool => (o) =>
 export const getPollFactory = pool => ({ statement_hash }) => (new Promise((resolve: DBCallback, reject) => {
     console.log('getPoll', statement_hash)
     try {
-      sanitize({ statement_hash })
+      checkIfMigrationsAreDone()
       pool.query(`
               SELECT 
                   *
@@ -63,7 +63,7 @@ export const getPollFactory = pool => ({ statement_hash }) => (new Promise((reso
 
 export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback, reject) => {
   try {
-    sanitize({ statement_hash, poll_hash, option, domain, qualified })
+    checkIfMigrationsAreDone()
     log && console.log('createVote', [statement_hash, poll_hash, option, domain, qualified])
     pool.query(`
             INSERT INTO votes 
@@ -90,7 +90,7 @@ export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, d
 
 export const getVotesFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ hash_b64 })
+      checkIfMigrationsAreDone()
       pool.query(`
         SELECT 
           *
