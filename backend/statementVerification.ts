@@ -203,14 +203,19 @@ const verifyViaStatedApiOrStaticTextFile = async ({domain, hash_b64, statement})
     let verified = false
     let verifiedByAPI = false
     log && console.log('validate via api', hash_b64)
-    verified = await verifyViaStatedApi(domain, hash_b64)
-    if (verified){
-        verifiedByAPI = true
-    }
-    if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
-        log && console.log('validate via static text file', hash_b64)
-        const response = await verifyViaStaticTextFile({domain, statement, hash: hash_b64})
-        verified = response.validated
+    try {
+        verified = await verifyViaStatedApi(domain, hash_b64)
+        if (verified){
+            verifiedByAPI = true
+        }
+        if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
+            log && console.log('validate via static text file', hash_b64)
+            const response = await verifyViaStaticTextFile({domain, statement, hash: hash_b64})
+            verified = response.validated
+        }
+    } catch (error) {
+        console.log(error)
+        console.trace()
     }
     return {verified, verifiedByAPI}
 }

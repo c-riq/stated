@@ -1,4 +1,4 @@
-import { describe, jest, it, beforeEach, afterEach } from "@jest/globals";
+import { describe, jest, it, afterEach } from "@jest/globals";
 
 jest.mock('./database', () => ({
   statementExists: jest.fn(() => false),
@@ -104,6 +104,57 @@ describe("validateAndAddStatementIfMissing", () => {
     })
     expect(result).toStrictEqual({"existsOrCreated": true});
     expect(createStatement).toHaveBeenCalledTimes(1);
+  });
+
+  it("should create an unverified statement if text file verification throws", async () => {
+    jest.spyOn(m, "getTXTEntries").mockReturnValue(new Promise(r => r(['not hash'])));
+    jest.spyOn(m, "verifyViaStatedApi").mockReturnValue(new Promise(r => r(false)));
+    jest.spyOn(m, "verifyViaStaticTextFile").mockReturnValue(new Promise((r,reject) => reject('mock error')));
+    const statement = {
+      statement: "_",
+      hash_b64: "hash",
+      source_node_id: "_",
+      verification_method: "_",
+      hidden: false,
+    }
+    //expect(m.validateAndAddStatementIfMissing(statement)).rejects.toStrictEqual('mock error');
+    const result = await m.validateAndAddStatementIfMissing(statement);
+    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
+    expect(createStatement).toHaveBeenCalledTimes(0);
+  });
+
+
+  it("should create an unverified statement if API verification throws", async () => {
+    jest.spyOn(m, "getTXTEntries").mockReturnValue(new Promise(r => r(['not hash'])));
+    jest.spyOn(m, "verifyViaStatedApi").mockReturnValue(new Promise((r,reject) => reject('mock error')));
+    const statement = {
+      statement: "_",
+      hash_b64: "hash",
+      source_node_id: "_",
+      verification_method: "_",
+      hidden: false,
+    }
+    const result = await m.validateAndAddStatementIfMissing(statement);
+    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
+    expect(createStatement).toHaveBeenCalledTimes(0);
+  });
+
+
+  it("should create an unverified statement if DNS verification throws", async () => {
+    jest.spyOn(m, "getTXTEntries").mockReturnValue(new Promise((r,reject) => reject('mock error')));
+    const statement = {
+      statement: "_",
+      hash_b64: "hash",
+      source_node_id: "_",
+      verification_method: "_",
+      hidden: false,
+    }
+    const result = await m.validateAndAddStatementIfMissing(statement);
+    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
+    expect(createStatement).toHaveBeenCalledTimes(0);
   });
 
 });
