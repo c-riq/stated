@@ -1,8 +1,8 @@
 
 import axios from 'axios'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, 
-    createStatement, updateStatement, createHiddenStatement} from './database'
 import * as hashUtils from './hash'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, 
+    updateStatement, createHiddenStatement} from './database'
 import {createOrgVerification, createPersVerification} from './domainVerification'
 import {checkIfVerificationExists} from './database'
 import {parseAndCreatePoll, parseAndCreateVote} from './poll'
@@ -199,12 +199,29 @@ export const verifyViaAPIKey = ({domain, api_key}) => {
     return false
 }
 
+const verifyViaStatedApiOrStaticTextFile = async ({domain, hash_b64, statement}) => {
+    let verified = false
+    let verifiedByAPI = false
+    log && console.log('validate via api', hash_b64)
+    verified = await verifyViaStatedApi(domain, hash_b64)
+    if (verified){
+        verifiedByAPI = true
+    }
+    if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
+        log && console.log('validate via static text file', hash_b64)
+        const response = await verifyViaStaticTextFile({domain, statement, hash: hash_b64})
+        verified = response.validated
+    }
+    return {verified, verifiedByAPI}
+}
+
 export const validateAndAddStatementIfMissing: (arg0: {
     statement: string, hash_b64: string, source_node_id?: string, 
     verification_method: string, api_key?: string, hidden?: boolean}) => Promise<{existsOrCreated:boolean}> = 
     ({statement, hash_b64, source_node_id = null, verification_method, api_key, hidden=false }) => 
     (new Promise(async (resolve, reject) => {
     let existsOrCreated = false
+    let tryIncremented = false
     try {
         const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
         const {domain, author, proclaimed_publication_time, tags, 
@@ -230,31 +247,17 @@ export const validateAndAddStatementIfMissing: (arg0: {
                 }
                 verifiedByAPI = true
             } else { // method is api, but no api key provided
-                log && console.log('validate via api', hash_b64)
-                verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
-                if (verified){
-                    verifiedByAPI = true
-                }
-                if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
-                    log && console.log('validate via static text file', hash_b64)
-                    const response = await verifyViaStaticTextFile({domain: validationResult.domain, statement, hash: hash_b64})
-                    verified = response.validated
-                }
+                const result = await verifyViaStatedApiOrStaticTextFile({domain, hash_b64, statement})
+                verified = result.verified || verified
+                verifiedByAPI = result.verifiedByAPI || verifiedByAPI
             }
         } else { // method != api -> try verify via dns
             log && console.log('verifiy via dns', hash_b64)
             verified = await verifyTXTRecord("stated." + validationResult.domain, hash_b64)
             if (!verified){ // if dns unsuccessfull try via stated api even though suggested method != api
-                log && console.log('verifiy via stated api', hash_b64)
-                verified = await verifyViaStatedApi(validationResult.domain, hash_b64)
-                if (verified){
-                    verifiedByAPI = true
-                }
-            }
-            if (!verified){ // if api unsuccessfull try via static text file, which consumes more resources
-                log && console.log('validate via static text file', hash_b64)
-                const response = await verifyViaStaticTextFile({domain: validationResult.domain, statement, hash: hash_b64})
-                verified = response.validated
+                const result = await verifyViaStatedApiOrStaticTextFile({domain, hash_b64, statement})
+                verified = result.verified || verified
+                verifiedByAPI = result.verifiedByAPI || verifiedByAPI
             }
         }
         if (verified) {
@@ -275,19 +278,31 @@ export const validateAndAddStatementIfMissing: (arg0: {
             }
         } else { // could not verify
             if (api_key){
-                throw(Error('could not verify statement ' + hash_b64 + ' on '+ validationResult.domain))
+                return reject(Error('could not verify statement ' + hash_b64 + ' on '+ validationResult.domain))
             } else {
                 const dbResult = await createUnverifiedStatement({statement, author, hash_b64, source_node_id, 
                     source_verification_method: verification_method})
                 if(dbResult.rows && dbResult.rows[0]){
                     existsOrCreated = true
-                } else {
-                    await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
+                    return resolve({existsOrCreated})
                 }
             }
         }
+        if (!existsOrCreated && !api_key && !hidden){
+            await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
+            tryIncremented = true
+        }
         resolve({existsOrCreated})
     } catch (error) {
+        if(!tryIncremented && !existsOrCreated && !hidden){
+            try {
+                await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
+            }
+            catch (e) {
+                console.log(e)
+                console.trace()
+            }
+        }
         console.log(error)
         console.trace()
         reject((error))
