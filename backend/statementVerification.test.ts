@@ -12,7 +12,7 @@ jest.mock('./database', () => ({
 import * as _m from "./statementVerification";
 const m = jest.requireActual<typeof _m>("./statementVerification");
 
-import {createUnverifiedStatement, createStatement} from "./database";
+import {createUnverifiedStatement, createStatement, updateUnverifiedStatement} from "./database";
 
 describe("validateAndAddStatementIfMissing", () => {
   afterEach(() => {
@@ -154,6 +154,23 @@ describe("validateAndAddStatementIfMissing", () => {
     const result = await m.validateAndAddStatementIfMissing(statement);
     expect(result).toStrictEqual({"existsOrCreated": true});
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
+    expect(createStatement).toHaveBeenCalledTimes(0);
+  });
+
+  it("should create an unverified statement if statement validation fails", async () => {
+    jest.spyOn(m, "validateStatementMetadata").mockImplementation(()=>{
+      throw (new Error('Mock error')
+      )
+    });
+    const statement = {
+      statement: "_",
+      hash_b64: "hash",
+      source_node_id: "_",
+      verification_method: "_",
+      hidden: false,
+    }
+    const result = await m.validateAndAddStatementIfMissing(statement);
+    expect(updateUnverifiedStatement).toHaveBeenCalledTimes(1); // TODO: should be createUnverifiedStatement
     expect(createStatement).toHaveBeenCalledTimes(0);
   });
 

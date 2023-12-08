@@ -299,17 +299,29 @@ export const validateAndAddStatementIfMissing: (arg0: {
         }
         resolve({existsOrCreated})
     } catch (error) {
+        console.log(error)
+        console.trace()
         if(!tryIncremented && !existsOrCreated && !hidden){
             try {
                 await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
+                tryIncremented = true
             }
             catch (e) {
                 console.log(e)
                 console.trace()
+                try {
+                    await createUnverifiedStatement({statement, author : "_", hash_b64, source_node_id, 
+                    source_verification_method: verification_method})
+                    tryIncremented = true
+                } catch (e) {
+                    console.log(e)
+                    console.trace()
+                }
             }
         }
-        console.log(error)
-        console.trace()
+        if(tryIncremented){
+            return resolve({existsOrCreated})
+        }
         reject((error))
     }
 }))
