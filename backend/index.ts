@@ -24,10 +24,10 @@ const certPath = process.env.SSL_CERT_PATH
 const pullIntervalSeconds = parseFloat(process.env.PULL_INTERVAL_SECONDS || '20')
 const logIntervalSeconds = parseFloat(process.env.LOG_INTERVAL_SECONDS || `${60 * 60}`)
 const retryIntervalSeconds = parseFloat(process.env.RETRY_INTERVAL_SECONDS || '7')
-const prefillSSLOVInfo = (!!process.env.PREFILL_SSL_OV_INFO) || false
-const enableVerificationLog = (!!process.env.VERIFICATION_LOG) || false
-const enableRetry = (!!process.env.RETRY) || true
-const test = (!!process.env.TEST) || false;
+const prefillSSLOVInfo = (!!process.env.PREFILL_SSL_OV_INFO)
+const enableVerificationLog = (!!process.env.VERIFICATION_LOG)
+const enableRetry = (process.env.RETRY === 'false') ? false : true
+const test = (!!process.env.TEST);
 
 (async () => {
     if (test) {
