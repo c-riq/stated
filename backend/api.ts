@@ -61,15 +61,21 @@ api.post("/statements", async (req, res, next) => {
 
 api.get("/statements_with_details", async (req, res, next) => {
     try {
-        const minIdStr = req.query && req.query.min_id
-        let minId = '0'
+        const skipStr = req.query && req.query.skip
+        let skip = 0
         // @ts-ignore
-        if(minIdStr && minIdStr.length > 0){
-            minId = '' + parseInt(minId)
+        if(skipStr && skipStr.length > 0){
+            skip = parseInt(skipStr as string)
         }
-        log && console.log('minid', minId, typeof minId)
-        const searchQuery = req.query && req.query.search_query
-        const dbResult = await getStatementsWithDetail({minId, searchQuery})
+        const limitStr = req.query && req.query.limit
+        let limit = 0
+        // @ts-ignore
+        if(limitStr && limitStr.length > 0){
+            limit = parseInt(limitStr as string)
+        }
+        const searchQuery = (req.query && req.query.search_query) as string | undefined
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        const dbResult = await getStatementsWithDetail({skip, limit, searchQuery})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     } catch (error) {
         next(error)

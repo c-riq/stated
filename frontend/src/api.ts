@@ -84,9 +84,16 @@ export type statementWithDetails = {
     type: string|undefined;
     name: string|undefined;
     votes: any[]|undefined;
+    skip_id: string;
+    max_skip_id: string;
 }
-export const getStatements = (searchQuery:string|undefined, cb:res<{statements: statementWithDetails[], time: string}>) => {
-    req('GET',(searchQuery ? 'statements_with_details?search_query=' + searchQuery : 'statements_with_details'), {}, (json) => {
+export const getStatements = (searchQuery:string|undefined, limit:number,
+    skip:number, cb:res<{statements: statementWithDetails[], time: string}>) => {
+    const queryString = [(searchQuery ? 'search_query=' + searchQuery : ''),
+        (limit ? 'limit=' + limit : ''),
+        (skip ? 'skip=' + skip : '')].filter(s => s.length > 0).join('&')
+    req('GET',
+        `statements_with_details?${queryString}`, {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }
