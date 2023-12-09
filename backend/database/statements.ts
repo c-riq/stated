@@ -236,79 +236,95 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
 
 export const getStatementsWithDetailFactory =
   (pool) =>
-  ({ minId, searchQuery }) =>
+  ({ skip, searchQuery, limit }:{skip?: number, searchQuery?: string, limit?: number}) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
         checkIfMigrationsAreDone();
         pool.query(
           `
-              WITH reposts as(
-                  SELECT 
-                      content as _content, 
-                      count(distinct domain) as repost_count, 
-                      first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
-                      CAST($1 AS INTEGER) as input1,
-                      $2 as input2
-                  FROM statement_with_superseding 
-                  WHERE 
-                    superseding_statement IS NULL 
-                    AND (
-                    type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'bounty' OR type = 'sign_pdf'
-                    OR type = 'observation' OR type = 'boycott'
-                    OR type = 'organisation_verification'
-                    )
-                  ${minId ? "AND id > $1 " : ""}
-                  ${
-                    searchQuery
-                      ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
-                      : ""
-                  }
-                  GROUP BY 1
-                  ORDER BY repost_count DESC, first_id DESC
-                  LIMIT 20
+          WITH 
+          query_results as(
+            SELECT 
+                content as _content, 
+                count(distinct domain) as repost_count, 
+                first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
+                CAST($1 AS INTEGER) as input1,
+                $2 as input2,
+                $3 as input3
+            FROM statement_with_superseding 
+            WHERE 
+              superseding_statement IS NULL 
+              AND (
+              type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'bounty' OR type = 'sign_pdf'
+              OR type = 'observation' OR type = 'boycott'
+              OR type = 'organisation_verification'
               )
-              ,votes as (
-                SELECT 
-                  poll_hash,
-                  json_object_agg(option, cnt) AS votes 
-                FROM ( SELECT 
-                      poll_hash,
-                      option,
-                      count(*) as cnt
-                  FROM votes 
-                  WHERE qualified = TRUE
-                  GROUP BY 1,2
-                ) AS counts GROUP BY 1
-              )
-              SELECT * FROM (
-                SELECT 
-                    s.id,
-                    s.type,
-                    s.domain,
-                    v.name,
-                    s.statement,
-                    r.repost_count,
-                    s.proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
-                    s.hash_b64,
-                    s.tags,
-                    s.content,
-                    s.content_hash,
-                    rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
-                  FROM statement_with_superseding s
-                      JOIN reposts r
-                          ON id=first_id
-                      LEFT JOIN organisation_verifications v 
-                          ON s.domain=v.verified_domain 
-                          AND v.verifier_domain='rixdata.net'
-                      LEFT JOIN statements verification_statement
-                          ON v.statement_hash = verification_statement.hash_b64
-                    WHERE superseding_statement IS NULL
-                  ) AS results 
-                  LEFT JOIN votes on results.hash_b64=votes.poll_hash
-                WHERE _rank=1
-                ORDER BY repost_count DESC, id DESC;
+            ${
+              searchQuery
+                ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
+                : ""
+            }
+            GROUP BY 1
+            ORDER BY repost_count DESC, first_id DESC
+          )
+         
+         ,reposts as(
+           SELECT
+            *,
+            max(skip_id) over() max_skip_id 
+          FROM (
+             SELECT 
+               *,
+               ROW_NUMBER() OVER (ORDER BY repost_count DESC, first_id DESC) skip_id
+             FROM query_results
+            ) as with_skip_ids
+           WHERE skip_id > CAST( $1 AS BIGINT)
+           LIMIT CAST( $3 AS BIGINT)
+          )
+         ,votes as (
+           SELECT 
+             poll_hash,
+             json_object_agg(option, cnt) AS votes 
+           FROM ( SELECT 
+                 poll_hash,
+                 option,
+                 count(*) as cnt
+             FROM votes 
+             WHERE qualified = TRUE
+             GROUP BY 1,2
+           ) AS counts GROUP BY 1
+         )
+         SELECT * FROM (
+           SELECT 
+               s.id,
+               s.type,
+               s.domain,
+               v.name,
+               s.statement,
+               r.repost_count,
+               s.proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
+               s.hash_b64,
+               s.tags,
+               s.content,
+               s.content_hash,
+               rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank,
+               skip_id,
+               max_skip_id
+           FROM statement_with_superseding s
+               JOIN reposts r
+                   ON id=first_id
+               LEFT JOIN organisation_verifications v 
+                   ON s.domain=v.verified_domain 
+                   AND v.verifier_domain='rixdata.net'
+               LEFT JOIN statements verification_statement
+                   ON v.statement_hash = verification_statement.hash_b64
+             WHERE superseding_statement IS NULL
+           ) AS results 
+           LEFT JOIN votes on results.hash_b64=votes.poll_hash
+         WHERE _rank=1
+         ORDER BY repost_count DESC, id DESC; 
               `,
-          [minId || 0, (searchQuery || "searchQuery").toLowerCase()],
+          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20],
           (error, results) => {
             if (error) {
               console.log(error);

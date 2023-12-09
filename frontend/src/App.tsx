@@ -75,7 +75,7 @@ const CenterModal = (props: CenterModalProps) => {
 }
 
 type LayoutProps = {
-  getStatementsAPI: ()=>void,
+  getStatementsAPI: (arg0:{reset:boolean|undefined})=>void,
   setSearchQuery: (arg0: string)=>void,
   searchQuery?: string,
   joinStatement: (arg0: statementWithDetails | statementDB) => void,
@@ -84,10 +84,14 @@ type LayoutProps = {
   setServerTime: (arg0: Date) => void,
   serverTime: Date,
   statements: any,
-  lt850px: boolean
+  lt850px: boolean,
+  canLoadMore: boolean,
+  loadingMore: boolean, 
+  loadMore: ()=>void
 }
 
-const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, setModalOpen, setServerTime, statements, lt850px}:LayoutProps) => {
+const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
+  setModalOpen, setServerTime, statements, lt850px, canLoadMore, loadingMore, loadMore}:LayoutProps) => {
   return(
     <React.Fragment>
       <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
@@ -101,8 +105,10 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
             <TextField id="search-field" label="" variant="outlined" size='small'
               placeholder='search'
               onChange={e => { setSearchQuery(e.target.value) }}
-              onKeyDown={e=> (e.key === "Enter") && getStatementsAPI()}
-              onBlur={() => (searchQuery?.length === 0) && getStatementsAPI()}
+              onKeyDown={e=> {if(e.key === "Enter"){
+                getStatementsAPI({reset:true})
+              }}}
+              onBlur={() => (searchQuery?.length === 0) && getStatementsAPI({reset:true})}
               sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
                 '& label': { paddingLeft: (theme) => theme.spacing(2) },
                 '& input': { paddingLeft: (theme) => theme.spacing(3) },
@@ -116,6 +122,7 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
       </div>
     </header>
     <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
+    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore}
     setModalOpen={()=>{setModalOpen(true)}}>
       <Link to="/create-statement">
         <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
@@ -154,16 +161,34 @@ function App() {
   const [searchQuery, setSearchQuery] = React.useState(undefined as string | undefined);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [skip, setSkip] = React.useState(0);
+  const [canLoadMore, setCanLoadMore] = React.useState(false);
+  const [loadingMore, setLoadingMore] = React.useState(false);
 
   const navigate = useNavigate();
 
   React.useEffect(() => {window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));}, []);
 
-  const getStatementsAPI = () => {
-      getStatements(searchQuery, (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
-          if (s?.statements) {
-              setStatements(s.statements)
-              window.scrollTo(0,0)
+  const getStatementsAPI = ({reset}:{reset:boolean|undefined}) => {
+      const limit = 20
+      if (reset) {
+        setStatements([])
+        setSkip(0)
+      }
+      getStatements(searchQuery, limit, reset ? 0 : skip, (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+          if (s?.statements && (s.statements.length > 0)) {
+              const existingStatements = reset ? [] : statements
+              const newStatements = s.statements.filter((s:statementWithDetails) => !existingStatements.find((s2:statementWithDetails) => s2.hash_b64 === s.hash_b64))
+              setStatements([...existingStatements, ...newStatements])
+              const maxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+              setSkip(maxSkipId)
+              if(maxSkipId === parseInt(s.statements[0].max_skip_id)){
+                setCanLoadMore(false)
+              } else {
+                setCanLoadMore(true)
+              }
+              if(!reset) setLoadingMore(false)
+              if(reset) window.scrollTo(0,0)
           } 
           if (s?.time) {
               setServerTime(new Date(s.time))
@@ -196,24 +221,29 @@ function App() {
   }
   const onPostSuccess = () => {
     resetState()
-    getStatementsAPI()
+    getStatementsAPI({reset: true})
   }
   React.useEffect(() => { if(!postsFetched) {
-      getStatementsAPI()
+      getStatementsAPI({reset: true})
       setPostsFetched(true)
     }
   })
   const resetState = () => {
     navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
-    setStatementToSupersede(undefined); setPoll(undefined);
+    setStatementToSupersede(undefined); setPoll(undefined)
   }
+
   return (
     <div className="App" style={{overflow: modalOpen ? 'hidden': 'scroll'}}>
     <CssBaseline />
     <div className='App-main'>
       <Routes>
-          <Route element={(<Layout getStatementsAPI={getStatementsAPI}
+          <Route element={(<Layout getStatementsAPI={getStatementsAPI} canLoadMore={canLoadMore} loadingMore={loadingMore} 
+          loadMore={()=>{
+            setLoadingMore(true)
+            getStatementsAPI({reset:false})
+          }}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
            voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} lt850px={lt850px} />)} >
             {/* @ts-ignore */}

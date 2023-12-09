@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { Link } from 'react-router-dom';
 import { timeSince } from '../utils/time'
@@ -56,6 +57,9 @@ type props = {
     lt850px: boolean,
     children: any,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+    canLoadMore: boolean,
+    loadingMore: boolean,
+    loadMore: ()=>void
 }
 
 const Statements = (props:props) => {
@@ -197,8 +201,10 @@ const Statements = (props:props) => {
                             </Link>
                         </div>
                     )
-                    }})
-                    }
+                    }})}
+                    {statements && statements.length > 0 && props.canLoadMore && (
+                        props.loadingMore ? (<CircularProgress/>)
+                        :(<Button onClick={props.loadMore}>Load more</Button>))}
                 </div>
             </div>
         </div>
