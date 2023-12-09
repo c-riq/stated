@@ -85,23 +85,27 @@ type LayoutProps = {
   serverTime: Date,
   statements: any,
   lt850px: boolean,
+  lt500px: boolean,
   canLoadMore: boolean,
   loadingMore: boolean, 
   loadMore: ()=>void
 }
 
 const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
-  setModalOpen, setServerTime, statements, lt850px, canLoadMore, loadingMore, loadMore}:LayoutProps) => {
+  setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore}:LayoutProps) => {
   return(
     <React.Fragment>
-      <header style={{width: "100%", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
-      <div style={{ width: "100%", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
+      <header style={{width: "100vw", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
+      <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
         <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
           <div>
-            <Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>
+            {!lt850px && (<Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>)}
+            <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-verification-graph" target='_blank'>verifications</a>
+            {!lt500px && (<a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-network-graph" target='_blank'>network</a>)}
+            <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="https://stated.ai" target='_blank'>stated.ai</a>
           </div>
           <div style={{ flexGrow: 1 }}></div>
-          <div>
+          <div style={{minWidth: "200px"}}>
             <TextField id="search-field" label="" variant="outlined" size='small'
               placeholder='search'
               onChange={e => { setSearchQuery(e.target.value) }}
@@ -160,6 +164,7 @@ function App() {
   const [postToView, setPostToView] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState(undefined as string | undefined);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
+  const [lt500px, setlt500px] = React.useState(window.matchMedia("(max-width: 500px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [skip, setSkip] = React.useState(0);
   const [canLoadMore, setCanLoadMore] = React.useState(false);
@@ -167,7 +172,10 @@ function App() {
 
   const navigate = useNavigate();
 
-  React.useEffect(() => {window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));}, []);
+  React.useEffect(() => {
+    window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));
+    window.matchMedia("(max-width: 500px)").addEventListener('change', e => setlt500px( e.matches ));
+  }, []);
 
   const getStatementsAPI = ({reset}:{reset:boolean|undefined}) => {
       const limit = 20
@@ -245,7 +253,8 @@ function App() {
             getStatementsAPI({reset:false})
           }}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
-           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} lt850px={lt850px} />)} >
+           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} 
+           lt850px={lt850px} lt500px={lt500px} />)} >
             {/* @ts-ignore */}
             <Route path='/' exact />
             {/* keep singular until all references are migrated to plural */}
