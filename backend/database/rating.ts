@@ -1,12 +1,12 @@
 
 const log = false;
 
-import { DBCallback, DBErrorCallback, sanitize } from ".";
+import { DBCallback, DBErrorCallback, checkIfMigrationsAreDone } from ".";
 
 
 export const createRatingFactory = pool => ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ statement_hash, organisation, domain, rating, comment })
+      checkIfMigrationsAreDone()
       log && console.log('create rating', [statement_hash, organisation, domain, rating, comment])
       pool.query(`
               INSERT INTO ratings 

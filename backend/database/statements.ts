@@ -15,7 +15,7 @@ type statement = {
 
 const log = false;
 
-import { DBCallback, DBErrorCallback, sanitize } from ".";
+import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 export const createStatementFactory =
   (pool) =>
@@ -35,20 +35,7 @@ export const createStatementFactory =
   }: statement) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
-        sanitize({
-          type,
-          domain,
-          author,
-          statement,
-          proclaimed_publication_time,
-          hash_b64,
-          tags,
-          content,
-          content_hash_b64,
-          verification_method,
-          source_node_id,
-          supersededStatement
-        });
+        checkIfMigrationsAreDone()
         pool.query(
           `INSERT INTO statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
                                 tags,                  content,                content_hash,           verification_method,               source_node_id,
@@ -109,20 +96,7 @@ export const createHiddenStatementFactory =
     }: statement) =>
       new Promise((resolve: DBCallback, reject) => {
         try {
-          sanitize({
-            type,
-            domain,
-            author,
-            statement,
-            proclaimed_publication_time,
-            hash_b64,
-            tags,
-            content,
-            content_hash_b64,
-            verification_method,
-            source_node_id,
-            supersededStatement
-          });
+          checkIfMigrationsAreDone()
           pool.query(
             `INSERT INTO hidden_statements (type,                  domain,                 statement,              proclaimed_publication_time,       hash_b64,
                                   tags,                  content,                content_hash,           verification_method,               source_node_id,
@@ -168,7 +142,7 @@ export const createHiddenStatementFactory =
 export const getHiddenStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         log && console.log('getStatement', hash_b64)
         try {
-          sanitize({ hash_b64 })
+          checkIfMigrationsAreDone()
           pool.query(`
                   SELECT 
                       *,
@@ -194,7 +168,7 @@ export const getHiddenStatementFactory = pool => ({ hash_b64 }) => (new Promise(
 export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         log && console.log('getStatement', hash_b64)
         try {
-          sanitize({ hash_b64 })
+          checkIfMigrationsAreDone()
           pool.query(`
                   SELECT DISTINCT
                       s.author,
@@ -241,7 +215,7 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
 export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         log && console.log('deleteStatement', hash_b64)
         try {
-          sanitize({ hash_b64 })
+          checkIfMigrationsAreDone()
           pool.query(`
                   DELETE FROM statements WHERE hash_b64=$1;
                   `,[hash_b64], (error, results) => {
@@ -265,7 +239,7 @@ export const getStatementsWithDetailFactory =
   ({ minId, searchQuery }) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
-        sanitize({ minId, searchQuery });
+        checkIfMigrationsAreDone();
         pool.query(
           `
               WITH reposts as(
@@ -281,7 +255,7 @@ export const getStatementsWithDetailFactory =
                     AND (
                     type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'bounty' OR type = 'sign_pdf'
                     OR type = 'observation' OR type = 'boycott'
-                    ${ searchQuery ? "OR type = 'organisation_verification' " : "" }
+                    OR type = 'organisation_verification'
                     )
                   ${minId ? "AND id > $1 " : ""}
                   ${
@@ -357,7 +331,7 @@ export const getStatementsFactory =
   ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20 }) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
-        sanitize({ minId, onlyStatementsWithMissingEntities });
+        checkIfMigrationsAreDone();
         pool.query(
           `
                 WITH _ AS (SELECT $1 + 0 _, $2 __) -- use all input parameters
@@ -409,11 +383,7 @@ export const updateStatementFactory =
     increment_derived_entity_creation_retry_count = false,
   }) =>
     new Promise((resolve: DBCallback, reject) => {
-      sanitize({
-        hash_b64,
-        derived_entity_created,
-        increment_derived_entity_creation_retry_count,
-      });
+      checkIfMigrationsAreDone()
       if (
         !hash_b64 ||
         !(
@@ -469,6 +439,32 @@ export const updateStatementFactory =
       }
     });
 
+export const checkIfUnverifiedStatementExistsFactory = (pool) => ({ hash_b64 }:{hash_b64:string}) =>
+  new Promise((resolve: DBCallback, reject) => {
+    try {
+      checkIfMigrationsAreDone()
+      pool.query(
+        `
+                SELECT 1 FROM unverified_statements WHERE hash_b64=$1 LIMIT 1;
+              `,
+        [hash_b64],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+            console.trace();
+            return reject(error);
+          } else {
+            return resolve(results);
+          }
+        }
+      );
+    } catch (error) {
+      console.log(error);
+      console.trace();
+      return reject(error);
+    }
+  });
+
 export const createUnverifiedStatementFactory =
   (pool) =>
   ({
@@ -480,12 +476,7 @@ export const createUnverifiedStatementFactory =
   }) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
-        sanitize({
-          statement,
-          hash_b64,
-          source_node_id,
-          source_verification_method,
-        });
+        checkIfMigrationsAreDone()
         log &&
           console.log(
             statement,
@@ -525,6 +516,7 @@ export const createUnverifiedStatementFactory =
 export const getUnverifiedStatementsFactory = (pool) => () =>
   new Promise((resolve: DBCallback, reject) => {
     try {
+      checkIfMigrationsAreDone()
       pool.query(
         `
                 SELECT 
@@ -554,7 +546,7 @@ export const updateUnverifiedStatementFactory =
   ({ hash_b64, increment_verification_retry_count }) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
-        sanitize({ hash_b64, increment_verification_retry_count });
+        checkIfMigrationsAreDone();
         if (hash_b64 && increment_verification_retry_count) {
           pool.query(
             `
@@ -588,7 +580,7 @@ export const cleanUpUnverifiedStatementsFactory =
   ({ max_age_hours, max_verification_retry_count }) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
-        sanitize({ max_age_hours, max_verification_retry_count });
+        checkIfMigrationsAreDone();
         pool.query(
           `
                 DELETE FROM 
@@ -622,7 +614,7 @@ export const cleanUpUnverifiedStatementsFactory =
 
 export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         try {
-          sanitize({ hash_b64 })
+          checkIfMigrationsAreDone()
           pool.query(`
                   WITH content_hashes AS(
                     SELECT content_hash
@@ -661,7 +653,7 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
 
       export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback, reject) => {
         try {
-          sanitize({ hash_b64, ownDomain })
+          checkIfMigrationsAreDone()
           pool.query(`
                   SELECT 
                     *,
@@ -688,7 +680,7 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
 
 export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         try {
-          sanitize({ hash_b64 })
+          checkIfMigrationsAreDone()
           log && console.log(hash_b64, 'check')
           pool.query(`
                   SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;

@@ -109,6 +109,6 @@
   },    
   "exclude": [
     "scripts",
-    "**/*.test.ts",
+    "**/*.test.ts", // tests are run with ts-jest, transpiling will duplicate tests
   ]
 }

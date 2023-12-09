@@ -15,7 +15,7 @@ import {legalForms} from '../constants/legalForms'
 import GenerateStatement from './GenerateStatement'
 import { sha256 } from '../utils/hash'
 
-import { parseStatement, forbiddenStrings, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
+import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 import { generateEmail } from './generateEmail';
 import { Button } from '@mui/material';
 
@@ -29,7 +29,7 @@ const PollForm = (props:FormProps) => {
     const [city, setCity] = React.useState("");
     const [cityObject, setCityObject] = React.useState(undefined as string[]|undefined);
     const [options, setOptions] = React.useState(['','']);
-    const [domainScope, setDomainScope] = React.useState([]);
+    const [domainScopeConcat, setDomainScopeConcat] = React.useState("");
     const [nodes, setNodes] = React.useState("");
     const [votingDeadline, setVotingDeadline] = React.useState(moment().add(14,'days'));
     const [poll, setPoll] = React.useState("");
@@ -52,12 +52,10 @@ const PollForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method}) => {
         props.setPublishingMethod(method)
         try {
+            let domainScope = domainScopeConcat ? domainScopeConcat.split(',').map(s => s.trim()) : undefined
             const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-                throw new Error('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
-            }
             parsePoll(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash)         
@@ -122,6 +120,15 @@ const PollForm = (props:FormProps) => {
             placeholder='rixdata.net'
             label="Poll judging domains, comma separated (optional)"
             onChange={e => { setNodes(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px", marginTop: "24px"}}
+        />
+        <TextField
+            id="domain scope"
+            variant="outlined"
+            placeholder='mit.edu, gov.cn'
+            label="Participating domains, comma separated (optional)"
+            onChange={e => { setDomainScopeConcat(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "12px", marginTop: "24px"}}
         />

@@ -1,8 +1,8 @@
-import { DBCallback, sanitize } from ".";
+import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ domain_substring })
+      checkIfMigrationsAreDone()
       pool.query(`
               with regex AS ( SELECT '.*' || $1 || '.*' pattern)
               ,
@@ -61,7 +61,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
   export const setCertCacheFactory = (pool) => ({ domain, subject_o, subject_c, subject_st, subject_l, subject_serialnumber, subject_cn, subjectaltname,
     issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ domain, subject_o, subject_c, subject_st, subject_l, subject_serialnumber, subject_cn, subjectaltname, issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo })
+      checkIfMigrationsAreDone()
       pool.query(`INSERT INTO ssl_cert_cache 
         (host, subject_o, subject_c, subject_st, subject_l, 
           subject_serialnumber, subject_cn, subjectaltname, sha256, valid_from, 
@@ -94,7 +94,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
   export const getCertCacheFactory = (pool) => ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
     if (!domain) return reject(Error('no domain'))
     try {
-      sanitize({ domain })
+      checkIfMigrationsAreDone()
       pool.query(`
               WITH certs AS(
               SELECT 

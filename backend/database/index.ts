@@ -1,5 +1,4 @@
 import { Pool, QueryResult } from 'pg'
-import {forbiddenStrings} from '../statementFormats'
 import {performMigrations} from './migrations'
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
@@ -28,24 +27,17 @@ export type DBErrorCallback = (error: Error) => void
 const log = false
 
 let migrationsDone = false;
-([100, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 13000, 13000, 15000, 20000]).map(ms => setTimeout(
-  async () => {
+const migrationIntervalId = setInterval(async () => {
     if(!migrationsDone){
       await performMigrations(pool, ()=>migrationsDone=true)
+    } else {
+      clearInterval(migrationIntervalId)
     }
-  }, ms
-))
+  }, 500)
 
-export const checkIfMigrationsDone = () => migrationsDone
-export const sanitize = (o) => {
-  // sql&xss satitize all input to exported functions, checking all string values of a single input object
+export const checkIfMigrationsAreDone = () => {
     if (!migrationsDone){
       throw { error: 'Migrations not done yet'}
-    }
-    if (typeof o != 'undefined') {
-      if(forbiddenStrings(Object.values(o)).length > 0) {
-        throw { error: ('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(o)))}
-      }
     }
 }
 
@@ -53,7 +45,7 @@ import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFa
   getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
   createUnverifiedStatementFactory, getJoiningStatementsFactory, getOwnStatementFactory,
   getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory,
-  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory} from './statements'
+  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory, checkIfUnverifiedStatementExistsFactory} from './statements'
 
 export const createStatement = createStatementFactory(pool)
 export const createHiddenStatement = createHiddenStatementFactory(pool)
@@ -70,6 +62,7 @@ export const getJoiningStatements = getJoiningStatementsFactory(pool)
 export const getOwnStatement = getOwnStatementFactory(pool)
 export const statementExists = statementExistsFactory(pool)
 export const updateUnverifiedStatement = updateUnverifiedStatementFactory(pool)
+export const checkIfUnverifiedStatmentExists = checkIfUnverifiedStatementExistsFactory(pool)
 
 import { setCertCacheFactory, getCertCacheFactory, matchDomainFactory } from './ssl'
 

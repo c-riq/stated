@@ -4,7 +4,7 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
-import { buildStatement, parseStatement, forbiddenStrings, buildObservation, parseObservation } from '../statementFormats'
+import { buildStatement, parseStatement, buildObservation, parseObservation } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { getNameSuggestions, getStatement, statementDB } from '../api';
@@ -57,11 +57,6 @@ const ObservationForm = (props:FormProps) => {
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
-                props.setisError(true)
-                return
-            }
             parseObservation(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 

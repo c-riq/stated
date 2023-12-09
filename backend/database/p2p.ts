@@ -1,7 +1,7 @@
 
 const log = false;
 
-import { DBCallback, DBErrorCallback, sanitize } from ".";
+import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallback, reject) => {
     try {
@@ -27,7 +27,7 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
   
   export const addNodeFactory = pool => ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ domain })
+      checkIfMigrationsAreDone()
       pool.query(`
               INSERT INTO p2p_nodes (domain, first_seen, last_seen) VALUES
                   ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -52,7 +52,7 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
   
   export const updateNodeFactory = pool => ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve: DBCallback, reject) => {
     try {
-      sanitize({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip })
+      checkIfMigrationsAreDone()
       pool.query(`
               UPDATE p2p_nodes
               SET 

@@ -15,8 +15,18 @@
             "restart": true,
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "env": {"API_KEY":"XXX", "DOMAIN":"localhost", 
-            "PREFILL_SSL_OV_INFO": "false"}
+            "env": {"API_KEY":"XXX", "DOMAIN":"localhost"}
+        },{
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "npm: build - backend",
+            "cwd": "${workspaceRoot}/backend",
+            "console": "integratedTerminal",
+            "name": "t-backend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run", "test"
+            ],
         },{
             "name": "frontend",
             "type": "node",

@@ -21,17 +21,26 @@ process.on('unhandledRejection', (error, promise) => {
 const prod = process.env.NODE_ENV === "production"
 const port = parseInt(process.env.PORT || '7766')
 const certPath = process.env.SSL_CERT_PATH
-const pullIntervalSeconds = process.env.PULL_INTERVAL_SECONDS || 20
-const logIntervalSeconds = process.env.LOG_INTERVAL_SECONDS || 60 * 60
-const retryIntervalSeconds = process.env.RETRY_INTERVAL_SECONDS || 7
-const prefillSSLOVInfo = process.env.PREFILL_SSL_OV_INFO || false
-const enableVerificationLog = process.env.VERIFICATION_LOG || false
-const enableRetry = process.env.RETRY || true
+const pullIntervalSeconds = parseFloat(process.env.PULL_INTERVAL_SECONDS || '20')
+const logIntervalSeconds = parseFloat(process.env.LOG_INTERVAL_SECONDS || `${60 * 60}`)
+const retryIntervalSeconds = parseFloat(process.env.RETRY_INTERVAL_SECONDS || '7')
+const prefillSSLOVInfo = (!!process.env.PREFILL_SSL_OV_INFO)
+const enableVerificationLog = (!!process.env.VERIFICATION_LOG)
+const enableRetry = (process.env.RETRY === 'false') ? false : true
+const test = (!!process.env.TEST);
 
+(async () => {
+    if (test) {
+        setInterval(async () => {
+            await p2p.addSeedNodes()
+        }, 1000 * pullIntervalSeconds)
+    }
+    await p2p.addSeedNodes()
+})()
 p2p.setupSchedule(pullIntervalSeconds)
-enableRetry===true && retryAndCleanUp.setupSchedule(retryIntervalSeconds)
-prefillSSLOVInfo==="true" && fetchOVInfoForMostPopularDomains()
-enableVerificationLog==="true" && verificationLog.setupSchedule(logIntervalSeconds)
+if(enableRetry) retryAndCleanUp.setupSchedule(retryIntervalSeconds)
+if(prefillSSLOVInfo) fetchOVInfoForMostPopularDomains()
+if(enableVerificationLog) verificationLog.setupSchedule(logIntervalSeconds)
 
 const app = express();
 

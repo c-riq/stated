@@ -13,7 +13,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from 'moment'
 
-import { parseStatement, buildStatement, forbiddenStrings, 
+import { parseStatement, buildStatement, 
     parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
@@ -55,11 +55,6 @@ const PersonVerificationForm = (props:FormProps) => {
                 cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
-                props.setisError(true)
-                return
-            }
             parsePersonVerification(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash);

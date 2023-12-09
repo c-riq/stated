@@ -7,7 +7,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 
 import {legalForms} from '../constants/legalForms'
-import { parseStatement, buildStatement, forbiddenStrings, 
+import { parseStatement, buildStatement, 
     buildOrganisationVerificationContent, parseOrganisationVerification, peopleCountBuckets } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
@@ -65,11 +65,6 @@ const OrganisationVerificationForm = (props:FormProps) => {
             console.log(statement)
 
             const parsedStatement = parseStatement(statement)
-            if(forbiddenStrings(Object.values(parsedStatement) as string[]).length > 0) {
-                props.setAlertMessage('Values contain forbidden Characters: ' + forbiddenStrings(Object.values(parsedStatement) as string[]))
-                props.setisError(true)
-                return
-            }
             parseOrganisationVerification(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash);

@@ -715,9 +715,3 @@ export const parseBoycott = (s: string):boycott => {
 		subjectReference: m[3],
 	}
 }
-
-export const forbiddenChars = (s: string) => /;|>|<|"|'|’|\\/.test(s)
-export const forbiddenStrings = (a: string[]) =>
-	a.filter(i =>
-		forbiddenChars('' + i)
-	)

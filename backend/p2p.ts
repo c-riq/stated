@@ -1,7 +1,6 @@
 import { p2p_seed } from './p2p_seed'
 import { getAllNodes, updateNode, addNode } from './database'
 import { validateAndAddStatementIfMissing } from './statementVerification'
-import { forbiddenChars } from './statementFormats'
 
 import { get, post } from './request'
 
@@ -10,6 +9,8 @@ const log = false
 const ownDomain = process.env.DOMAIN
 const seedNodesFromEnv = (process.env.SEED_NODES || '').split(',').filter(Boolean)
 const test = process.env.TEST || false
+
+export const forbiddenChars = (s: string) => /;|>|<|"|\\/.test(s)
 
 console.log('seedNodesFromEnv', seedNodesFromEnv, 'p2p_seed', p2p_seed)
 
@@ -98,11 +99,13 @@ const fetchMissingStatementsFromNode = ({domain, id, last_received_statement_id}
         const certificateAuthority = '' + cert?.infoAccess?.['OCSP - URI']?.[0]
         const fingerprint = cert?.fingerprint?.match(":") && ''+cert.fingerprint
         log && console.log(res.data.statements.length, ' new statements from ', domain)
-        const addStatementsResult: PromiseSettledResult<{existsOrCreated:boolean}>[] = await Promise.allSettled(
+        const addStatementsResult: PromiseSettledResult<{existsOrCreated:boolean, tryIncremented:boolean}>[] = await Promise.allSettled(
             res.data.statements.map(s => validateAndAddStatementIfMissing({...s, source_node_id: id})))
         log && console.log(addStatementsResult, 'res2')
         const allExistsOrCreated = addStatementsResult.reduce((acc,i) => acc && 
-            (i.status==='fulfilled' && i.value && i.value.existsOrCreated), true)
+            (i.status==='fulfilled' && i.value && (
+                i.value.existsOrCreated ||
+                i.value.tryIncremented)), true)
         if(!allExistsOrCreated){
             const errors = addStatementsResult.filter((i) => i.status==="rejected")
             console.trace()
@@ -146,49 +149,81 @@ const fetchMissingStatementsFromNodes = async () => {
 }
 
 const setupSchedule = (pullIntervalSeconds) => {
+    setTimeout(() => {
     setInterval(async () => {
-        let seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes 
+        let addNodesRes 
         try {
-            seedRes = await addSeedNodes()
-        } catch (error) {
-            console.log(error)
-            console.trace()
-        } try {
             addNodesRes = await addNodesOfPeers()
         } catch (error) {
             console.log(error)
             console.trace()
-        } try {
+        }
+        if(addNodesRes && addNodesRes.error){
+            console.log(addNodesRes.error)
+            console.trace()
+        }
+        if(addNodesRes && addNodesRes.length > 0){
+            for(let i of addNodesRes){
+                if(i && i.error){
+                    console.log(i.error)
+                    console.trace()
+                }
+            }
+        }
+    }, pullIntervalSeconds * 1000)
+    }, pullIntervalSeconds * 1000 * 0.3)
+
+    setTimeout(() => {
+    setInterval(async () => {
+        let joinNetworkRes
+        try {
             joinNetworkRes = await joinNetwork()
         } catch (error) {
             console.log(error)
             console.trace()
-        } try {
-            fetchStatmentsRes = await fetchMissingStatementsFromNodes();
+        }
+        if(joinNetworkRes && joinNetworkRes.error){
+            console.log(joinNetworkRes.error)
+            console.trace()
+        }
+        if(joinNetworkRes && joinNetworkRes.length > 0){
+            for(let i of joinNetworkRes){
+                if(i && i.error){
+                    console.log(i.error)
+                    console.trace()
+                }
+            }
+        }
+    }, pullIntervalSeconds * 1000)
+    }, pullIntervalSeconds * 1000 * 0.5)
+
+    setTimeout(() => {
+    setInterval(async () => {
+        let fetchStatmentsRes
+        try {
+            fetchStatmentsRes = await fetchMissingStatementsFromNodes()
         } catch (error) {
             console.log(error)
             console.trace()
         }
-            [seedRes, addNodesRes, joinNetworkRes, fetchStatmentsRes].map(i => {
-                // @ts-ignore
+        if(fetchStatmentsRes && fetchStatmentsRes.error){
+            console.log(fetchStatmentsRes.error)
+            console.trace()
+        }
+        if(fetchStatmentsRes && fetchStatmentsRes.length > 0){
+            for(let i of fetchStatmentsRes){
                 if(i && i.error){
-                    // @ts-ignore
                     console.log(i.error)
                     console.trace()
                 }
-                if(i && i.length > 0){
-                    for(let j of i){
-                        if(j && j.error){
-                            console.log(j.error)
-                            console.trace()
-                        }
-                    }
-                }
-            })
+            }
+        }
     }, pullIntervalSeconds * 1000)
+    }, pullIntervalSeconds * 1000 * 0.7)
 }
 
 export default {
     validateAndAddNode,
-    setupSchedule
+    setupSchedule,
+    addSeedNodes
 }
