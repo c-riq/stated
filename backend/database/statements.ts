@@ -439,6 +439,32 @@ export const updateStatementFactory =
       }
     });
 
+export const checkIfUnverifiedStatementExistsFactory = (pool) => ({ hash_b64 }:{hash_b64:string}) =>
+  new Promise((resolve: DBCallback, reject) => {
+    try {
+      checkIfMigrationsAreDone()
+      pool.query(
+        `
+                SELECT 1 FROM unverified_statements WHERE hash_b64=$1 LIMIT 1;
+              `,
+        [hash_b64],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+            console.trace();
+            return reject(error);
+          } else {
+            return resolve(results);
+          }
+        }
+      );
+    } catch (error) {
+      console.log(error);
+      console.trace();
+      return reject(error);
+    }
+  });
+
 export const createUnverifiedStatementFactory =
   (pool) =>
   ({

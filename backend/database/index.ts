@@ -45,7 +45,7 @@ import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFa
   getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
   createUnverifiedStatementFactory, getJoiningStatementsFactory, getOwnStatementFactory,
   getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory,
-  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory} from './statements'
+  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory, checkIfUnverifiedStatementExistsFactory} from './statements'
 
 export const createStatement = createStatementFactory(pool)
 export const createHiddenStatement = createHiddenStatementFactory(pool)
@@ -62,6 +62,7 @@ export const getJoiningStatements = getJoiningStatementsFactory(pool)
 export const getOwnStatement = getOwnStatementFactory(pool)
 export const statementExists = statementExistsFactory(pool)
 export const updateUnverifiedStatement = updateUnverifiedStatementFactory(pool)
+export const checkIfUnverifiedStatmentExists = checkIfUnverifiedStatementExistsFactory(pool)
 
 import { setCertCacheFactory, getCertCacheFactory, matchDomainFactory } from './ssl'
 

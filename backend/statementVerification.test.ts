@@ -7,12 +7,13 @@ jest.mock('./database', () => ({
   createUnverifiedStatement: jest.fn(() => ({rows: [1]})),
   updateUnverifiedStatement: jest.fn(() => ({rows: [1]})),
   createHiddenStatement: jest.fn(() => ({rows: [1]})),
+  checkIfUnverifiedStatmentExists: jest.fn(() => ({})),
 }));
 
 import * as _m from "./statementVerification";
 const m = jest.requireActual<typeof _m>("./statementVerification");
 
-import {createUnverifiedStatement, createStatement, updateUnverifiedStatement} from "./database";
+import {createUnverifiedStatement, createStatement, checkIfUnverifiedStatmentExists} from "./database";
 
 describe("validateAndAddStatementIfMissing", () => {
   afterEach(() => {
@@ -56,7 +57,7 @@ describe("validateAndAddStatementIfMissing", () => {
       verification_method: "_",
       hidden: false,
     })
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": false, "tryIncremented": true});
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
   });
 
@@ -71,7 +72,7 @@ describe("validateAndAddStatementIfMissing", () => {
       verification_method: "_",
       hidden: false,
     })
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": true, "tryIncremented": false});
     expect(createStatement).toHaveBeenCalledTimes(1);
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(0);
   });
@@ -87,7 +88,7 @@ describe("validateAndAddStatementIfMissing", () => {
       verification_method: "_",
       hidden: false,
     })
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": true, "tryIncremented": false});
     expect(createStatement).toHaveBeenCalledTimes(1);
   });
 
@@ -102,7 +103,7 @@ describe("validateAndAddStatementIfMissing", () => {
       verification_method: "_",
       hidden: false,
     })
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": true, "tryIncremented": false});
     expect(createStatement).toHaveBeenCalledTimes(1);
   });
 
@@ -119,7 +120,7 @@ describe("validateAndAddStatementIfMissing", () => {
     }
     //expect(m.validateAndAddStatementIfMissing(statement)).rejects.toStrictEqual('mock error');
     const result = await m.validateAndAddStatementIfMissing(statement);
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": false, "tryIncremented": true});
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
     expect(createStatement).toHaveBeenCalledTimes(0);
   });
@@ -136,7 +137,7 @@ describe("validateAndAddStatementIfMissing", () => {
       hidden: false,
     }
     const result = await m.validateAndAddStatementIfMissing(statement);
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": false, "tryIncremented": true});
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
     expect(createStatement).toHaveBeenCalledTimes(0);
   });
@@ -152,16 +153,13 @@ describe("validateAndAddStatementIfMissing", () => {
       hidden: false,
     }
     const result = await m.validateAndAddStatementIfMissing(statement);
-    expect(result).toStrictEqual({"existsOrCreated": true});
+    expect(result).toStrictEqual({"existsOrCreated": false, "tryIncremented": true});
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
     expect(createStatement).toHaveBeenCalledTimes(0);
   });
 
   it("should create an unverified statement if statement validation fails", async () => {
-    jest.spyOn(m, "validateStatementMetadata").mockImplementation(()=>{
-      throw (new Error('Mock error')
-      )
-    });
+    jest.spyOn(m, "validateStatementMetadata").mockImplementation(()=>{throw (new Error('Mock error'))});
     const statement = {
       statement: "_",
       hash_b64: "hash",
@@ -170,7 +168,9 @@ describe("validateAndAddStatementIfMissing", () => {
       hidden: false,
     }
     const result = await m.validateAndAddStatementIfMissing(statement);
-    expect(updateUnverifiedStatement).toHaveBeenCalledTimes(1); // TODO: should be createUnverifiedStatement
+    expect(result).toStrictEqual({"existsOrCreated": false, "tryIncremented": true});
+    expect(checkIfUnverifiedStatmentExists).toHaveBeenCalledTimes(1);
+    expect(createUnverifiedStatement).toHaveBeenCalledTimes(1);
     expect(createStatement).toHaveBeenCalledTimes(0);
   });
 
