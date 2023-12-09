@@ -74,7 +74,6 @@ api.get("/statements_with_details", async (req, res, next) => {
             limit = parseInt(limitStr as string)
         }
         const searchQuery = (req.query && req.query.search_query) as string | undefined
-        await new Promise(resolve => setTimeout(resolve, 3000))
         const dbResult = await getStatementsWithDetail({skip, limit, searchQuery})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     } catch (error) {

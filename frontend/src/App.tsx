@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import CloseIcon from '@mui/icons-material/Close';
-import { Route, Routes, Link, useNavigate, Outlet } from 'react-router-dom';
+import { Route, Routes, Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 
 import { getStatements, statementDB, statementWithDetails } from './api'
 
@@ -171,6 +171,7 @@ function App() {
   const [loadingMore, setLoadingMore] = React.useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   React.useEffect(() => {
     window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));
@@ -231,7 +232,11 @@ function App() {
     resetState()
     getStatementsAPI({reset: true})
   }
-  React.useEffect(() => { if(!postsFetched) {
+  React.useEffect(() => {
+    if(!postsFetched) {
+      if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
+        return
+      }
       getStatementsAPI({reset: true})
       setPostsFetched(true)
     }
