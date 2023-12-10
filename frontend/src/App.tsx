@@ -28,6 +28,7 @@ import gh from './img/github.png'
 // @ts-ignore
 import logo from './img/logo.png'
 import DebugStatement from './components/DebugStatement';
+import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
 
 type CenterModalProps = {
   lt850px: boolean,
@@ -75,7 +76,6 @@ const CenterModal = (props: CenterModalProps) => {
 }
 
 type LayoutProps = {
-  getStatementsAPI: (arg0:{reset:boolean|undefined})=>void,
   setSearchQuery: (arg0: string)=>void,
   searchQuery?: string,
   joinStatement: (arg0: statementWithDetails | statementDB) => void,
@@ -88,11 +88,30 @@ type LayoutProps = {
   lt500px: boolean,
   canLoadMore: boolean,
   loadingMore: boolean, 
-  loadMore: ()=>void
+  loadMore: ()=>void,
+  setStatementTypes: (arg0: string[])=>void
 }
 
-const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
-  setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore}:LayoutProps) => {
+const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
+  setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore,
+  setStatementTypes}:LayoutProps) => {
+  const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
+  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>('');
+  const types = [
+    'Statements',
+    'Domain Verifications',
+    'Polls',
+    'Collective Signatures',
+    'Ratings',
+    'Bounties',
+    'Observations',
+  ];
+  const handleChange = (event: SelectChangeEvent<typeof selectedTypes>) => {
+    const value = event.target.value;
+    const result = typeof value === 'string' ? value.split(',') : value
+    setSelectedTypes(result);
+    setStatementTypes(result)
+  };
   return(
     <React.Fragment>
       <header style={{width: "100vw", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
@@ -105,14 +124,42 @@ const Layout = ({getStatementsAPI, setSearchQuery, searchQuery, joinStatement, v
             <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="https://stated.ai" target='_blank'>stated.ai</a>
           </div>
           <div style={{ flexGrow: 1 }}></div>
+          {!lt850px && (<div>
+            <FormControl sx={{ width: 300, height: "40px" }}>
+              <InputLabel id="filter-label" sx={{height: "40px", marginTop: "-9px"}}>Filter statement types</InputLabel>
+              <Select
+                labelId="filter-label"
+                id="filter"
+                multiple
+                value={selectedTypes}
+                onChange={handleChange}
+                input={<OutlinedInput sx={{height: "40px"}} label="Filter statement types" />}
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={{PaperProps: {
+                  style: {
+                    maxHeight: 224,
+                    width: 250,
+                  }
+                }}}
+                style={{backgroundColor:"rgba(255,255,255,1)", borderRadius: 20}}
+              >
+                {types.map((_type) => (
+                  <MenuItem key={_type} value={_type}>
+                    <Checkbox checked={selectedTypes.indexOf(_type) > -1} />
+                    <ListItemText primary={_type} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>)}
           <div style={{minWidth: "200px"}}>
             <TextField id="search-field" label="" variant="outlined" size='small'
               placeholder='search'
-              onChange={e => { setSearchQuery(e.target.value) }}
+              onChange={e => { setLocalSearchQuery(e.target.value) }}
               onKeyDown={e=> {if(e.key === "Enter"){
-                getStatementsAPI({reset:true})
+                setSearchQuery(localSearchQuery)
               }}}
-              onBlur={() => (searchQuery?.length === 0) && getStatementsAPI({reset:true})}
+              onBlur={() => setSearchQuery(localSearchQuery)}
               sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
                 '& label': { paddingLeft: (theme) => theme.spacing(2) },
                 '& input': { paddingLeft: (theme) => theme.spacing(3) },
@@ -159,7 +206,6 @@ function App() {
   const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
   const [statements, setStatements] = React.useState([] as statementWithDetails[]);
-  const [postsFetched, setPostsFetched] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState(undefined as string | undefined);
@@ -169,6 +215,8 @@ function App() {
   const [skip, setSkip] = React.useState(0);
   const [canLoadMore, setCanLoadMore] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
+  const [statementTypes, setStatementTypes] = React.useState<string[]>([]);
+  const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -178,15 +226,36 @@ function App() {
     window.matchMedia("(max-width: 500px)").addEventListener('change', e => setlt500px( e.matches ));
   }, []);
 
-  const getStatementsAPI = ({reset}:{reset:boolean|undefined}) => {
+  React.useEffect(() => {
+    if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
+      return
+    }
+    const limit = 20
+    getStatements({searchQuery, limit, skip: 0, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+        if (s?.statements && (s.statements.length > 0)) {
+            setStatements(s.statements)
+            const maxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+            setSkip(maxSkipId)
+            if(maxSkipId === parseInt(s.statements[0].max_skip_id)){
+              setCanLoadMore(false)
+            } else {
+              setCanLoadMore(true)
+            }
+            window.scrollTo(0,0)
+        } else {
+          setStatements([])
+        }
+        if (s?.time) {
+            setServerTime(new Date(s.time))
+        } 
+    }})
+  }, [statementTypes, searchQuery, location.pathname])
+  React.useEffect(() => {
+    if (shouldLoadMore) {
       const limit = 20
-      if (reset) {
-        setStatements([])
-        setSkip(0)
-      }
-      getStatements(searchQuery, limit, reset ? 0 : skip, (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+      getStatements({searchQuery, limit, skip, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
-              const existingStatements = reset ? [] : statements
+              const existingStatements = statements
               const newStatements = s.statements.filter((s:statementWithDetails) => !existingStatements.find((s2:statementWithDetails) => s2.hash_b64 === s.hash_b64))
               setStatements([...existingStatements, ...newStatements])
               const maxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
@@ -196,14 +265,15 @@ function App() {
               } else {
                 setCanLoadMore(true)
               }
-              if(!reset) setLoadingMore(false)
-              if(reset) window.scrollTo(0,0)
+              setLoadingMore(false)
           } 
           if (s?.time) {
               setServerTime(new Date(s.time))
           } 
-      })
-  }
+      }})
+      setShouldLoadMore(false)
+    }
+  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements])
   const joinStatement = (statement: (statementWithDetails | statementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
@@ -230,17 +300,7 @@ function App() {
   }
   const onPostSuccess = () => {
     resetState()
-    getStatementsAPI({reset: true})
   }
-  React.useEffect(() => {
-    if(!postsFetched) {
-      if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
-        return
-      }
-      getStatementsAPI({reset: true})
-      setPostsFetched(true)
-    }
-  })
   const resetState = () => {
     navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
@@ -252,10 +312,11 @@ function App() {
     <CssBaseline />
     <div className='App-main'>
       <Routes>
-          <Route element={(<Layout getStatementsAPI={getStatementsAPI} canLoadMore={canLoadMore} loadingMore={loadingMore} 
+          <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
+          setStatementTypes={setStatementTypes}
           loadMore={()=>{
+            setShouldLoadMore(true)
             setLoadingMore(true)
-            getStatementsAPI({reset:false})
           }}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
            voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} 

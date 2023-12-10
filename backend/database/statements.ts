@@ -236,10 +236,34 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
 
 export const getStatementsWithDetailFactory =
   (pool) =>
-  ({ skip, searchQuery, limit }:{skip?: number, searchQuery?: string, limit?: number}) =>
+  ({ skip, searchQuery, limit, types}:{skip?: number, searchQuery?: string, limit?: number, types?: string[]}) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
         checkIfMigrationsAreDone();
+        let typeQuery = ''
+        for (let t of types){
+          if ('statement' === t) {
+            typeQuery += " OR type = 'statement'"
+          }
+          if ('organisation_verification' === t) {
+            typeQuery += " OR type = 'organisation_verification'"
+          }
+          if ('poll' === t) {
+            typeQuery += " OR type = 'poll'"
+          }
+          if ('rating' === t) {
+            typeQuery += " OR type = 'rating'"
+          }
+          if ('bounty' === t) {
+            typeQuery += " OR type = 'bounty'"
+          }
+          if ('sign_pdf' === t) {
+            typeQuery += " OR type = 'sign_pdf'"
+          }
+          if ('observation' === t) {
+            typeQuery += " OR type = 'observation'"
+          }
+        }
         pool.query(
           `
           WITH 
@@ -254,16 +278,14 @@ export const getStatementsWithDetailFactory =
             FROM statement_with_superseding 
             WHERE 
               superseding_statement IS NULL 
-              AND (
-              type = 'statement' OR type = 'poll' OR type = 'rating' OR type = 'bounty' OR type = 'sign_pdf'
-              OR type = 'observation' OR type = 'boycott'
-              OR type = 'organisation_verification'
-              )
-            ${
-              searchQuery
-                ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
-                : ""
-            }
+              ${
+                typeQuery && typeQuery.length > 0 ? "AND (" + typeQuery.substring(4) + ")" : ""
+              }
+              ${
+                searchQuery
+                  ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
+                  : ""
+              }
             GROUP BY 1
             ORDER BY repost_count DESC, first_id DESC
           )
