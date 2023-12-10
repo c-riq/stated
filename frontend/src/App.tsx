@@ -124,7 +124,30 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
             <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="https://stated.ai" target='_blank'>stated.ai</a>
           </div>
           <div style={{ flexGrow: 1 }}></div>
-          {!lt850px && (<div>
+          <div style={{minWidth: "200px"}}>
+            <TextField id="search-field" label="" variant="outlined" size='small'
+              placeholder='search'
+              onChange={e => { setLocalSearchQuery(e.target.value) }}
+              onKeyDown={e=> {if(e.key === "Enter"){
+                setSearchQuery(localSearchQuery)
+              }}}
+              onBlur={() => setSearchQuery(localSearchQuery)}
+              sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
+                '& label': { paddingLeft: (theme) => theme.spacing(2) },
+                '& input': { paddingLeft: (theme) => theme.spacing(3) },
+                '& fieldset': {
+              paddingLeft: (theme) => theme.spacing(2.5),
+              borderRadius: '40px',
+              height: '40 px'
+            },}}/>
+          </div>
+        </div>
+      </div>
+    </header>
+    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
+    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore}
+    setModalOpen={()=>{setModalOpen(true)}}>
+      {!lt850px && (<div>
             <FormControl sx={{ width: 300, height: "40px" }}>
               <InputLabel id="filter-label" sx={{height: "40px", marginTop: "-9px"}}>Filter statement types</InputLabel>
               <Select
@@ -152,29 +175,6 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
               </Select>
             </FormControl>
           </div>)}
-          <div style={{minWidth: "200px"}}>
-            <TextField id="search-field" label="" variant="outlined" size='small'
-              placeholder='search'
-              onChange={e => { setLocalSearchQuery(e.target.value) }}
-              onKeyDown={e=> {if(e.key === "Enter"){
-                setSearchQuery(localSearchQuery)
-              }}}
-              onBlur={() => setSearchQuery(localSearchQuery)}
-              sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
-                '& label': { paddingLeft: (theme) => theme.spacing(2) },
-                '& input': { paddingLeft: (theme) => theme.spacing(3) },
-                '& fieldset': {
-              paddingLeft: (theme) => theme.spacing(2.5),
-              borderRadius: '40px',
-              height: '40 px'
-            },}}/>
-          </div>
-        </div>
-      </div>
-    </header>
-    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
-    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore}
-    setModalOpen={()=>{setModalOpen(true)}}>
       <Link to="/create-statement">
         <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
         sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
