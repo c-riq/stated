@@ -1,4 +1,3 @@
-import React from 'react'
 import PlusOneIcon from '@mui/icons-material/PlusOne';
 import PollIcon from '@mui/icons-material/Poll';
 import Button from '@mui/material/Button';
