@@ -27,10 +27,14 @@ export type DBErrorCallback = (error: Error) => void
 const log = false
 
 let migrationsDone = false;
+let migrationInProgress = false;
 const migrationIntervalId = setInterval(async () => {
-    if(!migrationsDone){
+    if(!migrationsDone && !migrationInProgress){
+      migrationInProgress = true
       await performMigrations(pool, ()=>migrationsDone=true)
-    } else {
+      migrationInProgress = false
+    } 
+    if(migrationsDone && !migrationInProgress) {
       clearInterval(migrationIntervalId)
     }
   }, 500)

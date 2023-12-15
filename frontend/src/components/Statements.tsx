@@ -59,17 +59,17 @@ type props = {
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
     canLoadMore: boolean,
     loadingMore: boolean,
-    loadMore: ()=>void
+    loadMore: ()=>void,
+    maxSkipId: number,
 }
 
 const Statements = (props:props) => {
-    const { lt850px } = props
-    const statements = props.statements
+    const { lt850px, statements, maxSkipId } = props
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8 }}>
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
             <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
-                <h3>Statements</h3> {props.children}</div>
+                <h3>Statements ({maxSkipId})</h3> {props.children}</div>
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {statements && statements.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
                     {statements && statements.length > 0 && statements.map((s,i) => {

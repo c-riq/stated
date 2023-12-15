@@ -89,11 +89,12 @@ type LayoutProps = {
   canLoadMore: boolean,
   loadingMore: boolean, 
   loadMore: ()=>void,
-  setStatementTypes: (arg0: string[])=>void
+  setStatementTypes: (arg0: string[])=>void,
+  maxSkipId: number
 }
 
 const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
-  setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore,
+  setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
   setStatementTypes}:LayoutProps) => {
   const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
   const [localSearchQuery, setLocalSearchQuery] = React.useState<string>('');
@@ -145,11 +146,11 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
       </div>
     </header>
     <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
-    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore}
+    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore} maxSkipId={maxSkipId}
     setModalOpen={()=>{setModalOpen(true)}}>
       {!lt850px && (<div>
-            <FormControl sx={{ width: 300, height: "40px" }}>
-              <InputLabel id="filter-label" sx={{height: "40px", marginTop: "-9px"}}>Filter statement types</InputLabel>
+            <FormControl sx={{ width: 300, height: "40px" }} size="small">
+              <InputLabel id="filter-label" sx={{margin: "0px 0px 0px 5px"}} >Filter statement types</InputLabel>
               <Select
                 labelId="filter-label"
                 id="filter"
@@ -213,6 +214,7 @@ function App() {
   const [lt500px, setlt500px] = React.useState(window.matchMedia("(max-width: 500px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [skip, setSkip] = React.useState(0);
+  const [maxSkipId, setMaxSkipId] = React.useState(0);
   const [canLoadMore, setCanLoadMore] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [statementTypes, setStatementTypes] = React.useState<string[]>([]);
@@ -234,13 +236,15 @@ function App() {
     getStatements({searchQuery, limit, skip: 0, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
-            const maxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
-            setSkip(maxSkipId)
-            if(maxSkipId === parseInt(s.statements[0].max_skip_id)){
+            const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
+            const currentMaxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+            if(currentMaxSkipId === globalMaxSkipId){
               setCanLoadMore(false)
             } else {
               setCanLoadMore(true)
             }
+            setSkip(currentMaxSkipId)
+            setMaxSkipId(globalMaxSkipId)
             window.scrollTo(0,0)
         } else {
           setStatements([])
@@ -313,7 +317,7 @@ function App() {
     <div className='App-main'>
       <Routes>
           <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
-          setStatementTypes={setStatementTypes}
+          setStatementTypes={setStatementTypes} maxSkipId={maxSkipId}
           loadMore={()=>{
             setShouldLoadMore(true)
             setLoadingMore(true)
