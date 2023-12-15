@@ -148,8 +148,8 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
     canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore}
     setModalOpen={()=>{setModalOpen(true)}}>
       {!lt850px && (<div>
-            <FormControl sx={{ width: 300, height: "40px" }}>
-              <InputLabel id="filter-label" sx={{height: "40px", marginTop: "-9px"}}>Filter statement types</InputLabel>
+            <FormControl sx={{ width: 300, height: "40px" }} size="small">
+              <InputLabel id="filter-label" sx={{margin: "0px 0px 0px 5px"}} >Filter statement types</InputLabel>
               <Select
                 labelId="filter-label"
                 id="filter"
