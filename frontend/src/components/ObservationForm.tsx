@@ -25,6 +25,10 @@ const ObservationForm = (props:FormProps) => {
     const [observationPropertyObject, setObservationPropertyObject] = React.useState(undefined as string[]|undefined);
     const [obervationValue, setObervationValue] = React.useState("");
 
+    const [confidence, setConfidence] = React.useState("");
+    const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
+
+
     React.useEffect(()=>{
         const originalSubjectInputValue = subjectInputValue
         getNameSuggestions(originalSubjectInputValue, res  => {
@@ -53,7 +57,7 @@ const ObservationForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method}) => {
         try {
             props.setPublishingMethod(method)
-            const content = buildObservation({subject, subjectReference: referencedHash, property: observationProperty, value: obervationValue})
+            const content = buildObservation({subject, subjectReference: referencedHash, property: observationProperty, value: obervationValue, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
             const parsedStatement = parseStatement(statement)
@@ -120,7 +124,8 @@ const ObservationForm = (props:FormProps) => {
             options={[
                 ["Q1054766-P127","Uses this public 1024 bit RSA key"],
                 ["P463","Is a member of"],
-                ["Q562566","Breached this contract"]
+                ["Q562566","Breached this contract"],
+                ["P6782","ROR ID"] // identifier for the Research Organization Registry
             ]}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
@@ -143,7 +148,31 @@ const ObservationForm = (props:FormProps) => {
                 onChange={e => { setObervationValue(e.target.value) }}
                 margin="normal"
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
-            /> 
+            />
+        <TextField
+            id="confidence"
+            variant="outlined"
+            placeholder='0.9'
+            label="Confidence (probability of correctness 0.0 - 1.0)"
+            value={confidence}
+            onChange={e => { 
+                const str = e.target.value.replace(/[^0-9.]/g, '')
+                if(parseFloat(str) < 0) return setConfidence("0")
+                if(parseFloat(str) > 1) return setConfidence("1.0")
+                setConfidence(str)
+            }}
+            sx={{marginTop: "20px"}}
+        />
+        <TextField
+            id="reliability"
+            variant="outlined"
+            placeholder='https://stated.example.com/statements/NF6irhgDU0F_HEgTRKnh'
+            label="Policy containing correctness guarantees"
+            onChange={e => { 
+                setReliabilityPolicy(e.target.value)
+            }}
+            sx={{marginTop: "20px"}}
+        />
         {props.children}
         <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
