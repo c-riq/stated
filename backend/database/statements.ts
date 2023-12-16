@@ -236,8 +236,9 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
 
 export const getStatementsWithDetailFactory =
   (pool) =>
-  ({ skip, searchQuery, limit, types, domain}:{skip?: number, searchQuery?: string, limit?: number, types?: string[], domain:string}) =>
-    new Promise((resolve: DBCallback, reject) => {
+  ({ skip, searchQuery, limit, types, domain, author } : {skip?: number,
+    searchQuery?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
+        new Promise((resolve: DBCallback, reject) => {
       try {
         checkIfMigrationsAreDone();
         let typeQuery = ''
@@ -275,7 +276,8 @@ export const getStatementsWithDetailFactory =
                 CAST($1 AS INTEGER) as input1,
                 $2 as input2,
                 $3 as input3,
-                $4 as input4
+                $4 as input4,
+                $5 as input5
             FROM statement_with_superseding 
             WHERE 
               superseding_statement IS NULL 
@@ -290,6 +292,11 @@ export const getStatementsWithDetailFactory =
               ${
                 domain
                   ? "AND domain=$4"
+                  : ""
+              }
+              ${
+                author
+                  ? "AND author=$5"
                   : ""
               }
             GROUP BY 1
@@ -352,7 +359,7 @@ export const getStatementsWithDetailFactory =
          WHERE _rank=1
          ORDER BY repost_count DESC, id DESC; 
               `,
-          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || ''],
+          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || ''],
           (error, results) => {
             if (error) {
               console.log(error);

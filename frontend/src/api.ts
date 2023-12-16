@@ -87,8 +87,8 @@ export type statementWithDetails = {
     skip_id: string;
     max_skip_id: string;
 }
-export const getStatements = ({searchQuery, skip, limit, domain, statementTypes, cb}:
-    {searchQuery:string|undefined, limit:number, domain:string|null,
+export const getStatements = ({searchQuery, skip, limit, domain, author, statementTypes, cb}:
+    {searchQuery:string|undefined, limit:number, domain:string|null, author:string|null,
     skip:number, statementTypes:string[], cb:res<{statements: statementWithDetails[], time: string}>}) => {
     const types = statementTypes.map(t => {
         return({'Statements': 'statement',
@@ -98,11 +98,13 @@ export const getStatements = ({searchQuery, skip, limit, domain, statementTypes,
                 'Ratings': 'rating',
                 'Bounties': 'bounty',
                 'Observations': 'observation'})[t]}).filter(t => t).join(',')
-    const queryString = [(searchQuery ? 'search_query=' + searchQuery.replace('\n', '%0A').replace('\t', '%09') : ''),
+    const queryString = [(searchQuery ? 'search_query=' +
+            searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09') : ''),
         (limit ? 'limit=' + limit : ''),
         (skip ? 'skip=' + skip : ''),
         (types ? 'types=' + types : ''),
-        (domain ? 'domain=' + domain : '')].filter(s => s.length > 0).join('&')
+        (domain ? 'domain=' + domain : ''),
+        (author ? 'author=' + author : '')].filter(s => s.length > 0).join('&')
     req('GET',
         `statements_with_details?${queryString}`, {}, (json) => {
         cb(json)

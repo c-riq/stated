@@ -207,6 +207,7 @@ function App() {
   const queryFromUrl = urlParams.get('search_query')
   const domainFilterFromUrl = undefined || urlParams.get('domain')
   const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+  const auhtorFilterFromUrl = undefined || urlParams.get('author')
 
   const [serverTime, setServerTime] = React.useState(new Date());
   const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
@@ -228,7 +229,8 @@ function App() {
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [statementTypes, setStatementTypes] = React.useState<string[]>(typesFromUrl || []);
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
-  const [domainFilter, _] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
+  const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
+  const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -240,19 +242,20 @@ function App() {
 
   useEffect(() => {
     const queryString = [
-      (searchQuery ? 'search_query=' + searchQuery.replace('\n', '%0A').replace('\t', '%09')  : ''),
+      (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09')  : ''),
       (statementTypes?.length ? 'types=' + statementTypes : ''),
-      (domainFilter ? 'domain=' + domainFilter : '')
+      (domainFilter ? 'domain=' + domainFilter : ''),
+      (authorFilter ? 'author=' + authorFilter : '')
     ].filter(s => s.length > 0).join('&')
     window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
-  }, [searchQuery, statementTypes, domainFilter])
+  }, [searchQuery, statementTypes, domainFilter, authorFilter])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
       return
     }
     const limit = 20
-    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilterFromUrl,
+    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilterFromUrl, author: auhtorFilterFromUrl,
         cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
@@ -273,11 +276,12 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname, typesFromUrl, domainFilterFromUrl])
+  }, [statementTypes, searchQuery, location.pathname, typesFromUrl, domainFilterFromUrl, auhtorFilterFromUrl])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
-      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilterFromUrl, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilterFromUrl, author: auhtorFilterFromUrl,
+         cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
               const newStatements = s.statements.filter((s:statementWithDetails) => !existingStatements.find((s2:statementWithDetails) => s2.hash_b64 === s.hash_b64))
@@ -297,7 +301,7 @@ function App() {
       }})
       setShouldLoadMore(false)
     }
-  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilterFromUrl])
+  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilterFromUrl, auhtorFilterFromUrl])
   const joinStatement = (statement: (statementWithDetails | statementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
