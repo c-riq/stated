@@ -100,16 +100,14 @@ type LayoutProps = {
   loadingMore: boolean, 
   loadMore: ()=>void,
   setStatementTypes: (arg0: string[])=>void,
-  maxSkipId: number,
-  initialSearchQuery?: string,
-  initialStatementTypes?: string[]
+  maxSkipId: number
 }
 
-const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
+const Layout = ({setSearchQuery, joinStatement, voteOnPoll, 
   setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
-  setStatementTypes, initialSearchQuery, initialStatementTypes}:LayoutProps) => {
-  const [selectedTypes, setSelectedTypes] = React.useState<string[]>(initialStatementTypes || []);
-  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>(initialSearchQuery || '');
+  setStatementTypes}:LayoutProps) => {
+  const [selectedTypes, setSelectedTypes] = React.useState<string[]>(typesFromUrl || []);
+  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>(queryFromUrl || '');
   const handleChange = (event: SelectChangeEvent<typeof selectedTypes>) => {
     const value = event.target.value;
     const result = typeof value === 'string' ? value.split(',') : value
@@ -131,6 +129,7 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
           <div style={{minWidth: "200px"}}>
             <TextField id="search-field" label="" variant="outlined" size='small'
               placeholder='search'
+              value={localSearchQuery}
               onChange={e => { setLocalSearchQuery(e.target.value) }}
               onKeyDown={e=> {if(e.key === "Enter"){
                 setSearchQuery(localSearchQuery)
@@ -201,13 +200,14 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
   </React.Fragment>
   )}
 
-function App() {
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const queryFromUrl = urlParams.get('search_query')
-  const domainFilterFromUrl = undefined || urlParams.get('domain')
-  const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
-  const auhtorFilterFromUrl = undefined || urlParams.get('author')
+const urlParams = new URLSearchParams(window.location.search);
+const queryFromUrl = urlParams.get('search_query')
+const domainFilterFromUrl = undefined || urlParams.get('domain')
+const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+const auhtorFilterFromUrl = undefined || urlParams.get('author')
+
+function App() {
 
   const [serverTime, setServerTime] = React.useState(new Date());
   const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
@@ -255,7 +255,7 @@ function App() {
       return
     }
     const limit = 20
-    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilterFromUrl, author: auhtorFilterFromUrl,
+    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilter, author: authorFilter,
         cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
@@ -276,11 +276,11 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname, typesFromUrl, domainFilterFromUrl, auhtorFilterFromUrl])
+  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
-      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilterFromUrl, author: auhtorFilterFromUrl,
+      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilter, author: authorFilter,
          cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
@@ -301,7 +301,7 @@ function App() {
       }})
       setShouldLoadMore(false)
     }
-  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilterFromUrl, auhtorFilterFromUrl])
+  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilter, authorFilter])
   const joinStatement = (statement: (statementWithDetails | statementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
@@ -347,8 +347,7 @@ function App() {
             setLoadingMore(true)
           }}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
-           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} 
-           initialSearchQuery={searchQuery} initialStatementTypes={statementTypes}
+           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements}
            lt850px={lt850px} lt500px={lt500px} />)} >
             {/* @ts-ignore */}
             <Route path='/' exact />

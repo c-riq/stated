@@ -88,7 +88,7 @@ export type statementWithDetails = {
     max_skip_id: string;
 }
 export const getStatements = ({searchQuery, skip, limit, domain, author, statementTypes, cb}:
-    {searchQuery:string|undefined, limit:number, domain:string|null, author:string|null,
+    {searchQuery:string|undefined, limit:number, domain:string|undefined, author:string|undefined,
     skip:number, statementTypes:string[], cb:res<{statements: statementWithDetails[], time: string}>}) => {
     const types = statementTypes.map(t => {
         return({'Statements': 'statement',
