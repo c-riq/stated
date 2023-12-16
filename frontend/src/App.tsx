@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import './App.css';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -29,6 +29,16 @@ import gh from './img/github.png'
 import logo from './img/logo.png'
 import DebugStatement from './components/DebugStatement';
 import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+
+const types = [
+  'Statements',
+  'Domain Verifications',
+  'Polls',
+  'Collective Signatures',
+  'Ratings',
+  'Bounties',
+  'Observations',
+];
 
 type CenterModalProps = {
   lt850px: boolean,
@@ -90,23 +100,16 @@ type LayoutProps = {
   loadingMore: boolean, 
   loadMore: ()=>void,
   setStatementTypes: (arg0: string[])=>void,
-  maxSkipId: number
+  maxSkipId: number,
+  initialSearchQuery?: string,
+  initialStatementTypes?: string[]
 }
 
 const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
   setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
-  setStatementTypes}:LayoutProps) => {
-  const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
-  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>('');
-  const types = [
-    'Statements',
-    'Domain Verifications',
-    'Polls',
-    'Collective Signatures',
-    'Ratings',
-    'Bounties',
-    'Observations',
-  ];
+  setStatementTypes, initialSearchQuery, initialStatementTypes}:LayoutProps) => {
+  const [selectedTypes, setSelectedTypes] = React.useState<string[]>(initialStatementTypes || []);
+  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>(initialSearchQuery || '');
   const handleChange = (event: SelectChangeEvent<typeof selectedTypes>) => {
     const value = event.target.value;
     const result = typeof value === 'string' ? value.split(',') : value
@@ -199,6 +202,12 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
   )}
 
 function App() {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryFromUrl = urlParams.get('search_query')
+  const domainFilterFromUrl = undefined || urlParams.get('domain')
+  const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+
   const [serverTime, setServerTime] = React.useState(new Date());
   const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
   const [statementToRespond, setStatementToRepsond] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
@@ -209,7 +218,7 @@ function App() {
   const [statements, setStatements] = React.useState([] as statementWithDetails[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState(undefined as string | undefined);
+  const [searchQuery, setSearchQuery] = React.useState(queryFromUrl || undefined as string | undefined);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const [lt500px, setlt500px] = React.useState(window.matchMedia("(max-width: 500px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -217,8 +226,9 @@ function App() {
   const [maxSkipId, setMaxSkipId] = React.useState(0);
   const [canLoadMore, setCanLoadMore] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
-  const [statementTypes, setStatementTypes] = React.useState<string[]>([]);
+  const [statementTypes, setStatementTypes] = React.useState<string[]>(typesFromUrl || []);
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
+  const [domainFilter, _] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -228,12 +238,22 @@ function App() {
     window.matchMedia("(max-width: 500px)").addEventListener('change', e => setlt500px( e.matches ));
   }, []);
 
+  useEffect(() => {
+    const queryString = [
+      (searchQuery ? 'search_query=' + searchQuery.replace('\n', '%0A').replace('\t', '%09')  : ''),
+      (statementTypes?.length ? 'types=' + statementTypes : ''),
+      (domainFilter ? 'domain=' + domainFilter : '')
+    ].filter(s => s.length > 0).join('&')
+    window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
+  }, [searchQuery, statementTypes, domainFilter])
+
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
       return
     }
     const limit = 20
-    getStatements({searchQuery, limit, skip: 0, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilterFromUrl,
+        cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
             const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
@@ -253,18 +273,18 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname])
+  }, [statementTypes, searchQuery, location.pathname, typesFromUrl, domainFilterFromUrl])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
-      getStatements({searchQuery, limit, skip, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilterFromUrl, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
               const newStatements = s.statements.filter((s:statementWithDetails) => !existingStatements.find((s2:statementWithDetails) => s2.hash_b64 === s.hash_b64))
               setStatements([...existingStatements, ...newStatements])
-              const maxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
-              setSkip(maxSkipId)
-              if(maxSkipId === parseInt(s.statements[0].max_skip_id)){
+              const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
+              const currentMaxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+              if(currentMaxSkipId === globalMaxSkipId){
                 setCanLoadMore(false)
               } else {
                 setCanLoadMore(true)
@@ -277,7 +297,7 @@ function App() {
       }})
       setShouldLoadMore(false)
     }
-  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements])
+  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilterFromUrl])
   const joinStatement = (statement: (statementWithDetails | statementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
@@ -324,6 +344,7 @@ function App() {
           }}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
            voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} 
+           initialSearchQuery={searchQuery} initialStatementTypes={statementTypes}
            lt850px={lt850px} lt500px={lt500px} />)} >
             {/* @ts-ignore */}
             <Route path='/' exact />

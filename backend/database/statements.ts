@@ -236,7 +236,7 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
 
 export const getStatementsWithDetailFactory =
   (pool) =>
-  ({ skip, searchQuery, limit, types}:{skip?: number, searchQuery?: string, limit?: number, types?: string[]}) =>
+  ({ skip, searchQuery, limit, types, domain}:{skip?: number, searchQuery?: string, limit?: number, types?: string[], domain:string}) =>
     new Promise((resolve: DBCallback, reject) => {
       try {
         checkIfMigrationsAreDone();
@@ -274,7 +274,8 @@ export const getStatementsWithDetailFactory =
                 first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
                 CAST($1 AS INTEGER) as input1,
                 $2 as input2,
-                $3 as input3
+                $3 as input3,
+                $4 as input4
             FROM statement_with_superseding 
             WHERE 
               superseding_statement IS NULL 
@@ -283,7 +284,12 @@ export const getStatementsWithDetailFactory =
               }
               ${
                 searchQuery
-                  ? "AND (LOWER(content) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
+                  ? "AND (LOWER(statement) LIKE '%'||$2||'%' OR LOWER(tags) LIKE '%'||$2||'%')"
+                  : ""
+              }
+              ${
+                domain
+                  ? "AND domain=$4"
                   : ""
               }
             GROUP BY 1
@@ -346,7 +352,7 @@ export const getStatementsWithDetailFactory =
          WHERE _rank=1
          ORDER BY repost_count DESC, id DESC; 
               `,
-          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20],
+          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || ''],
           (error, results) => {
             if (error) {
               console.log(error);
