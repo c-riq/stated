@@ -231,6 +231,7 @@ function App() {
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
   const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
   const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
+  const [triggerUrlRefresh, setTriggerUrlRefresh] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -248,7 +249,7 @@ function App() {
       (authorFilter ? 'author=' + authorFilter : '')
     ].filter(s => s.length > 0).join('&')
     window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
-  }, [searchQuery, statementTypes, domainFilter, authorFilter])
+  }, [searchQuery, statementTypes, domainFilter, authorFilter, triggerUrlRefresh])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
@@ -276,7 +277,7 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter])
+  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
@@ -332,7 +333,7 @@ function App() {
   const resetState = () => {
     navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
-    setStatementToSupersede(undefined); setPoll(undefined)
+    setStatementToSupersede(undefined); setPoll(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
   }
 
   return (
