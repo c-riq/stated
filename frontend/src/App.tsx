@@ -100,10 +100,11 @@ type LayoutProps = {
   loadingMore: boolean, 
   loadMore: ()=>void,
   setStatementTypes: (arg0: string[])=>void,
-  maxSkipId: number
+  maxSkipId: number,
+  resetFilters: ()=>void
 }
 
-const Layout = ({setSearchQuery, joinStatement, voteOnPoll, 
+const Layout = ({setSearchQuery, joinStatement, voteOnPoll, resetFilters,
   setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
   setStatementTypes}:LayoutProps) => {
   const [selectedTypes, setSelectedTypes] = React.useState<string[]>(typesFromUrl || []);
@@ -120,7 +121,11 @@ const Layout = ({setSearchQuery, joinStatement, voteOnPoll,
       <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
         <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
           <div>
-            {!lt850px && (<Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>)}
+            {!lt850px && (<Link style={{color: "rgba(255,255,255,1)"}} to="/" onClick={() => {
+              resetFilters()
+              setLocalSearchQuery('')
+              setSelectedTypes([])
+            }}>{window.location.hostname}</Link>)}
             <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-verification-graph" target='_blank'>verifications</a>
             {!lt500px && (<a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-network-graph" target='_blank'>network</a>)}
             <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="https://stated.ai" target='_blank'>stated.ai</a>
@@ -335,6 +340,10 @@ function App() {
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
     setStatementToSupersede(undefined); setPoll(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
   }
+  const resetFilters = () => {
+    setDomainFilter(undefined); setAuthorFilter(undefined); setStatementTypes([]); setSearchQuery(undefined);
+    setTriggerUrlRefresh(!triggerUrlRefresh)
+  }
 
   return (
     <div className="App" style={{overflow: modalOpen ? 'hidden': 'scroll'}}>
@@ -342,7 +351,7 @@ function App() {
     <div className='App-main'>
       <Routes>
           <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
-          setStatementTypes={setStatementTypes} maxSkipId={maxSkipId}
+          setStatementTypes={setStatementTypes} maxSkipId={maxSkipId} resetFilters={resetFilters}
           loadMore={()=>{
             setShouldLoadMore(true)
             setLoadingMore(true)
