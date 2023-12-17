@@ -3,8 +3,7 @@
 
 import {legalForms} from './constants/legalForms'
 
-// eslint-disable-next-line
-const version = 2
+const version = 3
 
 export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
 export const statementTypes = {
@@ -59,11 +58,12 @@ export const buildStatement = ({domain, author, time, tags, content, representat
 			"Time: " + time.toUTCString() + "\n" +
             (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
 			(supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
+			"Format version: " + version + "\n" +
             "Statement content: " + content + (content.match(/\n$/) ? '' : "\n");
 	if (statement.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	return statement
 }
-export const parseStatement = (s: string):statement & { type: string } => {
+export const parseStatement = (s: string):statement & { type: string, formatVersion: string} => {
 	if (s.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	if(s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
 	const statementRegex= new RegExp(''
@@ -73,6 +73,7 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	+ /Time: (?<time>[^\n]+?)\n/.source
 	+ /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
 	+ /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
+	+ /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
 	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?\n$)|(?<content>[\s\S]+?\n$))/.source
 	);
 	let m: any = s.match(statementRegex)
@@ -80,8 +81,8 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	// if(m?.groups) {m = m.groups}
 	else{
 		m = {domain: m[1], author: m[2], representative: m[3], time: m[4], tags: m[5],
-			supersededStatement: m[6], content: m[7] || m[9],
-			type: m[8] ? m[8].toLowerCase().replace(' ','_') : undefined}
+			supersededStatement: m[6], formatVersion: m[7], content: m[8] || m[10],
+			type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined}
 	}
 	if(!(m['time'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
 	if(!m['domain']) throw new Error("Invalid statement format: domain is required")
@@ -97,6 +98,7 @@ export const parseStatement = (s: string):statement & { type: string } => {
 		time,
 		tags: (tags && tags.length > 0) ? tags : undefined,
 		supersededStatement: m['supersededStatement'],
+		formatVersion: m['formatVersion'],
 		content: m['content'] || m['typedContent'],
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
