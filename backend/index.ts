@@ -44,18 +44,18 @@ if(enableVerificationLog) verificationLog.setupSchedule(logIntervalSeconds)
 
 const app = express();
 
+app.use("/", express.static(__dirname + '/public/'));
 app.disable('x-powered-by')
-// app.disable('etag')
-
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-
 app.all('/*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*")
     res.header("Access-Control-Allow-Headers", "*")
     res.header("Access-Control-Allow-Methods", "*")
     next();
 });
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
 app.options('/*', function (req, res, next) {
     res.status(200).send();
 });
@@ -69,7 +69,6 @@ app.all([
     "/nodes|nodes.txt",
 ],humanReadableEndpoints)
 
-app.use("/", express.static(__dirname + '/public/'));
 app.get("/files/*", (req, res) =>{
     console.log("could not find file " + req.path)
     res.status(404);
