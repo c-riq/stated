@@ -261,6 +261,10 @@ const Statement = (props:props) => {
                 (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as vote).pollHash}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
             }
+            {statement?.type === statementTypes.poll && (parsedStatement as poll)?.scopeQueryLink && 
+                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as poll).scopeQueryLink} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
+            }
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
             <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{
@@ -337,7 +341,7 @@ const Statement = (props:props) => {
             )}
 
             
-            {votes.length > 0 && (<div><h3>Votes</h3>
+            {votes.length > 0 && (<div><h3>All votes (including unqualified votes)</h3>
                 {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>

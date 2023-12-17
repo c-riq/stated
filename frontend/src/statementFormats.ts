@@ -173,14 +173,18 @@ export type poll = {
 	judges?: string,
 	deadline: Date,
 	poll: string,
+	scopeDescription?: string,
+	scopeQueryLink?: string,
 	pollType?: string,
 	options: string[]
 }
-export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
+export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, scopeDescription, scopeQueryLink, pollType, options}: poll) => {
 	if(!poll) throw(new Error("Poll must contain a poll question."))
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
 	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
+	(scopeDescription ? "\t" + "Who can vote: " + scopeDescription + "\n" : "") +
+	(scopeQueryLink ? "\t" + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "") +
 	(country ? "\t" + "Country scope: " + country + "\n" : "") +
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal form scope: " + legalEntity + "\n" : "") +
@@ -200,6 +204,8 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	const pollRegex= new RegExp(''
 	+ /^\n\tType: Poll\n/.source
 	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
+	+ /(?:\tWho can vote: (?<scopeDescription>[^\n]+?)\n)?/.source
+	+ /(?:\tLink to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
 	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
 	+ /(?:\tLegal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
@@ -217,9 +223,9 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	if(!m) throw new Error("Invalid poll format: " + s)
 	// if(m?.groups) {m = m.groups}
 	else{
-		m = {pollType: m[1], country: m[2], city: m[3], legalEntity: m[4], domainScope: m[5],
-			judges: m[6], deadline: m[7], poll: m[8], option1: m[9], option2: m[10], option3: m[11],
-			option4: m[12], option5: m[13]}
+		m = {pollType: m[1], scopeDescription: m[2], scopeQueryLink: m[3], country: m[4], city: m[5],
+			legalEntity: m[6], domainScope: m[7], judges: m[8], deadline: m[9], poll: m[10], 
+			option1: m[11], option2: m[12], option3: m[13], option4: m[14], option5: m[15]}
 	}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = m.domainScope?.split(', ')
@@ -228,6 +234,8 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	return {
 		pollType: m['pollType'],
 		country: m['country'],
+		scopeDescription: m['scopeDescription'],
+		scopeQueryLink: m['scopeQueryLink'],
 		city: m['city'],
 		legalEntity: m['legalEntity'],
 		domainScope: (domainScope && domainScope.length > 0) ? domainScope : undefined,
