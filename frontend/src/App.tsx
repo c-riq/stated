@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import './App.css';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -29,6 +29,16 @@ import gh from './img/github.png'
 import logo from './img/logo.png'
 import DebugStatement from './components/DebugStatement';
 import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+
+const types = [
+  'Statements',
+  'Domain Verifications',
+  'Polls',
+  'Collective Signatures',
+  'Ratings',
+  'Bounties',
+  'Observations',
+];
 
 type CenterModalProps = {
   lt850px: boolean,
@@ -90,23 +100,15 @@ type LayoutProps = {
   loadingMore: boolean, 
   loadMore: ()=>void,
   setStatementTypes: (arg0: string[])=>void,
-  maxSkipId: number
+  maxSkipId: number,
+  resetFilters: ()=>void
 }
 
-const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll, 
+const Layout = ({setSearchQuery, joinStatement, voteOnPoll, resetFilters,
   setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
   setStatementTypes}:LayoutProps) => {
-  const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
-  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>('');
-  const types = [
-    'Statements',
-    'Domain Verifications',
-    'Polls',
-    'Collective Signatures',
-    'Ratings',
-    'Bounties',
-    'Observations',
-  ];
+  const [selectedTypes, setSelectedTypes] = React.useState<string[]>(typesFromUrl || []);
+  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>(queryFromUrl || '');
   const handleChange = (event: SelectChangeEvent<typeof selectedTypes>) => {
     const value = event.target.value;
     const result = typeof value === 'string' ? value.split(',') : value
@@ -119,7 +121,11 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
       <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
         <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
           <div>
-            {!lt850px && (<Link style={{color: "rgba(255,255,255,1)"}} to="/">{window.location.hostname}</Link>)}
+            {!lt850px && (<Link style={{color: "rgba(255,255,255,1)"}} to="/" onClick={() => {
+              resetFilters()
+              setLocalSearchQuery('')
+              setSelectedTypes([])
+            }}>{window.location.hostname}</Link>)}
             <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-verification-graph" target='_blank'>verifications</a>
             {!lt500px && (<a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-network-graph" target='_blank'>network</a>)}
             <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="https://stated.ai" target='_blank'>stated.ai</a>
@@ -128,6 +134,7 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
           <div style={{minWidth: "200px"}}>
             <TextField id="search-field" label="" variant="outlined" size='small'
               placeholder='search'
+              value={localSearchQuery}
               onChange={e => { setLocalSearchQuery(e.target.value) }}
               onKeyDown={e=> {if(e.key === "Enter"){
                 setSearchQuery(localSearchQuery)
@@ -198,7 +205,15 @@ const Layout = ({setSearchQuery, searchQuery, joinStatement, voteOnPoll,
   </React.Fragment>
   )}
 
+
+const urlParams = new URLSearchParams(window.location.search);
+const queryFromUrl = urlParams.get('search_query')
+const domainFilterFromUrl = undefined || urlParams.get('domain')
+const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+const auhtorFilterFromUrl = undefined || urlParams.get('author')
+
 function App() {
+
   const [serverTime, setServerTime] = React.useState(new Date());
   const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
   const [statementToRespond, setStatementToRepsond] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
@@ -209,7 +224,7 @@ function App() {
   const [statements, setStatements] = React.useState([] as statementWithDetails[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState(undefined as string | undefined);
+  const [searchQuery, setSearchQuery] = React.useState(queryFromUrl || undefined as string | undefined);
   const [lt850px, setlt850px] = React.useState(window.matchMedia("(max-width: 850px)").matches)
   const [lt500px, setlt500px] = React.useState(window.matchMedia("(max-width: 500px)").matches)
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -217,8 +232,11 @@ function App() {
   const [maxSkipId, setMaxSkipId] = React.useState(0);
   const [canLoadMore, setCanLoadMore] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
-  const [statementTypes, setStatementTypes] = React.useState<string[]>([]);
+  const [statementTypes, setStatementTypes] = React.useState<string[]>(typesFromUrl || []);
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
+  const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
+  const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
+  const [triggerUrlRefresh, setTriggerUrlRefresh] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -228,12 +246,23 @@ function App() {
     window.matchMedia("(max-width: 500px)").addEventListener('change', e => setlt500px( e.matches ));
   }, []);
 
+  useEffect(() => {
+    const queryString = [
+      (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09')  : ''),
+      (statementTypes?.length ? 'types=' + statementTypes : ''),
+      (domainFilter ? 'domain=' + domainFilter : ''),
+      (authorFilter ? 'author=' + authorFilter : '')
+    ].filter(s => s.length > 0).join('&')
+    window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
+  }, [searchQuery, statementTypes, domainFilter, authorFilter, triggerUrlRefresh])
+
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
       return
     }
     const limit = 20
-    getStatements({searchQuery, limit, skip: 0, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilter, author: authorFilter,
+        cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
             const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
@@ -253,18 +282,19 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname])
+  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
-      getStatements({searchQuery, limit, skip, statementTypes, cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilter, author: authorFilter,
+         cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
               const newStatements = s.statements.filter((s:statementWithDetails) => !existingStatements.find((s2:statementWithDetails) => s2.hash_b64 === s.hash_b64))
               setStatements([...existingStatements, ...newStatements])
-              const maxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
-              setSkip(maxSkipId)
-              if(maxSkipId === parseInt(s.statements[0].max_skip_id)){
+              const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
+              const currentMaxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+              if(currentMaxSkipId === globalMaxSkipId){
                 setCanLoadMore(false)
               } else {
                 setCanLoadMore(true)
@@ -277,7 +307,7 @@ function App() {
       }})
       setShouldLoadMore(false)
     }
-  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements])
+  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilter, authorFilter])
   const joinStatement = (statement: (statementWithDetails | statementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
@@ -308,7 +338,11 @@ function App() {
   const resetState = () => {
     navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
-    setStatementToSupersede(undefined); setPoll(undefined)
+    setStatementToSupersede(undefined); setPoll(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
+  }
+  const resetFilters = () => {
+    setDomainFilter(undefined); setAuthorFilter(undefined); setStatementTypes([]); setSearchQuery(undefined);
+    setTriggerUrlRefresh(!triggerUrlRefresh)
   }
 
   return (
@@ -317,13 +351,13 @@ function App() {
     <div className='App-main'>
       <Routes>
           <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
-          setStatementTypes={setStatementTypes} maxSkipId={maxSkipId}
+          setStatementTypes={setStatementTypes} maxSkipId={maxSkipId} resetFilters={resetFilters}
           loadMore={()=>{
             setShouldLoadMore(true)
             setLoadingMore(true)
           }}
           setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
-           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements} 
+           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements}
            lt850px={lt850px} lt500px={lt500px} />)} >
             {/* @ts-ignore */}
             <Route path='/' exact />

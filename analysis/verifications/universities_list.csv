@@ -1,101 +1,101 @@
-name,english_name,source_domain,website_domain,country,city,province,grid_id,ror_id,confidence
-Harvard University,,https://ror.org/03vek6s52,harvard.edu,United States of America (the),Cambridge,Massachusetts,grid.38142.3c,https://ror.org/03vek6s52,0.9
-Massachusetts Institute of Technology,,https://ror.org/042nb2s44,web.mit.edu,United States of America (the),Cambridge,Massachusetts,grid.116068.8,https://ror.org/042nb2s44,0.9
-Stanford University,,https://ror.org/00f54p054,stanford.edu,United States of America (the),Stanford,California,grid.168010.e,https://ror.org/00f54p054,0.9
-University of Cambridge,,https://ror.org/013meh722,cam.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Cambridge,Massachusetts,grid.5335.0,https://ror.org/013meh722,0.9
-California Institute of Technology,,https://ror.org/05dxps055,caltech.edu,United States of America (the),Pasadena,California,grid.20861.3d,https://ror.org/05dxps055,0.9
-Princeton University,,https://ror.org/00hx57361,princeton.edu,United States of America (the),Princeton,New Jersey,grid.16750.35,https://ror.org/00hx57361,0.9
-University of Oxford,,https://ror.org/052gg0110,ox.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Oxford,Oxfordshire,grid.4991.5,https://ror.org/052gg0110,0.9
-Yale University,,https://ror.org/03v76x132,yale.edu,United States of America (the),New Haven,Connecticut,grid.47100.32,https://ror.org/03v76x132,0.9
-Columbia University,,https://ror.org/00hj8s172,columbia.edu,United States of America (the),New York,New York,grid.21729.3f,https://ror.org/00hj8s172,0.9
-"University of California, Berkeley",,https://ror.org/01an7q238,berkeley.edu,United States of America (the),Berkeley,California,grid.47840.3f,https://ror.org/01an7q238,0.9
-University of Chicago,,https://ror.org/024mw5h28,uchicago.edu,United States of America (the),Chicago,Illinois,grid.170205.1,https://ror.org/024mw5h28,0.9
-Cornell University,,https://ror.org/05bnh6r87,cornell.edu,United States of America (the),Ithaca,New York,grid.5386.8,https://ror.org/05bnh6r87,0.9
-University of Pennsylvania,,https://ror.org/00b30xv10,upenn.edu,United States of America (the),Philadelphia,Pennsylvania,grid.25879.31,https://ror.org/00b30xv10,0.9
-東京大学,Tokyo University of Agriculture,https://ror.org/05crbcr45,nodai.ac.jp,Japan,Tokyo,Tokyo,grid.410772.7,https://ror.org/05crbcr45,0.9
-Johns Hopkins University,,https://ror.org/00za53h95,jhu.edu,United States of America (the),Baltimore,Maryland,grid.21107.35,https://ror.org/00za53h95,0.9
-Swiss Federal Institute of Technology in Zurich,ETH Zurich,https://ror.org/05a28rw58,ethz.ch,Switzerland,Zurich,Zurich,grid.5801.c,https://ror.org/05a28rw58,0.9
-京都大学,Kyoto University,https://ror.org/02kpeqv85,kyoto-u.ac.jp,Japan,Tokyo,Tokyo,grid.258799.8,https://ror.org/02kpeqv85,0.9
-מכון ויצמן למדע,Weizmann Institute of Science,https://ror.org/0316ej306,weizmann.ac.il,Israel,Rehovot,,grid.13992.30,https://ror.org/0316ej306,0.9
-"University of California, Los Angeles",,https://ror.org/046rm7j60,ucla.edu,United States of America (the),Los Angeles,Los Angeles,grid.19006.3e,https://ror.org/046rm7j60,0.9
-"University of California, San Diego",,https://ror.org/0168r3w48,ucsd.edu,United States of America (the),San Diego,California,grid.266100.3,https://ror.org/0168r3w48,0.9
-Rockefeller University,,https://ror.org/0420db125,rockefeller.edu,United States of America (the),New York,New York,grid.134907.8,https://ror.org/0420db125,0.9
-הַאוּנִיבֶרְסִיטָה הַעִבְרִית בִּירוּשָׁלַיִם,Hebrew University of Jerusalem,https://ror.org/03qxff017,new.huji.ac.il/en,Israel,Jerusalem,Jerusalem,grid.9619.7,https://ror.org/03qxff017,0.9
-New York University,,https://ror.org/0190ak572,nyu.edu,United States of America (the),New York,New York,grid.137628.9,https://ror.org/0190ak572,0.9
-"University of California, San Francisco",,https://ror.org/043mz5j54,ucsf.edu,United States of America (the),San Francisco,California,grid.266102.1,https://ror.org/043mz5j54,0.9
-University of Wisconsin–Madison,,https://ror.org/01y2jtd41,wisc.edu,United States of America (the),Madison,Wisconsin,grid.14003.36,https://ror.org/01y2jtd41,0.9
-University of Illinois at Urbana–Champaign,, https://ror.org/047426m28,illinois.edu,United States of America (the),Urbana,Illinois,grid.35403.31, https://ror.org/047426m28,0.9
-Duke University,,https://ror.org/00py81415,duke.edu,United States of America (the),Durham,North Carolina,grid.26009.3d,https://ror.org/00py81415,0.9
-Imperial College London,,https://ror.org/041kmwe10,imperial.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),London,"London, City of",grid.7445.2,https://ror.org/041kmwe10,0.9
-University of Texas Southwestern Medical Center,,https://ror.org/05byvp690,utsouthwestern.edu,United States of America (the),Dallas,Texas,grid.267313.2,https://ror.org/05byvp690,0.9
-University of Texas at Austin,,https://ror.org/00hj54h04,utexas.edu,United States of America (the),Austin,Texas,grid.89336.37,https://ror.org/00hj54h04,0.9
-University College London,,https://ror.org/02jx3x895,ucl.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),London,"London, City of",grid.83440.3b,https://ror.org/02jx3x895,0.9
-大阪大学,Osaka University,https://ror.org/035t8zc32,osaka-u.ac.jp,Japan,Osaka,Osaka,grid.136593.b,https://ror.org/035t8zc32,0.9
-Northwestern University,,https://ror.org/000e0be47,northwestern.edu,United States of America (the),Evanston,Illinois,grid.16753.36,https://ror.org/000e0be47,0.9
-"University of Michigan, Ann Arbor",,https://ror.org/00jmfr291,umich.edu,United States of America (the),Ann Arbor,Michigan,grid.214458.e,https://ror.org/00jmfr291,0.9
-University of Toronto,,https://ror.org/03dbr7087,utoronto.ca,Canada,Toronto,Ontario,grid.17063.33,https://ror.org/03dbr7087,0.9
-University of North Carolina at Chapel Hill,,https://ror.org/0130frc33,unc.edu,United States of America (the),Chapel Hill,North Carolina,grid.10698.36,https://ror.org/0130frc33,0.9
-Washington University in St. Louis,,https://ror.org/01yc7t268,wustl.edu,United States of America (the),St Louis,Missouri,grid.4367.6,https://ror.org/01yc7t268,0.9
-University of Utah,,https://ror.org/03r0ha626,utah.edu,United States of America (the),Salt Lake City,Utah,grid.223827.e,https://ror.org/03r0ha626,0.9
-University of Washington - Seattle,,https://ror.org/02jqc0m91,seattleu.edu,United States of America (the),Seattle,Washington,grid.263306.2,https://ror.org/02jqc0m91,0.9
-"University of California, Santa Barbara",,https://ror.org/02t274463,ucsb.edu,United States of America (the),Santa Barbara,California,grid.133342.4,https://ror.org/02t274463,0.9
-McGill University,,https://ror.org/01pxwe438,mcgill.ca,Canada,Montreal,Quebec,grid.14709.3b,https://ror.org/01pxwe438,0.9
-"Purdue University, West Lafayette",,https://ror.org/02dqehb95,purdue.edu,United States of America (the),West Lafayette,Indiana,grid.169077.e,https://ror.org/02dqehb95,0.9
-Carnegie Mellon University,,https://ror.org/05x2bcf33,cmu.edu,United States of America (the),Pittsburgh,Pennsylvania,grid.147455.6,https://ror.org/05x2bcf33,0.9
-University of Southern California,,https://ror.org/03taz7m60,usc.edu,United States of America (the),Los Angeles,California,grid.42505.36,https://ror.org/03taz7m60,0.9
-"University of California, Davis",,https://ror.org/05rrcem69,ucdavis.edu,United States of America (the),Davis,California,grid.27860.3b,https://ror.org/05rrcem69,0.9
-University of Colorado Boulder,,https://ror.org/02ttsq026,colorado.edu,United States of America (the),Boulder,Colorado,grid.266190.a,https://ror.org/02ttsq026,0.9
-"University of California, Irvine",,https://ror.org/04gyf1771,uci.edu,United States of America (the),Irvine,California,grid.266093.8,https://ror.org/04gyf1771,0.9
-University of Paris-Sud,,https://ror.org/028rypz17,u-psud.fr,France,Orsay,,grid.5842.b,https://ror.org/028rypz17,0.9
-"University of Minnesota, Twin Cities",,https://ror.org/017zqws13,twin-cities.umn.edu,United States of America (the),Minneapolis,Minnesota,grid.17635.36,https://ror.org/017zqws13,0.9
-University of Arizona,,https://ror.org/03m2x1q45,arizona.edu,United States of America (the),Tucson,Arizona,grid.134563.6,https://ror.org/03m2x1q45,0.9
-הטכניון – מכון טכנולוגי לישראל,Technion – Israel Institute of Technology,https://ror.org/03qryx823,technion.ac.il,Israel,Haifa,,grid.6451.6,https://ror.org/03qryx823,0.9
-"Ohio State University, Columbus",,https://ror.org/002nf6z37,columbusstate.edu,United States of America (the),Columbus,Ohio,grid.254590.f,https://ror.org/002nf6z37,0.9
-University of Rochester,,https://ror.org/022kthw22,rochester.edu,United States of America (the),Rochester,New York,grid.16416.34,https://ror.org/022kthw22,0.9
-École normale supérieure - Paris,,https://ror.org/00hx6zz33,ens-paris-saclay.fr,France,Gif-sur-Yvette,,grid.6390.c,https://ror.org/00hx6zz33,0.9
-University of Florida,,https://ror.org/02y3ad647,ufl.edu,United States of America (the),Gainesville,Florida,grid.15276.37,https://ror.org/02y3ad647,0.9
-אוּנִיבֶרְסִיטַת תֵּל אָבִיב,Tel Aviv University,https://ror.org/04mhzgx49,english.tau.ac.il,Israel,Tel Aviv,,grid.12136.37,https://ror.org/04mhzgx49,0.9
-Rice University,,https://ror.org/008zs3103,rice.edu,United States of America (the),Houston,Texas,grid.21940.3e,https://ror.org/008zs3103,0.9
-Dartmouth College,,https://ror.org/049s0rh22,dartmouth.edu,United States of America (the),Hanover,Hanover,grid.254880.3,https://ror.org/049s0rh22,0.9
-Vanderbilt University,,https://ror.org/02vm5rt34,vanderbilt.edu,United States of America (the),Nashville,Tennessee,grid.152326.1,https://ror.org/02vm5rt34,0.9
-University of Edinburgh,,https://ror.org/01nrxwf90,ed.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Edinburgh,Mpumalanga,grid.4305.2,https://ror.org/01nrxwf90,0.9
-École Polytechnique,,https://ror.org/05hy3tk52,polytechnique.edu,France,Palaiseau,Paris,grid.10877.39,https://ror.org/05hy3tk52,0.9
-Boston University,,https://ror.org/05qwgg493,bu.edu,United States of America (the),Boston,Massachusetts,grid.189504.1,https://ror.org/05qwgg493,0.9
-Pierre-and-Marie-Curie University,Pierre and Marie Curie University,https://ror.org/02en5vm52,sorbonne-universite.fr,France,Paris,Paris,grid.462844.8,https://ror.org/02en5vm52,0.9
-"Pennsylvania State University, University Park",,https://ror.org/04p491231,psu.edu,United States of America (the),State College,Massachusetts,grid.29857.31,https://ror.org/04p491231,0.9
-University of Geneva,,https://ror.org/01swzsf04,unige.ch,Switzerland,Geneva,,grid.8591.5,https://ror.org/01swzsf04,0.9
-Brown University,,https://ror.org/05gq02987,brown.edu,United States of America (the),Providence,Rhode Island,grid.40263.33,https://ror.org/05gq02987,0.9
-University of British Columbia,,https://ror.org/03rmrcq20,ubc.ca,Canada,Vancouver,British Columbia,grid.17091.3e,https://ror.org/03rmrcq20,0.9
-"University of Maryland, College Park",,https://ror.org/047s2c258,umd.edu,United States of America (the),College Park,Maryland,grid.164295.d,https://ror.org/047s2c258,0.9
-Swiss Federal Institute of Technology in Lausanne,,https://ror.org/02s376052,epfl.ch,Switzerland,Lausanne,Vaud,grid.5333.6,https://ror.org/02s376052,0.9
-Karolinska Institute,,https://ror.org/056d84691,ki.se,Sweden,Stockholm,Stockholms län,grid.4714.6,https://ror.org/056d84691,0.9
-University of Pittsburgh - Pittsburgh Campus,,https://ror.org/01an3r305,pitt.edu,United States of America (the),Pittsburgh,Pennsylvania,grid.21925.3d,https://ror.org/01an3r305,0.9
-Rutgers University-New Brunswick,,https://ror.org/05nkf0n29,unb.ca,Canada,Fredericton,New Brunswick,grid.266820.8,https://ror.org/05nkf0n29,0.9
-"Texas A&M University, College Station",,https://ror.org/01f5ytq51,tamu.edu,United States of America (the),College Station,College Station,grid.264756.4,https://ror.org/01f5ytq51,0.9
-名古屋大学,Nagoya University,https://ror.org/04chrp450,nagoya-u.ac.jp,Japan,Nagoya,,grid.27476.30,https://ror.org/04chrp450,0.9
-서울대학교,Seoul National University,https://ror.org/04h9pn542,snu.ac.kr,South Korea,Seoul,Gyeonggi,grid.31501.36,https://ror.org/04h9pn542,0.9
-University of Manchester,,https://ror.org/027m9bs27,manchester.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Manchester,,grid.5379.8,https://ror.org/027m9bs27,0.9
-Sapienza University of Rome,,https://ror.org/02be6w209,uniroma1.it,Italy,Rome,Rome,grid.7841.a,https://ror.org/02be6w209,0.9
-Case Western Reserve University,,https://ror.org/051fd9666,case.edu,United States of America (the),Cleveland,Ohio,grid.67105.35,https://ror.org/051fd9666,0.9
-東北大学,Tohoku University,https://ror.org/01dq60k83,tohoku.ac.jp,Japan,Sendai,Miyagi,grid.69566.3a,https://ror.org/01dq60k83,0.9
-Arizona State University,,https://ror.org/03efmqc40,asu.edu,United States of America (the),Tempe,Arizona,grid.215654.1,https://ror.org/03efmqc40,0.9
-Emory University,,https://ror.org/03czfpz43,emory.edu,United States of America (the),Atlanta,Georgia,grid.189967.8,https://ror.org/03czfpz43,0.9
-Ruprecht Karl University of Heidelberg,,https://ror.org/038t36y30,uni-heidelberg.de,Germany,Heidelberg,Baden-Württemberg,grid.7700.0,https://ror.org/038t36y30,0.9
-Ludwig Maximilian University of Munich,,https://ror.org/05591te55,en.uni-muenchen.de,Germany,Munich,Bayern,grid.5252.0,https://ror.org/05591te55,0.9
-University of Virginia,,https://ror.org/0153tk833,virginia.edu,United States of America (the),Charlottesville,Virginia,grid.27755.32,https://ror.org/0153tk833,0.9
-Leiden University,,https://ror.org/027bh9e22,leiden.edu,Netherlands (the),Leiden,Zuid-Holland,grid.5132.5,https://ror.org/027bh9e22,0.9
-Tufts University,,https://ror.org/05wvpxv85,tufts.edu,United States of America (the),Medford,Oregon,grid.429997.8,https://ror.org/05wvpxv85,0.9
-Georgia Institute of Technology,,https://ror.org/01zkghx44,gatech.edu,United States of America (the),Atlanta,Georgia,grid.213917.f,https://ror.org/01zkghx44,0.9
-University of Zurich,,https://ror.org/02crff812,uzh.ch,Switzerland,Zurich,Zürich (de),grid.7400.3,https://ror.org/02crff812,0.9
-University of Helsinki,,https://ror.org/040af2s02,helsinki.fi,Finland,Helsinki,,grid.7737.4,https://ror.org/040af2s02,0.9
-Technical University of Munich,,https://ror.org/02kkvpp62,tum.de,Germany,Munich,Bayern,grid.6936.a,https://ror.org/02kkvpp62,0.9
-University of Oslo,,https://ror.org/01xtthb56,uio.no,Norway,Oslo,Oslo,grid.5510.1,https://ror.org/01xtthb56,0.9
-University of Queensland,,https://ror.org/00rqy9422,uq.edu.au,Australia,Brisbane,Queensland,grid.1003.2,https://ror.org/00rqy9422,0.9
-University of Copenhagen,,https://ror.org/035b05819,ku.dk,Denmark,Copenhagen,,grid.5254.6,https://ror.org/035b05819,0.9
-University of Sydney,,https://ror.org/0384j8v12,sydney.edu.au,Australia,Sydney,New South Wales,grid.1013.3,https://ror.org/0384j8v12,0.9
-Williams College,,https://ror.org/04avkmd49,williams.edu,United States of America (the),Williamstown,New Jersey,grid.268275.c,https://ror.org/04avkmd49,0.9
-University of Texas MD Anderson Cancer Center,,https://ror.org/04twxam07,mdanderson.org,United States of America (the),Houston,Texas,grid.240145.6,https://ror.org/04twxam07,0.9
-University of Nottingham,,https://ror.org/01ee9ar58,nottingham.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Nottingham,Nottinghamshire,grid.4563.4,https://ror.org/01ee9ar58,0.9
-University of Bristol,,https://ror.org/0524sp257,bristol.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Bristol,Bristol,grid.5337.2,https://ror.org/0524sp257,0.9
-Utrecht University,,https://ror.org/04pp8hn57,uu.nl,Netherlands (the),Utrecht,Utrecht,grid.5477.1,https://ror.org/04pp8hn57,0.9
-Mines ParisTech,,https://ror.org/04y8cs423,mines-paristech.eu,France,Paris,Paris,grid.58140.38,https://ror.org/04y8cs423,0.9
+name,english_name,source_domain,website_domain,country,city,province,grid_id,ror_id,confidence,statement_hash
+Harvard University,,https://ror.org/03vek6s52,harvard.edu,United States of America (the),Cambridge,Massachusetts,grid.38142.3c,https://ror.org/03vek6s52,0.9,Q79uFn3ynKg2Qon5HUG9GlaLBufGYmrtGeeWiHQi7KM
+Massachusetts Institute of Technology,,https://ror.org/042nb2s44,web.mit.edu,United States of America (the),Cambridge,Massachusetts,grid.116068.8,https://ror.org/042nb2s44,0.9,RczCD_t_A2G1iYfaKq8jZpAl86hTD1I7ZjnZEiCUl1U
+Stanford University,,https://ror.org/00f54p054,stanford.edu,United States of America (the),Stanford,California,grid.168010.e,https://ror.org/00f54p054,0.9,b7qI1sN_cHTyOqTccOxgYGiCLIhpiMVMBINtdoEmuoQ
+University of Cambridge,,https://ror.org/013meh722,cam.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Cambridge,Massachusetts,grid.5335.0,https://ror.org/013meh722,0.9,2Jn-QmJXxXgCUzj0RZUwm6R4dm35Z_XF19MFIvwDs2o
+California Institute of Technology,,https://ror.org/05dxps055,caltech.edu,United States of America (the),Pasadena,California,grid.20861.3d,https://ror.org/05dxps055,0.9,oC9uxqPs8265cJHIcqv9UI8GDr0BYqPFut-ehpvvu7I
+Princeton University,,https://ror.org/00hx57361,princeton.edu,United States of America (the),Princeton,New Jersey,grid.16750.35,https://ror.org/00hx57361,0.9,aPZY8YVnCyfC6myKVZ0UfY0HMqzsoN_42m8xZGzrLnw
+University of Oxford,,https://ror.org/052gg0110,ox.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Oxford,Oxfordshire,grid.4991.5,https://ror.org/052gg0110,0.9,skhv46CUsSRD3reSO3viWRMoeJGaPMILKFGYzx9qHC0
+Yale University,,https://ror.org/03v76x132,yale.edu,United States of America (the),New Haven,Connecticut,grid.47100.32,https://ror.org/03v76x132,0.9,-g0dAH1LvIaUyvJUYv1myHl0oZze6RxfGyB6v4L_hs4
+Columbia University,,https://ror.org/00hj8s172,columbia.edu,United States of America (the),New York,New York,grid.21729.3f,https://ror.org/00hj8s172,0.9,d1sUkSDXp1hC4YN_my-tUkWy6RB7s2IfnV0nRls-gmQ
+"University of California, Berkeley",,https://ror.org/01an7q238,berkeley.edu,United States of America (the),Berkeley,California,grid.47840.3f,https://ror.org/01an7q238,0.9,epD1k7fhhwCSxSQ99W9bcIt0wjMGaykxu3XWwFaXHJw
+University of Chicago,,https://ror.org/024mw5h28,uchicago.edu,United States of America (the),Chicago,Illinois,grid.170205.1,https://ror.org/024mw5h28,0.9,fZlqbMh3lzb72R2jVt0NLWzXAQc1kZA60qe4oMtWIy8
+Cornell University,,https://ror.org/05bnh6r87,cornell.edu,United States of America (the),Ithaca,New York,grid.5386.8,https://ror.org/05bnh6r87,0.9,VLmfR97MKk_XFkaKz4xCe7b66NQrXj4BP0eePaEZAxU
+University of Pennsylvania,,https://ror.org/00b30xv10,upenn.edu,United States of America (the),Philadelphia,Pennsylvania,grid.25879.31,https://ror.org/00b30xv10,0.9,InzMO5SgCYhA2LRw2Kp5R5CJWo3-OYSxd1R1OlaloMY
+東京大学,Tokyo University of Agriculture,https://ror.org/05crbcr45,nodai.ac.jp,Japan,Tokyo,Tokyo,grid.410772.7,https://ror.org/05crbcr45,0.9,uZrCYkf_3lT5n8QLurEOO_tKAb0HhBJsRdLSM-IL6sY
+Johns Hopkins University,,https://ror.org/00za53h95,jhu.edu,United States of America (the),Baltimore,Maryland,grid.21107.35,https://ror.org/00za53h95,0.9,s1tIyEog3QHL-aroydi5m4Q3a651-s8C4Cb8bsCPmWo
+Swiss Federal Institute of Technology in Zurich,ETH Zurich,https://ror.org/05a28rw58,ethz.ch,Switzerland,Zurich,Zurich,grid.5801.c,https://ror.org/05a28rw58,0.9,1KihkYtCLb9RSHpHIuUsuaWGm70e_Mq-v8tnw7KKB94
+京都大学,Kyoto University,https://ror.org/02kpeqv85,kyoto-u.ac.jp,Japan,Tokyo,Tokyo,grid.258799.8,https://ror.org/02kpeqv85,0.9,PGyR-mUwg4KO7ebBYSAZmFegyYAji1d0ZtpdgVb15Ns
+מכון ויצמן למדע,Weizmann Institute of Science,https://ror.org/0316ej306,weizmann.ac.il,Israel,Rehovot,,grid.13992.30,https://ror.org/0316ej306,0.9,
+"University of California, Los Angeles",,https://ror.org/046rm7j60,ucla.edu,United States of America (the),Los Angeles,Los Angeles,grid.19006.3e,https://ror.org/046rm7j60,0.9,E6XDUSp1zR1V-cANK70dYwNkZSC1GGLQn3McET_gGgs
+"University of California, San Diego",,https://ror.org/0168r3w48,ucsd.edu,United States of America (the),San Diego,California,grid.266100.3,https://ror.org/0168r3w48,0.9,SccL9B43hP20CecVqP4ZsUMbFUSrg7_odVuvt1aqRPo
+Rockefeller University,,https://ror.org/0420db125,rockefeller.edu,United States of America (the),New York,New York,grid.134907.8,https://ror.org/0420db125,0.9,62T0xkeBM7BPlXV92_V3sLIhKEWsSjG9_6B-DK4kjfs
+הַאוּנִיבֶרְסִיטָה הַעִבְרִית בִּירוּשָׁלַיִם,Hebrew University of Jerusalem,https://ror.org/03qxff017,new.huji.ac.il/en,Israel,Jerusalem,Jerusalem,grid.9619.7,https://ror.org/03qxff017,0.9,up_OtcgKuSFO7XjSUwTTjxMRKRuG1f4C_HDpbqZBI9E
+New York University,,https://ror.org/0190ak572,nyu.edu,United States of America (the),New York,New York,grid.137628.9,https://ror.org/0190ak572,0.9,g1qqeeJKsl3EbyJua7b9_3QYRYnm0YZQlLEE54bXpA0
+"University of California, San Francisco",,https://ror.org/043mz5j54,ucsf.edu,United States of America (the),San Francisco,California,grid.266102.1,https://ror.org/043mz5j54,0.9,degSq_TptmVm-ANbrffSPI7C-jZJPaYJh2iK4cpwT2c
+University of Wisconsin–Madison,,https://ror.org/01y2jtd41,wisc.edu,United States of America (the),Madison,Wisconsin,grid.14003.36,https://ror.org/01y2jtd41,0.9,zYOhNfbhPrczGo1wR2MFYw_ZdkZAB7_NHX95_UqGeos
+University of Illinois at Urbana–Champaign,, https://ror.org/047426m28,illinois.edu,United States of America (the),Urbana,Illinois,grid.35403.31, https://ror.org/047426m28,0.9,XLYqb5VmmBVM_9RuWtNG3IHbTwo_MIrP_WD7vqFhjMs
+Duke University,,https://ror.org/00py81415,duke.edu,United States of America (the),Durham,North Carolina,grid.26009.3d,https://ror.org/00py81415,0.9,Au1tHzHRwjjMn1_71Q7fNy8Vcp54AmsPh6eAFkIwYrE
+Imperial College London,,https://ror.org/041kmwe10,imperial.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),London,"London, City of",grid.7445.2,https://ror.org/041kmwe10,0.9,5NkzXzkO_PnuRFrjaDUsZdHWz0arj7LdO7ajwXe9_Es
+University of Texas Southwestern Medical Center,,https://ror.org/05byvp690,utsouthwestern.edu,United States of America (the),Dallas,Texas,grid.267313.2,https://ror.org/05byvp690,0.9,0a2a_4rzgX5TCeKb1wKNXVIFEYZxaXaId_h-Pi1dklc
+University of Texas at Austin,,https://ror.org/00hj54h04,utexas.edu,United States of America (the),Austin,Texas,grid.89336.37,https://ror.org/00hj54h04,0.9,QNsb9mmRFyFLewOwt28B99BuHdWTbR5CTDb4OENeBXs
+University College London,,https://ror.org/02jx3x895,ucl.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),London,"London, City of",grid.83440.3b,https://ror.org/02jx3x895,0.9,bFaHoysZP9WVwZutJSe-rrC2OmzUgZ-M-ARqc5H6mfw
+大阪大学,Osaka University,https://ror.org/035t8zc32,osaka-u.ac.jp,Japan,Osaka,Osaka,grid.136593.b,https://ror.org/035t8zc32,0.9,86lTlVS1nZwyfXZXQO4DvARBtT3pKl-DVHRos-gmpKU
+Northwestern University,,https://ror.org/000e0be47,northwestern.edu,United States of America (the),Evanston,Illinois,grid.16753.36,https://ror.org/000e0be47,0.9,AKj241RAy0MKGCyvwAHpMsDH9yKml8OjWNP7MwLYuKM
+"University of Michigan, Ann Arbor",,https://ror.org/00jmfr291,umich.edu,United States of America (the),Ann Arbor,Michigan,grid.214458.e,https://ror.org/00jmfr291,0.9,LhDU8J1xsEhKJ58Cq412zs5IvFGSLXHq4Na1kAqnSZI
+University of Toronto,,https://ror.org/03dbr7087,utoronto.ca,Canada,Toronto,Ontario,grid.17063.33,https://ror.org/03dbr7087,0.9,oEHaGIxVuZJZjjtbSbH4VWyeHshVQ7a1f1_h7BiTxaI
+University of North Carolina at Chapel Hill,,https://ror.org/0130frc33,unc.edu,United States of America (the),Chapel Hill,North Carolina,grid.10698.36,https://ror.org/0130frc33,0.9,YYTRRjXLqSorepLEz6ey3_lavL7SG1Jg5wHrgIbxKiQ
+Washington University in St. Louis,,https://ror.org/01yc7t268,wustl.edu,United States of America (the),St Louis,Missouri,grid.4367.6,https://ror.org/01yc7t268,0.9,eLtIQ9qXc4LgrYR9AH6goao9nUBCYl7HnnofCxZdMwU
+University of Utah,,https://ror.org/03r0ha626,utah.edu,United States of America (the),Salt Lake City,Utah,grid.223827.e,https://ror.org/03r0ha626,0.9,BDIMPiVrqXH__3IaNr1LVwnqS5YaWzb-meV2uTZDvnk
+University of Washington - Seattle,,https://ror.org/02jqc0m91,seattleu.edu,United States of America (the),Seattle,Washington,grid.263306.2,https://ror.org/02jqc0m91,0.9,FMjK4kuWsUD9V1EtkPtwNcqkgwP6r1-6dqUW7Ykr5L0
+"University of California, Santa Barbara",,https://ror.org/02t274463,ucsb.edu,United States of America (the),Santa Barbara,California,grid.133342.4,https://ror.org/02t274463,0.9,gQpP19taNTSY6MySD2H41iZ3DwxgpK0FmodSu8u5nNs
+McGill University,,https://ror.org/01pxwe438,mcgill.ca,Canada,Montreal,Quebec,grid.14709.3b,https://ror.org/01pxwe438,0.9,XDWpm3R8Y-BCZaG-3zW3dPysAV4jxY34UeQ34kkGk_A
+"Purdue University, West Lafayette",,https://ror.org/02dqehb95,purdue.edu,United States of America (the),West Lafayette,Indiana,grid.169077.e,https://ror.org/02dqehb95,0.9,B1N-unLXZgHvTtBtAp94yyPN2vBRRgwLncPA7dQ2suk
+Carnegie Mellon University,,https://ror.org/05x2bcf33,cmu.edu,United States of America (the),Pittsburgh,Pennsylvania,grid.147455.6,https://ror.org/05x2bcf33,0.9,sSaC7DmL99nhAAZcuMCoCAYRxtrHL8rJPj7cP3Z7f6M
+University of Southern California,,https://ror.org/03taz7m60,usc.edu,United States of America (the),Los Angeles,California,grid.42505.36,https://ror.org/03taz7m60,0.9,jHrxwaRwX8pjkorZy9A3RH43kK4h-mhYG9ZemTaTMxA
+"University of California, Davis",,https://ror.org/05rrcem69,ucdavis.edu,United States of America (the),Davis,California,grid.27860.3b,https://ror.org/05rrcem69,0.9,ryW3SJtdMK_tWuC4I0JZwmyGOwmBt33NqIYh53PAMs0
+University of Colorado Boulder,,https://ror.org/02ttsq026,colorado.edu,United States of America (the),Boulder,Colorado,grid.266190.a,https://ror.org/02ttsq026,0.9,wZ_w3YHmj9HexB39d79gKJhCnpkvxrrTcyqpgfU4ZCc
+"University of California, Irvine",,https://ror.org/04gyf1771,uci.edu,United States of America (the),Irvine,California,grid.266093.8,https://ror.org/04gyf1771,0.9,vSLCoEKDx7NSrRW5wt7CJ1Idi_kavpMEL7at_HLijgA
+University of Paris-Sud,,https://ror.org/028rypz17,u-psud.fr,France,Orsay,,grid.5842.b,https://ror.org/028rypz17,0.9,
+"University of Minnesota, Twin Cities",,https://ror.org/017zqws13,twin-cities.umn.edu,United States of America (the),Minneapolis,Minnesota,grid.17635.36,https://ror.org/017zqws13,0.9,gcngzkFv15Oi9p534myzSvEc74X-wE368BbJZLgt2Ac
+University of Arizona,,https://ror.org/03m2x1q45,arizona.edu,United States of America (the),Tucson,Arizona,grid.134563.6,https://ror.org/03m2x1q45,0.9,PUCf9EMdGCcFrOIErR-gYFlrlekSLef46BAgLRgfX2k
+הטכניון – מכון טכנולוגי לישראל,Technion – Israel Institute of Technology,https://ror.org/03qryx823,technion.ac.il,Israel,Haifa,,grid.6451.6,https://ror.org/03qryx823,0.9,
+"Ohio State University, Columbus",,https://ror.org/002nf6z37,columbusstate.edu,United States of America (the),Columbus,Ohio,grid.254590.f,https://ror.org/002nf6z37,0.9,VERLVJap87WYt3slAyY-3uhMzTNCUCtQ-GwGV-Uctu8
+University of Rochester,,https://ror.org/022kthw22,rochester.edu,United States of America (the),Rochester,New York,grid.16416.34,https://ror.org/022kthw22,0.9,OQbkPLQ7mVWu-SbR31dOKVFuGB7WW2HG9pREmaZwcVI
+École normale supérieure - Paris,,https://ror.org/00hx6zz33,ens-paris-saclay.fr,France,Gif-sur-Yvette,,grid.6390.c,https://ror.org/00hx6zz33,0.9,
+University of Florida,,https://ror.org/02y3ad647,ufl.edu,United States of America (the),Gainesville,Florida,grid.15276.37,https://ror.org/02y3ad647,0.9,ANGR8mJBua7_TcvaPtIKz9jGlt7O-mFyerg2S_YplQ4
+אוּנִיבֶרְסִיטַת תֵּל אָבִיב,Tel Aviv University,https://ror.org/04mhzgx49,english.tau.ac.il,Israel,Tel Aviv,,grid.12136.37,https://ror.org/04mhzgx49,0.9,
+Rice University,,https://ror.org/008zs3103,rice.edu,United States of America (the),Houston,Texas,grid.21940.3e,https://ror.org/008zs3103,0.9,eiZDf0sstMjNbgmrLTMtf2GfbgUeJTxa5wR4f2_fCJI
+Dartmouth College,,https://ror.org/049s0rh22,dartmouth.edu,United States of America (the),Hanover,Hanover,grid.254880.3,https://ror.org/049s0rh22,0.9,WuOhTNnI4zMJykrznWCqnoA5XMATjOMFXIxJTFOzeF8
+Vanderbilt University,,https://ror.org/02vm5rt34,vanderbilt.edu,United States of America (the),Nashville,Tennessee,grid.152326.1,https://ror.org/02vm5rt34,0.9,TiNv_c3CyAyaeL4VSJR34b_Hjhab7sRO_pXb_YtRM9U
+University of Edinburgh,,https://ror.org/01nrxwf90,ed.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Edinburgh,Mpumalanga,grid.4305.2,https://ror.org/01nrxwf90,0.9,CwFX1LzCtwFKDVMnlhliE4odAXz_lFOe7w7HD8irV7I
+École Polytechnique,,https://ror.org/05hy3tk52,polytechnique.edu,France,Palaiseau,Paris,grid.10877.39,https://ror.org/05hy3tk52,0.9,6CFVuicr1zi0KryqVjepiBlhDicGaKWN5FdJUB6CxEo
+Boston University,,https://ror.org/05qwgg493,bu.edu,United States of America (the),Boston,Massachusetts,grid.189504.1,https://ror.org/05qwgg493,0.9,QyBIwsQ-I4a53uP1alSAy0BW14INqkrfQDkMzZfuJ-k
+Pierre-and-Marie-Curie University,Pierre and Marie Curie University,https://ror.org/02en5vm52,sorbonne-universite.fr,France,Paris,Paris,grid.462844.8,https://ror.org/02en5vm52,0.9,fUJOgVSGKHui8ntOOS0-wgmYBAlQwoWBUbwQl9kb83o
+"Pennsylvania State University, University Park",,https://ror.org/04p491231,psu.edu,United States of America (the),State College,Massachusetts,grid.29857.31,https://ror.org/04p491231,0.9,omwV5S1USfIwvrapflBM5_bc69TLbbtTQISZcbt-fS4
+University of Geneva,,https://ror.org/01swzsf04,unige.ch,Switzerland,Geneva,,grid.8591.5,https://ror.org/01swzsf04,0.9,
+Brown University,,https://ror.org/05gq02987,brown.edu,United States of America (the),Providence,Rhode Island,grid.40263.33,https://ror.org/05gq02987,0.9,f20wzL_fUXPKEcGoTNxAiQ7p7l34BQqCS5nqA-BX2qU
+University of British Columbia,,https://ror.org/03rmrcq20,ubc.ca,Canada,Vancouver,British Columbia,grid.17091.3e,https://ror.org/03rmrcq20,0.9,IurwbEO_NbFEVTB_oGMsQgK-WUm4Igc0iQjGQCbW25Y
+"University of Maryland, College Park",,https://ror.org/047s2c258,umd.edu,United States of America (the),College Park,Maryland,grid.164295.d,https://ror.org/047s2c258,0.9,A7_iEg68uAXMbXE3cpIPMuSJ24X6kEL7V9L0zfj3JLs
+Swiss Federal Institute of Technology in Lausanne,,https://ror.org/02s376052,epfl.ch,Switzerland,Lausanne,Vaud,grid.5333.6,https://ror.org/02s376052,0.9,RBlh0GH-V9NoHqBkheyIytTA780pVnw81eUIHe6kdZA
+Karolinska Institute,,https://ror.org/056d84691,ki.se,Sweden,Stockholm,Stockholms län,grid.4714.6,https://ror.org/056d84691,0.9,uDZO0Z1yK69lRapoYD2W5pM723D-BEwkAT_R5La7SPk
+University of Pittsburgh - Pittsburgh Campus,,https://ror.org/01an3r305,pitt.edu,United States of America (the),Pittsburgh,Pennsylvania,grid.21925.3d,https://ror.org/01an3r305,0.9,opUdbyRbhePCe5USzhkqzTEzFRFAk1tDvYWYJOTJoB0
+Rutgers University-New Brunswick,,https://ror.org/05nkf0n29,unb.ca,Canada,Fredericton,New Brunswick,grid.266820.8,https://ror.org/05nkf0n29,0.9,iRE13fd-NOy9GvLOq7lAyoirH_vF3SXKgLQO1k9kcjA
+"Texas A&M University, College Station",,https://ror.org/01f5ytq51,tamu.edu,United States of America (the),College Station,College Station,grid.264756.4,https://ror.org/01f5ytq51,0.9,XGxnDmMBdMFn5341suPY-5Lwn6SGRrxLaVguJYWY2js
+名古屋大学,Nagoya University,https://ror.org/04chrp450,nagoya-u.ac.jp,Japan,Nagoya,,grid.27476.30,https://ror.org/04chrp450,0.9,
+서울대학교,Seoul National University,https://ror.org/04h9pn542,snu.ac.kr,South Korea,Seoul,Gyeonggi,grid.31501.36,https://ror.org/04h9pn542,0.9,aAipP0Q07rsOYN1azsZMxcp1Bq3XZPmPmtOzaKbGpnI
+University of Manchester,,https://ror.org/027m9bs27,manchester.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Manchester,,grid.5379.8,https://ror.org/027m9bs27,0.9,
+Sapienza University of Rome,,https://ror.org/02be6w209,uniroma1.it,Italy,Rome,Rome,grid.7841.a,https://ror.org/02be6w209,0.9,tw7uw_JyAHX3tHzCqWPAd6cwawUO1NZJYdda6WIjehU
+Case Western Reserve University,,https://ror.org/051fd9666,case.edu,United States of America (the),Cleveland,Ohio,grid.67105.35,https://ror.org/051fd9666,0.9,SQsmUUM10HsnD9n31a6s19JVgOlMIhTZoI0LBhFpOr8
+東北大学,Tohoku University,https://ror.org/01dq60k83,tohoku.ac.jp,Japan,Sendai,Miyagi,grid.69566.3a,https://ror.org/01dq60k83,0.9,-Qoe9cfzqQbfwbm5kZI5KAM-WFOXCIou1WhHqtxcpQE
+Arizona State University,,https://ror.org/03efmqc40,asu.edu,United States of America (the),Tempe,Arizona,grid.215654.1,https://ror.org/03efmqc40,0.9,IKQlpPqz6a7rAqCjBwPq98kOAgJyoZlReaU4gVLtTps
+Emory University,,https://ror.org/03czfpz43,emory.edu,United States of America (the),Atlanta,Georgia,grid.189967.8,https://ror.org/03czfpz43,0.9,SuL3hfh8zHAgMgYuxrkfYW1TuQ2Qy0eOjev1WYd01p0
+Ruprecht Karl University of Heidelberg,,https://ror.org/038t36y30,uni-heidelberg.de,Germany,Heidelberg,Baden-Württemberg,grid.7700.0,https://ror.org/038t36y30,0.9,yIyCIowY5GTgjyG1JjT5_dMp3WZ4FnanSwawdkGjVlg
+Ludwig Maximilian University of Munich,,https://ror.org/05591te55,en.uni-muenchen.de,Germany,Munich,Bayern,grid.5252.0,https://ror.org/05591te55,0.9,NJO4srX2PeNiA2T89FXqeajt0yg9qDLLrRbzln4NgwM
+University of Virginia,,https://ror.org/0153tk833,virginia.edu,United States of America (the),Charlottesville,Virginia,grid.27755.32,https://ror.org/0153tk833,0.9,8sBdxNT0moLpJ9zrY8M9lZFom9aPzHhYOnF8twS5wIs
+Leiden University,,https://ror.org/027bh9e22,leiden.edu,Netherlands (the),Leiden,Zuid-Holland,grid.5132.5,https://ror.org/027bh9e22,0.9,7rKCkFn3Ks4VmfBrV6wukWYedGTuhO7CkiBR3awJ5hw
+Tufts University,,https://ror.org/05wvpxv85,tufts.edu,United States of America (the),Medford,Oregon,grid.429997.8,https://ror.org/05wvpxv85,0.9,lP-tv0LaopFjOF0yn3dFWbx-Y5jj9rmqye9VfmoXkug
+Georgia Institute of Technology,,https://ror.org/01zkghx44,gatech.edu,United States of America (the),Atlanta,Georgia,grid.213917.f,https://ror.org/01zkghx44,0.9,zia7nOuSGNYEKbXkNQ72_RwjjvNfGDlMKivHhJk6c_Q
+University of Zurich,,https://ror.org/02crff812,uzh.ch,Switzerland,Zurich,Zürich (de),grid.7400.3,https://ror.org/02crff812,0.9,LhCkZDpGVdqgv7wf6o-i4WHlok--8rL84nKCJbYEnAI
+University of Helsinki,,https://ror.org/040af2s02,helsinki.fi,Finland,Helsinki,,grid.7737.4,https://ror.org/040af2s02,0.9,
+Technical University of Munich,,https://ror.org/02kkvpp62,tum.de,Germany,Munich,Bayern,grid.6936.a,https://ror.org/02kkvpp62,0.9,r6KHIRZRC2YnziS1ijpWkcbSDRSjnvdC-Zy3HYyCy7Y
+University of Oslo,,https://ror.org/01xtthb56,uio.no,Norway,Oslo,Oslo,grid.5510.1,https://ror.org/01xtthb56,0.9,O8RBGVyoqA8eqXsgWvB-6fZv4TIZ3ROlHJ0ig5iHdww
+University of Queensland,,https://ror.org/00rqy9422,uq.edu.au,Australia,Brisbane,Queensland,grid.1003.2,https://ror.org/00rqy9422,0.9,MO2S9aRvvfgT2w8rrHmVZ-Og3abKdfk07W3yuznZGx8
+University of Copenhagen,,https://ror.org/035b05819,ku.dk,Denmark,Copenhagen,,grid.5254.6,https://ror.org/035b05819,0.9,
+University of Sydney,,https://ror.org/0384j8v12,sydney.edu.au,Australia,Sydney,New South Wales,grid.1013.3,https://ror.org/0384j8v12,0.9,EPNCeP080eXb5gucWr1QqgNXIV4nGgicF2VI0sU7ia0
+Williams College,,https://ror.org/04avkmd49,williams.edu,United States of America (the),Williamstown,New Jersey,grid.268275.c,https://ror.org/04avkmd49,0.9,NyXT_Ql1IRAFhupKmvmqO4ftYN9_-VHsneZUERWwGEg
+University of Texas MD Anderson Cancer Center,,https://ror.org/04twxam07,mdanderson.org,United States of America (the),Houston,Texas,grid.240145.6,https://ror.org/04twxam07,0.9,A2cpgX_mZUflLyQ4bGMrdtOMPaUvKZETA0YA51cVltI
+University of Nottingham,,https://ror.org/01ee9ar58,nottingham.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Nottingham,Nottinghamshire,grid.4563.4,https://ror.org/01ee9ar58,0.9,1TJ_xX6iv6X1EZfC9kDXEz6m2LJ6NGC3QLI5D2-MYeY
+University of Bristol,,https://ror.org/0524sp257,bristol.ac.uk,United Kingdom of Great Britain and Northern Ireland (the),Bristol,Bristol,grid.5337.2,https://ror.org/0524sp257,0.9,ZGeV6FMcq53iFW9IzeJes-TnA8blpkSF8qn7SNTP1ls
+Utrecht University,,https://ror.org/04pp8hn57,uu.nl,Netherlands (the),Utrecht,Utrecht,grid.5477.1,https://ror.org/04pp8hn57,0.9,VV65St0suubBqgS-JtGdGPk4MnDyWC1xHHolwr0noD4
+Mines ParisTech,,https://ror.org/04y8cs423,mines-paristech.eu,France,Paris,Paris,grid.58140.38,https://ror.org/04y8cs423,0.9,tl608pqqFWeLMBPnMOdcAaofarU3dMEXoFEuzDc1hRw

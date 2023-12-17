@@ -22,6 +22,8 @@ import { Button } from '@mui/material';
 const PollForm = (props:FormProps) => {
     const [showOptionalFields, setShowOptionalFields] = React.useState(false);
     const province = ''
+    const [scopeDescription, setScopeDescription] = React.useState("");
+    const [scopeQueryLink, setScopeQueryLink] = React.useState("");
     const [country, setCountry] = React.useState("");
     const [countryObject, setCountryObject] = React.useState(undefined as string[]|undefined);
     const [legalForm, setLegalForm] = React.useState("");
@@ -53,7 +55,7 @@ const PollForm = (props:FormProps) => {
         props.setPublishingMethod(method)
         try {
             let domainScope = domainScopeConcat ? domainScopeConcat.split(',').map(s => s.trim()) : undefined
-            const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options})
+            const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options, scopeDescription, scopeQueryLink})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement(statement)
             parsePoll(parsedStatement.content)
@@ -114,6 +116,24 @@ const PollForm = (props:FormProps) => {
             />
         </LocalizationProvider>
         {showOptionalFields ? (<>
+        <TextField
+            id="who can vote"
+            variant="outlined"
+            placeholder='All members of association XYZ'
+            label="Description whose votes will be considered (optional)"
+            onChange={e => { setScopeDescription(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px", marginTop: "24px"}}
+        />
+        <TextField
+            id="scope query link"
+            variant="outlined"
+            placeholder='https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=localhost&author=_Rix%20Data%20NL%20B.V.'
+            label="Link to vote scope query (optional)"
+            onChange={e => { setScopeQueryLink(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px", marginTop: "24px"}}
+        />
         <TextField
             id="poll judges"
             variant="outlined"

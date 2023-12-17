@@ -3,8 +3,7 @@
 
 import {legalForms} from './constants/legalForms'
 
-// eslint-disable-next-line
-const version = 2
+const version = 3
 
 export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
 export const statementTypes = {
@@ -59,11 +58,12 @@ export const buildStatement = ({domain, author, time, tags, content, representat
 			"Time: " + time.toUTCString() + "\n" +
             (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
 			(supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
+			"Format version: " + version + "\n" +
             "Statement content: " + content + (content.match(/\n$/) ? '' : "\n");
 	if (statement.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	return statement
 }
-export const parseStatement = (s: string):statement & { type: string } => {
+export const parseStatement = (s: string):statement & { type: string, formatVersion: string} => {
 	if (s.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	if(s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
 	const statementRegex= new RegExp(''
@@ -73,6 +73,7 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	+ /Time: (?<time>[^\n]+?)\n/.source
 	+ /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
 	+ /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
+	+ /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
 	+ /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?\n$)|(?<content>[\s\S]+?\n$))/.source
 	);
 	let m: any = s.match(statementRegex)
@@ -80,8 +81,8 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	// if(m?.groups) {m = m.groups}
 	else{
 		m = {domain: m[1], author: m[2], representative: m[3], time: m[4], tags: m[5],
-			supersededStatement: m[6], content: m[7] || m[9],
-			type: m[8] ? m[8].toLowerCase().replace(' ','_') : undefined}
+			supersededStatement: m[6], formatVersion: m[7], content: m[8] || m[10],
+			type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined}
 	}
 	if(!(m['time'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
 	if(!m['domain']) throw new Error("Invalid statement format: domain is required")
@@ -97,6 +98,7 @@ export const parseStatement = (s: string):statement & { type: string } => {
 		time,
 		tags: (tags && tags.length > 0) ? tags : undefined,
 		supersededStatement: m['supersededStatement'],
+		formatVersion: m['formatVersion'],
 		content: m['content'] || m['typedContent'],
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
@@ -171,14 +173,18 @@ export type poll = {
 	judges?: string,
 	deadline: Date,
 	poll: string,
+	scopeDescription?: string,
+	scopeQueryLink?: string,
 	pollType?: string,
 	options: string[]
 }
-export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
+export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, scopeDescription, scopeQueryLink, pollType, options}: poll) => {
 	if(!poll) throw(new Error("Poll must contain a poll question."))
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
 	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
+	(scopeDescription ? "\t" + "Who can vote: " + scopeDescription + "\n" : "") +
+	(scopeQueryLink ? "\t" + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "") +
 	(country ? "\t" + "Country scope: " + country + "\n" : "") +
 	(city ? "\t" + "City scope: " + city + "\n" : "") +
 	(legalEntity ? "\t" + "Legal form scope: " + legalEntity + "\n" : "") +
@@ -198,6 +204,8 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	const pollRegex= new RegExp(''
 	+ /^\n\tType: Poll\n/.source
 	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
+	+ /(?:\tWho can vote: (?<scopeDescription>[^\n]+?)\n)?/.source
+	+ /(?:\tLink to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
 	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
 	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
 	+ /(?:\tLegal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
@@ -215,9 +223,9 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	if(!m) throw new Error("Invalid poll format: " + s)
 	// if(m?.groups) {m = m.groups}
 	else{
-		m = {pollType: m[1], country: m[2], city: m[3], legalEntity: m[4], domainScope: m[5],
-			judges: m[6], deadline: m[7], poll: m[8], option1: m[9], option2: m[10], option3: m[11],
-			option4: m[12], option5: m[13]}
+		m = {pollType: m[1], scopeDescription: m[2], scopeQueryLink: m[3], country: m[4], city: m[5],
+			legalEntity: m[6], domainScope: m[7], judges: m[8], deadline: m[9], poll: m[10], 
+			option1: m[11], option2: m[12], option3: m[13], option4: m[14], option5: m[15]}
 	}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = m.domainScope?.split(', ')
@@ -226,6 +234,8 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 	return {
 		pollType: m['pollType'],
 		country: m['country'],
+		scopeDescription: m['scopeDescription'],
+		scopeQueryLink: m['scopeQueryLink'],
 		city: m['city'],
 		legalEntity: m['legalEntity'],
 		domainScope: (domainScope && domainScope.length > 0) ? domainScope : undefined,

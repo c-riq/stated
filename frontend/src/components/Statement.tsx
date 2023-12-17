@@ -16,10 +16,11 @@ import ReportIcon from '@mui/icons-material/Report';
 import Tooltip from '@mui/material/Tooltip';
 import DangerousIcon from '@mui/icons-material/Dangerous';
 import EditIcon from '@mui/icons-material/Edit';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes, statementWithDetails } from '../api'
-import { statementTypes, parsePDFSigning } from '../statementFormats';
+import { statementTypes, parsePDFSigning, observation, bounty, rating, PDFSigning, disputeAuthenticity, disputeContent, boycott, organisationVerification, personVerification, vote, poll, parseStatement, parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott, parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent, responseContent } from '../statementFormats';
 
 import {VerificationGraph} from './VerificationGraph'
 
@@ -43,6 +44,9 @@ const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([]);
     const [statement, setStatement] = React.useState(undefined as statementDB | undefined );
+    const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | observation | 
+        bounty | rating | PDFSigning | disputeAuthenticity | disputeContent | boycott | organisationVerification 
+        | personVerification | vote | poll );
     const [statementCollision, setStatementCollision] = React.useState(undefined as statementDB[] | undefined );
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
@@ -84,13 +88,43 @@ const Statement = (props:props) => {
                     setHash(s![0].hash_b64)
                     setDataFetched(false)
                 }
+                try {
+                    const {type, content} = parseStatement(s![0].statement)
+                    if (type === statementTypes.signPdf) {
+                        setParsedStatement(parsePDFSigning(content))
+                    } if (type === statementTypes.observation) {
+                        setParsedStatement(parseObservation(content) as observation)
+                    } if (type === statementTypes.bounty) {
+                        setParsedStatement(parseBounty(content) as bounty)
+                    } if (type === statementTypes.rating) {
+                        setParsedStatement(parseRating(content) as rating)
+                    } if (type === statementTypes.disputeAuthenticity) {
+                        setParsedStatement(parseDisputeAuthenticity(content) as disputeAuthenticity)
+                    } if (type === statementTypes.disputeContent) {
+                        setParsedStatement(parseDisputeContent(content) as disputeContent)
+                    } if (type === statementTypes.boycott) {
+                        setParsedStatement(parseBoycott(content) as boycott)
+                    } if (type === statementTypes.organisationVerification) {
+                        setParsedStatement(parseOrganisationVerification(content) as organisationVerification)
+                    } if (type === statementTypes.personVerification) {
+                        setParsedStatement(parsePersonVerification(content) as personVerification)
+                    } if (type === statementTypes.vote) {
+                        setParsedStatement(parseVote(content) as vote)
+                    } if (type === statementTypes.poll) {
+                        setParsedStatement(parsePoll(content) as poll)
+                        getVotes(hash, v => setVotes(v))
+                    } if (type === statementTypes.response) {
+                        setParsedStatement(parseResponseContent(content) as responseContent)
+                    }
+                } catch (e) {             
+                    console.log(e)              
+                }
                 return
             }
             setStatement(undefined)
             setStatementCollision(undefined)
         })
         getJoiningStatements(hash, s => setJoiningStatements(s))
-        getVotes(hash, v => setVotes(v))
         getOrganisationVerifications(hash, v => setOrganisationVerifications(v))
         getPersonVerifications(hash, v => setPersonVerifications(v))
         setDataFetched(true)
@@ -179,7 +213,7 @@ const Statement = (props:props) => {
             {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
                 statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
                 statementTypes.boycott, statementTypes.observation, statementTypes.organisationVerification,
-                statementTypes.personVerification, statementTypes.vote].includes(statement.type) && (
+                statementTypes.personVerification, statementTypes.vote, statementTypes.poll].includes(statement.type) && (
                 <>
                     <RouterLink to="/create-statement">
                         <Tooltip title="Join statement">
@@ -219,6 +253,18 @@ const Statement = (props:props) => {
                     <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
                 </>
             ))}
+            {statement?.type === statementTypes.observation && (parsedStatement as observation)?.subjectReference && 
+                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as observation).subjectReference}`} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a></div>)
+            }
+            {statement?.type === statementTypes.vote && (parsedStatement as vote)?.pollHash && 
+                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as vote).pollHash}`} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
+            }
+            {statement?.type === statementTypes.poll && (parsedStatement as poll)?.scopeQueryLink && 
+                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as poll).scopeQueryLink} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
+            }
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
             <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{
@@ -295,7 +341,7 @@ const Statement = (props:props) => {
             )}
 
             
-            {votes.length > 0 && (<div><h3>Votes</h3>
+            {votes.length > 0 && (<div><h3>All votes (including unqualified votes)</h3>
                 {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
