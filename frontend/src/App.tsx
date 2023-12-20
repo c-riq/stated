@@ -299,6 +299,8 @@ function App() {
               } else {
                 setCanLoadMore(true)
               }
+              setSkip(currentMaxSkipId)
+              setMaxSkipId(globalMaxSkipId)
               setLoadingMore(false)
           } 
           if (s?.time) {
