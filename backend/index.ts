@@ -1,5 +1,4 @@
 import express from 'express'
-import compression from 'compression'
 import bodyParser from 'body-parser'
 import http from 'http'
 import https from 'https'
@@ -44,7 +43,6 @@ if(prefillSSLOVInfo) fetchOVInfoForMostPopularDomains()
 if(enableVerificationLog) verificationLog.setupSchedule(logIntervalSeconds)
 
 const app = express();
-app.use(compression())
 
 app.use("/", express.static(__dirname + '/public/'));
 app.disable('x-powered-by')
