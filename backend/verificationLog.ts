@@ -65,8 +65,7 @@ const logVerifications = async (retryIntervalSeconds) => {
         ))
         res.map((r, i) => {
             if(r.status === 'fulfilled'){
-                // @ts-ignore
-                const {api, dns, txt} = r.value
+                const {api, dns, txt} = r.value as {api: boolean | undefined, dns: boolean| undefined, txt: boolean| undefined}
                 addLog({hash_b64: outdatedVerifications[i].hash_b64, api, dns, txt})
             }
         })

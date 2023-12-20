@@ -60,13 +60,14 @@ export const getStatementsToVerifyFactory = pool => ({n, ownDomain}) => (new Pro
     }
   }));
   
-  export const addLogFactory = pool => ({ hash_b64, api, dns, txt }) => (new Promise((resolve: DBCallback, reject) => {
+  export const addLogFactory = pool => ({ hash_b64, api, dns, txt }:{hash_b64: string, api?:boolean, dns?: boolean, txt?:boolean}) => 
+  (new Promise((resolve: DBCallback, reject) => {
     try {
       pool.query(`
               INSERT INTO verification_log (statement_hash, t, api, dns, txt) VALUES
                   ($1, CURRENT_TIMESTAMP, $2, $3, $4)
               RETURNING *
-              `,[hash_b64, api, dns, txt], (error, results) => {
+              `,[hash_b64, !!api, !!dns, !!txt], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
