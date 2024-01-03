@@ -53,7 +53,7 @@ Statement content:
 `
 ];
 for (const statement of statements) {
-  parseStatement(statement);
+  parseStatement({statement});
 
     const data = {
       statement,

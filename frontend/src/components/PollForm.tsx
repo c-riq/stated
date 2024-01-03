@@ -18,6 +18,7 @@ import { sha256 } from '../utils/hash'
 import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 import { generateEmail } from './generateEmail';
 import { Button } from '@mui/material';
+import { FormProps, prepareStatement } from '../types';
 
 const PollForm = (props:FormProps) => {
     const [showOptionalFields, setShowOptionalFields] = React.useState(false);
@@ -57,7 +58,7 @@ const PollForm = (props:FormProps) => {
             let domainScope = domainScopeConcat ? domainScopeConcat.split(',').map(s => s.trim()) : undefined
             const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options, scopeDescription, scopeQueryLink})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parsePoll(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash)         

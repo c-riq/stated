@@ -3,7 +3,7 @@
 
 import {legalForms} from './constants/legalForms'
 
-const version = 3
+const version = 4
 
 export type statementTypeValue = 'statement' | 'quotation' | 'organisation_verification' | 'person_verification' | 'poll' | 'vote' | 'response' | 'dispute_statement_content' | 'dispute_statement_authenticity' | 'boycott' | 'observation' | 'rating' | 'sign_pdf' | 'bounty'
 export const statementTypes = {
@@ -47,6 +47,7 @@ export type statement = {
 	content: string,
 	representative?: string,
 	supersededStatement?: string,
+	formatVersion?: string,
 } 
 export const buildStatement = ({domain, author, time, tags, content, representative, supersededStatement}: statement) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
@@ -63,7 +64,8 @@ export const buildStatement = ({domain, author, time, tags, content, representat
 	if (statement.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	return statement
 }
-export const parseStatement = (s: string):statement & { type: string, formatVersion: string} => {
+export const parseStatement = ({statement: s, allowNoVersion=false}:{statement:string, allowNoVersion?:boolean})
+		:statement & { type: string, formatVersion: string} => {
 	if (s.length > 3000) throw(new Error("Statement must not be longer than 3,000 characters."))
 	if(s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
 	const statementRegex= new RegExp(''
@@ -88,6 +90,7 @@ export const parseStatement = (s: string):statement & { type: string, formatVers
 	if(!m['domain']) throw new Error("Invalid statement format: domain is required")
 	if(!m['author']) throw new Error("Invalid statement format: author is required")
 	if(!m['content'] && !m['typedContent']) throw new Error("Invalid statement format: statement content is required")
+	if(!allowNoVersion && !m['formatVersion']) throw new Error("Invalid statement format: format version is required")
 
 	const tags = m['tags']?.split(', ')
 	const time = new Date(m['time'])
@@ -98,7 +101,7 @@ export const parseStatement = (s: string):statement & { type: string, formatVers
 		time,
 		tags: (tags && tags.length > 0) ? tags : undefined,
 		supersededStatement: m['supersededStatement'],
-		formatVersion: m['formatVersion'],
+		formatVersion: m['formatVersion'] || '3',
 		content: m['content'] || m['typedContent'],
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
@@ -175,21 +178,26 @@ export type poll = {
 	poll: string,
 	scopeDescription?: string,
 	scopeQueryLink?: string,
-	pollType?: string,
-	options: string[]
+	options: string[],
+	propertyScope?: string,
+	propertyScopeObserver?: string,
 }
-export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, scopeDescription, scopeQueryLink, pollType, options}: poll) => {
+export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll,
+		scopeDescription, scopeQueryLink, options, propertyScope, propertyScopeObserver}: poll) => {
 	if(!poll) throw(new Error("Poll must contain a poll question."))
+	const scopeContent =
+		(scopeDescription ? "\t\t" + "Description: " + scopeDescription + "\n" : "") +
+		(country ? "\t\t" + "Country scope: " + country + "\n" : "") +
+		(city ? "\t\t" + "City scope: " + city + "\n" : "") +
+		(legalEntity ? "\t\t" + "Legal form scope: " + legalEntity + "\n" : "") +
+		(domainScope && domainScope?.length > 0 ? "\t\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
+		(propertyScope ? "\t\t" + "All entities with the following property: " + propertyScope + "\n" : "") +
+		(propertyScopeObserver ? "\t\t" + "As observed by: " + propertyScopeObserver + "\n" : "") +
+		(scopeQueryLink ? "\t\t" + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "")
+	if (scopeContent.length > 0 && !scopeDescription) throw(new Error("Poll must contain a description of who can vote."))
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
-	(pollType ? "\t" + "Poll type: " + pollType + "\n" : "") +
-	(scopeDescription ? "\t" + "Who can vote: " + scopeDescription + "\n" : "") +
-	(scopeQueryLink ? "\t" + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "") +
-	(country ? "\t" + "Country scope: " + country + "\n" : "") +
-	(city ? "\t" + "City scope: " + city + "\n" : "") +
-	(legalEntity ? "\t" + "Legal form scope: " + legalEntity + "\n" : "") +
-	(domainScope && domainScope?.length > 0 ? "\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
-	(judges ? "\t" + "The decision is finalized when the following nodes agree: " + judges + "\n" : "") +
+	(judges ? "\t" + "The poll outcome is finalized when the following nodes agree: " + judges + "\n" : "") +
 	(deadline ?"\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
 	"\t" + "Poll: " + poll + "\n" +
 	(options.length > 0 && options[0] ? "\t" + "Option 1: " + options[0] + "\n" : "") +
@@ -197,10 +205,26 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	(options.length > 2 && options[2] ? "\t" + "Option 3: " + options[2] + "\n" : "") +
 	(options.length > 3 && options[3] ? "\t" + "Option 4: " + options[3] + "\n" : "") +
 	(options.length > 4 && options[4] ? "\t" + "Option 5: " + options[4] + "\n" : "") +
+	(scopeContent ? "\t" + "Who can vote: \n" + scopeContent : "") +
 	""
 	return content
 }
-export const parsePoll = (s: string):poll &{pollType:string} => {
+export type pollV3 = {
+	country: string|undefined,
+	city: string|undefined,
+	legalEntity: string|undefined,
+	domainScope: string[]|undefined,
+	judges?: string,
+	deadline: Date,
+	poll: string,
+	scopeDescription?: string,
+	scopeQueryLink?: string,
+	scopeProperty?: string,
+	propertyScopeObserver?: string,
+	pollType?: string,
+	options: string[]
+}
+export const parsePollV3 = (s: string, version?:string):poll &{pollType:string} => {
 	const pollRegex= new RegExp(''
 	+ /^\n\tType: Poll\n/.source
 	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
@@ -243,6 +267,71 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 		deadline: new Date(deadlineStr),
 		poll: m['poll'],
 		options
+	}
+}
+export const parsePoll = (s: string, version?:string):poll &{pollType:string} => {
+	if (version && version === '3') return parsePollV3(s)
+	if (version && version !== '4') throw new Error("Invalid version " + version)
+	const pollRegex= new RegExp(''
+	+ /^\n\tType: Poll\n/.source
+	+ /(?:\tThe poll outcome is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
+	+ /(?:\tVoting deadline: (?<deadline>[^\n]+?)\n)?/.source
+	+ /\tPoll: (?<poll>[^\n]+?)\n/.source
+	+ /(?:\tOption 1: (?<option1>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 2: (?<option2>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 3: (?<option3>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
+	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
+	+ /(?:\tWho can vote: (?<whoCanVote>\n[\s\S]+?\n))?/.source
+	+ /$/.source)
+	let m:any = s.match(pollRegex)
+	if(!m) throw new Error("Invalid poll format: " + s)
+
+	m = {judges: m[1], deadline: m[2], poll: m[3], 
+		option1: m[4], option2: m[5], option3: m[6], option4: m[7], option5: m[8],
+		whoCanVote: m[9]
+	}
+	const whoCanVoteParsed:Partial<poll> = {}
+	if (m.whoCanVote) {
+		const whoCanVoteRegex= new RegExp(''
+		+ /^\n\t\tDescription: (?<scopeDescription>[^\n]+?)\n/.source
+		+ /(?:\t\tCountry scope: (?<countryScope>[^\n]+?)\n)?/.source
+		+ /(?:\t\tCity scope: (?<cityScope>[^\n]+?)\n)?/.source
+		+ /(?:\t\tLegal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
+		+ /(?:\t\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
+		+ /(?:\t\tAll entities with the following property: (?<propertyScope>[^\n]+?)\n)?/.source
+		+ /(?:\t\tAs observed by: (?<propertyScopeObserver>[^\n]+?)\n)?/.source
+		+ /(?:\t\tLink to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
+		+ /$/.source)
+		let m2:any = m.whoCanVote.match(whoCanVoteRegex)
+		if(!m2) throw new Error("Invalid who can vote section: " + m.whoCanVote)
+		whoCanVoteParsed['scopeDescription'] = m2[1]
+		whoCanVoteParsed['country'] = m2[2]
+		whoCanVoteParsed['city'] = m2[3]
+		whoCanVoteParsed['legalEntity'] = m2[4]
+		whoCanVoteParsed['domainScope'] = m2[5]
+		whoCanVoteParsed['propertyScope'] = m2[6]
+		whoCanVoteParsed['propertyScopeObserver'] = m2[7]
+		whoCanVoteParsed['scopeQueryLink'] = m2[8]
+	}
+	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
+	const domainScope = (whoCanVoteParsed.domainScope as string|undefined)?.split(', ')
+	const deadlineStr = m.deadline
+	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
+	return {
+		pollType: m['pollType'],
+		judges: m['judges'],
+		deadline: new Date(deadlineStr),
+		poll: m['poll'],
+		options,
+		country: whoCanVoteParsed['country'],
+		scopeDescription: whoCanVoteParsed['scopeDescription'],
+		propertyScope: whoCanVoteParsed['propertyScope'],
+		propertyScopeObserver: whoCanVoteParsed['propertyScopeObserver'],
+		scopeQueryLink: whoCanVoteParsed['scopeQueryLink'],
+		city: whoCanVoteParsed['city'],
+		legalEntity: whoCanVoteParsed['legalEntity'],
+		domainScope: (domainScope && domainScope.length > 0) ? domainScope : undefined,
 	}
 }
 export type organisationVerification = {

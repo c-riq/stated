@@ -74,7 +74,7 @@ const Statements = (props:props) => {
                     {statements && statements.length > 0 && statements.map((s,i) => {
                         let author: string|undefined = undefined
                         try {
-                            author = parseStatement(s.statement).author
+                            author = parseStatement({statement: s.statement, allowNoVersion:true}).author
                         } catch(error) {
                             // console.log(error)
                         }

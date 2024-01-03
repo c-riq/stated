@@ -15,9 +15,10 @@ test('parse statement', () => {
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
+Format version: 4
 Statement content: hi
 `
-	const parsedStatement = parseStatement(statement)
+	const parsedStatement = parseStatement({statement})
 	expect(parsedStatement.content).toBe(`hi
 `);
 });
@@ -28,7 +29,7 @@ test('statement build & parse function compatibility: input=parse(build(input))'
 	const contentWithTrailingNewline = content + (content.match(/\n$/) ? '' : '\n')
 	const time = new Date('Sun, 04 Sep 2022 14:48:50 GMT')
 	const statementContent = buildStatement({domain, author, time, content: contentWithTrailingNewline, representative, supersededStatement, tags})
-	const parsedStatement = parseStatement(statementContent)
+	const parsedStatement = parseStatement({statement: statementContent})
 	expect(parsedStatement.domain).toBe(domain)
 	expect(parsedStatement.author).toBe(author)
 	expect(parsedStatement.time.toUTCString()).toBe(time.toUTCString())
@@ -43,6 +44,7 @@ test('parse quotation', () => {
 	let quotation = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Quotation
 	Original author: XYZ Company Inc.
@@ -58,7 +60,7 @@ Statement content:
 		Organisation domain: example.com
 		Our rating: 2/5 Stars
 `
-	const parsedStatement = parseStatement(quotation)
+	const parsedStatement = parseStatement({statement: quotation})
 	const parsedQuotation = parseQuotation(parsedStatement.content)
 	const type = parsedQuotation.type
 	expect(type).toBe('rating');
@@ -88,6 +90,7 @@ test('parse organisation verification', () => {
 	let organisationVerification = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Organisation verification
 	Description: We verified the following information about an organisation.
@@ -98,7 +101,7 @@ Statement content:
 	Province or state: Arkansas
 	City: Bentonville
 `
-	const parsedStatement = parseStatement(organisationVerification)
+	const parsedStatement = parseStatement({statement: organisationVerification})
 	const parsedOVerification = parseOrganisationVerification(parsedStatement.content)
 	const name = parsedOVerification.name
 	expect(name).toBe('Walmart Inc.');
@@ -137,6 +140,7 @@ test('parse person verification', () => {
 	let personVerification = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Person verification
 	Description: We verified the following information about a person.
@@ -146,7 +150,7 @@ Statement content:
 	Country of birth: United States of America
 	Owner of the domain: barackobama.com
 `
-	const parsedStatement = parseStatement(personVerification)
+	const parsedStatement = parseStatement({statement: personVerification})
 	const parsedPVerification = parsePersonVerification(parsedStatement.content)
 	const name = parsedPVerification.name
 	expect(name).toBe('Barack Hossein Obama II');
@@ -184,13 +188,14 @@ test('parse rating', () => {
 	let rating = `Publishing domain: localhost
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
+Format version: 4
 Statement content: 
 	Type: Rating
 	Organisation name: AMBOSS GmbH
 	Organisation domain: amboss.com
 	Our rating: 5/5 Stars
 `
-	const parsedStatement = parseStatement(rating)
+	const parsedStatement = parseStatement({statement: rating})
 	const parsedRating = parseRating(parsedStatement.content)
 	const ratingNumber = parsedRating.rating
 	expect(ratingNumber).toBe('5');
@@ -212,12 +217,13 @@ test('parse dispute authenticity', () => {
 	let dispute = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Dispute statement authenticity
 	Description: We think that the referenced statement is not authentic.
 	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 `
-	const parsedStatement = parseStatement(dispute)
+	const parsedStatement = parseStatement({statement: dispute})
 	const parsedDispute = parseDisputeAuthenticity(parsedStatement.content)
 	const hash = parsedDispute.hash
 	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
@@ -234,6 +240,7 @@ test('parse dispute content', () => {
 	let dispute = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Dispute statement content
 	Description: We think that the content of the referenced statement is false.
@@ -241,7 +248,7 @@ Statement content:
 	Confidence: 0.8
 	Reliability policy: https://example.com/sdf
 `
-	const parsedStatement = parseStatement(dispute)
+	const parsedStatement = parseStatement({statement: dispute})
 	const parsedDispute = parseDisputeContent(parsedStatement.content)
 	const {hash, confidence, reliabilityPolicy} = parsedDispute
 	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
@@ -260,12 +267,13 @@ test('parse response content', () => {
 	let responseInput = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Response
 	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 	Response: No.
 `
-	const parsedStatement = parseStatement(responseInput)
+	const parsedStatement = parseStatement({statement: responseInput})
 	const parsedResponse = parseResponseContent(parsedStatement.content)
 	const {hash, response} = parsedResponse
 	expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
@@ -280,33 +288,66 @@ test('response content build & parse function compatibility: input=parse(build(i
 	expect(parsedResponse.response).toBe(response)
 });
 
-test('parse poll', () => {
+test('parse poll v3', () => {
+let poll = `Publishing domain: rixdata.net
+Author: Rix Data NL B.V.
+Time: Sun, 17 Dec 2023 20:20:52 GMT
+Tags: AI safety
+Statement content: 
+	Type: Poll
+	Who can vote: All universities which have a ROR ID assigned
+	Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
+	The decision is finalized when the following nodes agree: rixdata.net
+	Voting deadline: Wed, 17 Jul 2024 10:55:54 GMT
+	Poll: Is there a >1% chance of AGI (Artificial General Intelligence) causing human extinction in the next 50 years?
+	Option 1: Yes
+	Option 2: No
+`
+	const parsedStatement = parseStatement({statement: poll, allowNoVersion: true})
+	const parsedPoll = parsePoll(parsedStatement.content, parsedStatement.formatVersion)
+	const pollTitle = parsedPoll.poll
+	expect(pollTitle).toBe('Is there a >1% chance of AGI (Artificial General Intelligence) causing human extinction in the next 50 years?');
+});
+
+test('parse poll v4', () => {
 let poll = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Thu, 17 Nov 2022 13:38:20 GMT
+Format version: 4
 Statement content: 
 	Type: Poll
-	Poll type: majority vote wins
-	Country scope: United Kingdom of Great Britain and Northern Ireland (the)
-	Legal form scope: limited liability corporation
-	The decision is finalized when the following nodes agree: rixdata.net
+	The poll outcome is finalized when the following nodes agree: rixdata.net
 	Voting deadline: Thu, 01 Dec 2022 13:38:26 GMT
 	Poll: Should the UK join the EU
 	Option 1: Yes
 	Option 2: No
+	Who can vote: 
+		Description: All universities with a ROR ID
+		Legal form scope: limited liability corporation
+		All entities with the following property: ROR ID
+		As observed by: Rix Data NL B.V.@rixdata.net
+		Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
 `
-	const parsedStatement = parseStatement(poll)
+	const parsedStatement = parseStatement({statement: poll})
 	const parsedPoll = parsePoll(parsedStatement.content)
 	const pollTitle = parsedPoll.poll
 	expect(pollTitle).toBe('Should the UK join the EU');
+	expect(parsedPoll.options[0]).toBe('Yes');
+	expect(parsedPoll.options[1]).toBe('No');
+	expect(parsedPoll.deadline.toUTCString()).toBe('Thu, 01 Dec 2022 13:38:26 GMT');
+	expect(parsedPoll.scopeDescription).toBe('All universities with a ROR ID');
+	expect(parsedPoll.legalEntity).toBe('limited liability corporation');
+	expect(parsedPoll.propertyScope).toBe('ROR ID');
+	expect(parsedPoll.propertyScopeObserver).toBe('Rix Data NL B.V.@rixdata.net');
+	expect(parsedPoll.scopeQueryLink).toBe('https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.');
 });
 
 test('poll build & parse function compatibility: input=parse(build(input))', () => {
-	const [country, city, legalEntity, judges, poll] = Array.from({ length: 8 },randomUnicodeString)
+	const [country, city, legalEntity, judges, poll, scopeDescription] = Array.from({ length: 6 },randomUnicodeString)
 	const options = Array.from({ length: 2 },randomUnicodeString)
 	const domainScope = ['rixdata.net']
 	const deadline = new Date('Thu, 01 Dec 2022 13:38:26 GMT')
-	const pollContent = buildPollContent({country, city, legalEntity, domainScope, judges, deadline, poll, pollType: undefined, options})
+	const pollContent = buildPollContent({country, city, legalEntity, domainScope, judges, deadline, poll, options, scopeDescription })
 	const parsedPoll = parsePoll(pollContent)
 	expect(parsedPoll.poll).toBe(poll)
 	expect(parsedPoll.country).toBe(country)
@@ -321,13 +362,14 @@ test('parse vote', () => {
 	let vote = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Vote
 	Poll id: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 	Poll: ABC
 	Option: XYZ
 `
-	const parsedStatement = parseStatement(vote)
+	const parsedStatement = parseStatement({statement: vote})
 	const parsedVote = parseVote(parsedStatement.content)
 	const voteSelectedOption = parsedVote.vote
 	expect(voteSelectedOption).toBe('XYZ');
@@ -346,12 +388,13 @@ test('parse pdf signing', () => {
 	let signPdf = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Sign PDF
 	Description: We hereby digitally sign the referenced PDF file.
 	PDF file hash: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
 `
-	const parsedStatement = parseStatement(signPdf)
+	const parsedStatement = parseStatement({statement: signPdf})
 	const parsedSignPdf = parsePDFSigning(parsedStatement.content)
 	expect(parsedSignPdf.hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8');
 });
@@ -368,6 +411,7 @@ test('parse bounty', () => {
 	let bounty = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Bounty
 	In order to: Counteract corruption
@@ -376,7 +420,7 @@ Statement content:
 	In case of dispute, bounty claims are judged by: Global Witness Foundation
 	The judge will be paid per investigated case with a maxium of: 10% of the prospective bounty
 `
-	const parsedStatement = parseStatement(bounty)
+	const parsedStatement = parseStatement({statement: bounty})
 	const parsedBounty = parseBounty(parsedStatement.content)
 	const bountyDescription = parsedBounty.bounty
 	expect(bountyDescription).toBe('Finds an incident of corruption at suppliers and corporate customers');
@@ -398,6 +442,7 @@ test('parse observation', () => {
 Author: Rix Data NL B.V.
 Time: Wed, 16 Aug 2023 18:32:28 GMT
 Tags: Russian invasion of Ukraine
+Format version: 4
 Statement content: 
 	Type: Observation
 	Approach: A team of experts at the Yale Chief Executive Leadership Institute researched the response of international businesses to the Russian Invasion of Ukraine
@@ -409,7 +454,7 @@ Statement content:
 	Observed property: Did stop business in Russia as a response to the Russian invasion of Ukraine
 	Observed value: No
 `
-	const parsedStatement = parseStatement(observation)
+	const parsedStatement = parseStatement({statement: observation})
 	const parsedObservation = parseObservation(parsedStatement.content)
 	const {confidence, reliabilityPolicy, property, value, subject} = parsedObservation
 	expect(confidence).toBe(0.7);
@@ -437,11 +482,12 @@ test('parse boycott', () => {
 	let boycott = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
+Format version: 4
 Statement content: 
 	Type: Boycott
 	Subject: example inc
 `
-	const parsedStatement = parseStatement(boycott)
+	const parsedStatement = parseStatement({statement: boycott})
 	const parsedBoycott = parseBoycott(parsedStatement.content)
 	const {subject} = parsedBoycott
 	expect(subject).toBe('example inc');

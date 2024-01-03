@@ -9,6 +9,7 @@ import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { getStatement, statementDB, statementWithDetails } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { FormProps, prepareStatement } from '../types';
 
 
 
@@ -37,7 +38,7 @@ const DisputeStatementContentForm = (props:FormProps & {statementToDisputeConten
             const content = buildDisputeContentContent({hash: disputedStatementHash, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseDisputeContent(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 

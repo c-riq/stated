@@ -353,7 +353,7 @@ const createExampleVote = (company) => {
   //   poll: "Should an intergovernmental organizations be formed, akin to the International Atomic Energy Agency (IAEA), to promote peaceful uses of AI while mitigating risk and ensuring guardrails are enforced.",
   //   vote: Math.random() > 0.05 ? "Yes" : "No",
   // });
-  const pollContent = parseStatement(pollStatement).content;
+  const pollContent = parseStatement({statement: pollStatement}).content;
   console.log(pollContent);
   const voteContent = buildVoteContent({
     pollHash: sha256(pollStatement),

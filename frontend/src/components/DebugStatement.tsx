@@ -40,7 +40,7 @@ const DebugStatement = (props: Props) => {
                 const parsed = statement.match(regexObj)
                 setResult(JSON.stringify(parsed, null, 2));
             } else {
-                const parsed = parseStatement(statement);
+                const parsed = parseStatement({statement});
                 setResult(JSON.stringify(parsed, null, 2));
             }
         } catch (e: any) {

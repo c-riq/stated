@@ -12,6 +12,7 @@ import { parseStatement, buildStatement,
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 import { generateEmail } from './generateEmail';
+import { FormProps, prepareStatement } from '../types';
 
 const OrganisationVerificationForm = (props:FormProps) => {
     const [country, setCountry] = React.useState("");
@@ -64,7 +65,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
 
             console.log(statement)
 
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseOrganisationVerification(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash);

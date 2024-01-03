@@ -89,7 +89,7 @@ const Statement = (props:props) => {
                     setDataFetched(false)
                 }
                 try {
-                    const {type, content} = parseStatement(s![0].statement)
+                    const {type, content} = parseStatement({statement: s![0].statement, allowNoVersion: true})
                     if (type === statementTypes.signPdf) {
                         setParsedStatement(parsePDFSigning(content))
                     } if (type === statementTypes.observation) {

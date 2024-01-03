@@ -7,6 +7,7 @@ import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
+import { FormProps, prepareStatement } from '../types';
 
 
 const StatementForm = (props:FormProps) => {
@@ -17,7 +18,7 @@ const StatementForm = (props:FormProps) => {
         let statement = ''
         try {
             statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
-            parseStatement(statement)
+            parseStatement({statement})
         } catch (e) {
             props.setAlertMessage('' + e)
             props.setisError(true)

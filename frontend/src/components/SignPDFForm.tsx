@@ -13,6 +13,7 @@ import {
 import GenerateStatement from "./GenerateStatement";
 import { uploadPdf, backendHost } from "../api";
 import { generateEmail } from "./generateEmail";
+import { FormProps, prepareStatement } from "../types";
 
 export const filePath = (hash:string, host:string|undefined) => (host || backendHost) + "/files/" + hash + ".pdf"
 
@@ -46,7 +47,7 @@ const SignPDFForm = (props:FormProps) => {
         content,
       });
 
-      const parsedStatement = parseStatement(statement);
+      const parsedStatement = parseStatement({statement});
       parsePDFSigning(parsedStatement.content);
       props.setStatement(statement);
       sha256(statement).then((hash) => { props.setStatementHash(hash);

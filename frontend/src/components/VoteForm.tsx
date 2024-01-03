@@ -14,11 +14,12 @@ import { generateEmail } from './generateEmail';
 import { TextField } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { getStatement, statementDB } from '../api';
+import { FormProps, prepareStatement } from '../types';
 
 
 export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64: string}}) => {
 
-    const statementParsed = (props.poll?.statement && parseStatement(props.poll.statement)) as statement | undefined
+    const statementParsed = (props.poll?.statement && parseStatement({statement: props.poll.statement, allowNoVersion:true})) as statement | undefined
     const pollParsed = (statementParsed && parsePoll(statementParsed.content)) as poll | undefined
 
     const [pollHash, setPollId] = React.useState(props.poll?.hash_b64 || "");
@@ -64,7 +65,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseVote(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => {props.setStatementHash(hash)

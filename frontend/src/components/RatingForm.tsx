@@ -11,6 +11,7 @@ import { TextField } from '@mui/material';
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
+import { FormProps, prepareStatement } from '../types';
 
 export const RatingForm = (props:FormProps) => {
 
@@ -27,7 +28,7 @@ export const RatingForm = (props:FormProps) => {
             const content = buildRating({organisation, domain, rating, comment})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseRating(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash); 

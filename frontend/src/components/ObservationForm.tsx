@@ -10,6 +10,7 @@ import { generateEmail } from './generateEmail';
 import { getNameSuggestions, getStatement, statementDB } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Autocomplete, Box } from '@mui/material';
+import { FormProps, prepareStatement } from '../types';
 
 
 
@@ -60,7 +61,7 @@ const ObservationForm = (props:FormProps) => {
             const content = buildObservation({subject, subjectReference: referencedHash, property: observationProperty, value: obervationValue, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseObservation(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 

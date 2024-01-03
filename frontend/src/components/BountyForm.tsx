@@ -8,6 +8,7 @@ import FormControl from '@mui/material/FormControl';
 import { parseStatement, parseBounty, buildStatement, buildBounty, bounty } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
+import { FormProps, prepareStatement } from '../types';
 
 
 
@@ -17,7 +18,7 @@ export const BountyForm = (props:FormProps) => {
 
     if (props.statementToJoin?.statement){
         try {
-            const statementParsed = parseStatement(props.statementToJoin.statement)
+            const statementParsed = parseStatement({statement: props.statementToJoin.statement, allowNoVersion: true})
             bountyToJoin = parseBounty(statementParsed.content)
             console.log(bountyToJoin)
         } catch (error) {
@@ -42,7 +43,7 @@ export const BountyForm = (props:FormProps) => {
             const content = buildBounty({motivation, bounty, reward, judge, judgePay})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseBounty(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => {
