@@ -43,19 +43,19 @@ export type statementDB = {
     statement: string,
     proclaimed_publication_time: string,
     hash_b64: string,
-    referenced_statement: string,
+    referenced_statement?: string,
     tags: string,
     content: string,
     content_hash: string,
-    source_node_id: number,
+    source_node_id?: number,
     first_verification_time: string,
     latest_verification_time: string,
-    verification_method: string,
-    derived_entity_created: boolean,
-    derived_entity_creation_retry_count: number,
-    name: string,
-    superseding_statement: string,
-    superseded_statement: string,
+    verification_method?: string,
+    derived_entity_created?: boolean,
+    derived_entity_creation_retry_count?: number,
+    name?: string,
+    superseding_statement?: string,
+    superseded_statement?: string,
     hidden?: boolean,
 }
 export const getStatement = (hash:string, cb:res<statementDB[]> ) => {
@@ -77,11 +77,12 @@ export type statementWithDetails = {
     domain: string;
     proclaimed_publication_time: string;
     hash_b64: string;
+    content_hash: string;
     id: number;
     statement: string;
     tags: string;
     repost_count: string;
-    type: string|undefined;
+    type: string;
     name: string|undefined;
     votes: any[]|undefined;
     skip_id: string;

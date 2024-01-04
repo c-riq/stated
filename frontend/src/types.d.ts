@@ -11,7 +11,7 @@ type statementMetaData = {
 type FormProps = {
   metaData: statementMetaData;
   serverTime: Date;
-  statementToJoin?: statementDB;
+  statementToJoin?: statementWithDetails | statementDB;
   children?: any;
   setStatement: (statement: string) => void;
   setStatementHash: (hash: string) => void;

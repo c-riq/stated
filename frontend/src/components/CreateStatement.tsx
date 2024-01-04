@@ -33,6 +33,7 @@ import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
 import { Chip, Link } from '@mui/material';
 import ObservationForm from './ObservationForm';
+import { publishingMethod } from '../types';
 
 type Props = {
     lt850px: boolean,
@@ -72,7 +73,7 @@ const CreateStatement = (props:Props) => {
     const [supersededStatement, setSupersededStatement] = React.useState(props.statementToSupersede?.hash_b64?? "");
     const [showAdditionalFields, setShowAdditionalFields] = React.useState(false);
     const [apiKey, setApiKey] = React.useState("");
-    const [publishingMethod, setPublishingMethod] = React.useState(undefined as publishingMethod|undefined);
+    const [publishingMethod, setPublishingMethod] = React.useState(undefined as (publishingMethod|undefined));
     const [dnsResponse, setDnsResponse] = React.useState([] as string[]);
     const [staticResponse, setStaticResponse] = React.useState(undefined as {validated:boolean, response?:string}|undefined);
     const [statementHash, setStatementHash] = React.useState("");

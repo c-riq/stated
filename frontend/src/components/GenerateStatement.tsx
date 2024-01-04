@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Button from '@mui/material/Button';
+import { prepareStatement } from '../types';
 
 type props = {
     serverTime: Date,

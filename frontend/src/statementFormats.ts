@@ -291,7 +291,7 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 		option1: m[4], option2: m[5], option3: m[6], option4: m[7], option5: m[8],
 		whoCanVote: m[9]
 	}
-	const whoCanVoteParsed:Partial<poll> = {}
+	const whoCanVoteParsed:Partial<poll> & {domainScopeStr?:string} = {}
 	if (m.whoCanVote) {
 		const whoCanVoteRegex= new RegExp(''
 		+ /^\n\t\tDescription: (?<scopeDescription>[^\n]+?)\n/.source
@@ -309,13 +309,13 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 		whoCanVoteParsed['country'] = m2[2]
 		whoCanVoteParsed['city'] = m2[3]
 		whoCanVoteParsed['legalEntity'] = m2[4]
-		whoCanVoteParsed['domainScope'] = m2[5]
+		whoCanVoteParsed['domainScopeStr'] = m2[5]
 		whoCanVoteParsed['propertyScope'] = m2[6]
 		whoCanVoteParsed['propertyScopeObserver'] = m2[7]
 		whoCanVoteParsed['scopeQueryLink'] = m2[8]
 	}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
-	const domainScope = (whoCanVoteParsed.domainScope as string|undefined)?.split(', ')
+	const domainScope = (whoCanVoteParsed.domainScopeStr as string|undefined)?.split(', ')
 	const deadlineStr = m.deadline
 	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
 	return {
