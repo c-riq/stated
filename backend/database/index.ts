@@ -21,7 +21,7 @@ pool.on('error', (error) => {
   console.trace()
 })
 
-export type DBCallback = (result?: QueryResult) => void
+export type DBCallback<T = any> = (result?: QueryResult<T>) => void
 export type DBErrorCallback = (error: Error) => void
 
 const log = false

@@ -17,7 +17,7 @@ import { sha256 } from '../utils/hash'
 
 import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 import { generateEmail } from './generateEmail';
-import { Button } from '@mui/material';
+import { Button, Checkbox, FormControlLabel } from '@mui/material';
 import { FormProps, prepareStatement } from '../types';
 
 const PollForm = (props:FormProps) => {
@@ -38,6 +38,10 @@ const PollForm = (props:FormProps) => {
     const [poll, setPoll] = React.useState("");
     const [countries, setCountries] = React.useState([] as [string, string, string ,string][])
     const [cities, setCities] = React.useState([] as [string, string ,string][])
+    const [allowArbitraryVote, setAllowArbitraryVote] = React.useState(undefined as boolean|undefined);
+    const [requiredProperty, setRequiredProperty] = React.useState("");
+    const [requiredPropertyValue, setRequiredPropertyValue] = React.useState("");
+    const [requiredPropertyObserver, setRequiredPropertyObserver] = React.useState("");
 
     React.useEffect(() => {
         fetch('/countries.json')
@@ -56,7 +60,9 @@ const PollForm = (props:FormProps) => {
         props.setPublishingMethod(method)
         try {
             let domainScope = domainScopeConcat ? domainScopeConcat.split(',').map(s => s.trim()) : undefined
-            const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, judges: nodes, deadline: votingDeadline.toDate(), poll, options, scopeDescription, scopeQueryLink})
+            const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, 
+                judges: nodes, deadline: votingDeadline.toDate(), poll, options, scopeDescription, scopeQueryLink,
+                allowArbitraryVote, requiredProperty, requiredPropertyValue, requiredPropertyObserver})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement({statement})
             parsePoll(parsedStatement.content)
@@ -108,6 +114,12 @@ const PollForm = (props:FormProps) => {
             margin="normal"
             sx={{marginTop: '24px'}}
         />
+        <FormControlLabel
+            control={<Checkbox checked={allowArbitraryVote} onChange={(event) => {
+                setAllowArbitraryVote(event.target.checked);
+            }} />}
+            label="Allow free text vote"
+        />
         <LocalizationProvider dateAdapter={AdapterMoment}>
             <DateTimePicker
             label="deadline"
@@ -141,6 +153,33 @@ const PollForm = (props:FormProps) => {
             placeholder='rixdata.net'
             label="Poll judging domains, comma separated (optional)"
             onChange={e => { setNodes(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px", marginTop: "24px"}}
+        />
+        <TextField
+            id="Required property"
+            variant="outlined"
+            placeholder='Member of SP500'
+            label="Property which pariticpants must have been associated in an observation statement (optional)"
+            onChange={e => { setRequiredProperty(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px", marginTop: "24px"}}
+        />
+        {/* <TextField
+            id="Required property"
+            variant="outlined"
+            placeholder='12345 (Membership ID) / YES / NO...'
+            label="Property value, which pariticpants must have been associated in an observation statement (optional)"
+            onChange={e => { setRequiredPropertyValue(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px", marginTop: "24px"}}
+        /> */}
+        <TextField
+            id="Required property observer"
+            variant="outlined"
+            placeholder='Rix Data NL B.V.@rixdata.net'
+            label="Entity which must have observed the above property (value) (optional)"
+            onChange={e => { setRequiredPropertyObserver(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "12px", marginTop: "24px"}}
         />

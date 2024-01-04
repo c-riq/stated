@@ -18,14 +18,13 @@ import DangerousIcon from '@mui/icons-material/Dangerous';
 import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import { getStatement, getJoiningStatements, getOrganisationVerifications,
-    getPersonVerifications, getVotes, statementWithDetails } from '../api'
+import { getStatement, getJoiningStatements, getOrganisationVerifications, joiningStatementsResponse,
+    getPersonVerifications, getVotes } from '../api'
 import { statementTypes, parsePDFSigning, observation, bounty, rating, PDFSigning, disputeAuthenticity, disputeContent, boycott, organisationVerification, personVerification, vote, poll, parseStatement, parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott, parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent, responseContent } from '../statementFormats';
 
 import {VerificationGraph} from './VerificationGraph'
 
 import {filePath, getWorkingFileURL} from './SignPDFForm'
-import {statementDB, joiningStatementsResponse} from '../api'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
@@ -33,21 +32,21 @@ import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-    setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
-    respondToStatement: (arg0: statementWithDetails | statementDB) => void,
-    disputeStatementAuthenticity: (arg0: statementWithDetails | statementDB) => void,
-    disputeStatementContent: (arg0: statementWithDetails | statementDB) => void,
-    supersedeStatement: (arg0: statementWithDetails | statementDB) => void,
+    setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    disputeStatementContent: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    supersedeStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
 }
 
 const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([]);
-    const [statement, setStatement] = React.useState(undefined as statementDB | undefined );
+    const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
     const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | observation | 
         bounty | rating | PDFSigning | disputeAuthenticity | disputeContent | boycott | organisationVerification 
         | personVerification | vote | poll );
-    const [statementCollision, setStatementCollision] = React.useState(undefined as statementDB[] | undefined );
+    const [statementCollision, setStatementCollision] = React.useState(undefined as StatementDB[] | undefined );
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
@@ -156,7 +155,7 @@ const Statement = (props:props) => {
                 <div key={i}>
                     <RouterLink key={i} onClick={()=>setDataFetched(false)} 
                         to={"/statements/"+s.hash_b64}>
-                        {s.hash_b64 + " | " + s.domain + " | " + (new Date(s.proclaimed_publication_time).toUTCString())}
+                        {s.hash_b64 + " | " + s.domain + " | " + (s.proclaimed_publication_time && new Date(s.proclaimed_publication_time).toUTCString())}
                     </RouterLink>
                 </div>
             ))}
@@ -169,17 +168,18 @@ const Statement = (props:props) => {
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
-            {statement.superseding_statement && (<Alert severity="error">
+            {(statement as StatementWithSupersedingDB).superseding_statement && (<Alert severity="error">
                 This statement has been replaced by the author with another statement:
                 <RouterLink onClick={()=>setDataFetched(false)} 
-                    to={"/statements/"+statement.superseding_statement}> {statement.superseding_statement}</RouterLink>
+                    to={"/statements/"+(statement as StatementWithSupersedingDB).superseding_statement}> {
+                    (statement as StatementWithSupersedingDB).superseding_statement}</RouterLink>
             </Alert>)}
             {statement.superseded_statement && (<Alert severity="info">
                 This statement has a previous version:
                 <RouterLink onClick={()=>setDataFetched(false)} 
                     to={"/statements/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
             </Alert>)}
-            {statement.hidden && (<Alert severity="info">
+            {(statement as StatementWithHiddenDB).hidden && (<Alert severity="info">
                 This is a hidden statement.
             </Alert>)}
             <p>Raw statement</p>
@@ -332,7 +332,7 @@ const Statement = (props:props) => {
                 {joiningStatements.statements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
-                            {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
+                            {domain + " | " + (proclaimed_publication_time && new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>
                     )

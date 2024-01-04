@@ -13,7 +13,7 @@ import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { TextField } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { getStatement, statementDB } from '../api';
+import { getStatement } from '../api';
 import { FormProps, prepareStatement } from '../types';
 
 
@@ -24,7 +24,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
 
     const [pollHash, setPollId] = React.useState(props.poll?.hash_b64 || "");
     const [poll, setPoll] = React.useState(pollParsed?.poll || "");
-    const [pollStatement, setPollStatement] = React.useState(undefined as statementDB| undefined);
+    const [pollStatement, setPollStatement] = React.useState(undefined as StatementDB| undefined);
     const [options, setOptions] = React.useState((pollParsed?.options || []) as string[]);
     const [vote, setVote] = React.useState("");
 
@@ -40,7 +40,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             if((res?.length || 0) !== 1) {
                 return
             }
-            const statement = res![0] as statementDB
+            const statement = res![0] as StatementDB
             setPollStatement(statement)
             if (statement.content === undefined) {
                 setPoll('No poll found')
@@ -97,9 +97,9 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             sx={{marginBottom: "12px"}}
         />
         {
-        pollStatement && (pollStatement as statementDB)?.content
+        pollStatement && (pollStatement as StatementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statements/${(pollStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(pollStatement as StatementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>No statement found.</div>

@@ -11,7 +11,6 @@ import { timeSince } from '../utils/time'
 
 import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
     BoycottKeys, ObservationKeys, parseStatement, voteKeys } from '../statementFormats'
-import { statementDB, statementWithDetails } from '../api';
 
 const highlightedStatement = (text: string, type:string) => {
     let regex = /(\nType: )/
@@ -49,8 +48,8 @@ const highlightedStatement = (text: string, type:string) => {
 }
 
 type props = {
-    statements: statementWithDetails[],
-    setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
+    statements: StatementWithDetailsDB[],
+    setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
     setServerTime: (arg0: Date) => void,
     setModalOpen: any,
     lt850px: boolean,
@@ -104,9 +103,10 @@ const Statements = (props:props) => {
                                         <span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{author}</span>
                                     </>)}
                                     <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
-                                    <Tooltip title={s.proclaimed_publication_time}>
+                                    {s.proclaimed_publication_time && <Tooltip title={s.proclaimed_publication_time}>
                                         <span>{timeSince(new Date(s.proclaimed_publication_time))}</span>
                                     </Tooltip>
+                                    }
                                     
                                     {!s.tags ? <></> :  (
                                         <>
@@ -167,9 +167,9 @@ const Statements = (props:props) => {
                                         <span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{author}</span>
                                     </>)}
                                     <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
-                                    <Tooltip title={s.proclaimed_publication_time}>
+                                    {s.proclaimed_publication_time && <Tooltip title={s.proclaimed_publication_time}>
                                         <span>{timeSince(new Date(s.proclaimed_publication_time))}</span>
-                                    </Tooltip>
+                                    </Tooltip>}
                                     
                                     {s.tags && (
                                         <>
@@ -186,7 +186,7 @@ const Statements = (props:props) => {
                                                     <div style={{backgroundColor: "rbga(0,0,0,0)", width:"200px", height:"30px", borderRadius: "15px", borderWidth: "1px", borderStyle: "solid", borderColor: "#cccccc"}} />
                                                 </div>
                                                 <div style={{gridArea: "1 / 1"}}>
-                                                    <div style={{backgroundColor: "rgba(42, 74, 103, 0.5)", width: (totalVotes == 0 ? 0 : 200 * votes[o] / totalVotes) + 'px', height:"30px", borderRadius: "15px"}} />
+                                                    <div style={{backgroundColor: "rgba(42, 74, 103, 0.5)", width: (totalVotes === 0 ? 0 : 200 * votes[o] / totalVotes) + 'px', height:"30px", borderRadius: "15px"}} />
                                                 </div>
                                                 <div style={{gridArea: "1 / 1"}}>
                                                     <div style={{backgroundColor: "rbga(0,0,0,0)", width:"200px", height:"30px", borderRadius: "15px", padding: "3px 5px 0px 10px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
@@ -200,7 +200,9 @@ const Statements = (props:props) => {
                             </Link>
                         </div>
                     )
-                    }})}
+                    }
+                    return (<></>)
+                    })}
                     {statements && statements.length > 0 && props.canLoadMore && (
                         props.loadingMore ? (<CircularProgress/>)
                         :(<Button onClick={props.loadMore}>Load more</Button>))}

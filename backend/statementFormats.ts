@@ -179,11 +179,14 @@ export type poll = {
 	scopeDescription?: string,
 	scopeQueryLink?: string,
 	options: string[],
-	propertyScope?: string,
-	propertyScopeObserver?: string,
+	allowArbitraryVote?: boolean,
+	requiredProperty?: string,
+	requiredPropertyValue?: string,
+	requiredPropertyObserver?: string,
+	requiredMinConfidence?: number,
 }
 export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll,
-		scopeDescription, scopeQueryLink, options, propertyScope, propertyScopeObserver}: poll) => {
+		scopeDescription, scopeQueryLink, options, allowArbitraryVote, requiredProperty: propertyScope, requiredPropertyObserver: propertyScopeObserver}: poll) => {
 	if(!poll) throw(new Error("Poll must contain a poll question."))
 	const scopeContent =
 		(scopeDescription ? "\t\t" + "Description: " + scopeDescription + "\n" : "") +
@@ -205,6 +208,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	(options.length > 2 && options[2] ? "\t" + "Option 3: " + options[2] + "\n" : "") +
 	(options.length > 3 && options[3] ? "\t" + "Option 4: " + options[3] + "\n" : "") +
 	(options.length > 4 && options[4] ? "\t" + "Option 5: " + options[4] + "\n" : "") +
+	((allowArbitraryVote === true || allowArbitraryVote === false) ? ("\t" + "Allow free text votes: " + (allowArbitraryVote ? 'Yes' : 'No') + "\n") : "") +
 	(scopeContent ? "\t" + "Who can vote: \n" + scopeContent : "") +
 	""
 	return content
@@ -282,6 +286,7 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 	+ /(?:\tOption 3: (?<option3>[^\n]+?)\n)?/.source
 	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
 	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
+	+ /(?:\tAllow free text votes: (?<allowArbitraryVote>Yes|No)\n)?/.source
 	+ /(?:\tWho can vote: (?<whoCanVote>\n[\s\S]+?\n))?/.source
 	+ /$/.source)
 	let m:any = s.match(pollRegex)
@@ -289,7 +294,8 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 
 	m = {judges: m[1], deadline: m[2], poll: m[3], 
 		option1: m[4], option2: m[5], option3: m[6], option4: m[7], option5: m[8],
-		whoCanVote: m[9]
+		allowArbitraryVote: m[9],
+		whoCanVote: m[10]
 	}
 	const whoCanVoteParsed:Partial<poll> & {domainScopeStr?:string} = {}
 	if (m.whoCanVote) {
@@ -310,12 +316,14 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 		whoCanVoteParsed['city'] = m2[3]
 		whoCanVoteParsed['legalEntity'] = m2[4]
 		whoCanVoteParsed['domainScopeStr'] = m2[5]
-		whoCanVoteParsed['propertyScope'] = m2[6]
-		whoCanVoteParsed['propertyScopeObserver'] = m2[7]
+		whoCanVoteParsed['requiredProperty'] = m2[6]
+		whoCanVoteParsed['requiredPropertyObserver'] = m2[7]
 		whoCanVoteParsed['scopeQueryLink'] = m2[8]
 	}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = (whoCanVoteParsed.domainScopeStr as string|undefined)?.split(', ')
+	const allowArbitraryVote = (m['allowArbitraryVote'] === 'Yes' ? true : 
+		(m['allowArbitraryVote'] === 'No' ? false : undefined))
 	const deadlineStr = m.deadline
 	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
 	return {
@@ -324,10 +332,11 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 		deadline: new Date(deadlineStr),
 		poll: m['poll'],
 		options,
+		allowArbitraryVote,
 		country: whoCanVoteParsed['country'],
 		scopeDescription: whoCanVoteParsed['scopeDescription'],
-		propertyScope: whoCanVoteParsed['propertyScope'],
-		propertyScopeObserver: whoCanVoteParsed['propertyScopeObserver'],
+		requiredProperty: whoCanVoteParsed['requiredProperty'],
+		requiredPropertyObserver: whoCanVoteParsed['requiredPropertyObserver'],
 		scopeQueryLink: whoCanVoteParsed['scopeQueryLink'],
 		city: whoCanVoteParsed['city'],
 		legalEntity: whoCanVoteParsed['legalEntity'],
@@ -754,7 +763,7 @@ export type observation = {
 	subjectReference?: string,
 	observationReference?: string,
 	property: string,
-	value: string,
+	value?: string,
 }
 export const ObservationKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observed property: |Observed value: )/
 export const buildObservation = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, property, value}: observation) => {
@@ -767,7 +776,7 @@ export const buildObservation = ({approach, confidence, reliabilityPolicy, subje
 	(subjectReference ? "\t" + "Subject identity reference: " + subjectReference + "\n" : "") +
 	(observationReference ? "\t" + "Observation reference: " + observationReference + "\n" : "") +
 	"\t" + "Observed property: " + property + "\n" +
-	"\t" + "Observed value: " + value + "\n" +
+	(value ? "\t" + "Observed value: " + value + "\n" : "") +
 	""
 	return content
 }
@@ -781,7 +790,7 @@ export const parseObservation = (s: string):observation => {
 	+ /(?:\tSubject identity reference: (?<subjectReference>[^\n]*?)\n)?/.source
 	+ /(?:\tObservation reference: (?<observationReference>[^\n]*?)\n)?/.source
 	+ /\tObserved property: (?<property>[^\n]*?)\n/.source
-	+ /\tObserved value: (?<value>[\s\S]+?)\n/.source
+	+ /(?:\tObserved value: (?<value>[\s\S]+?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(observationRegex)

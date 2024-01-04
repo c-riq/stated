@@ -4,7 +4,7 @@ import './App.css';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import CreateStatement from './components/CreateStatement'
-import Statement from './components/Statement'
+import StatementDB from './components/Statement'
 import Statements from './components/Statements'
 import {FullVerificationGraph} from './components/FullVerificationGraph'
 import { FullNetworkGraph } from './components/FullNetworkGraph';
@@ -21,7 +21,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Route, Routes, Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 
-import { getStatements, statementDB, statementWithDetails } from './api'
+import { getStatements } from './api'
 
 // @ts-ignore
 import gh from './img/github.png'
@@ -88,7 +88,7 @@ const CenterModal = (props: CenterModalProps) => {
 type LayoutProps = {
   setSearchQuery: (arg0: string)=>void,
   searchQuery?: string,
-  joinStatement: (arg0: statementWithDetails | statementDB) => void,
+  joinStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
   voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
   setModalOpen: (arg0: boolean)=>void,
   setServerTime: (arg0: Date) => void,
@@ -215,13 +215,13 @@ const auhtorFilterFromUrl = undefined || urlParams.get('author')
 function App() {
 
   const [serverTime, setServerTime] = React.useState(new Date());
-  const [statementToJoin, setStatementToJoin] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
-  const [statementToRespond, setStatementToRepsond] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
-  const [statementToDisputeAuthenticity, setStatementToDisputeAuthenticity] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
-  const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
-  const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (statementWithDetails | statementDB) | undefined);
+  const [statementToJoin, setStatementToJoin] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
+  const [statementToRespond, setStatementToRepsond] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
+  const [statementToDisputeAuthenticity, setStatementToDisputeAuthenticity] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
+  const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
+  const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
-  const [statements, setStatements] = React.useState([] as statementWithDetails[]);
+  const [statements, setStatements] = React.useState([] as StatementWithDetailsDB[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState(queryFromUrl || undefined as string | undefined);
@@ -262,11 +262,11 @@ function App() {
     }
     const limit = 20
     getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilter, author: authorFilter,
-        cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+        cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
             const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
-            const currentMaxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+            const currentMaxSkipId = s.statements.reduce((max: number, s: StatementWithDetailsDB) => Math.max(max, parseInt(s.skip_id)), 0)
             if(currentMaxSkipId === globalMaxSkipId){
               setCanLoadMore(false)
             } else {
@@ -287,13 +287,13 @@ function App() {
     if (shouldLoadMore) {
       const limit = 20
       getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilter, author: authorFilter,
-         cb: (  s:({statements: statementWithDetails[], time: string}|undefined) )=>{
+         cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
-              const newStatements = s.statements.filter((s:statementWithDetails) => !existingStatements.find((s2:statementWithDetails) => s2.hash_b64 === s.hash_b64))
+              const newStatements = s.statements.filter((s:StatementWithDetailsDB) => !existingStatements.find((s2:StatementWithDetailsDB) => s2.hash_b64 === s.hash_b64))
               setStatements([...existingStatements, ...newStatements])
               const globalMaxSkipId = parseInt(s.statements[0].max_skip_id)
-              const currentMaxSkipId = s.statements.reduce((max: number, s: statementWithDetails) => Math.max(max, parseInt(s.skip_id)), 0)
+              const currentMaxSkipId = s.statements.reduce((max: number, s: StatementWithDetailsDB) => Math.max(max, parseInt(s.skip_id)), 0)
               if(currentMaxSkipId === globalMaxSkipId){
                 setCanLoadMore(false)
               } else {
@@ -310,23 +310,23 @@ function App() {
       setShouldLoadMore(false)
     }
   }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilter, authorFilter])
-  const joinStatement = (statement: (statementWithDetails | statementDB)) => {
+  const joinStatement = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
   }
-  const respondToStatement = (statement: (statementWithDetails | statementDB)) => {
+  const respondToStatement = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToRepsond(statement)
     setModalOpen(true)
   }
-  const disputeStatementAuthenticity = (statement: (statementWithDetails | statementDB)) => {
+  const disputeStatementAuthenticity = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToDisputeAuthenticity(statement)
     setModalOpen(true)
   }
-  const disputeStatementContent = (statement: (statementWithDetails | statementDB)) => {
+  const disputeStatementContent = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToDisputeContent(statement)
     setModalOpen(true)
   }
-  const supersedeStatement = (statement: (statementWithDetails | statementDB)) => {
+  const supersedeStatement = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToSupersede(statement)
     setModalOpen(true)
   }
@@ -366,7 +366,7 @@ function App() {
             {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDB voteOnPoll={voteOnPoll} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
@@ -376,7 +376,7 @@ function App() {
             />
             <Route path='/statements/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <Statement voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDB voteOnPoll={voteOnPoll} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}

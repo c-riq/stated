@@ -11,6 +11,7 @@ import {getTXTEntries, validateAndAddStatementIfMissing, verifyViaStaticTextFile
 import {getTXTEntriesDNSSEC} from './dnssec'
 
 import {saveFile} from './upload'
+import { Query, QueryResult } from 'pg'
 
 const log = false
 
@@ -117,7 +118,7 @@ api.get("/statements/:hash", async (req, res, next) => {
     if(!req.params.hash || req.params.hash.length < 1) return next(new Error('Hash too short'))
     try {
         const hash_b64 = req.params.hash
-        let dbResult = await getStatement({hash_b64})
+        let dbResult = await getStatement({hash_b64}) as QueryResult<StatementWithSupersedingDB | StatementWithHiddenDB>
         if (dbResult.rows.length == 0){
             dbResult = await getHiddenStatement({hash_b64})
         }
@@ -188,7 +189,7 @@ api.get("/joining_statements", async (req, res, next) => {
 
 api.get("/votes", async (req, res, next) => {
     try {
-        const dbResult = await getVotes({hash_b64: req.query.hash})
+        const dbResult = await getVotes({poll_hash: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)

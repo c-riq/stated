@@ -337,8 +337,8 @@ Statement content:
 	expect(parsedPoll.deadline.toUTCString()).toBe('Thu, 01 Dec 2022 13:38:26 GMT');
 	expect(parsedPoll.scopeDescription).toBe('All universities with a ROR ID');
 	expect(parsedPoll.legalEntity).toBe('limited liability corporation');
-	expect(parsedPoll.propertyScope).toBe('ROR ID');
-	expect(parsedPoll.propertyScopeObserver).toBe('Rix Data NL B.V.@rixdata.net');
+	expect(parsedPoll.requiredProperty).toBe('ROR ID');
+	expect(parsedPoll.requiredPropertyObserver).toBe('Rix Data NL B.V.@rixdata.net');
 	expect(parsedPoll.scopeQueryLink).toBe('https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.');
 });
 

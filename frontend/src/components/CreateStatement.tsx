@@ -27,7 +27,7 @@ import { statementTypes, statementTypeValue } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, 
-    statementWithDetails, statementDB, checkStaticStatement } from '../api'
+    checkStaticStatement } from '../api'
 
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
@@ -38,11 +38,11 @@ import { publishingMethod } from '../types';
 type Props = {
     lt850px: boolean,
     domain?: string,
-    statementToJoin?: statementWithDetails | statementDB,
-    statementToRespond?: statementWithDetails | statementDB,
-    statementToDisputeAuthenticity?: statementWithDetails | statementDB,
-    statementToDisputeContent?: statementWithDetails | statementDB,
-    statementToSupersede?: statementWithDetails | statementDB,
+    statementToJoin?: StatementWithDetailsDB | StatementDB,
+    statementToRespond?: StatementWithDetailsDB | StatementDB,
+    statementToDisputeAuthenticity?: StatementWithDetailsDB | StatementDB,
+    statementToDisputeContent?: StatementWithDetailsDB | StatementDB,
+    statementToSupersede?: StatementWithDetailsDB | StatementDB,
     poll?: {statement: string, hash_b64: string},
     serverTime: Date,
     onPostSuccess: () => void,

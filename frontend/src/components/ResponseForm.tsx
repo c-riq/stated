@@ -7,16 +7,16 @@ import { sha256 } from '../utils/hash';
 import { parseResponseContent, buildResponseContent, buildStatement, parseStatement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
-import { getStatement, statementDB, statementWithDetails } from '../api';
+import { getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FormProps, prepareStatement } from '../types';
 
 
-const ResponseForm = (props:(FormProps & {statementToRespond?: statementDB | statementWithDetails})) => {
+const ResponseForm = (props:(FormProps & {statementToRespond?: StatementDB | StatementWithDetailsDB})) => {
     const [referencedHash, setReferencedHash] = React.useState(props.statementToRespond?.hash_b64 || "");
     const [response, setResponse] = React.useState("");
 
-    const [referencedStatement, setReferencedStatement] = React.useState(undefined as statementDB| undefined);
+    const [referencedStatement, setReferencedStatement] = React.useState(undefined as StatementDB| undefined);
 
     React.useEffect(()=>{
         if(!referencedHash){
@@ -64,9 +64,9 @@ const ResponseForm = (props:(FormProps & {statementToRespond?: statementDB | sta
             sx={{marginBottom: "24px"}}
         />
         {
-        referencedStatement && (referencedStatement as statementDB)?.content
+        referencedStatement && (referencedStatement as StatementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as StatementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>Referenced statement not found.</div>

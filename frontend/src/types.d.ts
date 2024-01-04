@@ -1,4 +1,4 @@
-import { statementDB } from "./api";
+import { Statement } from "./api";
 import { statement } from "./statementFormats";
 
 type statementMetaData = {
@@ -11,7 +11,7 @@ type statementMetaData = {
 type FormProps = {
   metaData: statementMetaData;
   serverTime: Date;
-  statementToJoin?: statementWithDetails | statementDB;
+  statementToJoin?: statementWithDetails | Statement;
   children?: any;
   setStatement: (statement: string) => void;
   setStatementHash: (hash: string) => void;

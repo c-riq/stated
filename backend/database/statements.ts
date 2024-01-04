@@ -238,7 +238,7 @@ export const getStatementsWithDetailFactory =
   (pool) =>
   ({ skip, searchQuery, limit, types, domain, author } : {skip?: number,
     searchQuery?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
-        new Promise((resolve: DBCallback, reject) => {
+        new Promise((resolve: DBCallback<StatementWithDetailsDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
         let typeQuery = ''
@@ -380,7 +380,7 @@ export const getStatementsWithDetailFactory =
 export const getStatementsFactory =
   (pool) =>
   ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20 }) =>
-    new Promise((resolve: DBCallback, reject) => {
+    new Promise((resolve: DBCallback<StatementDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
         pool.query(
@@ -663,7 +663,7 @@ export const cleanUpUnverifiedStatementsFactory =
 
 
 
-export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback<StatementDB & {name?: string, _rank: number}>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(`
@@ -702,7 +702,7 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
         }
       }))
 
-      export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback, reject) => {
+      export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback<StatementDB>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(`
@@ -729,12 +729,12 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
         }
       }))
 
-export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback<{exists: boolean}>, reject) => {
         try {
           checkIfMigrationsAreDone()
           log && console.log(hash_b64, 'check')
           pool.query(`
-                  SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
+                  SELECT TRUE exists FROM statements WHERE hash_b64=$1 LIMIT 1;
                   `, [hash_b64], (error, results) => {
             log && console.log('statementExists', hash_b64, results, error)
             if (error) {
