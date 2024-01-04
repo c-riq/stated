@@ -212,6 +212,43 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
         }
       }))
 
+export const getObservationsForEntityFactory = pool => ({ domain, name, observerDomain, observerName }) => (
+  new Promise((resolve: DBCallback<StatementDB>, reject) => {
+        log && console.log('findObservationsForEntity', domain, name, observerDomain, observerName)
+        try {
+          checkIfMigrationsAreDone()
+          pool.query(`
+with v as (
+  select * from organisation_verifications 
+  where verified_domain=$3
+  and name=$4
+)
+select s.* 
+from v 
+join statements s
+  on s.type='observation'
+    and s.domain=$1
+    and s.author=$2
+    and statement like 
+'%
+  Subject identity reference: '||v.statement_hash||'
+%'
+  ;`,[domain, name, observerDomain, observerName], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
 export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         log && console.log('deleteStatement', hash_b64)
         try {

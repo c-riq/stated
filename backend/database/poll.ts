@@ -33,7 +33,7 @@ export const createPollFactory = pool => (o) =>
 }))
 
 
-export const getPollFactory = pool => ({ statement_hash }) => (new Promise((resolve: DBCallback, reject) => {
+export const getPollFactory = pool => ({ statement_hash }) => (new Promise((resolve: DBCallback<PollDB & StatementDB>, reject) => {
     console.log('getPoll', statement_hash)
     try {
       checkIfMigrationsAreDone()
@@ -88,7 +88,7 @@ export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, d
 }))
 
 
-export const getVotesFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const getVotesFactory = pool => ({ poll_hash, vote_hash=null }) => (new Promise((resolve: DBCallback<VoteDB & StatementDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -99,7 +99,34 @@ export const getVotesFactory = pool => ({ hash_b64 }) => (new Promise((resolve: 
             ON v.statement_hash = s.hash_b64
         WHERE qualified = TRUE
           AND poll_hash = $1
-        `,[hash_b64], (error, results) => {
+          AND (v.statement_hash = $2 OR $2 IS NULL)
+        `,[poll_hash, vote_hash], (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        } else {
+          return resolve(results)
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      console.trace()
+      return reject(error)
+    }
+  }))
+
+export const updateVoteFactory = pool => ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback<VoteDB & StatementDB>, reject) => {
+    try {
+      checkIfMigrationsAreDone()
+      pool.query(`
+            UPDATE votes SET
+              (statement_hash, option, domain, qualified) 
+            VALUES 
+              ($1, $3, $4, $5)
+            WHERE poll_hash = $2
+            RETURNING *`,
+      [statement_hash, poll_hash, option, domain, qualified], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()

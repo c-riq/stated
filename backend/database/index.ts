@@ -49,7 +49,8 @@ import { createStatementFactory, getStatementsFactory, getStatementsWithDetailFa
   getUnverifiedStatementsFactory, updateStatementFactory, cleanUpUnverifiedStatementsFactory, 
   createUnverifiedStatementFactory, getJoiningStatementsFactory, getOwnStatementFactory,
   getStatementFactory, statementExistsFactory, updateUnverifiedStatementFactory,
-  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory, checkIfUnverifiedStatementExistsFactory} from './statements'
+  deleteStatementFactory, createHiddenStatementFactory, getHiddenStatementFactory,
+  checkIfUnverifiedStatementExistsFactory, getObservationsForEntityFactory} from './statements'
 
 export const createStatement = createStatementFactory(pool)
 export const createHiddenStatement = createHiddenStatementFactory(pool)
@@ -67,6 +68,7 @@ export const getOwnStatement = getOwnStatementFactory(pool)
 export const statementExists = statementExistsFactory(pool)
 export const updateUnverifiedStatement = updateUnverifiedStatementFactory(pool)
 export const checkIfUnverifiedStatmentExists = checkIfUnverifiedStatementExistsFactory(pool)
+export const getObservationsForEntity = getObservationsForEntityFactory(pool)
 
 import { setCertCacheFactory, getCertCacheFactory, matchDomainFactory } from './ssl'
 
@@ -91,12 +93,13 @@ import { createRatingFactory } from './rating'
 
 export const createRating = createRatingFactory(pool)
 
-import { createPollFactory, getPollFactory, createVoteFactory, getVotesFactory } from './poll'
+import { createPollFactory, getPollFactory, createVoteFactory, getVotesFactory, updateVoteFactory } from './poll'
 
 export const createPoll = createPollFactory(pool)
 export const getPoll = getPollFactory(pool)
 export const createVote = createVoteFactory(pool)
 export const getVotes = getVotesFactory(pool)
+export const updateVote = updateVoteFactory(pool)
 
 import { addNodeFactory, updateNodeFactory, getAllNodesFactory } from './p2p'
 
