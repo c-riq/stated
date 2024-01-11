@@ -46,7 +46,8 @@ export const checkRequiredObservations = ({requiredProperty, requiredPropertyVal
     return result
 }
 
-const isVoteQualified = async ({vote, poll, verification, proclaimed_publication_time}:{vote: vote, poll: (PollDB & StatementDB), verification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date}) => {
+export const isVoteQualified = async ({vote, poll, verification, proclaimed_publication_time}:{
+        vote: vote, poll: (PollDB & StatementDB), verification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date}) => {
     let voteTimeQualified = false
     let votingEntityQualified = false
     let observationsQualified = false
@@ -75,6 +76,8 @@ const isVoteQualified = async ({vote, poll, verification, proclaimed_publication
             const observations = (await getObservationsForEntity({name: parsedPollStatement.author, 
                 domain: parsedPollStatement.domain, observerName, observerDomain})).rows
             observationsQualified = checkRequiredObservations({requiredProperty, requiredPropertyValue, observations})
+        } else {
+            observationsQualified = true
         }
     }
     const qualified = voteTimeQualified && votingEntityQualified && observationsQualified

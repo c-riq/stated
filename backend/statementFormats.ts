@@ -273,7 +273,7 @@ export const parsePollV3 = (s: string, version?:string):poll &{pollType:string} 
 		options
 	}
 }
-export const parsePoll = (s: string, version?:string):poll &{pollType:string} => {
+export const parsePoll = (s: string, version?:string):poll => {
 	if (version && version === '3') return parsePollV3(s)
 	if (version && version !== '4') throw new Error("Invalid version " + version)
 	const pollRegex= new RegExp(''
@@ -327,7 +327,6 @@ export const parsePoll = (s: string, version?:string):poll &{pollType:string} =>
 	const deadlineStr = m.deadline
 	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
 	return {
-		pollType: m['pollType'],
 		judges: m['judges'],
 		deadline: new Date(deadlineStr),
 		poll: m['poll'],
