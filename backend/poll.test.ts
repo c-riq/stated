@@ -1,8 +1,9 @@
 
-import {describe, expect, it} from '@jest/globals';
+import {describe, jest, expect, it} from '@jest/globals';
 jest.disableAutomock()
-import { checkRequiredObservations, isVoteQualified } from './poll'
+import { checkRequiredObservations, isVoteQualified, parseAndCreateVote } from './poll'
 import { parseObservation, parseOrganisationVerification, parsePoll, parseStatement, parseVote } from './statementFormats';
+
 
 
 enum StatementTypeDB {
@@ -214,4 +215,19 @@ Statement content:
         expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCity, proclaimed_publication_time: new Date(0)})).toBe(false)
 
     });
+});
+
+describe('parseAndCreateVote', () => {
+    it('should create a unqualified vote if scope requirements are not met', async () => {
+        // TODO: proper test 
+        const voteContent = `
+	Type: Vote
+	Poll id: xW4v7VmNOh2iYYonqfRDh2JPo00JMLrl4-vZAXsY4oc
+	Poll: Is this a boring poll?
+	Option: Yes
+`
+        const result = await parseAndCreateVote({statement_hash: '_', domain: '_', author: '_', content: voteContent, proclaimed_publication_time: new Date(0)})
+        expect(result).toStrictEqual({rows: [1]})
+    }
+    );
 });
