@@ -55,7 +55,7 @@ const addMissingDerivedEntities = async () => {
             } return false
         })
         log && console.log('statements without entity up for retry ', statements.length)
-        const res = await Promise.allSettled(statements.map(({type, domain, author, content, hash_b64, proclaimed_publication_time}) => 
+        const res = await Promise.allSettled(statements.map(({type, domain, author, content, hash_b64, proclaimed_publication_time} : StatementDB) => 
             createDerivedEntity({statement_hash: hash_b64, domain, author, content, type, proclaimed_publication_time})
         ))
         return res

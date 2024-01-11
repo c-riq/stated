@@ -1,3 +1,4 @@
+import { QueryResult } from 'pg'
 import {createPoll, getVerificationsForDomain, getPoll, 
     createVote, getVotes, updateVote, getObservationsForEntity} from './database'
 import {parseVote, parsePoll, parseStatement, vote, parseObservation} from './statementFormats'
@@ -85,8 +86,9 @@ export const isVoteQualified = async ({vote, poll, verification, proclaimed_publ
 }
 
 
-export const parseAndCreateVote = ({statement_hash, domain, author, content, proclaimed_publication_time }
-        ) => (new Promise(async (resolve, reject)=>{
+export const parseAndCreateVote = ({statement_hash, domain, author, content, proclaimed_publication_time }:{
+            statement_hash: string, domain: string, author: string, content: string, proclaimed_publication_time: Date}
+        ) => (new Promise<QueryResult<StatementDB & VoteDB>>(async (resolve, reject) => {
     console.log('createVote', content)
     try {
         const parsedVote = parseVote(content)
@@ -107,11 +109,16 @@ export const parseAndCreateVote = ({statement_hash, domain, author, content, pro
         const dbResultPoll = await getPoll({statement_hash: pollHash})
         const poll = dbResultPoll.rows[0]
 
-        const qualified = (verification && poll && 
+        const qualified = !!(verification && poll && 
             await isVoteQualified({vote: parsedVote, poll, verification, proclaimed_publication_time}))
-        
-        const dbResultVoteCreation = await createVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified })
-        if(dbResultVoteCreation.rows[0]){
+        let dbResultVoteCreation = undefined
+        try {
+            dbResultVoteCreation = await createVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified })
+        } catch (error) {
+            console.log(error)
+            console.trace()
+        }
+        if(dbResultVoteCreation?.rows?.[0]){
             return resolve(dbResultVoteCreation)
         } else {
             const voteExists = await getVotes({ poll_hash: pollHash, vote_hash: statement_hash })

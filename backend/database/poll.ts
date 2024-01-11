@@ -97,7 +97,7 @@ export const getVotesFactory = pool => ({ poll_hash, vote_hash=null }) => (new P
         FROM votes v 
           LEFT JOIN statements s 
             ON v.statement_hash = s.hash_b64
-        WHERE qualified = TRUE
+        WHERE TRUE
           AND poll_hash = $1
           AND (v.statement_hash = $2 OR $2 IS NULL)
         `,[poll_hash, vote_hash], (error, results) => {
@@ -121,10 +121,12 @@ export const updateVoteFactory = pool => ({ statement_hash, poll_hash, option, d
       checkIfMigrationsAreDone()
       pool.query(`
             UPDATE votes SET
-              (statement_hash, option, domain, qualified) 
-            VALUES 
-              ($1, $3, $4, $5)
-            WHERE poll_hash = $2
+              poll_hash=$2,
+              statement_hash=$1,
+              option=$3,
+              domain=$4,
+              qualified=$5
+            WHERE statement_hash=$1
             RETURNING *`,
       [statement_hash, poll_hash, option, domain, qualified], (error, results) => {
         if (error) {

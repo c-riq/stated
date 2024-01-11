@@ -280,7 +280,7 @@ export const validateAndAddStatementIfMissing: (arg0: {
             }
             if(type && dbResult.rows[0]) {
                 await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, 
-                    domain, author, content, type, proclaimed_publication_time})
+                    domain, author, content, type, proclaimed_publication_time: new Date(proclaimed_publication_time * 1000)})
             }
         } else { // could not verify
             if (api_key){
@@ -335,8 +335,8 @@ export const validateAndAddStatementIfMissing: (arg0: {
     }
 }))
 
-export const createDerivedEntity = 
-    ({statement_hash, domain, author, content, type, proclaimed_publication_time}) => 
+export const createDerivedEntity = ({statement_hash, domain, author, content, type, proclaimed_publication_time}:{
+        statement_hash: string, domain: string, author: string, content: string, type: string, proclaimed_publication_time: Date}) => 
     (new Promise(async (resolve, reject) => {
         let entityCreated = false
         let exsits = false // should only occur if statements were deleted and re-added
@@ -355,7 +355,8 @@ export const createDerivedEntity =
                 entityCreated = !! await parseAndCreatePoll({statement_hash, domain, content})
             }
             if (type === statementTypes.vote) {
-                entityCreated = !! await parseAndCreateVote({statement_hash, domain, author, content, proclaimed_publication_time})
+                const result = await parseAndCreateVote({statement_hash, domain, author, content, proclaimed_publication_time})
+                entityCreated = !! (result.rows && result.rows[0] && result.rows[0].qualified)
             }
             if (type === statementTypes.rating) {
                 entityCreated = !!await parseAndCreateRating({statement_hash, domain, content})

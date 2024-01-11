@@ -429,6 +429,7 @@ export const getStatementsFactory =
                     type,
                     content,
                     domain,
+                    author,
                     hash_b64,
                     first_verification_time,
                     proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
