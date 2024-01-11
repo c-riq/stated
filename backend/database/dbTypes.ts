@@ -1,4 +1,4 @@
-enum StatementType {
+enum StatementTypeDB {
     Statement = "statement",
     DisputeStatementAuthenticity = "dispute_statement_authenticity",
     Response = "response",
@@ -15,7 +15,7 @@ enum StatementType {
     Unsupported = "unsupported",
 }
 
-enum VerificationMethod {
+enum VerificationMethodDB {
     Api = "api",
     Dns = "dns",
 }
@@ -27,13 +27,13 @@ type UnverifiedStatementDB = {
     hash_b64: string;
     source_node_id: number | null;
     received_time: Date;
-    source_verification_method: VerificationMethod | null;
+    source_verification_method: VerificationMethodDB | null;
     verification_retry_count: number | null;
 };
 
 type StatementDB = {
     id: number;
-    type: StatementType;
+    type: StatementTypeDB;
     domain: string;
     author: string;
     statement: string;
@@ -46,7 +46,7 @@ type StatementDB = {
     source_node_id: number | null;
     first_verification_time: Date | null;
     latest_verification_time: Date | null;
-    verification_method: VerificationMethod | null;
+    verification_method: VerificationMethodDB | null;
     derived_entity_created: boolean;
     derived_entity_creation_retry_count: number | null;
     superseded_statement: string | null;

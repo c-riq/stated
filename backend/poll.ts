@@ -24,23 +24,26 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
     }
 }))
 
-const checkRequiredObservations = ({requiredProperty, requiredPropertyValue, observations}:{requiredProperty:string, 
-    requiredPropertyValue:string, observations:StatementDB[]}) => {
+export const checkRequiredObservations = ({requiredProperty, requiredPropertyValue, observations}:{requiredProperty:string, 
+    requiredPropertyValue?:string, observations:StatementDB[]}) => {
     if(!requiredProperty) {
         return true
     }
+    let result = false
     observations.forEach((o) => {
         const parsedStatement = parseStatement({statement: o.statement})
         const parsedObservation = parseObservation(parsedStatement.content)
         if(parsedObservation.property === requiredProperty) {
             if (requiredPropertyValue) {
                 if(parsedObservation.value === requiredPropertyValue) {
-                    return true
+                    result = true
                 }
+            } else {
+                result = true
             }
         }
     })
-    return false
+    return result
 }
 
 const isVoteQualified = async ({vote, poll, verification, proclaimed_publication_time}:{vote: vote, poll: (PollDB & StatementDB), verification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date}) => {
