@@ -141,8 +141,8 @@ export const getJoiningStatements = (hash:string, cb:(arg0: joiningStatementsRes
         }
     }, e => {console.log(e); return})
 }
-export const getVotes = (hash:string, cb:cb) => {
-    hash && req('GET',('votes?hash=' + hash), {}, (json) => {
+export const getVotes = (hash:string, cb: res<(VoteDB & StatementWithSupersedingDB)[]> ) => {
+    hash && req('GET',('votes?hash=' + hash), {}, (json: {statements: QueryResult<VoteDB & StatementWithSupersedingDB>['rows']}) => {
         if ("statements" in json) {
             cb(json.statements)
         }

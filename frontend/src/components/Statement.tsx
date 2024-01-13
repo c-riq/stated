@@ -41,7 +41,7 @@ type props = {
 
 const Statement = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
-    const [votes, setVotes] = React.useState([]);
+    const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
     const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
     const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | observation | 
         bounty | rating | PDFSigning | disputeAuthenticity | disputeContent | boycott | organisationVerification 
@@ -111,7 +111,7 @@ const Statement = (props:props) => {
                         setParsedStatement(parseVote(content) as vote)
                     } if (type === statementTypes.poll) {
                         setParsedStatement(parsePoll(content) as poll)
-                        getVotes(hash, v => setVotes(v))
+                        getVotes(hash, v => setVotes(v || []))
                     } if (type === statementTypes.response) {
                         setParsedStatement(parseResponseContent(content) as responseContent)
                     }
@@ -342,10 +342,12 @@ const Statement = (props:props) => {
 
             
             {votes.length > 0 && (<div><h3>All votes (including unqualified votes)</h3>
-                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
+                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author, qualified},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
-                            {option + " | " + domain + " | " + author + " | " + (new Date(proclaimed_publication_time).toUTCString())}
+                            {option + " | " + domain + " | " +
+                             author + " | " + (new Date(proclaimed_publication_time as unknown as string).toUTCString()) +
+                             " | " + (qualified ? "qualified" : "not qualified")}
                         </RouterLink>
                     </div>
                     )
