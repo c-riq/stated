@@ -1,5 +1,5 @@
 import { Statement } from "./api";
-import { statement } from "./statementFormats";
+import { Statement } from "./statementFormats";
 
 type statementMetaData = {
   domain: string;

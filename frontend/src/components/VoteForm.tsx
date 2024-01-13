@@ -8,7 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
-import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement, poll, statement } from '../statementFormats'
+import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { TextField } from '@mui/material';
@@ -19,8 +19,8 @@ import { FormProps, prepareStatement } from '../types';
 
 export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64: string}}) => {
 
-    const statementParsed = (props.poll?.statement && parseStatement({statement: props.poll.statement, allowNoVersion:true})) as statement | undefined
-    const pollParsed = (statementParsed && parsePoll(statementParsed.content)) as poll | undefined
+    const statementParsed = (props.poll?.statement && parseStatement({statement: props.poll.statement, allowNoVersion:true})) as Statement | undefined
+    const pollParsed = (statementParsed && parsePoll(statementParsed.content)) as Poll | undefined
 
     const [pollHash, setPollId] = React.useState(props.poll?.hash_b64 || "");
     const [poll, setPoll] = React.useState(pollParsed?.poll || "");

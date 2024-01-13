@@ -20,10 +20,9 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications, joiningStatementsResponse,
     getPersonVerifications, getVotes } from '../api'
-import { statementTypes, parsePDFSigning, observation, bounty, rating, PDFSigning, disputeAuthenticity,
-    disputeContent, boycott, organisationVerification, personVerification, vote, poll, parseStatement,
+import { statementTypes, parsePDFSigning, parseStatement,
     parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
-    parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent, responseContent } from '../statementFormats';
+    parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
 
 import {VerificationGraph} from './VerificationGraph'
 
@@ -47,9 +46,9 @@ const StatementDetail = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
     const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
-    const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | observation | 
-        bounty | rating | PDFSigning | disputeAuthenticity | disputeContent | boycott | organisationVerification 
-        | personVerification | vote | poll );
+    const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | Observation | 
+        Bounty | Rating | PDFSigning | DisputeAuthenticity | DisputeContent | Boycott | OrganisationVerification 
+        | PersonVerification | Vote | Poll );
     const [statementCollision, setStatementCollision] = React.useState(undefined as StatementDB[] | undefined );
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
@@ -96,28 +95,28 @@ const StatementDetail = (props:props) => {
                     if (type === statementTypes.signPdf) {
                         setParsedStatement(parsePDFSigning(content))
                     } if (type === statementTypes.observation) {
-                        setParsedStatement(parseObservation(content) as observation)
+                        setParsedStatement(parseObservation(content) as Observation)
                     } if (type === statementTypes.bounty) {
-                        setParsedStatement(parseBounty(content) as bounty)
+                        setParsedStatement(parseBounty(content) as Bounty)
                     } if (type === statementTypes.rating) {
-                        setParsedStatement(parseRating(content) as rating)
+                        setParsedStatement(parseRating(content) as Rating)
                     } if (type === statementTypes.disputeAuthenticity) {
-                        setParsedStatement(parseDisputeAuthenticity(content) as disputeAuthenticity)
+                        setParsedStatement(parseDisputeAuthenticity(content) as DisputeAuthenticity)
                     } if (type === statementTypes.disputeContent) {
-                        setParsedStatement(parseDisputeContent(content) as disputeContent)
+                        setParsedStatement(parseDisputeContent(content) as DisputeContent)
                     } if (type === statementTypes.boycott) {
-                        setParsedStatement(parseBoycott(content) as boycott)
+                        setParsedStatement(parseBoycott(content) as Boycott)
                     } if (type === statementTypes.organisationVerification) {
-                        setParsedStatement(parseOrganisationVerification(content) as organisationVerification)
+                        setParsedStatement(parseOrganisationVerification(content) as OrganisationVerification)
                     } if (type === statementTypes.personVerification) {
-                        setParsedStatement(parsePersonVerification(content) as personVerification)
+                        setParsedStatement(parsePersonVerification(content) as PersonVerification)
                     } if (type === statementTypes.vote) {
-                        setParsedStatement(parseVote(content) as vote)
+                        setParsedStatement(parseVote(content) as Vote)
                     } if (type === statementTypes.poll) {
-                        setParsedStatement(parsePoll(content) as poll)
+                        setParsedStatement(parsePoll(content) as Poll)
                         getVotes(hash, v => setVotes(v || []))
                     } if (type === statementTypes.response) {
-                        setParsedStatement(parseResponseContent(content) as responseContent)
+                        setParsedStatement(parseResponseContent(content) as ResponseContent)
                     }
                 } catch (e) {             
                     console.log(e)              
@@ -257,16 +256,16 @@ const StatementDetail = (props:props) => {
                     <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
                 </>
             ))}
-            {statement?.type === statementTypes.observation && (parsedStatement as observation)?.subjectReference && 
-                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as observation).subjectReference}`} target='_blank'>
+            {statement?.type === statementTypes.observation && (parsedStatement as Observation)?.subjectReference && 
+                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as Observation).subjectReference}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a></div>)
             }
-            {statement?.type === statementTypes.vote && (parsedStatement as vote)?.pollHash && 
-                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as vote).pollHash}`} target='_blank'>
+            {statement?.type === statementTypes.vote && (parsedStatement as Vote)?.pollHash && 
+                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as Vote).pollHash}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
             }
-            {statement?.type === statementTypes.poll && (parsedStatement as poll)?.scopeQueryLink && 
-                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as poll).scopeQueryLink} target='_blank'>
+            {statement?.type === statementTypes.poll && (parsedStatement as Poll)?.scopeQueryLink && 
+                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as Poll).scopeQueryLink} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
             }
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>

@@ -5,7 +5,7 @@ import { sha256 } from '../utils/hash';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 
-import { parseStatement, parseBounty, buildStatement, buildBounty, bounty } from '../statementFormats'
+import { parseStatement, parseBounty, buildStatement, buildBounty } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
@@ -14,7 +14,7 @@ import { FormProps, prepareStatement } from '../types';
 
 export const BountyForm = (props:FormProps) => {
 
-    let bountyToJoin: bounty|undefined = undefined
+    let bountyToJoin: Bounty|undefined = undefined
 
     if (props.statementToJoin?.statement){
         try {

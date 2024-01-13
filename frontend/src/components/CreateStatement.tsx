@@ -23,7 +23,7 @@ import ResponseForm from './ResponseForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
-import { statementTypes, statementTypeValue } from '../statementFormats';
+import { statementTypes } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, 
@@ -83,7 +83,7 @@ const CreateStatement = (props:Props) => {
     const [domainOptions, setDomainOptions] = React.useState([] as domainOption[]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
 
-    const handleTypeChange = (t: statementTypeValue) => {
+    const handleTypeChange = (t: StatementTypeValue) => {
         setType(t)
         setStatement("")
         setStatementHash("")
@@ -334,7 +334,7 @@ const CreateStatement = (props:Props) => {
                     id="statement-type"
                     value={_type}
                     label="Type"
-                    onChange={(e)=>handleTypeChange(e.target.value as statementTypeValue)}
+                    onChange={(e)=>handleTypeChange(e.target.value as StatementTypeValue)}
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={statementTypes.statement}>Statement</MenuItem>

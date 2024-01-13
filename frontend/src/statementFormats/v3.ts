@@ -1,21 +1,6 @@
-import { UTCFormat, poll } from "."
+import { UTCFormat } from "."
 
-export type pollV3 = {
-	country: string|undefined,
-	city: string|undefined,
-	legalEntity: string|undefined,
-	domainScope: string[]|undefined,
-	judges?: string,
-	deadline: Date,
-	poll: string,
-	scopeDescription?: string,
-	scopeQueryLink?: string,
-	scopeProperty?: string,
-	propertyScopeObserver?: string,
-	pollType?: string,
-	options: string[]
-}
-export const parsePollV3 = (s: string, version?:string):poll &{pollType:string} => {
+export const parsePollV3 = (s: string, version?:string):Poll &{pollType:string} => {
 	const pollRegex= new RegExp(''
 	+ /^\n\tType: Poll\n/.source
 	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
