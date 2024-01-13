@@ -41,8 +41,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && rm -f ../backend/public/**/*.map && npm run copyFiles",
-    "copyFiles": "cp ./src/statementFormats.ts ../backend/ & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
+    "build": "npm run copyFilesFromBackend && CI=false react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && rm -f ../backend/public/**/*.map && npm run copyFilesToBackend",
+    "copyFilesToBackend": "cp -r ./src/statementFormats/*.ts ../backend/statementFormats/ & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
+    "copyFilesFromBackend": "rm -rf ./src/api/dbTypes.ts && cp ../backend/database/dbTypes.ts ./src/api",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -64,6 +65,12 @@
       "last 1 safari version"
     ]
   },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": true
+  },
   "optionalDependencies": {
     "fsevents": "^2.3.2"
   },
@@ -71,6 +78,7 @@
     "@types/crypto-js": "^4.1.2",
     "@types/cytoscape": "^3.19.10",
     "@types/cytoscape-fcose": "^2.2.1",
-    "@types/jest": "^29.5.3"
+    "@types/jest": "^29.5.3",
+    "@types/pg": "^8.10.9"
   }
 }

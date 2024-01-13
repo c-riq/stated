@@ -18,6 +18,7 @@ import { parseStatement, buildStatement,
 import GenerateStatement from './GenerateStatement';
 import { sha256 } from '../utils/hash';
 import { generateEmail } from './generateEmail';
+import { FormProps, prepareStatement } from '../types';
 
 const PersonVerificationForm = (props:FormProps) => {
     const [birthCountry, setBirthCountry] = React.useState("");
@@ -54,7 +55,7 @@ const PersonVerificationForm = (props:FormProps) => {
             const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
                 cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parsePersonVerification(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { props.setStatementHash(hash);

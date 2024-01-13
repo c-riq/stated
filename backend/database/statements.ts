@@ -212,6 +212,43 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
         }
       }))
 
+export const getObservationsForEntityFactory = pool => ({ domain, name, observerDomain, observerName }) => (
+  new Promise((resolve: DBCallback<StatementDB>, reject) => {
+        log && console.log('findObservationsForEntity', domain, name, observerDomain, observerName)
+        try {
+          checkIfMigrationsAreDone()
+          pool.query(`
+with v as (
+  select * from organisation_verifications 
+  where verified_domain=$3
+  and name=$4
+)
+select s.* 
+from v 
+join statements s
+  on s.type='observation'
+    and s.domain=$1
+    and s.author=$2
+    and statement like 
+'%
+  Subject identity reference: '||v.statement_hash||'
+%'
+  ;`,[domain, name, observerDomain, observerName], (error, results) => {
+            if (error) {
+              console.log(error)
+              console.trace()
+              return reject(error)
+            } else {
+              return resolve(results)
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        }
+      }))
+
 export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
         log && console.log('deleteStatement', hash_b64)
         try {
@@ -238,7 +275,7 @@ export const getStatementsWithDetailFactory =
   (pool) =>
   ({ skip, searchQuery, limit, types, domain, author } : {skip?: number,
     searchQuery?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
-        new Promise((resolve: DBCallback, reject) => {
+        new Promise((resolve: DBCallback<StatementWithDetailsDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
         let typeQuery = ''
@@ -380,7 +417,7 @@ export const getStatementsWithDetailFactory =
 export const getStatementsFactory =
   (pool) =>
   ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20 }) =>
-    new Promise((resolve: DBCallback, reject) => {
+    new Promise((resolve: DBCallback<StatementDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
         pool.query(
@@ -392,6 +429,7 @@ export const getStatementsFactory =
                     type,
                     content,
                     domain,
+                    author,
                     hash_b64,
                     first_verification_time,
                     proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
@@ -663,7 +701,7 @@ export const cleanUpUnverifiedStatementsFactory =
 
 
 
-export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback<StatementDB & {name?: string, _rank: number}>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(`
@@ -702,7 +740,7 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
         }
       }))
 
-      export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback, reject) => {
+      export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback<StatementDB>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(`
@@ -729,12 +767,12 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
         }
       }))
 
-export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback<{exists: boolean}>, reject) => {
         try {
           checkIfMigrationsAreDone()
           log && console.log(hash_b64, 'check')
           pool.query(`
-                  SELECT 1 FROM statements WHERE hash_b64=$1 LIMIT 1;
+                  SELECT TRUE exists FROM statements WHERE hash_b64=$1 LIMIT 1;
                   `, [hash_b64], (error, results) => {
             log && console.log('statementExists', hash_b64, results, error)
             if (error) {

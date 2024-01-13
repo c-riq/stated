@@ -7,9 +7,10 @@ import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement, buildObservation, parseObservation } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
-import { getNameSuggestions, getStatement, statementDB } from '../api';
+import { getNameSuggestions, getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Autocomplete, Box } from '@mui/material';
+import { FormProps, prepareStatement } from '../types';
 
 
 
@@ -19,7 +20,7 @@ const ObservationForm = (props:FormProps) => {
     const [subjectInputValue, setSubjectInputValue] = React.useState('');
 
     const [referencedHash, setReferencedHash] = React.useState("");
-    const [referencedVerificationStatement, setReferencedVerificationStatement] = React.useState(undefined as statementDB| undefined);
+    const [referencedVerificationStatement, setReferencedVerificationStatement] = React.useState(undefined as StatementDB| undefined);
 
     const [observationProperty, setObservationProperty] = React.useState("");
     const [observationPropertyObject, setObservationPropertyObject] = React.useState(undefined as string[]|undefined);
@@ -60,7 +61,7 @@ const ObservationForm = (props:FormProps) => {
             const content = buildObservation({subject, subjectReference: referencedHash, property: observationProperty, value: obervationValue, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseObservation(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 
@@ -110,10 +111,10 @@ const ObservationForm = (props:FormProps) => {
             sx={{marginBottom: "24px"}}
         />
         {
-        referencedVerificationStatement && (referencedVerificationStatement as statementDB)?.content
-        && ['organisation_verification', 'person_verification'].includes((referencedVerificationStatement as statementDB)?.type)
+        referencedVerificationStatement && (referencedVerificationStatement as StatementDB)?.content
+        && ['organisation_verification', 'person_verification'].includes((referencedVerificationStatement as StatementDB)?.type)
         ? 
-            <a style={{color: '#0000ff'}} href={`/statements/${(referencedVerificationStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(referencedVerificationStatement as StatementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a>
         : 
             <div>Verification statement not found.</div>

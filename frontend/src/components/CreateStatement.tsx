@@ -23,25 +23,26 @@ import ResponseForm from './ResponseForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
-import { statementTypes, statementTypeValue } from '../statementFormats';
+import { statementTypes } from '../statementFormats';
 
 import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, 
-    statementWithDetails, statementDB, checkStaticStatement } from '../api'
+    checkStaticStatement } from '../api'
 
 import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
 import { Chip, Link } from '@mui/material';
 import ObservationForm from './ObservationForm';
+import { publishingMethod } from '../types';
 
 type Props = {
     lt850px: boolean,
     domain?: string,
-    statementToJoin?: statementWithDetails | statementDB,
-    statementToRespond?: statementWithDetails | statementDB,
-    statementToDisputeAuthenticity?: statementWithDetails | statementDB,
-    statementToDisputeContent?: statementWithDetails | statementDB,
-    statementToSupersede?: statementWithDetails | statementDB,
+    statementToJoin?: StatementWithDetailsDB | StatementDB,
+    statementToRespond?: StatementWithDetailsDB | StatementDB,
+    statementToDisputeAuthenticity?: StatementWithDetailsDB | StatementDB,
+    statementToDisputeContent?: StatementWithDetailsDB | StatementDB,
+    statementToSupersede?: StatementWithDetailsDB | StatementDB,
     poll?: {statement: string, hash_b64: string},
     serverTime: Date,
     onPostSuccess: () => void,
@@ -72,7 +73,7 @@ const CreateStatement = (props:Props) => {
     const [supersededStatement, setSupersededStatement] = React.useState(props.statementToSupersede?.hash_b64?? "");
     const [showAdditionalFields, setShowAdditionalFields] = React.useState(false);
     const [apiKey, setApiKey] = React.useState("");
-    const [publishingMethod, setPublishingMethod] = React.useState(undefined as publishingMethod|undefined);
+    const [publishingMethod, setPublishingMethod] = React.useState(undefined as (publishingMethod|undefined));
     const [dnsResponse, setDnsResponse] = React.useState([] as string[]);
     const [staticResponse, setStaticResponse] = React.useState(undefined as {validated:boolean, response?:string}|undefined);
     const [statementHash, setStatementHash] = React.useState("");
@@ -82,7 +83,7 @@ const CreateStatement = (props:Props) => {
     const [domainOptions, setDomainOptions] = React.useState([] as domainOption[]);
     const [domainInputValue, setDomainInputValue] = React.useState('');
 
-    const handleTypeChange = (t: statementTypeValue) => {
+    const handleTypeChange = (t: StatementTypeValue) => {
         setType(t)
         setStatement("")
         setStatementHash("")
@@ -333,7 +334,7 @@ const CreateStatement = (props:Props) => {
                     id="statement-type"
                     value={_type}
                     label="Type"
-                    onChange={(e)=>handleTypeChange(e.target.value as statementTypeValue)}
+                    onChange={(e)=>handleTypeChange(e.target.value as StatementTypeValue)}
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={statementTypes.statement}>Statement</MenuItem>

@@ -1,4 +1,3 @@
-import { statementDB } from "../api";
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import AES from 'crypto-js/aes';
 import encodeUTF8 from 'crypto-js/enc-utf8';
@@ -8,7 +7,7 @@ import React from "react";
 
 
 export const DecryptedContent = ({ statement, decryptionKey, decryptionAlgorithm }:
-    { statement: statementDB, decryptionKey: string, decryptionAlgorithm: string }) => {
+    { statement: StatementDB, decryptionKey: string, decryptionAlgorithm: string }) => {
 
     const [key, setKey] = React.useState<string>(decryptionKey);
     const [algorithm, setAlgorithm] = React.useState<string>(decryptionAlgorithm);

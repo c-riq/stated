@@ -147,7 +147,7 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
     }
   }));
   
-  export const getVerificationsForDomainFactory = pool => ({ domain = null }) => (new Promise((resolve: DBCallback, reject) => {
+  export const getVerificationsForDomainFactory = pool => ({ domain = null }) => (new Promise((resolve: DBCallback<OrganisationVerificationDB & StatementDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`

@@ -1,3 +1,4 @@
+import { QueryResult } from "pg"
 
 // For demos: backendHost = 'http://'+ window.location.host 
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
@@ -34,35 +35,11 @@ const req = (method:method, path:string, body:any, cb:cb, reject:cb, host?:strin
         })
         .catch(error => reject({error}))
 }
-
-export type statementDB = {
-    id: number,
-    type: string,
-    domain: string,
-    author: string,
-    statement: string,
-    proclaimed_publication_time: string,
-    hash_b64: string,
-    referenced_statement: string,
-    tags: string,
-    content: string,
-    content_hash: string,
-    source_node_id: number,
-    first_verification_time: string,
-    latest_verification_time: string,
-    verification_method: string,
-    derived_entity_created: boolean,
-    derived_entity_creation_retry_count: number,
-    name: string,
-    superseding_statement: string,
-    superseded_statement: string,
-    hidden?: boolean,
-}
-export const getStatement = (hash:string, cb:res<statementDB[]> ) => {
+export const getStatement = (hash:string, cb:res<(StatementWithSupersedingDB|StatementWithHiddenDB)[]> ) => {
     if ((hash?.length || 0) < 1) {
         cb(undefined)
     }
-    req('GET',('statements/' + hash), {}, (json) => {
+    req('GET',('statements/' + hash), {}, (json:{statements: QueryResult<StatementWithSupersedingDB|StatementWithHiddenDB>['rows']}) => {
         if (json?.statements?.length > 0) {
             cb(json.statements)
             window.scrollTo(0,0)
@@ -71,25 +48,10 @@ export const getStatement = (hash:string, cb:res<statementDB[]> ) => {
         }
     }, e => {console.log(e); cb(undefined)})
 }
-export type statementWithDetails = {
-    content: string;
-    cotent_hash: string;
-    domain: string;
-    proclaimed_publication_time: string;
-    hash_b64: string;
-    id: number;
-    statement: string;
-    tags: string;
-    repost_count: string;
-    type: string|undefined;
-    name: string|undefined;
-    votes: any[]|undefined;
-    skip_id: string;
-    max_skip_id: string;
-}
+
 export const getStatements = ({searchQuery, skip, limit, domain, author, statementTypes, cb}:
     {searchQuery:string|undefined, limit:number, domain:string|undefined, author:string|undefined,
-    skip:number, statementTypes:string[], cb:res<{statements: statementWithDetails[], time: string}>}) => {
+    skip:number, statementTypes:string[], cb:res<{statements: StatementWithDetailsDB[], time: string}>}) => {
     const types = statementTypes.map(t => {
         return({'Statements': 'statement',
                 'Domain Verifications': 'organisation_verification',
@@ -169,7 +131,7 @@ export const getDNSSECInfo = (domain:string, cb:cb) => {
     }, e => {console.log(e); return})
 }
 export type joiningStatementsResponse = {
-    statements: statementDB[]
+    statements: (StatementDB & {name:string})[]
     time: string
 }
 export const getJoiningStatements = (hash:string, cb:(arg0: joiningStatementsResponse)=>void) => {
@@ -179,8 +141,8 @@ export const getJoiningStatements = (hash:string, cb:(arg0: joiningStatementsRes
         }
     }, e => {console.log(e); return})
 }
-export const getVotes = (hash:string, cb:cb) => {
-    hash && req('GET',('votes?hash=' + hash), {}, (json) => {
+export const getVotes = (hash:string, cb: res<(VoteDB & StatementWithSupersedingDB)[]> ) => {
+    hash && req('GET',('votes?hash=' + hash), {}, (json: {statements: QueryResult<VoteDB & StatementWithSupersedingDB>['rows']}) => {
         if ("statements" in json) {
             cb(json.statements)
         }

@@ -3,7 +3,7 @@ import cytoscape from "cytoscape";
 // @ts-ignore
 import elk from "cytoscape-elk";
 
-import { getSSLOVInfo, backendHost, statementDB } from "../api";
+import { getSSLOVInfo, backendHost } from "../api";
 
 
 cytoscape.use(elk);
@@ -32,7 +32,7 @@ export type edge = {
 type props = {
     organisationVerifications: any[];
     personVerifications: any[];
-    statement: statementDB;
+    statement: StatementDB;
     lt850px: boolean;
 }
 type ssl = {domain: string, O: string, issuer_o: string, issuer_cn: string, sha256: string}

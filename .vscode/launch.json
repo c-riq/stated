@@ -22,7 +22,17 @@
             "preLaunchTask": "npm: build - backend",
             "cwd": "${workspaceRoot}/backend",
             "console": "integratedTerminal",
-            "name": "t-backend",
+            "name": "test-backend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run", "test"
+            ],
+        },{
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceRoot}/frontend",
+            "console": "integratedTerminal",
+            "name": "test-frontend",
             "runtimeExecutable": "npm",
             "runtimeArgs": [
                 "run", "test"

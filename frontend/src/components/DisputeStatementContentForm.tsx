@@ -7,17 +7,18 @@ import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement, buildDisputeContentContent, parseDisputeContent } from '../statementFormats'
 import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
-import { getStatement, statementDB, statementWithDetails } from '../api';
+import { getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { FormProps, prepareStatement } from '../types';
 
 
 
-const DisputeStatementContentForm = (props:FormProps & {statementToDisputeContent?: statementDB | statementWithDetails}) => {
+const DisputeStatementContentForm = (props:FormProps & {statementToDisputeContent?: StatementDB | StatementWithDetailsDB}) => {
     const [disputedStatementHash, setDisputedStatementHash] = React.useState(props.statementToDisputeContent?.hash_b64 ||"");
     const [confidence, setConfidence] = React.useState("");
     const [reliabilityPolicy, setReliabilityPolicy] = React.useState("");
 
-    const [referencedStatement, setReferencedStatement] = React.useState(undefined as statementDB| undefined);
+    const [referencedStatement, setReferencedStatement] = React.useState(undefined as StatementDB| undefined);
 
     React.useEffect(()=>{
         if(!disputedStatementHash){
@@ -37,7 +38,7 @@ const DisputeStatementContentForm = (props:FormProps & {statementToDisputeConten
             const content = buildDisputeContentContent({hash: disputedStatementHash, confidence: parseFloat(confidence), reliabilityPolicy})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
-            const parsedStatement = parseStatement(statement)
+            const parsedStatement = parseStatement({statement})
             parseDisputeContent(parsedStatement.content)
             props.setStatement(statement)
             sha256(statement).then((hash) => { 
@@ -65,9 +66,9 @@ const DisputeStatementContentForm = (props:FormProps & {statementToDisputeConten
             sx={{marginBottom: "24px"}}
         />
         {
-        referencedStatement && (referencedStatement as statementDB)?.content
+        referencedStatement && (referencedStatement as StatementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as statementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as StatementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>Referenced statement not found.</div>

@@ -18,36 +18,38 @@ import DangerousIcon from '@mui/icons-material/Dangerous';
 import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import { getStatement, getJoiningStatements, getOrganisationVerifications,
-    getPersonVerifications, getVotes, statementWithDetails } from '../api'
-import { statementTypes, parsePDFSigning, observation, bounty, rating, PDFSigning, disputeAuthenticity, disputeContent, boycott, organisationVerification, personVerification, vote, poll, parseStatement, parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott, parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent, responseContent } from '../statementFormats';
+import { getStatement, getJoiningStatements, getOrganisationVerifications, joiningStatementsResponse,
+    getPersonVerifications, getVotes } from '../api'
+import { statementTypes, parsePDFSigning, parseStatement,
+    parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
+    parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
 
 import {VerificationGraph} from './VerificationGraph'
 
 import {filePath, getWorkingFileURL} from './SignPDFForm'
-import {statementDB, joiningStatementsResponse} from '../api'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
+import { Chip } from '@mui/material';
 
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-    setStatementToJoin: (arg0: statementWithDetails | statementDB) => void,
-    respondToStatement: (arg0: statementWithDetails | statementDB) => void,
-    disputeStatementAuthenticity: (arg0: statementWithDetails | statementDB) => void,
-    disputeStatementContent: (arg0: statementWithDetails | statementDB) => void,
-    supersedeStatement: (arg0: statementWithDetails | statementDB) => void,
+    setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    disputeStatementContent: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    supersedeStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
 }
 
-const Statement = (props:props) => {
+const StatementDetail = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
-    const [votes, setVotes] = React.useState([]);
-    const [statement, setStatement] = React.useState(undefined as statementDB | undefined );
-    const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | observation | 
-        bounty | rating | PDFSigning | disputeAuthenticity | disputeContent | boycott | organisationVerification 
-        | personVerification | vote | poll );
-    const [statementCollision, setStatementCollision] = React.useState(undefined as statementDB[] | undefined );
+    const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
+    const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
+    const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | Observation | 
+        Bounty | Rating | PDFSigning | DisputeAuthenticity | DisputeContent | Boycott | OrganisationVerification 
+        | PersonVerification | Vote | Poll );
+    const [statementCollision, setStatementCollision] = React.useState(undefined as StatementDB[] | undefined );
     const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [personVerifications, setPersonVerifications] = React.useState([]);
@@ -89,32 +91,32 @@ const Statement = (props:props) => {
                     setDataFetched(false)
                 }
                 try {
-                    const {type, content} = parseStatement(s![0].statement)
+                    const {type, content} = parseStatement({statement: s![0].statement, allowNoVersion: true})
                     if (type === statementTypes.signPdf) {
                         setParsedStatement(parsePDFSigning(content))
                     } if (type === statementTypes.observation) {
-                        setParsedStatement(parseObservation(content) as observation)
+                        setParsedStatement(parseObservation(content) as Observation)
                     } if (type === statementTypes.bounty) {
-                        setParsedStatement(parseBounty(content) as bounty)
+                        setParsedStatement(parseBounty(content) as Bounty)
                     } if (type === statementTypes.rating) {
-                        setParsedStatement(parseRating(content) as rating)
+                        setParsedStatement(parseRating(content) as Rating)
                     } if (type === statementTypes.disputeAuthenticity) {
-                        setParsedStatement(parseDisputeAuthenticity(content) as disputeAuthenticity)
+                        setParsedStatement(parseDisputeAuthenticity(content) as DisputeAuthenticity)
                     } if (type === statementTypes.disputeContent) {
-                        setParsedStatement(parseDisputeContent(content) as disputeContent)
+                        setParsedStatement(parseDisputeContent(content) as DisputeContent)
                     } if (type === statementTypes.boycott) {
-                        setParsedStatement(parseBoycott(content) as boycott)
+                        setParsedStatement(parseBoycott(content) as Boycott)
                     } if (type === statementTypes.organisationVerification) {
-                        setParsedStatement(parseOrganisationVerification(content) as organisationVerification)
+                        setParsedStatement(parseOrganisationVerification(content) as OrganisationVerification)
                     } if (type === statementTypes.personVerification) {
-                        setParsedStatement(parsePersonVerification(content) as personVerification)
+                        setParsedStatement(parsePersonVerification(content) as PersonVerification)
                     } if (type === statementTypes.vote) {
-                        setParsedStatement(parseVote(content) as vote)
+                        setParsedStatement(parseVote(content) as Vote)
                     } if (type === statementTypes.poll) {
-                        setParsedStatement(parsePoll(content) as poll)
-                        getVotes(hash, v => setVotes(v))
+                        setParsedStatement(parsePoll(content) as Poll)
+                        getVotes(hash, v => setVotes(v || []))
                     } if (type === statementTypes.response) {
-                        setParsedStatement(parseResponseContent(content) as responseContent)
+                        setParsedStatement(parseResponseContent(content) as ResponseContent)
                     }
                 } catch (e) {             
                     console.log(e)              
@@ -156,7 +158,7 @@ const Statement = (props:props) => {
                 <div key={i}>
                     <RouterLink key={i} onClick={()=>setDataFetched(false)} 
                         to={"/statements/"+s.hash_b64}>
-                        {s.hash_b64 + " | " + s.domain + " | " + (new Date(s.proclaimed_publication_time).toUTCString())}
+                        {s.hash_b64 + " | " + s.domain + " | " + (s.proclaimed_publication_time && new Date(s.proclaimed_publication_time).toUTCString())}
                     </RouterLink>
                 </div>
             ))}
@@ -169,17 +171,18 @@ const Statement = (props:props) => {
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
-            {statement.superseding_statement && (<Alert severity="error">
+            {(statement as StatementWithSupersedingDB).superseding_statement && (<Alert severity="error">
                 This statement has been replaced by the author with another statement:
                 <RouterLink onClick={()=>setDataFetched(false)} 
-                    to={"/statements/"+statement.superseding_statement}> {statement.superseding_statement}</RouterLink>
+                    to={"/statements/"+(statement as StatementWithSupersedingDB).superseding_statement}> {
+                    (statement as StatementWithSupersedingDB).superseding_statement}</RouterLink>
             </Alert>)}
             {statement.superseded_statement && (<Alert severity="info">
                 This statement has a previous version:
                 <RouterLink onClick={()=>setDataFetched(false)} 
                     to={"/statements/"+statement.superseded_statement}> {statement.superseded_statement}</RouterLink>
             </Alert>)}
-            {statement.hidden && (<Alert severity="info">
+            {(statement as StatementWithHiddenDB).hidden && (<Alert severity="info">
                 This is a hidden statement.
             </Alert>)}
             <p>Raw statement</p>
@@ -253,16 +256,16 @@ const Statement = (props:props) => {
                     <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
                 </>
             ))}
-            {statement?.type === statementTypes.observation && (parsedStatement as observation)?.subjectReference && 
-                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as observation).subjectReference}`} target='_blank'>
+            {statement?.type === statementTypes.observation && (parsedStatement as Observation)?.subjectReference && 
+                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as Observation).subjectReference}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a></div>)
             }
-            {statement?.type === statementTypes.vote && (parsedStatement as vote)?.pollHash && 
-                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as vote).pollHash}`} target='_blank'>
+            {statement?.type === statementTypes.vote && (parsedStatement as Vote)?.pollHash && 
+                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as Vote).pollHash}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
             }
-            {statement?.type === statementTypes.poll && (parsedStatement as poll)?.scopeQueryLink && 
-                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as poll).scopeQueryLink} target='_blank'>
+            {statement?.type === statementTypes.poll && (parsedStatement as Poll)?.scopeQueryLink && 
+                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as Poll).scopeQueryLink} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
             }
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
@@ -332,7 +335,7 @@ const Statement = (props:props) => {
                 {joiningStatements.statements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
-                            {domain + " | " + (new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
+                            {domain + " | " + (proclaimed_publication_time && new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
                         </RouterLink>
                     </div>
                     )
@@ -342,10 +345,15 @@ const Statement = (props:props) => {
 
             
             {votes.length > 0 && (<div><h3>All votes (including unqualified votes)</h3>
-                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author},i)=>(
+                {votes.map(({proclaimed_publication_time, domain, option, hash_b64, author, qualified},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
-                            {option + " | " + domain + " | " + author + " | " + (new Date(proclaimed_publication_time).toUTCString())}
+                            {option + " | " + domain + " | " +
+                             author + " | " + (new Date(proclaimed_publication_time as unknown as string).toUTCString()) +
+                             " | "}
+                                {qualified ? 
+                                <Chip label="qualified" color="success" size='small' variant="outlined" /> : 
+                                <Chip label="not qualified" color="error" size='small' variant="outlined"/>}
                         </RouterLink>
                     </div>
                     )
@@ -359,5 +367,5 @@ const Statement = (props:props) => {
 }
 
 
-export default Statement
+export default StatementDetail
 

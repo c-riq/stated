@@ -33,7 +33,7 @@ export const createPollFactory = pool => (o) =>
 }))
 
 
-export const getPollFactory = pool => ({ statement_hash }) => (new Promise((resolve: DBCallback, reject) => {
+export const getPollFactory = pool => ({ statement_hash }) => (new Promise((resolve: DBCallback<PollDB & StatementDB>, reject) => {
     console.log('getPoll', statement_hash)
     try {
       checkIfMigrationsAreDone()
@@ -88,18 +88,50 @@ export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, d
 }))
 
 
-export const getVotesFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const getVotesFactory = pool => ({ poll_hash, vote_hash=null, domain=null, author=null, ignore_vote_hash=null }) => (new Promise((
+      resolve: DBCallback<VoteDB & StatementWithSupersedingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
         SELECT 
           *
         FROM votes v 
-          LEFT JOIN statements s 
-            ON v.statement_hash = s.hash_b64
-        WHERE qualified = TRUE
-          AND poll_hash = $1
-        `,[hash_b64], (error, results) => {
+          JOIN statement_with_superseding s 
+            ON poll_hash = $1
+            AND v.statement_hash = s.hash_b64
+            AND (v.statement_hash = $2 OR $2 IS NULL)
+            AND (s.domain = $3 OR $3 IS NULL)
+            AND (s.author = $4 OR $4 IS NULL)
+            AND (v.statement_hash != $5 OR $5 IS NULL)
+        `,[poll_hash, vote_hash, domain, author, ignore_vote_hash], (error, results) => {
+        if (error) {
+          console.log(error)
+          console.trace()
+          return reject(error)
+        } else {
+          return resolve(results)
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      console.trace()
+      return reject(error)
+    }
+  }))
+
+export const updateVoteFactory = pool => ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback<VoteDB & StatementDB>, reject) => {
+    try {
+      checkIfMigrationsAreDone()
+      pool.query(`
+            UPDATE votes SET
+              poll_hash=$2,
+              statement_hash=$1,
+              option=$3,
+              domain=$4,
+              qualified=$5
+            WHERE statement_hash=$1
+            RETURNING *`,
+      [statement_hash, poll_hash, option, domain, qualified], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
