@@ -4,7 +4,7 @@ import './App.css';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import CreateStatement from './components/CreateStatement'
-import StatementDB from './components/Statement'
+import StatementDetail from './components/StatementDetail'
 import Statements from './components/Statements'
 import {FullVerificationGraph} from './components/FullVerificationGraph'
 import { FullNetworkGraph } from './components/FullNetworkGraph';
@@ -366,7 +366,7 @@ function App() {
             {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDB voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDetail voteOnPoll={voteOnPoll} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
@@ -376,7 +376,7 @@ function App() {
             />
             <Route path='/statements/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDB voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDetail voteOnPoll={voteOnPoll} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
