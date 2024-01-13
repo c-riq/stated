@@ -19,14 +19,12 @@ export const parsePollV3 = (s: string, version?:string):Poll &{pollType:string} 
 	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
 	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
 	+ /$/.source)
-	let m:any = s.match(pollRegex)
-	if(!m) throw new Error("Invalid poll format: " + s)
+	const match = s.match(pollRegex)
+	if(!match) throw new Error("Invalid poll format: " + s)
 	// if(m?.groups) {m = m.groups}
-	else{
-		m = {pollType: m[1], scopeDescription: m[2], scopeQueryLink: m[3], country: m[4], city: m[5],
-			legalEntity: m[6], domainScope: m[7], judges: m[8], deadline: m[9], poll: m[10], 
-			option1: m[11], option2: m[12], option3: m[13], option4: m[14], option5: m[15]}
-	}
+	const m = {pollType: match[1], scopeDescription: match[2], scopeQueryLink: match[3], country: match[4], city: match[5],
+		legalEntity: match[6], domainScope: match[7], judges: match[8], deadline: match[9], poll: match[10], 
+		option1: match[11], option2: match[12], option3: match[13], option4: match[14], option5: match[15]}
 	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
 	const domainScope = m.domainScope?.split(', ')
 	const deadlineStr = m.deadline

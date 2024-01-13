@@ -10,8 +10,6 @@ import GenerateStatement from './GenerateStatement';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
-
-
 export const BountyForm = (props:FormProps) => {
 
     let bountyToJoin: Bounty|undefined = undefined

@@ -65,6 +65,12 @@
       "last 1 safari version"
     ]
   },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": true
+  },
   "optionalDependencies": {
     "fsevents": "^2.3.2"
   },
