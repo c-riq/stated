@@ -4,9 +4,9 @@ jest.disableAutomock()
 import { checkRequiredObservations, isVoteQualified, parseAndCreateVote } from './poll'
 import { parseObservation, parseOrganisationVerification, parsePoll, parseStatement, parseVote } from './statementFormats';
 import { getVotes } from "./database";
-import { Query, QueryResult, QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
-
+// TODO: fix types in VSCode
 
 enum StatementTypeDB {
     Statement = "statement",

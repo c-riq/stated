@@ -1,10 +1,10 @@
 import { parseRating, parseStatement, parseOrganisationVerification, parsePDFSigning,
     parsePersonVerification, parseDisputeAuthenticity, parseDisputeContent, parseVote, parsePoll, parseQuotation,
-	parseBounty, parseBoycott, parseObservation, parseResponseContent, buildResponseContent } from './statementFormats'
+	parseBounty, parseBoycott, parseObservation, parseResponseContent, buildResponseContent } from '..'
 
 import { buildRating, buildStatement, buildBounty, buildDisputeAuthenticityContent, buildDisputeContentContent, buildPDFSigningContent, 
 	buildPersonVerificationContent, buildPollContent, buildQuotationContent, buildVoteContent,
-	buildOrganisationVerificationContent, buildBoycott, buildObservation } from './statementFormats'
+	buildOrganisationVerificationContent, buildBoycott, buildObservation } from '..'
 
 const randomUnicodeString = () => Array.from(
 	{ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * (65536)))

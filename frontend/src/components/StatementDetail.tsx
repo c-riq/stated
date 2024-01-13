@@ -20,7 +20,10 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications, joiningStatementsResponse,
     getPersonVerifications, getVotes } from '../api'
-import { statementTypes, parsePDFSigning, observation, bounty, rating, PDFSigning, disputeAuthenticity, disputeContent, boycott, organisationVerification, personVerification, vote, poll, parseStatement, parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott, parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent, responseContent } from '../statementFormats';
+import { statementTypes, parsePDFSigning, observation, bounty, rating, PDFSigning, disputeAuthenticity,
+    disputeContent, boycott, organisationVerification, personVerification, vote, poll, parseStatement,
+    parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
+    parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent, responseContent } from '../statementFormats';
 
 import {VerificationGraph} from './VerificationGraph'
 

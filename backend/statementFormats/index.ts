@@ -1,7 +1,8 @@
 /* eslint-disable no-useless-concat */
 // copied from frotend to backend directory via 'npm run build'
 
-import {legalForms} from './constants/legalForms'
+import {legalForms} from '../constants/legalForms'
+import { parsePollV3 } from './v3'
 
 const version = 4
 
@@ -37,7 +38,7 @@ export const minPeopleCountToRange = (n: number) => {
 	if(n >= 0) return peopleCountBuckets["0"]
 }
 
-const UTCFormat:RegExp = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/
+export const UTCFormat:RegExp = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/
 
 export type statement = {
 	domain: string,
@@ -148,14 +149,13 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 	+ /(?:\tParaphrased statement: (?:(?<paraphrasedTypedStatement>\n\t\tType: (?<type>[^\n]+?)\n[\s\S]+?)|(?<paraphrasedStatement>[\s\S]+?)))/.source
 	+ /$/.source
 	);
-	let m: any = s.match(voteRegex)
-	if(!m) throw new Error("Invalid quotation format: " + s)
+	let match = s.match(voteRegex)
+	if(!match) throw new Error("Invalid quotation format: " + s)
+	let m = {} as quotation & {type: string|undefined}
 	// if(m?.groups) {m = m.groups}
-	else{
-		m = {originalAuthor: m[1], authorVerification: m[2], originalTime: m[3], source: m[4],
-			picture: m[5], confidence: m[6], quotation: m[7], paraphrasedStatement: m[8] || m[10],
-			type: m[9] ? m[9].toLowerCase().replace(' ','_') : undefined}
-	}
+	m = {originalAuthor: match[1], authorVerification: match[2], originalTime: match[3], source: match[4],
+		picture: match[5], confidence: match[6], quotation: match[7], paraphrasedStatement: match[8] || match[10],
+		type: match[9] ? match[9].toLowerCase().replace(' ','_') : undefined}
 	return {
 		originalAuthor: m['originalAuthor'],
 		authorVerification: m['authorVerification'],
@@ -164,7 +164,7 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 		picture: m['picture'],
 		confidence: m['confidence'],
 		quotation: m['quotation'],
-		paraphrasedStatement: (m['paraphrasedStatement']||m['paraphrasedTypedStatement']?.replace(/\n\t\t/g, "\n\t")),
+		paraphrasedStatement: (m['paraphrasedStatement']?.replace(/\n\t\t/g, "\n\t")),
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
 }
@@ -212,66 +212,6 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	(scopeContent ? "\t" + "Who can vote: \n" + scopeContent : "") +
 	""
 	return content
-}
-export type pollV3 = {
-	country: string|undefined,
-	city: string|undefined,
-	legalEntity: string|undefined,
-	domainScope: string[]|undefined,
-	judges?: string,
-	deadline: Date,
-	poll: string,
-	scopeDescription?: string,
-	scopeQueryLink?: string,
-	scopeProperty?: string,
-	propertyScopeObserver?: string,
-	pollType?: string,
-	options: string[]
-}
-export const parsePollV3 = (s: string, version?:string):poll &{pollType:string} => {
-	const pollRegex= new RegExp(''
-	+ /^\n\tType: Poll\n/.source
-	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
-	+ /(?:\tWho can vote: (?<scopeDescription>[^\n]+?)\n)?/.source
-	+ /(?:\tLink to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
-	+ /(?:\tCountry scope: (?<country>[^\n]+?)\n)?/.source
-	+ /(?:\tCity scope: (?<city>[^\n]+?)\n)?/.source
-	+ /(?:\tLegal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
-	+ /(?:\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
-	+ /(?:\tThe decision is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
-	+ /(?:\tVoting deadline: (?<deadline>[^\n]+?)\n)?/.source
-	+ /\tPoll: (?<poll>[^\n]+?)\n/.source
-	+ /(?:\tOption 1: (?<option1>[^\n]+?)\n)?/.source
-	+ /(?:\tOption 2: (?<option2>[^\n]+?)\n)?/.source
-	+ /(?:\tOption 3: (?<option3>[^\n]+?)\n)?/.source
-	+ /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
-	+ /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
-	+ /$/.source)
-	let m:any = s.match(pollRegex)
-	if(!m) throw new Error("Invalid poll format: " + s)
-	// if(m?.groups) {m = m.groups}
-	else{
-		m = {pollType: m[1], scopeDescription: m[2], scopeQueryLink: m[3], country: m[4], city: m[5],
-			legalEntity: m[6], domainScope: m[7], judges: m[8], deadline: m[9], poll: m[10], 
-			option1: m[11], option2: m[12], option3: m[13], option4: m[14], option5: m[15]}
-	}
-	const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
-	const domainScope = m.domainScope?.split(', ')
-	const deadlineStr = m.deadline
-	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
-	return {
-		pollType: m['pollType'],
-		country: m['country'],
-		scopeDescription: m['scopeDescription'],
-		scopeQueryLink: m['scopeQueryLink'],
-		city: m['city'],
-		legalEntity: m['legalEntity'],
-		domainScope: (domainScope && domainScope.length > 0) ? domainScope : undefined,
-		judges: m['judges'],
-		deadline: new Date(deadlineStr),
-		poll: m['poll'],
-		options
-	}
 }
 export const parsePoll = (s: string, version?:string):poll => {
 	if (version && version === '3') return parsePollV3(s)
