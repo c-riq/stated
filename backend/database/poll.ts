@@ -88,19 +88,22 @@ export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, d
 }))
 
 
-export const getVotesFactory = pool => ({ poll_hash, vote_hash=null }) => (new Promise((resolve: DBCallback<VoteDB & StatementDB>, reject) => {
+export const getVotesFactory = pool => ({ poll_hash, vote_hash=null, domain=null, author=null, ignore_vote_hash=null }) => (new Promise((
+      resolve: DBCallback<VoteDB & StatementWithSupersedingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
         SELECT 
           *
         FROM votes v 
-          LEFT JOIN statements s 
-            ON v.statement_hash = s.hash_b64
-        WHERE TRUE
-          AND poll_hash = $1
-          AND (v.statement_hash = $2 OR $2 IS NULL)
-        `,[poll_hash, vote_hash], (error, results) => {
+          JOIN statement_with_superseding s 
+            ON poll_hash = $1
+            AND v.statement_hash = s.hash_b64
+            AND (v.statement_hash = $2 OR $2 IS NULL)
+            AND (s.domain = $3 OR $3 IS NULL)
+            AND (s.author = $4 OR $4 IS NULL)
+            AND (v.statement_hash != $5 OR $5 IS NULL)
+        `,[poll_hash, vote_hash, domain, author, ignore_vote_hash], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()

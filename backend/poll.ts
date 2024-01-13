@@ -47,11 +47,14 @@ export const checkRequiredObservations = ({requiredProperty, requiredPropertyVal
     return result
 }
 
-export const isVoteQualified = async ({vote, poll, verification, proclaimed_publication_time}:{
-        vote: vote, poll: (PollDB & StatementDB), verification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date}) => {
+export const isVoteQualified = async ({vote, poll, verification, proclaimed_publication_time, statement_hash, domain, author}:{
+        vote: vote, poll: (PollDB & StatementDB), verification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date,
+        statement_hash: string, domain:string, author:string
+    }) => {
     let voteTimeQualified = false
     let votingEntityQualified = false
     let observationsQualified = false
+    let noExistingVotesFromAuthor = false
     if (verification && poll) {
         // TODO: if ownDomain == poll judge, then compare against current time
         if(proclaimed_publication_time <= poll.deadline) {
@@ -80,8 +83,10 @@ export const isVoteQualified = async ({vote, poll, verification, proclaimed_publ
         } else {
             observationsQualified = true
         }
+        const dbResultExistingVotes = await getVotes({ poll_hash: poll.hash_b64, ignore_vote_hash: statement_hash, domain, author })
+        noExistingVotesFromAuthor = ! (dbResultExistingVotes.rows.length > 0)
     }
-    const qualified = voteTimeQualified && votingEntityQualified && observationsQualified
+    const qualified = voteTimeQualified && votingEntityQualified && observationsQualified && noExistingVotesFromAuthor
     return qualified
 }
 
@@ -110,7 +115,7 @@ export const parseAndCreateVote = ({statement_hash, domain, author, content, pro
         const poll = dbResultPoll.rows[0]
 
         const qualified = !!(verification && poll && 
-            await isVoteQualified({vote: parsedVote, poll, verification, proclaimed_publication_time}))
+            await isVoteQualified({vote: parsedVote, poll, verification, proclaimed_publication_time, statement_hash, domain, author}))
         let dbResultVoteCreation = undefined
         try {
             dbResultVoteCreation = await createVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified })

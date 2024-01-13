@@ -3,6 +3,8 @@ import {describe, jest, expect, it} from '@jest/globals';
 jest.disableAutomock()
 import { checkRequiredObservations, isVoteQualified, parseAndCreateVote } from './poll'
 import { parseObservation, parseOrganisationVerification, parsePoll, parseStatement, parseVote } from './statementFormats';
+import { getVotes } from "./database";
+import { Query, QueryResult, QueryResultRow } from 'pg';
 
 
 
@@ -78,7 +80,7 @@ jest.mock('./database', () => ({
     getVerificationsForDomain: jest.fn(() => ({rows: [1]})),
     getPoll: jest.fn(() => ({rows: [1]})),
     createVote: jest.fn(() => ({rows: [1]})),
-    getVotes: jest.fn(() => ({rows: [1]})),
+    getVotes: jest.fn(() => ({rows: []})),
     updateVote: jest.fn(() => ({rows: [1]})),
     getObservationsForEntity: jest.fn(() => ({})),
 }));
@@ -118,8 +120,7 @@ Statement content:
 });
 
 describe('isVoteQualified', () => {
-    it('should return true when the required country, legal form are met', async () => {
-        const pollStatement = `Publishing domain: localhost
+    const pollStatement = `Publishing domain: localhost
 Author: localhost
 Time: Thu, 11 Jan 2024 20:34:02 GMT
 Format version: 4
@@ -174,17 +175,18 @@ Statement content:
 	Reliability policy: https://link
 	Confidence: 0.99
 `
-        const parsedVerificationStatment = parseStatement({statement: verificationStatement, allowNoVersion: true})
-        const verification = parseOrganisationVerification(parsedVerificationStatment.content)
-        const statementDBObject: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
-            statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
-            verified_domain: verification.domain, name: verification.name, legal_entity_type: verification.legalForm, country: verification.country, city: verification.city,
-            serial_number: verification.serialNumber, confidence: verification.confidence as number,
-            foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
-            statement_hash: '', proclaimed_publication_time: new Date()
-        }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(0)})).toBe(true)
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(170500850900000)})).toBe(false)
+    const parsedVerificationStatment = parseStatement({statement: verificationStatement, allowNoVersion: true})
+    const verification = parseOrganisationVerification(parsedVerificationStatment.content)
+    const statementDBObject: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
+        statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
+        verified_domain: verification.domain, name: verification.name, legal_entity_type: verification.legalForm, country: verification.country, city: verification.city,
+        serial_number: verification.serialNumber, confidence: verification.confidence as number,
+        foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
+        statement_hash: '', proclaimed_publication_time: new Date()
+    }
+    it('should return true when the required country, legal form are met', async () => {
+        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(true)
+        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(170500850900000),  author:'', domain:'', statement_hash:''})).toBe(false)
 
 
         const statementDBObjectWrongCountry: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
@@ -194,7 +196,7 @@ Statement content:
             foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCountry, proclaimed_publication_time: new Date(0)})).toBe(false)
+        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCountry, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
 
         const statementDBObjectWrongLegalForm: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
@@ -203,7 +205,7 @@ Statement content:
             foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongLegalForm, proclaimed_publication_time: new Date(0)})).toBe(false)
+        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongLegalForm, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
 
         const statementDBObjectWrongCity: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
@@ -212,9 +214,16 @@ Statement content:
             foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCity, proclaimed_publication_time: new Date(0)})).toBe(false)
+        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCity, proclaimed_publication_time: new Date(0),  author:'', domain:'', statement_hash:''})).toBe(false)
 
     });
+
+    it('should return false when the author@domain already voted on the same poll', async () => {
+        (getVotes as jest.MockedFunction<typeof getVotes>).mockImplementation(() => ({rows: [1]} as unknown as Promise<QueryResult<any>>))
+        const doubleVoteTry = await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})
+        expect(doubleVoteTry).toBe(false)
+    });
+
 });
 
 describe('parseAndCreateVote', () => {
