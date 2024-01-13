@@ -28,6 +28,7 @@ import {filePath, getWorkingFileURL} from './SignPDFForm'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
+import { Chip } from '@mui/material';
 
 type props = {
     lt850px: boolean,
@@ -39,7 +40,7 @@ type props = {
     supersedeStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
 }
 
-const Statement = (props:props) => {
+const StatementDetail = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
     const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
     const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
@@ -347,7 +348,10 @@ const Statement = (props:props) => {
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
                             {option + " | " + domain + " | " +
                              author + " | " + (new Date(proclaimed_publication_time as unknown as string).toUTCString()) +
-                             " | " + (qualified ? "qualified" : "not qualified")}
+                             " | "}
+                                {qualified ? 
+                                <Chip label="qualified" color="success" size='small' variant="outlined" /> : 
+                                <Chip label="not qualified" color="error" size='small' variant="outlined"/>}
                         </RouterLink>
                     </div>
                     )
@@ -361,5 +365,5 @@ const Statement = (props:props) => {
 }
 
 
-export default Statement
+export default StatementDetail
 
