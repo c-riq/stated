@@ -26,7 +26,9 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
     const [poll, setPoll] = React.useState(pollParsed?.poll || "");
     const [pollStatement, setPollStatement] = React.useState(undefined as StatementDB| undefined);
     const [options, setOptions] = React.useState((pollParsed?.options || []) as string[]);
+    const [allowArbitraryVote, setAllowArbitraryVote] = React.useState(false);
     const [vote, setVote] = React.useState("");
+    const [freeTextVote, setFreeTextVote] = React.useState("");
 
     React.useEffect(()=>{
         if(!pollHash){
@@ -51,6 +53,9 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
                 const pollParsedFromAPI = parsePoll(statement.content)
                 setPoll(pollParsedFromAPI.poll)
                 setOptions(pollParsedFromAPI.options)
+                if (pollParsedFromAPI.allowArbitraryVote) {
+                    setAllowArbitraryVote(true)
+                }
             } catch {
                 setPoll('Invalid poll')
                 setOptions([])
@@ -62,7 +67,8 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
     const prepareStatement:prepareStatement = ({method}) => {
         try {
             props.setPublishingMethod(method)
-            const content = buildVoteContent({pollHash: pollHash, poll: poll, vote})
+            let voteString = (vote === 'other' || !options.length) ? freeTextVote : vote
+            const content = buildVoteContent({pollHash: pollHash, poll: poll, vote: voteString})
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement({statement})
@@ -105,12 +111,27 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             <div>No statement found.</div>
         }
         <FormLabel id="polllabel" style={{marginTop: '12px'}}>{poll}</FormLabel>
+        {options.length > 0 && (
         <RadioGroup
             value={vote}
             onChange={handleChange}>
                 {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
             ))}
+            {allowArbitraryVote && (
+                <FormControlLabel value="other" control={<Radio />} label="Other" />
+            )}
         </RadioGroup>
+        )}
+        {allowArbitraryVote && (!options.length || vote === 'other') && (
+        <TextField
+            id="free text vote"
+            variant="outlined"
+            placeholder=''
+            label="Free text vote"
+            onChange={e => { setFreeTextVote(e.target.value) }}
+            margin="normal"
+            sx={{marginBottom: "12px"}}
+        />)}
         {props.children}
         <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
