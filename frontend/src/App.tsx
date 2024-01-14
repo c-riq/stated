@@ -5,30 +5,22 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 import CreateStatement from './components/CreateStatement'
 import StatementDetail from './components/StatementDetail'
-import Statements from './components/Statements'
 import {FullVerificationGraph} from './components/FullVerificationGraph'
 import { FullNetworkGraph } from './components/FullNetworkGraph';
 
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import CloseIcon from '@mui/icons-material/Close';
-import { Route, Routes, Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 
 import { getStatements } from './api'
 
-// @ts-ignore
-import gh from './img/github.png'
-// @ts-ignore
-import logo from './img/logo.png'
 import DebugStatement from './components/DebugStatement';
-import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+import { CenterModal } from './components/CenterModal';
+import { Layout } from './components/Layout';
 
 const types = [
   'Statements',
@@ -39,172 +31,6 @@ const types = [
   'Bounties',
   'Observations',
 ];
-
-type CenterModalProps = {
-  lt850px: boolean,
-  text?: string,
-  modalOpen: boolean,
-  onClose: Function,
-  children: any
-}
-
-const CenterModal = (props: CenterModalProps) => {
-  const { lt850px } = props
-  return(
-  <Modal sx={{backgroundColor:'rgba(0,0,0,0.1)'}} open={props.modalOpen} onClose={() => props.onClose({warning: true})}>
-    <div>
-  <Box sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: lt850px ? '100vw' : '70vw',
-      height:  lt850px ? '100vh' :'90vh',
-      bgcolor: '#ffffff',
-      borderRadius: '12px',
-      borderWidth: '0px',
-      boxShadow: 24,
-      overflowY: 'scroll',
-      p: 0
-    }}>
-    {!lt850px&&(<div style={{height: 50, padding: '16px 16px 16px 16px'}}>
-      <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}>
-        <CloseIcon sx={{fontSize: "30px"}} /></a>
-    </div>)}
-    <div style={{...(lt850px?{padding: '30px'}:{padding: '30px 50px 50px 50px'}), overflowY: 'scroll'}}>
-      {
-        props.children
-      }
-    </div>
-  </Box>
-  {lt850px && (<div style={{position: 'fixed', top: "16px", left: "16px", height: "50px", width: "50px"}}>
-    <a onClick={() => props.onClose({warning: false})} style={{cursor: 'pointer'}}>
-      <CloseIcon sx={{fontSize: "30px"}} /></a>
-  </div>)}
-</div>
-</Modal>)
-}
-
-type LayoutProps = {
-  setSearchQuery: (arg0: string)=>void,
-  searchQuery?: string,
-  joinStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
-  voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-  setModalOpen: (arg0: boolean)=>void,
-  setServerTime: (arg0: Date) => void,
-  serverTime: Date,
-  statements: any,
-  lt850px: boolean,
-  lt500px: boolean,
-  canLoadMore: boolean,
-  loadingMore: boolean, 
-  loadMore: ()=>void,
-  setStatementTypes: (arg0: string[])=>void,
-  maxSkipId: number,
-  resetFilters: ()=>void
-}
-
-const Layout = ({setSearchQuery, joinStatement, voteOnPoll, resetFilters,
-  setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
-  setStatementTypes}:LayoutProps) => {
-  const [selectedTypes, setSelectedTypes] = React.useState<string[]>(typesFromUrl || []);
-  const [localSearchQuery, setLocalSearchQuery] = React.useState<string>(queryFromUrl || '');
-  const handleChange = (event: SelectChangeEvent<typeof selectedTypes>) => {
-    const value = event.target.value;
-    const result = typeof value === 'string' ? value.split(',') : value
-    setSelectedTypes(result);
-    setStatementTypes(result)
-  };
-  return(
-    <React.Fragment>
-      <header style={{width: "100vw", height: "70px", backgroundColor:"rgba(42,74,103,1)", color: "rgba(255,255,255,1)"}}>
-      <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center"}}>
-        <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px"}}>
-          <div>
-            {!lt850px && (<Link style={{color: "rgba(255,255,255,1)"}} to="/" onClick={() => {
-              resetFilters()
-              setLocalSearchQuery('')
-              setSelectedTypes([])
-            }}>{window.location.hostname}</Link>)}
-            <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-verification-graph" target='_blank'>verifications</a>
-            {!lt500px && (<a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="/full-network-graph" target='_blank'>network</a>)}
-            <a style={{color: "rgba(255,255,255,1)", marginLeft: "2vw"}} href="https://stated.ai" target='_blank'>stated.ai</a>
-          </div>
-          <div style={{ flexGrow: 1 }}></div>
-          <div style={{minWidth: "200px"}}>
-            <TextField id="search-field" label="" variant="outlined" size='small'
-              placeholder='search'
-              value={localSearchQuery}
-              onChange={e => { setLocalSearchQuery(e.target.value) }}
-              onKeyDown={e=> {if(e.key === "Enter"){
-                setSearchQuery(localSearchQuery)
-              }}}
-              onBlur={() => setSearchQuery(localSearchQuery)}
-              sx={{height: "40px", padding: "0px", borderRadius:"40px", backgroundColor:"rgba(255,255,255,1)", borderWidth: "0px",
-                '& label': { paddingLeft: (theme) => theme.spacing(2) },
-                '& input': { paddingLeft: (theme) => theme.spacing(3) },
-                '& fieldset': {
-              paddingLeft: (theme) => theme.spacing(2.5),
-              borderRadius: '40px',
-              height: '40 px'
-            },}}/>
-          </div>
-        </div>
-      </div>
-    </header>
-    <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
-    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore} maxSkipId={maxSkipId}
-    setModalOpen={()=>{setModalOpen(true)}}>
-      {!lt850px && (<div>
-            <FormControl sx={{ width: 300, height: "40px" }} size="small">
-              <InputLabel id="filter-label" sx={{margin: "0px 0px 0px 5px"}} >Filter statement types</InputLabel>
-              <Select
-                labelId="filter-label"
-                id="filter"
-                multiple
-                value={selectedTypes}
-                onChange={handleChange}
-                input={<OutlinedInput sx={{height: "40px"}} label="Filter statement types" />}
-                renderValue={(selected) => selected.join(', ')}
-                MenuProps={{PaperProps: {
-                  style: {
-                    maxHeight: 224,
-                    width: 250,
-                  }
-                }}}
-                style={{backgroundColor:"rgba(255,255,255,1)", borderRadius: 20}}
-              >
-                {types.map((_type) => (
-                  <MenuItem key={_type} value={_type}>
-                    <Checkbox checked={selectedTypes.indexOf(_type) > -1} />
-                    <ListItemText primary={_type} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </div>)}
-      <Link to="/create-statement">
-        <Button onClick={()=>{setModalOpen(true)}} variant='contained' 
-        sx={{margin: "5px 5px 5px 60px", height: "40px", backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>Create Statement</Button>
-      </Link>
-    </Statements>
-    <Outlet />
-    <div id="footer" style={{width: "100%", height: "120px", backgroundColor:"rgba(42,74,103,1)"}}>
-      <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
-        <div style={{display: "flex", flexDirection: "row", justifyContent:"center", alignItems:"center", height: '100%'}}>
-          <a href="https://github.com/c-riq/stated" style={{color: "rgba(255,255,255,1)", textDecoration:"none"}}>
-            <img src={gh} style={{height: "40px", width: '30px', marginRight: "20px", paddingTop: "10px", flexGrow: 0}}></img>
-          </a>
-          <a href="https://stated.ai" style={{backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "10px", 
-          paddingLeft: "10px", borderRadius: "20px", textDecoration:"none"}}>
-            <img src={logo} style={{height: "20px", width: '20px', flexGrow: 0}}></img>
-          </a>
-        </div>
-      </div>
-    </div>
-  </React.Fragment>
-  )}
-
 
 const urlParams = new URLSearchParams(window.location.search);
 const queryFromUrl = urlParams.get('search_query')

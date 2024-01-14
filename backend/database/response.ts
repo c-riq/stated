@@ -10,7 +10,7 @@ export const getResponsesFactory = pool => ({ referenced_hash }) => (new Promise
         SELECT 
           *
         FROM statement_with_superseding s 
-        WHERE referenced_hash = $1
+        WHERE referenced_statement = $1
         AND type = 'response'
         `,[referenced_hash], (error, results) => {
         if (error) {

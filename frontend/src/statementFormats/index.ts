@@ -479,6 +479,7 @@ export const parseDisputeContent = (s: string):DisputeContent => {
 		reliabilityPolicy: m[3]
 	}
 }
+export const responseKeys = /(Type: |Hash of referenced statement: |Response: )/
 export const buildResponseContent = ({hash, response}:ResponseContent) => {
 	const content = "\n" +
 	"\t" + "Type: Response" + "\n" +

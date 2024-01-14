@@ -373,7 +373,7 @@ export const VerificationGraph = (props:props) => {
   return (
     <Fragment>
       <h3>Identity Verification Graph</h3>
-      <div ref={graphRef} style={{ width: "100%", height: "50vh" }}></div>
+      <div ref={graphRef} style={{ width: "100%", height: "50vh", backgroundColor: "#ffffff", borderRadius: '8px'}}></div>
     </Fragment>
   );
 };

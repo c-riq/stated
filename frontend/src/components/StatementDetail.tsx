@@ -11,7 +11,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import IconButton from '@mui/material/IconButton';
 import Alert from '@mui/material/Alert';
 import ReplyIcon from '@mui/icons-material/Reply';
-import AddIcon from '@mui/icons-material/Add';
+import PlusOneIcon from '@mui/icons-material/PlusOne';
 import ReportIcon from '@mui/icons-material/Report';
 import Tooltip from '@mui/material/Tooltip';
 import DangerousIcon from '@mui/icons-material/Dangerous';
@@ -31,6 +31,7 @@ import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
 import { Chip } from '@mui/material';
+import { CompactStatementSmall, Response } from './CompactStatement';
 
 type props = {
     lt850px: boolean,
@@ -151,7 +152,7 @@ const StatementDetail = (props:props) => {
         fileURL = filePath(parsedSigning.hash, undefined)
     }
     if (statementCollision) return (
-        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
+        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Multiple statements found</h3>
@@ -169,7 +170,7 @@ const StatementDetail = (props:props) => {
     )
     if (!statement) return (<div style={{marginTop: "20px"}}>Statement not found</div>)
     return (
-        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(255,255,255,1)", borderRadius: 8, display:'flex',
+        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
             <div>
             <h3>Statement details</h3>
@@ -187,6 +188,73 @@ const StatementDetail = (props:props) => {
             {(statement as StatementWithHiddenDB).hidden && (<Alert severity="info">
                 This is a hidden statement.
             </Alert>)}
+            <CompactStatementSmall s={statement} >
+                <div style={{position: 'absolute', top: '5px', right: '10px'}}>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title={"Replace with a new statement as "+ statement.author} >
+                            <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement(statement);}}>
+                                <EditIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog} statement={statement}/>
+                </div>
+            </CompactStatementSmall>
+            {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
+                statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
+                statementTypes.boycott, statementTypes.observation, statementTypes.organisationVerification,
+                statementTypes.personVerification, statementTypes.vote, statementTypes.poll, statementTypes.response
+            ].includes(statement.type) && (
+                <>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Join statement">
+                            <IconButton aria-label="join statement" onClick={()=>{props.setStatementToJoin(statement);}}>
+                                <PlusOneIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Respond to statement">
+                            <IconButton aria-label="Respond to statement" onClick={()=>{props.respondToStatement(statement);}}>
+                                <ReplyIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Dispute statement authenticity">
+                            <IconButton aria-label="Dispute statement authenticity" onClick={()=>{props.disputeStatementAuthenticity(statement);}}>
+                                <DangerousIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                    <RouterLink to="/create-statement">
+                        <Tooltip title="Dispute statement content">
+                            <IconButton aria-label="Dispute statement content" onClick={()=>{props.disputeStatementContent(statement);}}>
+                                <ReportIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </RouterLink>
+                </>
+            ))}
+            {statement?.type === statementTypes.observation && (parsedStatement as Observation)?.subjectReference && 
+                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as Observation).subjectReference}`} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a></div>)
+            }
+            {statement?.type === statementTypes.vote && (parsedStatement as Vote)?.pollHash && 
+                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as Vote).pollHash}`} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
+            }
+            {statement?.type === statementTypes.poll && (parsedStatement as Poll)?.scopeQueryLink && 
+                (<div><a style={{color: '#1976d2'}} href={(parsedStatement as Poll).scopeQueryLink} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
+            }
+            {statement?.type === statementTypes.response && (parsedStatement as ResponseContent)?.hash && 
+                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as ResponseContent).hash}`} target='_blank'>
+                <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a></div>)
+            }
+            {responses.length > 0 && responses.map((s,i) => (
+                <Response key={i} s={s} />
+            ))}
             <p>Raw statement</p>
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
@@ -215,61 +283,6 @@ const StatementDetail = (props:props) => {
                     Vote
                 </Button>
             </RouterLink>))}
-            {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,
-                statementTypes.rating, statementTypes.disputeAuthenticity, statementTypes.disputeContent,
-                statementTypes.boycott, statementTypes.observation, statementTypes.organisationVerification,
-                statementTypes.personVerification, statementTypes.vote, statementTypes.poll].includes(statement.type) && (
-                <>
-                    <RouterLink to="/create-statement">
-                        <Tooltip title="Join statement">
-                            <IconButton aria-label="join statement" onClick={()=>{props.setStatementToJoin(statement);}}>
-                                <AddIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    </RouterLink>
-                    <RouterLink to="/create-statement">
-                        <Tooltip title="Respond to statement">
-                            <IconButton aria-label="Respond to statement" onClick={()=>{props.respondToStatement(statement);}}>
-                                <ReplyIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    </RouterLink>
-                    <RouterLink to="/create-statement">
-                        <Tooltip title="Dispute statement authenticity">
-                            <IconButton aria-label="Dispute statement authenticity" onClick={()=>{props.disputeStatementAuthenticity(statement);}}>
-                                <DangerousIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    </RouterLink>
-                    <RouterLink to="/create-statement">
-                        <Tooltip title="Dispute statement content">
-                            <IconButton aria-label="Dispute statement content" onClick={()=>{props.disputeStatementContent(statement);}}>
-                                <ReportIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    </RouterLink>
-                    <RouterLink to="/create-statement">
-                        <Tooltip title="Replace with a new statement">
-                            <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement(statement);}}>
-                                <EditIcon/>
-                            </IconButton>
-                        </Tooltip>
-                    </RouterLink>
-                    <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog}/> 
-                </>
-            ))}
-            {statement?.type === statementTypes.observation && (parsedStatement as Observation)?.subjectReference && 
-                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as Observation).subjectReference}`} target='_blank'>
-                <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a></div>)
-            }
-            {statement?.type === statementTypes.vote && (parsedStatement as Vote)?.pollHash && 
-                (<div><a style={{color: '#0000ff'}} href={`/statements/${(parsedStatement as Vote).pollHash}`} target='_blank'>
-                <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
-            }
-            {statement?.type === statementTypes.poll && (parsedStatement as Poll)?.scopeQueryLink && 
-                (<div><a style={{color: '#0000ff'}} href={(parsedStatement as Poll).scopeQueryLink} target='_blank'>
-                <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
-            }
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
             <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{
