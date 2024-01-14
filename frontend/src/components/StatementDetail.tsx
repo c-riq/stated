@@ -19,7 +19,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
-    getPersonVerifications, getVotes, getResponses } from '../api'
+    getPersonVerifications, getVotes, getResponses, getDisputes } from '../api'
 import { statementTypes, parsePDFSigning, parseStatement,
     parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
     parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
@@ -31,7 +31,7 @@ import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
 import { Chip } from '@mui/material';
-import { CompactStatementSmall, Response } from './CompactStatement';
+import { CompactStatementSmall, Dispute, Response } from './CompactStatement';
 
 type props = {
     lt850px: boolean,
@@ -47,6 +47,7 @@ const StatementDetail = (props:props) => {
     const [joiningStatements, setJoiningStatements] = React.useState(undefined as undefined | (StatementDB & {name: string})[]);
     const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
     const [responses, setResponses] = React.useState([] as StatementDB[]);
+    const [disputes, setDisputes] = React.useState([] as StatementDB[]);
     const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
     const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | Observation | 
         Bounty | Rating | PDFSigning | DisputeAuthenticity | DisputeContent | Boycott | OrganisationVerification 
@@ -132,6 +133,7 @@ const StatementDetail = (props:props) => {
         getOrganisationVerifications(hash, v => setOrganisationVerifications(v || []))
         getPersonVerifications(hash, v => setPersonVerifications(v || []))
         getResponses(hash, r => setResponses(r || []))
+        getDisputes(hash, r => setDisputes(r || []))
         setDataFetched(true)
       }
     }, [dataFetched, hash])
@@ -254,6 +256,9 @@ const StatementDetail = (props:props) => {
             }
             {responses.length > 0 && responses.map((s,i) => (
                 <Response key={i} s={s} />
+            ))}
+            {disputes.length > 0 && disputes.map((s,i) => (
+                <Dispute key={i} s={s} />
             ))}
             <p>Raw statement</p>
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 

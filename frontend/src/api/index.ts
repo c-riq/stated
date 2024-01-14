@@ -131,6 +131,13 @@ export const getResponses = (hash:string, cb: cb<(StatementWithSupersedingDB)> )
         }
     }, e => {console.log(e); return})
 }
+export const getDisputes = (hash:string, cb: cb<(StatementWithSupersedingDB)> ) => {
+    hash && req('GET',('disputes?hash=' + hash), {}, (json: resDB<StatementWithSupersedingDB>) => {
+        if ("statements" in json) {
+            cb(json.statements)
+        }
+    }, e => {console.log(e); return})
+}
 export const getOrganisationVerifications = (hash:string, cb: cb<OrganisationVerificationDB>) => {
     hash && req('GET',('organisation_verifications?hash=' + hash), {}, (json: resDB<OrganisationVerificationDB>) => {
         if ("statements" in json) {
