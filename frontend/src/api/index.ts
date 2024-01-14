@@ -1,16 +1,9 @@
-import { QueryResult } from "pg"
-
 // For demos: backendHost = 'http://'+ window.location.host 
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
     window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
  ) : 'https://'+ window.location.host 
 
-type method = 'GET' | 'POST' | 'PUT' | 'DELETE'
-type res<T> = (arg0:T|undefined)=>void
-type validatedResponseHandler<T> = (arg0:T)=>void
-type cb = (arg0:any)=>void
-
-const req = (method:method, path:string, body:any, cb:cb, reject:cb, host?:string) => {
+const req = (method:method, path:string, body:any, cb:_cb, reject:_cb, host?:string) => {
     const url = `${host||backendHost}/api/${path}`
     const opts = {
         headers: {
@@ -35,11 +28,11 @@ const req = (method:method, path:string, body:any, cb:cb, reject:cb, host?:strin
         })
         .catch(error => reject({error}))
 }
-export const getStatement = (hash:string, cb:res<(StatementWithSupersedingDB|StatementWithHiddenDB)[]> ) => {
+export const getStatement = (hash:string, cb:cb<StatementWithSupersedingDB|StatementWithHiddenDB> ) => {
     if ((hash?.length || 0) < 1) {
         cb(undefined)
     }
-    req('GET',('statements/' + hash), {}, (json:{statements: QueryResult<StatementWithSupersedingDB|StatementWithHiddenDB>['rows']}) => {
+    req('GET',('statements/' + hash), {}, (json:resDB<StatementWithSupersedingDB|StatementWithHiddenDB>) => {
         if (json?.statements?.length > 0) {
             cb(json.statements)
             window.scrollTo(0,0)
@@ -51,7 +44,7 @@ export const getStatement = (hash:string, cb:res<(StatementWithSupersedingDB|Sta
 
 export const getStatements = ({searchQuery, skip, limit, domain, author, statementTypes, cb}:
     {searchQuery:string|undefined, limit:number, domain:string|undefined, author:string|undefined,
-    skip:number, statementTypes:string[], cb:res<{statements: StatementWithDetailsDB[], time: string}>}) => {
+    skip:number, statementTypes:string[], cb:(arg0: resDB<StatementWithDetailsDB>) => void}) => {
     const types = statementTypes.map(t => {
         return({'Statements': 'statement',
                 'Domain Verifications': 'organisation_verification',
@@ -68,17 +61,11 @@ export const getStatements = ({searchQuery, skip, limit, domain, author, stateme
         (domain ? 'domain=' + domain : ''),
         (author ? 'author=' + author : '')].filter(s => s.length > 0).join('&')
     req('GET',
-        `statements_with_details?${queryString}`, {}, (json) => {
+        `statements_with_details?${queryString}`, {}, (json: resDB<StatementWithDetailsDB>) => {
         cb(json)
     }, e => {console.log(e); return})
 }
-type domainSuggestionResponse = {
-    result: {
-        domain: string,
-        organisation: string
-    }[]
-}
-export const getDomainSuggestions = (searchQuery:string, cb:res<domainSuggestionResponse>) => {
+export const getDomainSuggestions = (searchQuery:string, cb:(arg0:domainSuggestionResponse|undefined) => void) => {
     if (searchQuery.length < 1) {
         return cb(undefined)
     }
@@ -86,14 +73,7 @@ export const getDomainSuggestions = (searchQuery:string, cb:res<domainSuggestion
         cb(json)
     }, e => {console.log(e); return})
 }
-export type nameSuggestionResponse = {
-    result: {
-        domain: string,
-        organisation: string,
-        statement_hash: string
-    }[]
-}
-export const getNameSuggestions = (searchQuery:string, cb:res<nameSuggestionResponse>) => {
+export const getNameSuggestions = (searchQuery:string, cb:(arg0:nameSuggestionResponse|undefined) => void) => {
     if (searchQuery.length < 1) {
         return cb(undefined)
     }
@@ -101,17 +81,17 @@ export const getNameSuggestions = (searchQuery:string, cb:res<nameSuggestionResp
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getDomainVerifications = (domain:string|undefined, cb:cb) => {
+export const getDomainVerifications = (domain:string|undefined, cb:_cb) => {
     req('GET',(domain ? 'domain_verifications?domain=' + domain : 'domain_verifications'), {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getNodes = (cb:cb) => {
+export const getNodes = (cb:_cb) => {
     req('GET', 'nodes', {}, (json) => {
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getSSLOVInfo = (domain:string, cb:cb, cacheOnly?:boolean) => {
+export const getSSLOVInfo = (domain:string, cb:_cb, cacheOnly?:boolean) => {
     if (!domain || domain.length < 1) {
         cb([])
         return
@@ -120,7 +100,7 @@ export const getSSLOVInfo = (domain:string, cb:cb, cacheOnly?:boolean) => {
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getDNSSECInfo = (domain:string, cb:cb) => {
+export const getDNSSECInfo = (domain:string, cb:_cb) => {
     if (!domain || domain.length < 1) {
         cb({})
         return
@@ -130,70 +110,68 @@ export const getDNSSECInfo = (domain:string, cb:cb) => {
         cb({validated, domain})
     }, e => {console.log(e); return})
 }
-export type joiningStatementsResponse = {
-    statements: (StatementDB & {name:string})[]
-    time: string
-}
-export const getJoiningStatements = (hash:string, cb:(arg0: joiningStatementsResponse)=>void) => {
-    hash && req('GET',('joining_statements?hash=' + hash), {}, (json) => {
-        if ("statements" in json) {
-            cb(json)
-        }
-    }, e => {console.log(e); return})
-}
-export const getVotes = (hash:string, cb: res<(VoteDB & StatementWithSupersedingDB)[]> ) => {
-    hash && req('GET',('votes?hash=' + hash), {}, (json: {statements: QueryResult<VoteDB & StatementWithSupersedingDB>['rows']}) => {
+export const getJoiningStatements = (hash:string, cb: cb<(StatementDB & {name:string})>) => {
+    hash && req('GET',('joining_statements?hash=' + hash), {}, (json: resDB<(StatementDB & {name:string})>) => {
         if ("statements" in json) {
             cb(json.statements)
         }
     }, e => {console.log(e); return})
 }
-export const getOrganisationVerifications = (hash:string, cb:cb) => {
-    hash && req('GET',('organisation_verifications?hash=' + hash), {}, (json) => {
+export const getVotes = (hash:string, cb: cb<(VoteDB & StatementWithSupersedingDB)> ) => {
+    hash && req('GET',('votes?hash=' + hash), {}, (json: resDB<VoteDB & StatementWithSupersedingDB>) => {
         if ("statements" in json) {
             cb(json.statements)
         }
     }, e => {console.log(e); return})
 }
-export const getPersonVerifications = (hash:string, cb:cb) => {
-    hash && req('GET',('person_verifications?hash=' + hash), {}, (json) => {
+export const getResponses = (hash:string, cb: cb<(StatementWithSupersedingDB)> ) => {
+    hash && req('GET',('responses?hash=' + hash), {}, (json: resDB<StatementWithSupersedingDB>) => {
         if ("statements" in json) {
             cb(json.statements)
         }
     }, e => {console.log(e); return})
 }
-type dnsRes = {
-    records:string[]
+export const getDisputes = (hash:string, cb: cb<(StatementWithSupersedingDB)> ) => {
+    hash && req('GET',('disputes?hash=' + hash), {}, (json: resDB<StatementWithSupersedingDB>) => {
+        if ("statements" in json) {
+            cb(json.statements)
+        }
+    }, e => {console.log(e); return})
 }
-export const getTXTRecords = (domain:string, cb:res<dnsRes>, reject:cb) => {
+export const getOrganisationVerifications = (hash:string, cb: cb<OrganisationVerificationDB>) => {
+    hash && req('GET',('organisation_verifications?hash=' + hash), {}, (json: resDB<OrganisationVerificationDB>) => {
+        if ("statements" in json) {
+            cb(json.statements)
+        }
+    }, e => {console.log(e); return})
+}
+export const getPersonVerifications = (hash:string, cb: cb<PersonVerificationDB>) => {
+    hash && req('GET',('person_verifications?hash=' + hash), {}, (json: resDB<PersonVerificationDB>) => {
+        if ("statements" in json) {
+            cb(json.statements)
+        }
+    }, e => {console.log(e); return})
+}
+export const getTXTRecords = (domain:string, cb:(arg0:dnsRes|undefined) => void, reject:_cb) => {
     req('GET', "txt_records?domain=" + domain, {}, cb, reject)
 }
-export const submitStatement = (body:any, cb:cb, reject:cb) => {
+export const submitStatement = (body:any, cb:_cb, reject:_cb) => {
     req('POST', 'statements', body, cb, reject)
 }
-export const deleteStatement = (hash:string, body:any, cb:cb, reject:cb) => {
+export const deleteStatement = (hash:string, body:any, cb:_cb, reject:_cb) => {
     req('DELETE', ('statements/' + hash), body, cb, reject)
 }
-export const checkStaticStatement = (body:{domain:string, statement:string, hash: string}, cb:cb, reject:cb) => {
+export const checkStaticStatement = (body:{domain:string, statement:string, hash: string}, cb:_cb, reject:_cb) => {
     req('POST', 'check_static_statement', body, cb, reject)
 }
-
-export type vLog = {
-    id: number,
-    statement_hash: string,
-    t: string,
-    api: boolean,
-    dns: boolean,
-    txt: boolean
-}
-export const getVerificationLog = (hash:string, cb:res<{result:vLog[]}>, reject:cb, host?:string) => {
+export const getVerificationLog = (hash:string, cb:(arg0:vlogRes|undefined) => void, reject:_cb, host?:string) => {
     host ?
         req('GET', "verification_logs?hash=" + hash, {}, cb, reject, host)
     :
         req('GET', "verification_logs?hash=" + hash, {}, cb, reject)
 }
 
-export const uploadPdf = (body:any, cb:validatedResponseHandler<{sha256sum: string, filePath: string}>, reject:cb) => {
+export const uploadPdf = (body:any, cb:validatedResponseHandler<{sha256sum: string, filePath: string}>, reject:_cb) => {
     req('POST', 'upload_pdf', body, (json)=>{
         if (json.sha256sum && json.filePath) {
             cb(json)

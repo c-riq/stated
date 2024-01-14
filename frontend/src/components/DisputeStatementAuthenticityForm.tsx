@@ -68,7 +68,7 @@ const DisputeStatementAuthenticityForm = (props:FormProps & {statementToDisputeA
         {
         referencedStatement && (referencedStatement as StatementDB)?.content
         ? 
-            <a style={{color: '#0000ff'}} href={`/statements/${(referencedStatement as StatementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#1976d2'}} href={`/statements/${(referencedStatement as StatementDB).hash_b64}`} target='_blank'>
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>Referenced statement not found.</div>

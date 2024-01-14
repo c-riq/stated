@@ -1,4 +1,3 @@
-import PlusOneIcon from '@mui/icons-material/PlusOne';
 import PollIcon from '@mui/icons-material/Poll';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -9,43 +8,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
 import { timeSince } from '../utils/time'
 
-import { parsePoll, statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
-    BoycottKeys, ObservationKeys, parseStatement, voteKeys } from '../statementFormats'
-
-const highlightedStatement = (text: string, type:string) => {
-    let regex = /(\nType: )/
-    if (type === statementTypes.bounty){
-        regex = BountyKeys
-    }
-    if (type === statementTypes.organisationVerification){
-        regex = organisationVerificationKeys
-    }
-    if (type === statementTypes.signPdf){
-        regex = PDFSigningKeys
-    }
-    if (type === statementTypes.rating){
-        regex = ratingKeys
-    }
-    if (type === statementTypes.boycott){
-        regex = BoycottKeys
-    }
-    if (type === statementTypes.observation){
-        regex = ObservationKeys
-    }
-    if (type === statementTypes.vote){
-        regex = voteKeys
-    }
-    const parts = text.split(new RegExp(regex, 'g'));
-    return <span>{ parts.map((v, i) => 
-        <span key={i}><span style={regex.test(v) ? 
-            {fontWeight: '200',color: 'rgb(58,58,58)', fontSize:'13px'} : 
-            {fontWeight: '550',color: 'rgb(42, 72, 103)'}}>
-            {regex.test(v) ? v.replace(/: $/, ':') : v}
-        </span>
-        {regex.test(v) ? ' ' : '' }
-        </span>)
-    } </span>;
-}
+import { parsePoll, statementTypes, parseStatement } from '../statementFormats'
+import { CompactStatement } from './CompactStatement';
 
 type props = {
     statements: StatementWithDetailsDB[],
@@ -82,44 +46,8 @@ const Statements = (props:props) => {
                             statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
                             statementTypes.boycott, statementTypes.observation, statementTypes.vote
                         ].includes(s.type || '')){
-                            return (<div key={i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin:"1%", borderRadius: 8 }}>
-                            <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
-                                    <div>{s.repost_count}</div>
-                                <Link to="/create-statement">
-                                    <Button onClick={()=>{props.setStatementToJoin(s); props.setModalOpen()}} variant='contained' 
-                                    sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
-                                        <PlusOneIcon/>
-                                    </Button>
-                                </Link>
-                            </div>
-                            <Link to={"/statements/" + s.hash_b64} style={{flexGrow: 1}} onClick={()=>{props.setModalOpen()}} >
-                                <div className="statement" 
-                                // @ts-ignore 
-                                    style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}} key={i}> 
-
-                                    <span>{s.domain}</span>
-                                    {author && (<>
-                                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
-                                        <span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{author}</span>
-                                    </>)}
-                                    <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
-                                    {s.proclaimed_publication_time && <Tooltip title={s.proclaimed_publication_time}>
-                                        <span>{timeSince(new Date(s.proclaimed_publication_time))}</span>
-                                    </Tooltip>
-                                    }
-                                    
-                                    {!s.tags ? <></> :  (
-                                        <>
-                                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
-                                        <span>tags: </span>
-                                        { s.tags.split(',').map((t:string, i:number)=>(<Chip key={i} label={t} style={{margin: '5px'}}/>)) }
-                                        </>
-                                    )}
-                                    {s.content.split("\n").map((s1:string,i:number)=>(<div key={i}>{highlightedStatement(s1, s.type || '')}</div>))}
-                                </div>
-                            </Link>
-                        </div>
-                    )
+                            return (<CompactStatement key={i} s={s} 
+                                setStatementToJoin={props.setStatementToJoin} setModalOpen={props.setModalOpen} i={i.toString()} />)
                         }
                         if (s.type === statementTypes.poll){
                             let parsedPoll = undefined

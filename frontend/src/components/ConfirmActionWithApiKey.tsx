@@ -6,6 +6,7 @@ import { deleteStatement } from '../api';
 
 type props = {
     statementHash: string,
+    statement: StatementDB
     open: boolean
 }
 
@@ -31,7 +32,7 @@ export const ConfirmActionWithApiKey = (props: props) => {
     };
     return (
         <React.Fragment>
-            <Tooltip title="Delete statement">
+            <Tooltip title={"Delete statement"}>
                 <IconButton aria-label="delete" onClick={handleClickOpen}>
                     <DeleteIcon />
                 </IconButton>

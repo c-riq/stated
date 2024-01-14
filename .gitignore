@@ -11,6 +11,8 @@ backend/constants/*.js
 backend/constants/*.js.map
 backend/scripts/*.js
 backend/scripts/*.js.map
+backend/statementFormats/*.js
+backend/statementFormats/*.js.map
 
 backend/public/files/*.pdf
 
