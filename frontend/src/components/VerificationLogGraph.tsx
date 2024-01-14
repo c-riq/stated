@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import { LineChart } from '@mui/x-charts';
-import { getVerificationLog, vLog } from '../api';
+import { getVerificationLog } from '../api';
 import { TextField } from '@mui/material';
 
 
@@ -19,9 +19,9 @@ const getMonday = (d: Date) => {
   return new Date(d.setDate(diff));
 }
 
-const getWeeklyTimeSeries = (data: { result: vLog[] }): vLogWeekly[] => {
-  const withWeeks: (vLog & { w: string })[] = data.result.map(i => ({ ...i, w: getMonday(new Date(i.t)).toString() }))
-  const weekly: { [key: string]: vLogWeeklyFields } = withWeeks.reduce((acc: { [key: string]: vLogWeeklyFields }, i: vLog & { w: string }) => {
+const getWeeklyTimeSeries = (data: { result: VerificationLogDB[] }): vLogWeekly[] => {
+  const withWeeks: (VerificationLogDB & { w: string })[] = data.result.map(i => ({ ...i, w: getMonday(new Date(i.t)).toString() }))
+  const weekly: { [key: string]: vLogWeeklyFields } = withWeeks.reduce((acc: { [key: string]: vLogWeeklyFields }, i: VerificationLogDB & { w: string }) => {
     const _i = { ...i, api: i.api ? 1 : 0, dns: i.dns ? 1 : 0, txt: i.txt ? 1 : 0 }
     if (!acc[_i.w]) {
       acc[i.w] = { api: _i.api, dns: _i.dns, txt: _i.txt, count: 1 }

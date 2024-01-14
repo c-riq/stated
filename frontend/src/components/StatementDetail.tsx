@@ -18,8 +18,8 @@ import DangerousIcon from '@mui/icons-material/Dangerous';
 import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import { getStatement, getJoiningStatements, getOrganisationVerifications, joiningStatementsResponse,
-    getPersonVerifications, getVotes } from '../api'
+import { getStatement, getJoiningStatements, getOrganisationVerifications,
+    getPersonVerifications, getVotes, getResponses } from '../api'
 import { statementTypes, parsePDFSigning, parseStatement,
     parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
     parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
@@ -43,16 +43,17 @@ type props = {
 }
 
 const StatementDetail = (props:props) => {
-    const [joiningStatements, setJoiningStatements] = React.useState({} as joiningStatementsResponse);
+    const [joiningStatements, setJoiningStatements] = React.useState(undefined as undefined | (StatementDB & {name: string})[]);
     const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
+    const [responses, setResponses] = React.useState([] as StatementDB[]);
     const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
     const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | Observation | 
         Bounty | Rating | PDFSigning | DisputeAuthenticity | DisputeContent | Boycott | OrganisationVerification 
         | PersonVerification | Vote | Poll );
     const [statementCollision, setStatementCollision] = React.useState(undefined as StatementDB[] | undefined );
-    const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
+    const [organisationVerifications, setOrganisationVerifications] = React.useState([] as OrganisationVerificationDB[]);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
-    const [personVerifications, setPersonVerifications] = React.useState([]);
+    const [personVerifications, setPersonVerifications] = React.useState([] as PersonVerificationDB[]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
@@ -127,8 +128,9 @@ const StatementDetail = (props:props) => {
             setStatementCollision(undefined)
         })
         getJoiningStatements(hash, s => setJoiningStatements(s))
-        getOrganisationVerifications(hash, v => setOrganisationVerifications(v))
-        getPersonVerifications(hash, v => setPersonVerifications(v))
+        getOrganisationVerifications(hash, v => setOrganisationVerifications(v || []))
+        getPersonVerifications(hash, v => setPersonVerifications(v || []))
+        getResponses(hash, r => setResponses(r || []))
         setDataFetched(true)
       }
     }, [dataFetched, hash])
@@ -329,10 +331,10 @@ const StatementDetail = (props:props) => {
             </Collapse>
             </Card>
 
-            {joiningStatements?.statements?.length > 0
+            { (joiningStatements?.length?? 0) > 0
                  && 
             (<div><h3>Organisations that joined the statemet</h3>
-                {joiningStatements.statements.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
+                {joiningStatements!.map(({domain, proclaimed_publication_time, name, hash_b64},i)=>(
                     <div key={i}>
                         <RouterLink key={i} onClick={()=>setDataFetched(false)} to={"/statements/"+hash_b64}>
                             {domain + " | " + (proclaimed_publication_time && new Date(proclaimed_publication_time).toUTCString())}{name ? " | " + name + " ✅":  ""}
