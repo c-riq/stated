@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerificationsForStatement, getVerificationsForDomain,
     getPersonVerificationsForStatement, getJoiningStatements, getAllNodes,
-    getVotes, deleteStatement, matchName, getLogsForStatement, getHiddenStatement, checkIfMigrationsAreDone
+    getVotes, deleteStatement, matchName, getLogsForStatement, getHiddenStatement, checkIfMigrationsAreDone, getResponses
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -11,7 +11,7 @@ import {getTXTEntries, validateAndAddStatementIfMissing, verifyViaStaticTextFile
 import {getTXTEntriesDNSSEC} from './dnssec'
 
 import {saveFile} from './upload'
-import { Query, QueryResult } from 'pg'
+import { QueryResult } from 'pg'
 
 const log = false
 
@@ -190,6 +190,15 @@ api.get("/joining_statements", async (req, res, next) => {
 api.get("/votes", async (req, res, next) => {
     try {
         const dbResult = await getVotes({poll_hash: req.query.hash})
+        res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
+    } catch(error){
+        next(error)
+    }
+})
+
+api.get("/responses", async (req, res, next) => {
+    try {
+        const dbResult = await getResponses({referenced_hash: req.query.hash})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)

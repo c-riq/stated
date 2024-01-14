@@ -470,6 +470,7 @@ export const updateStatementFactory =
     hash_b64,
     derived_entity_created = false,
     increment_derived_entity_creation_retry_count = false,
+    referenced_statement=null
   }) =>
     new Promise((resolve: DBCallback, reject) => {
       checkIfMigrationsAreDone()
@@ -477,7 +478,8 @@ export const updateStatementFactory =
         !hash_b64 ||
         !(
           derived_entity_created ||
-          increment_derived_entity_creation_retry_count
+          increment_derived_entity_creation_retry_count ||
+          referenced_statement
         )
       ) {
         return reject(Error("missing parameters for updateStatement"));
@@ -510,6 +512,25 @@ export const updateStatementFactory =
           WHERE hash_b64 = $1 
       `,
             [hash_b64],
+            (error, results) => {
+              if (error) {
+                console.log(error);
+                console.trace();
+                return reject(error);
+              } else {
+                return resolve(results);
+              }
+            }
+          );
+        }
+        if (hash_b64 && referenced_statement) {
+          pool.query(
+            `
+        UPDATE statements 
+        SET referenced_statement=$2
+          WHERE hash_b64=$1 
+      `,
+            [hash_b64, referenced_statement],
             (error, results) => {
               if (error) {
                 console.log(error);

@@ -1,4 +1,5 @@
-
+-- TODO: delete log table to allow deletion action propagation in p2p network
+-- TODO?: add response and observation tables
 CREATE TYPE statement_type AS ENUM 
     ('statement', 'dispute_statement_authenticity', 'response',
     'organisation_verification', 'person_verification', 

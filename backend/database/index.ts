@@ -101,6 +101,10 @@ export const createVote = createVoteFactory(pool)
 export const getVotes = getVotesFactory(pool)
 export const updateVote = updateVoteFactory(pool)
 
+import  { getResponsesFactory } from './response'
+
+export const getResponses = getResponsesFactory(pool)
+
 import { addNodeFactory, updateNodeFactory, getAllNodesFactory } from './p2p'
 
 export const addNode = addNodeFactory(pool)

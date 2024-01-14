@@ -10,6 +10,9 @@ import {parseAndCreateRating} from './rating'
 import * as cp from 'child_process'
 import {parseStatement, statementTypes} from './statementFormats'
 import { get } from './request'
+import { addResponseReference } from './response'
+import { addAuthenticityDisputeReference } from './disputeAuthenticity'
+import { addContentDisputeReference } from './disputeContent'
 
 const log = true
 const ownAPIKey = process.env.API_KEY
@@ -48,7 +51,8 @@ export const validateStatementMetadata = ({ statement, hash_b64, source_node_id 
         if([ statementTypes.organisationVerification, statementTypes.personVerification,
             statementTypes.poll, statementTypes.vote, statementTypes.bounty,
             statementTypes.rating, statementTypes.signPdf, statementTypes.observation, statementTypes.boycott,
-            statementTypes.disputeAuthenticity, statementTypes.disputeContent ].includes(type)) {
+            statementTypes.disputeAuthenticity, statementTypes.disputeContent, statementTypes.response
+        ].includes(type)) {
             return result
         } else {
             return {...result, type: statementTypes.unsupported}
@@ -360,6 +364,15 @@ export const createDerivedEntity = ({statement_hash, domain, author, content, ty
             }
             if (type === statementTypes.rating) {
                 entityCreated = !!await parseAndCreateRating({statement_hash, domain, content})
+            }
+            if (type === statementTypes.response) {
+                entityCreated = !!await addResponseReference({statement_hash, content})
+            }
+            if (type === statementTypes.disputeAuthenticity) {
+                entityCreated = !!await addAuthenticityDisputeReference({statement_hash, content})
+            }
+            if (type === statementTypes.disputeContent) {
+                entityCreated = !!await addContentDisputeReference({statement_hash, content})
             }
             if(entityCreated || exsits){
                 await updateStatement({ hash_b64: statement_hash, derived_entity_created: true })
