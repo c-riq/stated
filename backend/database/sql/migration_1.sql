@@ -1,43 +1,76 @@
-DROP TYPE IF EXISTS statement_type CASCADE;
+-- TODO: delete log table to allow deletion action propagation in p2p network
+-- TODO?: add response and observation tables
 CREATE TYPE statement_type AS ENUM 
-    ('statement', 'dispute_statement', 'response',
+    ('statement', 'dispute_statement_authenticity', 'response',
     'organisation_verification', 'person_verification', 
-    'poll', 'vote', 'rating', 'sign_pdf');
-DROP TYPE IF EXISTS verification_method CASCADE;
+    'poll', 'vote', 'rating', 'sign_pdf', 'bounty',
+    'dispute_statement_content', 'boycott', 'observation', 'unsupported');
 CREATE TYPE verification_method AS ENUM 
     ('api', 'dns');
-DROP TABLE IF EXISTS unverified_statements;
 CREATE TABLE IF NOT EXISTS unverified_statements (
     id SERIAL PRIMARY KEY,
-    statement VARCHAR(1500) NOT NULL, 
+    statement VARCHAR(3000) NOT NULL, 
     author VARCHAR(100) NOT NULL, 
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
-    source_node_id int,
+    source_node_id INT,
     received_time TIMESTAMP NOT NULL,
     source_verification_method verification_method,
-    verification_retry_count int
+    verification_retry_count INT
 );
-DROP TABLE IF EXISTS statements;
 CREATE TABLE IF NOT EXISTS statements (
     id SERIAL PRIMARY KEY,
     type statement_type NOT NULL,
     domain VARCHAR(100) NOT NULL,
     author VARCHAR(100) NOT NULL, 
-    statement VARCHAR(1500) NOT NULL, 
+    statement VARCHAR(3000) NOT NULL, 
     proclaimed_publication_time TIMESTAMP,
     hash_b64 VARCHAR(500) UNIQUE NOT NULL,
     referenced_statement VARCHAR(500), -- response, vote, dispute
     tags VARCHAR(1000),
-    content VARCHAR(1000) NOT NULL, -- for search
-    content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements
-    source_node_id int,
+    content VARCHAR(3000) NOT NULL, -- for search
+    content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements and preventing duplicates
+    source_node_id INT,
     first_verification_time TIMESTAMP,
     latest_verification_time TIMESTAMP,
-    verification_method VARCHAR(4), -- dns, api
+    verification_method verification_method, -- dns, api
     derived_entity_created BOOLEAN NOT NULL,
-    derived_entity_creation_retry_count int
+    derived_entity_creation_retry_count INT,
+    superseded_statement VARCHAR(500) NULL,
+    CONSTRAINT no_domain_author_content_duplicates UNIQUE (domain, author, content_hash)
 );
-DROP TABLE IF EXISTS organisation_verifications;
+CREATE TABLE IF NOT EXISTS hidden_statements (
+    id SERIAL PRIMARY KEY,
+    type statement_type NOT NULL,
+    domain VARCHAR(100) NOT NULL,
+    author VARCHAR(100) NOT NULL, 
+    statement VARCHAR(3000) NOT NULL, 
+    proclaimed_publication_time TIMESTAMP,
+    hash_b64 VARCHAR(500) UNIQUE NOT NULL,
+    referenced_statement VARCHAR(500), -- response, vote, dispute
+    tags VARCHAR(1000),
+    content VARCHAR(3000) NOT NULL, -- for search
+    content_hash VARCHAR(500) NOT NULL, -- for grouping joint statements and preventing duplicates
+    source_node_id INT,
+    first_verification_time TIMESTAMP,
+    latest_verification_time TIMESTAMP,
+    verification_method verification_method, -- dns, api
+    derived_entity_created BOOLEAN NOT NULL,
+    derived_entity_creation_retry_count INT,
+    superseded_statement VARCHAR(500) NULL,
+    CONSTRAINT no_hidden_domain_author_content_duplicates UNIQUE (domain, author, content_hash)
+);
+CREATE TABLE IF NOT EXISTS verification_log (
+    id SERIAL PRIMARY KEY,
+    statement_hash VARCHAR(500) NOT NULL,
+    t TIMESTAMP NOT NULL,
+    api BOOLEAN NOT NULL,
+    dns BOOLEAN NOT NULL,
+    txt BOOLEAN NOT NULL,
+    CONSTRAINT no_statement_time_duplicates UNIQUE (statement_hash, t),
+    CONSTRAINT verification_log_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS organisation_verifications (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
@@ -49,9 +82,13 @@ CREATE TABLE IF NOT EXISTS organisation_verifications (
     serial_number VARCHAR(100),
     country VARCHAR(100) NOT NULL,-- ISO 3166 country name
     province VARCHAR(100),
-    city VARCHAR(100)
+    city VARCHAR(100),
+    department VARCHAR(100),
+    confidence DOUBLE PRECISION,
+    CONSTRAINT organisation_verifications_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
-DROP TABLE IF EXISTS person_verifications;
 CREATE TABLE IF NOT EXISTS person_verifications (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
@@ -61,9 +98,11 @@ CREATE TABLE IF NOT EXISTS person_verifications (
     name VARCHAR(100) NOT NULL,
     birth_country VARCHAR(100) NOT NULL,
     birth_city VARCHAR(100),
-    birth_date VARCHAR(100)
+    birth_date VARCHAR(100),
+    CONSTRAINT person_verifications_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
-DROP TABLE IF EXISTS domain_ownership_beliefs;
 CREATE TABLE IF NOT EXISTS domain_ownership_beliefs (
     id SERIAL PRIMARY KEY,
     domain VARCHAR(100) UNIQUE NOT NULL,
@@ -86,42 +125,49 @@ INSERT INTO domain_ownership_beliefs (
 VALUES ('rixdata.net', 'Rix Data UG (haftungsbeschränkt)', 1.0,
     'limited liability corporation', 1.0, 'DE', 1.0, 
     'Bamberg', 1.0);
-DROP TABLE IF EXISTS votes;
 CREATE TABLE IF NOT EXISTS votes (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     poll_hash VARCHAR(500) NOT NULL,
     option VARCHAR(500) NOT NULL,
     domain VARCHAR(100) NOT NULL,
-    qualified BOOLEAN
+    qualified BOOLEAN,
+    CONSTRAINT votes_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
-DROP TABLE IF EXISTS polls;
 CREATE TABLE IF NOT EXISTS polls (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     participants_entity_type VARCHAR(500),
     participants_country VARCHAR(500),
     participants_city VARCHAR(500),
-    deadline timestamp NOT NULL
+    deadline timestamp NOT NULL,
+    CONSTRAINT polls_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
-DROP TABLE IF EXISTS ratings;
 CREATE TABLE IF NOT EXISTS ratings (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     organisation VARCHAR(500) NOT NULL,
     domain VARCHAR(500) NOT NULL,
-    rating int NOT NULL,
-    comment VARCHAR(500) NOT NULL
+    rating INT NOT NULL,
+    comment VARCHAR(500) NOT NULL,
+    CONSTRAINT ratings_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
-DROP TABLE IF EXISTS disputes;
 CREATE TABLE IF NOT EXISTS disputes (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     disputed_statement_hash VARCHAR(500) NOT NULL,
     domain VARCHAR(500) NOT NULL,
-    p2p_node_id int
+    p2p_node_id INT,
+    CONSTRAINT disputes_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
-DROP TABLE IF EXISTS p2p_nodes;
 CREATE TABLE IF NOT EXISTS p2p_nodes (
     id SERIAL PRIMARY KEY,
     domain VARCHAR(150) UNIQUE NOT NULL,
@@ -133,18 +179,13 @@ CREATE TABLE IF NOT EXISTS p2p_nodes (
     certificate_authority VARCHAR(100),
     fingerprint VARCHAR(100)
 );
---INSERT INTO p2p_nodes (domain) VALUES ('stated.rixdata.net');
-DROP TABLE IF EXISTS migrations;
 CREATE TABLE IF NOT EXISTS migrations (
     id SERIAL PRIMARY KEY,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     from_version bigint NOT NULL,
     to_version bigint NOT NULL
 );
-INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, 1);
---INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, ${currentCodeVersion});
-
-DROP TABLE IF EXISTS ssl_cert_cache;
+INSERT INTO migrations (created_at, from_version, to_version) VALUES (CURRENT_TIMESTAMP, 0, 2);
 CREATE TABLE IF NOT EXISTS ssl_cert_cache (
     sha256 TEXT PRIMARY KEY,
     host TEXT,
@@ -152,9 +193,22 @@ CREATE TABLE IF NOT EXISTS ssl_cert_cache (
     subject_c TEXT,
     subject_st TEXT,
     subject_l TEXT,
+    subject_cn TEXT,
+    subject_serialnumber TEXT,
+    subjectaltname TEXT,
+    issuer_o TEXT,
+    issuer_c TEXT,
+    issuer_cn TEXT,
     valid_from timestamp, 
     valid_to timestamp,
     first_seen timestamp,
     last_seen timestamp,
-    _rank int
+    _rank INT
+);
+CREATE VIEW statement_with_superseding AS (
+	SELECT s1.*, s2.hash_b64 superseding_statement 
+	FROM statements s1 
+	LEFT JOIN statements s2 
+		ON s1.hash_b64=s2.superseded_statement 
+		AND s1.domain=s2.domain AND s1.author=s2.author 
 );

@@ -9,48 +9,12 @@ import { Pool } from "pg";
 const migration1 = fs
   .readFileSync(__dirname + "/sql/migration_1.sql", "utf8")
   .toString();
-const migration2 = fs
-  .readFileSync(__dirname + "/sql/migration_2.sql", "utf8")
-  .toString();
-const migration3 = fs
-  .readFileSync(__dirname + "/sql/migration_3.sql", "utf8")
-  .toString();
-const migration4 = fs
-  .readFileSync(__dirname + "/sql/migration_4.sql", "utf8")
-  .toString();
-const migration5 = fs
-  .readFileSync(__dirname + "/sql/migration_5.sql", "utf8")
-  .toString();
-const migration6 = fs
-  .readFileSync(__dirname + "/sql/migration_6.sql", "utf8")
-  .toString();
-const migration7 = fs
-  .readFileSync(__dirname + "/sql/migration_7.sql", "utf8")
-  .toString();
-const migration8 = fs
-  .readFileSync(__dirname + "/sql/migration_8.sql", "utf8")
-  .toString();
-const migration9 = fs
-  .readFileSync(__dirname + "/sql/migration_9.sql", "utf8")
-  .toString();
-const migration10 = fs
-  .readFileSync(__dirname + "/sql/migration_10.sql", "utf8")
-  .toString();
 
 const migrateToVersion = {
-    1: { sql: migration1 },
-    2: { sql: migration2 },
-    3: { sql: migration3 },
-    4: { sql: migration4 },
-    5: { sql: migration5 },
-    6: { sql: migration6 },
-    7: { sql: migration7 },
-    8: { sql: migration8 },
-    9: { sql: migration9 },
-    10: { sql: migration10 },
+    1: { sql: migration1 }
 };
 
-const currentCodeVersion = 10;
+const currentCodeVersion = 1;
 const test = process.env.TEST || false
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
 
@@ -137,6 +101,11 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
         cb();
       } else {
         const dbVersion = parseInt("" + maxVersion);
+        if (dbVersion > _currentCodeVersion) {
+          throw Error(
+            "Database version is higher than code version. This should not happen."
+          );
+        }
         const targetVersion = dbVersion + 1;
         if (targetVersion > 1 && migrateToVersion[targetVersion]) {
           await backup();
