@@ -413,23 +413,19 @@ Statement content:
 
 test('parse poll v4', () => {
     let poll = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Thu, 17 Nov 2022 13:38:20 GMT
-Format version: 4
-Statement content: 
-	Type: Poll
-	The poll outcome is finalized when the following nodes agree: rixdata.net
-	Voting deadline: Thu, 01 Dec 2022 13:38:26 GMT
-	Poll: Should the UK join the EU
-	Option 1: Yes
-	Option 2: No
-	Who can vote: 
-		Description: All universities with a ROR ID
-		Legal form scope: limited liability corporation
-		All entities with the following property: ROR ID
-		As observed by: Rix Data NL B.V.@rixdata.net
-		Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
-`
+    Author: Rix Data NL B.V.
+    Time: Sun, 17 Dec 2023 20:20:52 GMT
+    Tags: AI safety
+    Format version: 3
+    Statement content: 
+        Type: Poll
+        Who can vote: All universities which have a ROR ID assigned
+        Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
+        The decision is finalized when the following nodes agree: rixdata.net
+        Voting deadline: Wed, 17 Jul 2024 10:55:54 GMT
+        Poll: Is there a >1% chance of AGI (Artificial General Intelligence) causing human extinction in the next 50 years?
+        Option 1: Yes
+        Option 2: No`
     const parsedStatement = parseStatement({ statement: poll })
     const parsedPoll = parsePoll(parsedStatement.content)
     const pollTitle = parsedPoll.poll
