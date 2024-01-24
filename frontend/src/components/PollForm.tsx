@@ -114,6 +114,47 @@ const PollForm = (props:FormProps) => {
             margin="normal"
             sx={{marginTop: '24px'}}
         />
+        {showOptionalFields && (<>
+        
+        <TextField
+            id="option3"
+            variant="outlined"
+            placeholder=''
+            label="Option 3"
+            onChange={e => { 
+                let optionsNew = [...options]
+                optionsNew[2] = e.target.value
+                setOptions(optionsNew) }}
+            margin="normal"
+            sx={{marginTop: '24px'}}
+        />
+        
+        <TextField
+            id="option4"
+            variant="outlined"
+            placeholder=''
+            label="Option 4"
+            onChange={e => { 
+                let optionsNew = [...options]
+                optionsNew[3] = e.target.value
+                setOptions(optionsNew) }}
+            margin="normal"
+            sx={{marginTop: '24px'}}
+        />
+        
+        <TextField
+            id="option5"
+            variant="outlined"
+            placeholder=''
+            label="Option 5"
+            onChange={e => { 
+                let optionsNew = [...options]
+                optionsNew[4] = e.target.value
+                setOptions(optionsNew) }}
+            margin="normal"
+            sx={{marginTop: '24px'}}
+        />
+        </>)}
         <FormControlLabel
             control={<Checkbox checked={allowArbitraryVote} onChange={(event) => {
                 setAllowArbitraryVote(event.target.checked);
