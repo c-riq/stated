@@ -286,8 +286,14 @@ export const getStatementsWithDetailFactory =
           if ('organisation_verification' === t) {
             typeQuery += " OR type = 'organisation_verification'"
           }
+          if ('person_verification' === t) {
+            typeQuery += " OR type = 'person_verification'"
+          }
           if ('poll' === t) {
             typeQuery += " OR type = 'poll'"
+          }
+          if ('vote' === t) {
+            typeQuery += " OR type = 'vote'"
           }
           if ('rating' === t) {
             typeQuery += " OR type = 'rating'"

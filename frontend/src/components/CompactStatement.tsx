@@ -5,7 +5,8 @@ import { timeSince } from '../utils/time'
 
 import {
     statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
-    BoycottKeys, ObservationKeys, voteKeys, parseResponseContent, responseKeys, disputeAuthenticityKeys, disputeContentKeys, pollKeys
+    BoycottKeys, ObservationKeys, voteKeys, parseResponseContent, responseKeys, disputeAuthenticityKeys, 
+    disputeContentKeys, pollKeys, personVerificationKeys
 } from '../statementFormats'
 
 const highlightedStatement = (text: string, type: string, adjustColor=false) => {
@@ -16,6 +17,9 @@ const highlightedStatement = (text: string, type: string, adjustColor=false) => 
     }
     if (type === statementTypes.organisationVerification) {
         regex = organisationVerificationKeys
+    }
+    if (type === statementTypes.personVerification) {
+        regex = personVerificationKeys
     }
     if (type === statementTypes.signPdf) {
         regex = PDFSigningKeys

@@ -6,20 +6,13 @@ import Statements from "./Statements";
 import gh from '../img/github.png'
 // @ts-ignore
 import logo from '../img/logo.png'
-
-const types = [
-    'Statements',
-    'Domain Verifications',
-    'Polls',
-    'Collective Signatures',
-    'Ratings',
-    'Bounties',
-    'Observations',
-];
+import { backwardsCompatibility, statementTypeQueryValues } from "../utils/searchQuery";
 
 const urlParams = new URLSearchParams(window.location.search);
 const queryFromUrl = urlParams.get('search_query')
-const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+const typesFromUrl = urlParams.get('types')?.split(',')
+    .map((t:string)=> (backwardsCompatibility[t] ? backwardsCompatibility[t] : t))
+    .filter((t:string) => statementTypeQueryValues.includes(t))
 
 type LayoutProps = {
     setSearchQuery: (arg0: string) => void,
@@ -116,7 +109,7 @@ export const Layout = ({ setSearchQuery, joinStatement, voteOnPoll, resetFilters
                             }}
                             style={{ backgroundColor: "rgba(255,255,255,1)", borderRadius: 20 }}
                         >
-                            {types.map((_type) => (
+                            {statementTypeQueryValues.map((_type) => (
                                 <MenuItem key={_type} value={_type}>
                                     <Checkbox checked={selectedTypes.indexOf(_type) > -1} />
                                     <ListItemText primary={_type} />

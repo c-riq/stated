@@ -21,21 +21,15 @@ import { getStatements } from './api'
 import DebugStatement from './components/DebugStatement';
 import { CenterModal } from './components/CenterModal';
 import { Layout } from './components/Layout';
+import { backwardsCompatibility, statementTypeQueryValues } from './utils/searchQuery';
 
-const types = [
-  'Statements',
-  'Domain Verifications',
-  'Polls',
-  'Collective Signatures',
-  'Ratings',
-  'Bounties',
-  'Observations',
-];
 
 const urlParams = new URLSearchParams(window.location.search);
 const queryFromUrl = urlParams.get('search_query')
 const domainFilterFromUrl = undefined || urlParams.get('domain')
-const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+const typesFromUrl = urlParams.get('types')?.split(',')
+  .map((t:string)=> (backwardsCompatibility[t] ? backwardsCompatibility[t] : t))
+  .filter((t:string) => statementTypeQueryValues.includes(t))
 const auhtorFilterFromUrl = undefined || urlParams.get('author')
 
 function App() {
