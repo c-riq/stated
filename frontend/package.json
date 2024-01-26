@@ -45,6 +45,7 @@
     "copyFilesToBackend": "cp -r ./src/statementFormats/*.ts ../backend/statementFormats/ & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
     "copyFilesFromBackend": "rm -rf ./src/api/dbTypes.ts && cp ../backend/database/dbTypes.ts ./src/api",
     "test": "react-scripts test",
+    "e2e": "playwright test --project=chromium",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -75,6 +76,7 @@
     "fsevents": "^2.3.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.41.1",
     "@types/crypto-js": "^4.1.2",
     "@types/cytoscape": "^3.19.10",
     "@types/cytoscape-fcose": "^2.2.1",

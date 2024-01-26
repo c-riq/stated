@@ -3,7 +3,7 @@
 
 services:
   db_1:
-    image: postgres
+    image: postgres:14.8
     environment:
       POSTGRES_USER: sdf
       POSTGRES_PASSWORD: sdf
@@ -42,7 +42,7 @@ services:
 # node 2
 
   db_2:
-    image: postgres
+    image: postgres:14.8
     environment:
       POSTGRES_USER: sdf
       POSTGRES_PASSWORD: sdf
@@ -82,7 +82,7 @@ services:
 # node 3
 
   db_3:
-    image: postgres
+    image: postgres:14.8
     environment:
       POSTGRES_USER: sdf
       POSTGRES_PASSWORD: sdf
