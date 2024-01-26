@@ -345,8 +345,8 @@ const CreateStatement = (props:Props) => {
                     <MenuItem value={statementTypes.organisationVerification} data-testid='organisation-verification'>Verify an organisation</MenuItem>
                     <MenuItem value={statementTypes.personVerification}>Verify a person</MenuItem>
                     <MenuItem value={statementTypes.rating}>Rating</MenuItem>
-                    <MenuItem value={statementTypes.poll}>Poll</MenuItem>
-                    <MenuItem value={statementTypes.vote}>Vote</MenuItem>
+                    <MenuItem value={statementTypes.poll} data-testid='poll'>Poll</MenuItem>
+                    <MenuItem value={statementTypes.vote} data-testid='vote'>Vote</MenuItem>
                     <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
                     <MenuItem value={statementTypes.disputeContent}>Dispute statement content</MenuItem>
                     <MenuItem value={statementTypes.response}>Response</MenuItem>

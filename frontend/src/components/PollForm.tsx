@@ -83,6 +83,7 @@ const PollForm = (props:FormProps) => {
         <FormControl sx={{width: "100%"}}>
         <TextField
             id="poll"
+            data-testid="poll-content"
             variant="outlined"
             placeholder='What should ...'
             label="Poll"
@@ -92,6 +93,7 @@ const PollForm = (props:FormProps) => {
         />
         <TextField
             id="option1"
+            data-testid="option1"
             variant="outlined"
             placeholder=''
             label="Option 1"
@@ -104,6 +106,7 @@ const PollForm = (props:FormProps) => {
         />
         <TextField
             id="option2"
+            data-testid="option2"
             variant="outlined"
             placeholder=''
             label="Option 2"

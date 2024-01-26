@@ -115,7 +115,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
         <RadioGroup
             value={vote}
             onChange={handleChange}>
-                {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
+                {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio data-testid={'option-'+(i+1)} />} label={o} />
             ))}
             {allowArbitraryVote && (
                 <FormControlLabel value="other" control={<Radio />} label="Other" />
