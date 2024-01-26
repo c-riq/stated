@@ -6,7 +6,8 @@
   "scripts": {
     "test": "tsc && jest",
     "start": "nodemon --exec ts-node ./index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "update": "./update.sh"
   },
   "author": "Christopher Rieckmann",
   "license": "MIT",
