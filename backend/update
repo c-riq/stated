@@ -1,0 +1,12 @@
+# shell script to update to specified stated version
+
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied"
+    exit 1
+fi
+
+url="https://github.com/c-riq/stated/releases/download/v1.0.$1/release.zip"
+echo "Downloading $url"
+
+wget $url && unzip -o release.zip -d . && rm release.zip 
