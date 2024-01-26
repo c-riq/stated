@@ -26,7 +26,7 @@ const GenerateStatement = (props:props) => {
                     Authenticate by adding a DNS record on {props.authorDomain}
                 </Button>)}
                 <Button variant="contained" onClick={() => props.prepareStatement({method: 'api'})}
-                    sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}}>
+                    sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}} data-testid="publish-using-api-key">
                     Publish using an API key for {window.location.hostname}
                 </Button>
                 <Button variant="contained" onClick={() => props.prepareStatement({method: 'represent'})}
@@ -34,7 +34,7 @@ const GenerateStatement = (props:props) => {
                     Ask {window.location.hostname} to publish for you via email
                 </Button>
                 </>) : (props.authorDomain && (<Button onClick={() => setShowAdditionalOptions(true)}
-                    sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
+                    sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}} data-testid="show-additional-options">
                     Show additional options
                 </Button>))}
             </div>

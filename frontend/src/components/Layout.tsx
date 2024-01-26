@@ -126,7 +126,7 @@ export const Layout = ({ setSearchQuery, joinStatement, voteOnPoll, resetFilters
                     </FormControl>
                 </div>)}
                 <Link to="/create-statement">
-                    <Button onClick={() => { setModalOpen(true) }} variant='contained'
+                    <Button onClick={() => { setModalOpen(true) }} variant='contained' data-testid="create-statement"
                         sx={{ margin: "5px 5px 5px 60px", height: "40px", backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>Create Statement</Button>
                 </Link>
             </Statements>

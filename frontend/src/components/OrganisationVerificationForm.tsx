@@ -82,6 +82,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         <FormControl sx={{width: "100%"}}>
         <TextField
             id="website"
+            data-testid="domain-to-be-verified"
             variant="outlined"
             placeholder='walmart.com'
             label="Domain owned by organisation"
@@ -92,6 +93,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <TextField
             id="organisation name"
+            data-testid="organisation-name"
             variant="outlined"
             placeholder='Walmart Inc.'
             label="Name of organisation (as in business register)"
@@ -102,6 +104,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="country"
+            data-testid="country"
             options={countries}
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
@@ -133,6 +136,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="legalForm"
+            data-testid="legal-form"
             options={Object.values(legalForms)}
             autoHighlight
             getOptionLabel={(option) => option}
@@ -149,6 +153,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         {legalForm === legalForms.corporation && (
         <TextField
             id="department"
+            data-testid="department"
             variant="outlined"
             placeholder='Research group X'
             label="Department (optional)"
@@ -159,6 +164,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />)}
         <Autocomplete
             id="city"
+            data-testid="city"
             options={countryObject ? cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
@@ -174,6 +180,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="province"
+            data-testid="province"
             options={countryObject ? provinces.filter(l =>(l[0] === countryObject[1] )) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[2] : ''}
@@ -189,6 +196,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="employeeCount"
+            data-testid="employee-count"
             options={Object.values(peopleCountBuckets)}
             autoHighlight
             getOptionLabel={(option) => option}
@@ -203,6 +211,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <TextField
             id="serial number"
+            data-testid="serial-number"
             variant="outlined"
             placeholder={(
                 countryObject?.[1] === 'DE' ? 'HRB 1234' :
@@ -218,6 +227,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <TextField
             id="confidence"
+            data-testid="confidence"
             variant="outlined"
             placeholder='0.9'
             label="Confidence (probability of correctness 0.0 - 1.0)"
@@ -232,6 +242,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
         />
         <TextField
             id="reliability"
+            data-testid="reliability"
             variant="outlined"
             placeholder='https://stated.example.com/statements/NF6irhgDU0F_HEgTRKnh'
             label="Policy containing correctness guarantees"
