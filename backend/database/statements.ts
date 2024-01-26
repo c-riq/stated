@@ -273,8 +273,8 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
 
 export const getStatementsWithDetailFactory =
   (pool) =>
-  ({ skip, searchQuery, limit, types, domain, author } : {skip?: number,
-    searchQuery?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
+  ({ skip, searchQuery, tag, limit, types, domain, author } : {skip?: number,
+    searchQuery?: string, tag?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
         new Promise((resolve: DBCallback<StatementWithDetailsDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
@@ -342,6 +342,11 @@ export const getStatementsWithDetailFactory =
                   ? "AND author=$5"
                   : ""
               }
+              ${
+                tag
+                  ? "AND tags LIKE '%'||$6||'%'"
+                  : ""
+              }
             GROUP BY 1
             ORDER BY repost_count DESC, first_id DESC
           )
@@ -402,7 +407,7 @@ export const getStatementsWithDetailFactory =
          WHERE _rank=1
          ORDER BY repost_count DESC, id DESC; 
               `,
-          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || ''],
+          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || '', tag || ''],
           (error, results) => {
             if (error) {
               console.log(error);
