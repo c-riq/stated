@@ -176,6 +176,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	""
 	return content
 }
+export const pollKeys = /(Type: |The poll outcome is finalized when the following nodes agree: |Voting deadline: |Poll: |Option 1: |Option 2: |Option 3: |Option 4: |Option 5: |Allow free text votes: |Who can vote: |Description: |Country scope: |City scope: |Legal form scope: |Domain scope: |All entities with the following property: |As observed by: |Link to query defining who can vote: )/g
 export const parsePoll = (s: string, version?:string):Poll => {
 	if (version && version === '3') return parsePollV3(s)
 	if (version && version !== '4') throw new Error("Invalid version " + version)
@@ -435,6 +436,7 @@ export const buildDisputeAuthenticityContent = ({hash, confidence, reliabilityPo
 	""
 	return content
 }
+export const disputeAuthenticityKeys = /(Type: |Description: |Hash of referenced statement: |Confidence: |Reliability policy: )/g
 export const parseDisputeAuthenticity = (s: string):DisputeAuthenticity => {
 	const disputeRegex= new RegExp(''
 	+ /^\n\tType: Dispute statement authenticity\n/.source
@@ -462,6 +464,7 @@ export const buildDisputeContentContent = ({hash, confidence, reliabilityPolicy}
 	""
 	return content
 }
+export const disputeContentKeys = /(Type: |Description: |Hash of referenced statement: |Confidence: |Reliability policy: )/g
 export const parseDisputeContent = (s: string):DisputeContent => {
 	const disputeRegex= new RegExp(''
 	+ /^\n\tType: Dispute statement content\n/.source
@@ -479,6 +482,7 @@ export const parseDisputeContent = (s: string):DisputeContent => {
 		reliabilityPolicy: m[3]
 	}
 }
+export const responseKeys = /(Type: |Hash of referenced statement: |Response: )/
 export const buildResponseContent = ({hash, response}:ResponseContent) => {
 	const content = "\n" +
 	"\t" + "Type: Response" + "\n" +
