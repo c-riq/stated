@@ -31,8 +31,8 @@ const PersonVerificationForm = (props:FormProps) => {
     const [verifyDomain, setVerifyDomain] = React.useState("");
     const [foreignDomain, setForeignDomain] = React.useState("");
     const [verifyName, setVerifyName] = React.useState("");
-    const [countries, setCountries] = React.useState({countries: []})
-    const [cities, setCities] = React.useState({cities: []})
+    const [countries, setCountries] = React.useState([] as [string,string,string,string][])
+    const [cities, setCities] = React.useState([] as [string,string,string,string][])
 
     React.useEffect(() => {
         fetch('/countries.json')
@@ -117,7 +117,7 @@ const PersonVerificationForm = (props:FormProps) => {
         </LocalizationProvider>
         <Autocomplete
             id="country"
-            options={countries.countries}
+            options={countries}
             autoHighlight
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
@@ -147,7 +147,7 @@ const PersonVerificationForm = (props:FormProps) => {
         />
         <Autocomplete
             id="city"
-            options={countryObject ? cities.cities.filter(l => l[2] === countryObject[4] ) : []}
+            options={countryObject ? cities.filter(l => l[2] === countryObject[4] ) : []}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
             freeSolo
