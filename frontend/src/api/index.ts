@@ -1,3 +1,5 @@
+import { apiQueryString, queryValueToStatementType } from "../utils/searchQuery"
+
 // For demos: backendHost = 'http://'+ window.location.host 
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (
     window.location.host.match(/^localhost:3000/) ? 'http://localhost:7766' : 'http://' + window.location.host
@@ -42,24 +44,11 @@ export const getStatement = (hash:string, cb:cb<StatementWithSupersedingDB|State
     }, e => {console.log(e); cb(undefined)})
 }
 
-export const getStatements = ({searchQuery, skip, limit, domain, author, statementTypes, cb}:
-    {searchQuery:string|undefined, limit:number, domain:string|undefined, author:string|undefined,
+export const getStatements = ({searchQuery, tag, skip, limit, domain, author, statementTypes, cb}:
+    {searchQuery:string|undefined, tag?:string, limit:number, domain:string|undefined, author:string|undefined,
     skip:number, statementTypes:string[], cb:(arg0: resDB<StatementWithDetailsDB>) => void}) => {
-    const types = statementTypes.map(t => {
-        return({'Statements': 'statement',
-                'Domain Verifications': 'organisation_verification',
-                'Polls': 'poll',
-                'Collective Signatures': 'sign_pdf',
-                'Ratings': 'rating',
-                'Bounties': 'bounty',
-                'Observations': 'observation'})[t]}).filter(t => t).join(',')
-    const queryString = [(searchQuery ? 'search_query=' +
-            searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09') : ''),
-        (limit ? 'limit=' + limit : ''),
-        (skip ? 'skip=' + skip : ''),
-        (types ? 'types=' + types : ''),
-        (domain ? 'domain=' + domain : ''),
-        (author ? 'author=' + author : '')].filter(s => s.length > 0).join('&')
+    const types = statementTypes.map(queryValueToStatementType).filter(t => t).join(',')
+    const queryString = apiQueryString({searchQuery, tag, limit, skip, types, domain, author})
     req('GET',
         `statements_with_details?${queryString}`, {}, (json: resDB<StatementWithDetailsDB>) => {
         cb(json)

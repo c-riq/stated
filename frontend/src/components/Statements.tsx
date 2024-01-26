@@ -43,6 +43,7 @@ const Statements = (props:props) => {
                         }
                         if ([
                             statementTypes.statement,statementTypes.organisationVerification,
+                            statementTypes.personVerification,
                             statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
                             statementTypes.boycott, statementTypes.observation, statementTypes.vote
                         ].includes(s.type || '')){

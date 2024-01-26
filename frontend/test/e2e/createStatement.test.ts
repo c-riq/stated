@@ -26,3 +26,8 @@ test('create simple statement', async ({ page }) => {
   await page.getByPlaceholder('search').press('Enter');
   await expect(page.getByRole('heading', { name: 'Statements (1)' })).toBeVisible();
 });
+
+test('url search query', async ({ page }) => {
+  await page.goto('http://localhost:3000/?search_query=test%20basic%20statement&types=Statements,Votes');
+  await expect(page.locator('#root')).toContainText('Statements (1)');
+});

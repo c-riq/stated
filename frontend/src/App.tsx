@@ -21,21 +21,16 @@ import { getStatements } from './api'
 import DebugStatement from './components/DebugStatement';
 import { CenterModal } from './components/CenterModal';
 import { Layout } from './components/Layout';
+import { backwardsCompatibility, statementTypeQueryValues, updateQueryString } from './utils/searchQuery';
 
-const types = [
-  'Statements',
-  'Domain Verifications',
-  'Polls',
-  'Collective Signatures',
-  'Ratings',
-  'Bounties',
-  'Observations',
-];
 
 const urlParams = new URLSearchParams(window.location.search);
 const queryFromUrl = urlParams.get('search_query')
 const domainFilterFromUrl = undefined || urlParams.get('domain')
-const typesFromUrl = urlParams.get('types')?.split(',').filter((t:string) => types.includes(t))
+const tagFilterFromUrl = undefined || urlParams.get('tag')
+const typesFromUrl = urlParams.get('types')?.split(',')
+  .map((t:string)=> (backwardsCompatibility[t] ? backwardsCompatibility[t] : t))
+  .filter((t:string) => statementTypeQueryValues.includes(t))
 const auhtorFilterFromUrl = undefined || urlParams.get('author')
 
 function App() {
@@ -62,6 +57,7 @@ function App() {
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
   const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
   const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
+  const [tagFilter, setTagFilter] = React.useState<string | undefined>(tagFilterFromUrl || undefined);
   const [triggerUrlRefresh, setTriggerUrlRefresh] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -73,21 +69,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const queryString = [
-      (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09')  : ''),
-      (statementTypes?.length ? 'types=' + statementTypes : ''),
-      (domainFilter ? 'domain=' + domainFilter : ''),
-      (authorFilter ? 'author=' + authorFilter : '')
-    ].filter(s => s.length > 0).join('&')
-    window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
-  }, [searchQuery, statementTypes, domainFilter, authorFilter, triggerUrlRefresh])
+    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, statementTypes})
+  }, [searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, triggerUrlRefresh])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
       return
     }
     const limit = 20
-    getStatements({searchQuery, limit, skip: 0, statementTypes, domain: domainFilter, author: authorFilter,
+    getStatements({searchQuery, tag: tagFilter, limit, skip: 0, statementTypes, domain: domainFilter, author: authorFilter,
         cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
@@ -108,11 +98,11 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh])
+  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh, tagFilter])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
-      getStatements({searchQuery, limit, skip, statementTypes, domain: domainFilter, author: authorFilter,
+      getStatements({searchQuery, tag: tagFilter, limit, skip, statementTypes, domain: domainFilter, author: authorFilter,
          cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
@@ -135,7 +125,7 @@ function App() {
       }})
       setShouldLoadMore(false)
     }
-  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilter, authorFilter])
+  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilter, authorFilter, tagFilter])
   const joinStatement = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)

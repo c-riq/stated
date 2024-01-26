@@ -273,8 +273,8 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
 
 export const getStatementsWithDetailFactory =
   (pool) =>
-  ({ skip, searchQuery, limit, types, domain, author } : {skip?: number,
-    searchQuery?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
+  ({ skip, searchQuery, tag, limit, types, domain, author } : {skip?: number,
+    searchQuery?: string, tag?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
         new Promise((resolve: DBCallback<StatementWithDetailsDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
@@ -286,8 +286,14 @@ export const getStatementsWithDetailFactory =
           if ('organisation_verification' === t) {
             typeQuery += " OR type = 'organisation_verification'"
           }
+          if ('person_verification' === t) {
+            typeQuery += " OR type = 'person_verification'"
+          }
           if ('poll' === t) {
             typeQuery += " OR type = 'poll'"
+          }
+          if ('vote' === t) {
+            typeQuery += " OR type = 'vote'"
           }
           if ('rating' === t) {
             typeQuery += " OR type = 'rating'"
@@ -314,7 +320,8 @@ export const getStatementsWithDetailFactory =
                 $2 as input2,
                 $3 as input3,
                 $4 as input4,
-                $5 as input5
+                $5 as input5,
+                $6 as input6
             FROM statement_with_superseding 
             WHERE 
               superseding_statement IS NULL 
@@ -334,6 +341,11 @@ export const getStatementsWithDetailFactory =
               ${
                 author
                   ? "AND author=$5"
+                  : ""
+              }
+              ${
+                tag
+                  ? "AND tags LIKE '%'||$6||'%'"
                   : ""
               }
             GROUP BY 1
@@ -396,7 +408,7 @@ export const getStatementsWithDetailFactory =
          WHERE _rank=1
          ORDER BY repost_count DESC, id DESC; 
               `,
-          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || ''],
+          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || '', tag || ''],
           (error, results) => {
             if (error) {
               console.log(error);

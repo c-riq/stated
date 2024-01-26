@@ -84,7 +84,8 @@ api.get("/statements_with_details", async (req, res, next) => {
         const domain = (req.query && req.query.domain) as string | undefined
         const author = (req.query && req.query.author) as string | undefined
         const searchQuery = (req.query && req.query.search_query) as string | undefined
-        const dbResult = await getStatementsWithDetail({skip, limit, searchQuery, types, domain, author})
+        const tag = (req.query && req.query.tag) as string | undefined
+        const dbResult = await getStatementsWithDetail({skip, limit, searchQuery, tag, types, domain, author})
         res.end(JSON.stringify({statements: dbResult.rows, time: new Date().toUTCString()}))       
     } catch (error) {
         next(error)

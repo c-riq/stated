@@ -360,6 +360,8 @@ export const buildPersonVerificationContent = (
 const monthIndex = (month:string) => ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase().substr(0,3))
 const birthDateFormat:RegExp = /(?<d>\d{1,2})\s(?<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(?<y>\d{4})/
 
+export const personVerificationKeys = /(Type: |Description: |Name: |Date of birth: |City of birth: |Country of birth: |Job title: |Employer: |Owner of the domain: |Foreign domain used for publishing statements: |Picture: |Verification method: |Confidence: |Reliability policy: )/g
+
 export const parsePersonVerification = (s: string):PersonVerification => {
 	const domainVerificationRegex= new RegExp(''
 	+ /^\n\tType: Person verification\n/.source
