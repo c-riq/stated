@@ -75,7 +75,7 @@ const Statements = (props:props) => {
                             <div style={{display: "flex", flexDirection: "column", justifyContent:"start"}}>
                                     <div>{s.repost_count}</div>
                                 <Link to="/create-statement">
-                                    <Button onClick={()=>{
+                                    <Button data-testid='vote-on-poll' onClick={()=>{
                                         const {statement,hash_b64} = s
                                         props.voteOnPoll({statement, hash_b64})
                                         props.setModalOpen()}} variant='contained' 

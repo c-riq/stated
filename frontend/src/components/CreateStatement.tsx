@@ -219,6 +219,7 @@ const CreateStatement = (props:Props) => {
                 freeSolo
                 disableClearable
                 id="domain"
+                data-testid="domain"
                 isOptionEqualToValue={(option, value) => option && value && !!(option.domain && option.domain === value.domain)}
                 getOptionLabel={(option) => option ? option.domain || '' : ''}
                 options={domainOptions}
@@ -268,6 +269,7 @@ const CreateStatement = (props:Props) => {
                 }
             <TextField
                 id="author"
+                data-testid="author"
                 variant="outlined"
                 placeholder='Example Inc.'
                 label="Author of the content (you/ your organisation)"
@@ -332,6 +334,7 @@ const CreateStatement = (props:Props) => {
                 <Select
                     labelId="statement-type-label"
                     id="statement-type"
+                    data-testid="statement-type"
                     value={_type}
                     label="Type"
                     onChange={(e)=>handleTypeChange(e.target.value as StatementTypeValue)}
@@ -339,11 +342,11 @@ const CreateStatement = (props:Props) => {
                 >
                     <MenuItem value={statementTypes.statement}>Statement</MenuItem>
                     <MenuItem value={statementTypes.signPdf}>Sign PDF</MenuItem>
-                    <MenuItem value={statementTypes.organisationVerification}>Verify an organisation</MenuItem>
+                    <MenuItem value={statementTypes.organisationVerification} data-testid='organisation-verification'>Verify an organisation</MenuItem>
                     <MenuItem value={statementTypes.personVerification}>Verify a person</MenuItem>
                     <MenuItem value={statementTypes.rating}>Rating</MenuItem>
-                    <MenuItem value={statementTypes.poll}>Poll</MenuItem>
-                    <MenuItem value={statementTypes.vote}>Vote</MenuItem>
+                    <MenuItem value={statementTypes.poll} data-testid='poll'>Poll</MenuItem>
+                    <MenuItem value={statementTypes.vote} data-testid='vote'>Vote</MenuItem>
                     <MenuItem value={statementTypes.disputeAuthenticity}>Dispute statement authenticity</MenuItem>
                     <MenuItem value={statementTypes.disputeContent}>Dispute statement content</MenuItem>
                     <MenuItem value={statementTypes.response}>Response</MenuItem>
@@ -425,14 +428,17 @@ const CreateStatement = (props:Props) => {
                 <React.Fragment>
                     <TextField
                         id="api-key"
+                        data-testid="api-key"
                         variant="outlined"
                         placeholder='3CVAaK2c4WvcoYoYtKAoaoRGRrFrE3Sp'
                         label={"API key for " + window.location.hostname}
                         onChange={e => { setApiKey(e.target.value) }}
                         margin="normal"
                     />
-                    <Button fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}
-                    disabled={!apiKey}>
+                    <Button 
+                        data-testid="submit-statement"
+                        fullWidth variant="contained" color="success" onClick={() => { submitStatementAPI() }}
+                        disabled={!apiKey}>
                         Submit</Button>
                 </React.Fragment>
                 )
