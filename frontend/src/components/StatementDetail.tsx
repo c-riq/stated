@@ -208,6 +208,12 @@ const StatementDetail = (props:props) => {
                 statementTypes.personVerification, statementTypes.vote, statementTypes.poll, statementTypes.response
             ].includes(statement.type) && (
                 <>
+                    {statement && (statement.type === statementTypes.poll && (<RouterLink to="/create-statement">
+                        <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
+                        sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
+                            Vote
+                        </Button>
+                    </RouterLink>))}
                     <RouterLink to="/create-statement">
                         <Tooltip title="Join statement">
                             <IconButton aria-label="join statement" onClick={()=>{props.setStatementToJoin(statement);}}>
@@ -282,12 +288,6 @@ const StatementDetail = (props:props) => {
             )}
             {key && algorithm &&
             (<DecryptedContent statement={statement} decryptionKey={key} decryptionAlgorithm={algorithm} />)}
-            {statement && (statement.type === statementTypes.poll && (<RouterLink to="/create-statement">
-                <Button onClick={()=>{props.voteOnPoll(statement)}} variant='contained' 
-                sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
-                    Vote
-                </Button>
-            </RouterLink>))}
             <VerificationGraph organisationVerifications={organisationVerifications} personVerifications={personVerifications} statement={statement} lt850px={props.lt850px}/>
             <VerificationLogGraph lt850px={props.lt850px} hash={hash}/>
         <Card style={{
