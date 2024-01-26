@@ -320,7 +320,8 @@ export const getStatementsWithDetailFactory =
                 $2 as input2,
                 $3 as input3,
                 $4 as input4,
-                $5 as input5
+                $5 as input5,
+                $6 as input6
             FROM statement_with_superseding 
             WHERE 
               superseding_statement IS NULL 
