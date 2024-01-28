@@ -67,4 +67,4 @@ This statement can also be viewed under [https://stated.rixdata.net/statements/N
 - [NGO coordination for AI safety](https://github.com/c-riq/stated/blob/master/documents/ai_safety/README.md)
 
 ## Join the community
-- [Slack channel](https://join.slack.com/t/stated/shared_invite/zt-24r6gz86t-gy9TADMabaA0e1UQ1it~4g)
+- [Slack channel](https://join.slack.com/t/stated/shared_invite/zt-2bns35cz5-~nyTld_zMkJlttOiy29_pw)
