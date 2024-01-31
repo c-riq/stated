@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 import {legalForms} from '../constants/legalForms'
 import { parseStatement, buildStatement, 
     buildOrganisationVerificationContent, parseOrganisationVerification, peopleCountBuckets } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
@@ -252,7 +252,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

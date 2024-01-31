@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
@@ -48,7 +48,7 @@ const StatementForm = (props:FormProps) => {
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
             />
             {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

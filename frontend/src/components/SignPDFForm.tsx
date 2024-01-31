@@ -10,7 +10,7 @@ import {
   parseStatement,
   parsePDFSigning,
 } from "../statementFormats";
-import GenerateStatement from "./GenerateStatement";
+import PublishStatement from "./PublishStatement";
 import { uploadPdf, backendHost } from "../api";
 import { generateEmail } from "./generateEmail";
 import { FormProps, prepareStatement } from "../types";
@@ -163,7 +163,7 @@ const SignPDFForm = (props:FormProps) => {
         sx={{ marginBottom: "24px" }}
       />
       {props.children}
-      <GenerateStatement
+      <PublishStatement
         prepareStatement={prepareStatement}
         serverTime={props.serverTime}
         authorDomain={props.metaData.domain}

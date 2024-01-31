@@ -12,7 +12,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 
 import {legalForms} from '../constants/legalForms'
-import GenerateStatement from './GenerateStatement'
+import PublishStatement from './PublishStatement'
 import { sha256 } from '../utils/hash'
 
 import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
@@ -300,7 +300,7 @@ const PollForm = (props:FormProps) => {
         <Button onClick={() => setShowOptionalFields(true)}>Show optional fields</Button>
         }
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

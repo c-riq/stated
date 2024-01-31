@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 
 import { parseStatement, parseBounty, buildStatement, buildBounty } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
@@ -109,7 +109,7 @@ export const BountyForm = (props:FormProps) => {
             sx={{marginTop: '24px'}}
         />
             {props.children}
-            <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+            <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

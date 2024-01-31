@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
 import { parseResponseContent, buildResponseContent, buildStatement, parseStatement } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { generateEmail } from './generateEmail';
 import { getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -83,7 +83,7 @@ const ResponseForm = (props:(FormProps & {statementToRespond?: StatementDB | Sta
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
             /> 
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

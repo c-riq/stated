@@ -9,7 +9,7 @@ import FormControl from '@mui/material/FormControl';
 import { TextField } from '@mui/material';
 
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
@@ -88,7 +88,7 @@ export const RatingForm = (props:FormProps) => {
                     sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
                 />
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

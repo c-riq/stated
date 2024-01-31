@@ -15,7 +15,7 @@ import moment from 'moment'
 
 import { parseStatement, buildStatement, 
     parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
 import { generateEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
@@ -161,7 +161,7 @@ const PersonVerificationForm = (props:FormProps) => {
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

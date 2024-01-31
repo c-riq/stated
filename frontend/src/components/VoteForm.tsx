@@ -9,7 +9,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
 import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { generateEmail } from './generateEmail';
 import { TextField } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -133,7 +133,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             sx={{marginBottom: "12px"}}
         />)}
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

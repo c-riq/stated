@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement, buildDisputeContentContent, parseDisputeContent } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
+import PublishStatement from './PublishStatement';
 import { generateEmail } from './generateEmail';
 import { getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -98,7 +98,7 @@ const DisputeStatementContentForm = (props:FormProps & {statementToDisputeConten
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }
