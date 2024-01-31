@@ -77,7 +77,7 @@ const dummyDBValues = {
 
 jest.mock('./database', () => ({
     createPoll: jest.fn(() => false),
-    getVerificationsForDomain: jest.fn(() => ({rows: [1]})),
+    getOrganisationVerifications: jest.fn(() => ({rows: [1]})),
     getPoll: jest.fn(() => ({rows: [1]})),
     createVote: jest.fn(() => ({rows: [1]})),
     getVotes: jest.fn(() => ({rows: []})),

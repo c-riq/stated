@@ -1,5 +1,5 @@
 import { QueryResult } from 'pg'
-import {createPoll, getVerificationsForDomain, getPoll, 
+import {createPoll, getOrganisationVerifications, getPoll, 
     createVote, getVotes, updateVote, getObservationsForEntity} from './database'
 import {parseVote, parsePoll, parseStatement, vote, parseObservation} from './statementFormats'
 
@@ -103,7 +103,7 @@ export const parseAndCreateVote = ({statement_hash, domain, author, content, pro
             console.log("Missing required fields")
             return reject({error: "Missing required fields"})
         }
-        const dbResultVerification = await getVerificationsForDomain({domain})
+        const dbResultVerification = await getOrganisationVerifications({domain})
         const verifications = dbResultVerification.rows
         let verification = undefined as (StatementDB & OrganisationVerificationDB) | undefined
         verifications.forEach((v) => {

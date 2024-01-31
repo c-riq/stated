@@ -13,12 +13,13 @@ const sample = (arr:any[],n:number) => arr.map(a => [a,Math.random()]).sort((a,b
 
 export const FullVerificationGraph = () => {
   const graphRef = useRef(null);
-  const [organisationVerifications, setOrganisationVerifications] = React.useState([]);
+  const [organisationVerifications, setOrganisationVerifications] = React.useState([] as (StatementWithSupersedingDB & OrganisationVerificationDB)[]);
   const [dataFetched, setDataFetched] = React.useState(false);
 
   React.useEffect(() => { if(!dataFetched) {
-    getDomainVerifications(undefined, ({result}) => {
-      let verifications = result || []
+    getDomainVerifications(undefined, (statements) => {
+      let verifications = statements as (StatementWithSupersedingDB & OrganisationVerificationDB)[]
+      verifications = verifications!.filter(v => !!v.verified_domain)
       verifications = sample(verifications, 8000)
       setOrganisationVerifications(verifications)
     })
@@ -41,7 +42,7 @@ export const FullVerificationGraph = () => {
           statement_hash,
           legal_entity_type,
           content
-        }:{[key:string]:string},
+        },
         i
       ) => {
         const parsedOrganisationVerification = parseOrganisationVerification(content)

@@ -63,7 +63,7 @@ const CreateStatement = (props:Props) => {
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
-    const [statedVerification, setStatedVerification] = React.useState([] as statedVerification[]);
+    const [statedVerification, setStatedVerification] = React.useState([] as (StatementDB & OrganisationVerificationDB)[]);
     const [DNSSECInfo, setDNSSECInfo] = React.useState({domain: null, validated: null});
     const [domainIdentity, setDomainIdendity] = React.useState({});
     const [author, setAuthor] = React.useState("");
@@ -169,7 +169,9 @@ const CreateStatement = (props:Props) => {
             setDNSSECInfo(res)
         })
         getDomainVerifications(domain, res  => {
-            setStatedVerification(res?.result || [])
+            let verifications = res
+            verifications = verifications!.filter(v => !!v.verified_domain)
+            setStatedVerification(verifications)
         })
     },[domain])
 
@@ -261,7 +263,7 @@ const CreateStatement = (props:Props) => {
                 )
             }
             { (statedVerification && statedVerification.reduce((acc, i) => acc || i.verified_domain === domain, false)) &&
-                (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
+                (  statedVerification.reduce((acc, i) => acc || (i.verified_domain ?? ''), '') 
                 ?
                 [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
                     Verified via stated verification <a target='_blank' href={window.location.origin + '/statements/' + i!.statement_hash}>
