@@ -5,8 +5,8 @@ import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement, buildObservation, parseObservation } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
-import { generateEmail } from './generateEmail';
+import PublishStatement from './PublishStatement';
+import { sendEmail } from './generateEmail';
 import { getNameSuggestions, getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Autocomplete, Box } from '@mui/material';
@@ -59,17 +59,16 @@ const ObservationForm = (props:FormProps) => {
         try {
             props.setPublishingMethod(method)
             const content = buildObservation({subject, subjectReference: referencedHash, property: observationProperty, value: obervationValue, confidence: parseFloat(confidence), reliabilityPolicy})
+            if(method === 'represent'){
+                parseObservation(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
-
             const parsedStatement = parseStatement({statement})
             parseObservation(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => { 
-                props.setStatementHash(hash);
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                }
-            });
+            sha256(statement).then((hash) => props.setStatementHash(hash))
         } catch (error) {
             props.setAlertMessage('' + error)
             props.setisError(true)
@@ -175,7 +174,7 @@ const ObservationForm = (props:FormProps) => {
             sx={{marginTop: "20px"}}
         />
         {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }

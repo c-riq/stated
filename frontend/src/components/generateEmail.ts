@@ -1,15 +1,33 @@
+import { FormProps } from "../types"
 
-export const generateEmail = ({statement, hash}:{statement:string, hash:string}) => {
+const generateEmail = ({content, author}:{content:string, author:string}) => {
     const email = `stated@${window.location.host.replace('stated.','')}`
     const urlEncodedSubject = encodeURIComponent('Publish a statement')
-    const intro = 'Please distribute the following statement on our behalf:'
-    const appendix = 'To increase your confidence rating, we provide evidence below which '+
-    '\n\t (1) show that the website domain name of this email account belongs to the author of the statement such as'+
-    '\n\t\t (1.1) an official document linking the domain and organisation identiy or'+
-    '\n\t\t (1.2) a link to an stated organisation verification statment,'+
-    '\n\t (2) show that the owner of this email is authorized to represent our organisation.'
-    const urlEncodedbody = encodeURIComponent(`${intro}\n\n\n${statement}\n\n\nhash: ${hash}\n\n\n${appendix}`)
+    const publishingRequest = 'Please publish the following statement on our behalf:'
+    const verificationRequest = 'Please also publish a statement, verifying our identity.\n' +
+    'Below we may provide evidence to authenticate this request, which: '+
+    '\n\t (1) show that the domain name of this email account belongs to the author of the statement such as'+
+    '\n\t\t - an official document containing identity information about my organisation'+
+    '\n\t\t - a document or reference linking the domain and my organisations identiy'+
+    '\n\t (2) show that I am authorized to represent my organisation.'
+    const redactedStatement = `Author: ${author}\nStatement content: ${content}`
+    const text = `${publishingRequest}\n\n\n${redactedStatement}\n\n\n${verificationRequest}`
+    const urlEncodedbody = encodeURIComponent(text)
     const href = `mailto:${email}?subject=${urlEncodedSubject}&body=${urlEncodedbody}`
-    console.log(href)
+    return href
+}
+
+export const sendEmail = ({content, props}:{content:string, props: FormProps}) => {
+    if (!props.metaData.author) {
+        props.setAlertMessage('Author is required')
+        props.setisError(true)
+        return
+    }
+    if (!content) {
+        props.setAlertMessage('Statement is required')
+        props.setisError(true)
+        return
+    }
+    const href = generateEmail({content, author: props.metaData.author})
     window.location.href = href
 }

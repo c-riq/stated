@@ -214,7 +214,19 @@ const CreateStatement = (props:Props) => {
     }
     
     const authorFields = () => (
-        <React.Fragment>
+        <>
+            <TextField
+                id="author"
+                data-testid="author"
+                variant="outlined"
+                placeholder='Example Inc.'
+                label="Author of the content (you/ your organisation)"
+                value={author}
+                onChange={e => { setAuthor(e.target.value) }}
+                margin="normal"
+                style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
+                required
+            />
             <Autocomplete
                 freeSolo
                 disableClearable
@@ -235,50 +247,38 @@ const CreateStatement = (props:Props) => {
                     setDomain(newValue)
                 }}
                 renderInput={(params) => <TextField {...params} 
-                  label="Your domain used for publishing/ authenticating" placeholder='example.com' required />}
-                style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
+                  label="Your domain used for publishing/ authenticating" placeholder='example.com' />}
+                style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
             />
-                { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
-                     (  OVInfo.reduce((acc, i) => acc || i.O, '') 
-                        ?
-                        OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via <a target='_blank' href={"https://crt.sh/?sha256=" + i.sha256}> SSL certificate {i.domain +": "+ i.O + " by " + i.issuer_o}</a></Alert>))
-                        : 
-                        (<Alert severity="warning" style={{marginTop: "10px"}}>
-                            Organisation not verified via SSL certificate.</Alert>)
-                     )
-                }
-                { (statedVerification && statedVerification.reduce((acc, i) => acc || i.verified_domain === domain, false)) &&
-                     (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
-                        ?
-                        [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
-                            Verified via stated verification <a target='_blank' href={window.location.origin + '/statements/' + i!.statement_hash}>
-                                {i!.verified_domain +": " + (i!.department? i!.department + ' at ' : '') + i!.name + " by " + i!.verifier_domain}</a></Alert>))
-                        : 
-                        (<Alert severity="warning" style={{marginTop: "10px"}}>
-                            Not verified via stated verification.</Alert>)
-                     )
-                }
-                { (DNSSECInfo && DNSSECInfo.domain === domain) &&
-                     (  DNSSECInfo.validated
-                        ? (<Alert severity="success" style={{marginTop: "10px"}}>
-                            DNSSEC enabled for {DNSSECInfo.domain}</Alert>)
-                        : (<Alert severity="warning" style={{marginTop: "10px"}}>
-                            DNSSEC not enabled for {DNSSECInfo.domain}</Alert>)
-                     )
-                }
-            <TextField
-                id="author"
-                data-testid="author"
-                variant="outlined"
-                placeholder='Example Inc.'
-                label="Author of the content (you/ your organisation)"
-                value={author}
-                onChange={e => { setAuthor(e.target.value) }}
-                margin="normal"
-                style={{backgroundColor: '#eeeeee'}}
-                required
-            />
+            { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
+                (  OVInfo.reduce((acc, i) => acc || i.O, '') 
+                ?
+                OVInfo.filter(i => i.O).map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
+                    Verified via <a target='_blank' href={"https://crt.sh/?sha256=" + i.sha256}> SSL certificate {i.domain +": "+ i.O + " by " + i.issuer_o}</a></Alert>))
+                : 
+                (<Alert severity="warning" style={{marginTop: "10px"}}>
+                    Organisation not verified via SSL certificate.</Alert>)
+                )
+            }
+            { (statedVerification && statedVerification.reduce((acc, i) => acc || i.verified_domain === domain, false)) &&
+                (  statedVerification.reduce((acc, i) => acc || i.verified_domain, '') 
+                ?
+                [statedVerification.find(i => i.verified_domain === domain && i.name)].map((i,k) => (<Alert key={k} severity="success" style={{marginTop: "10px"}}>
+                    Verified via stated verification <a target='_blank' href={window.location.origin + '/statements/' + i!.statement_hash}>
+                        {i!.verified_domain +": " + (i!.department? i!.department + ' at ' : '') + i!.name + " by " + i!.verifier_domain}</a></Alert>))
+                : 
+                (<Alert severity="warning" style={{marginTop: "10px"}}>
+                    Not verified via stated verification.</Alert>)
+                )
+            }
+            { (DNSSECInfo && DNSSECInfo.domain === domain) &&
+                (  DNSSECInfo.validated
+                ? (<Alert severity="success" style={{marginTop: "10px"}}>
+                    DNSSEC enabled for {DNSSECInfo.domain}</Alert>)
+                : (<Alert severity="warning" style={{marginTop: "10px"}}>
+                    DNSSEC not enabled for {DNSSECInfo.domain}</Alert>)
+                )
+            }
             { showAdditionalFields && (
             <TextField
                 id="signing_representative"
@@ -288,9 +288,10 @@ const CreateStatement = (props:Props) => {
                 value={representative}
                 onChange={e => { setRepresentative(e.target.value) }}
                 margin="normal"
-                style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
-            />)}
-            { showAdditionalFields || props.statementToSupersede && (
+                style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
+            />
+            )}
+            {props.statementToSupersede && (
             <TextField
                 id="superseded_statement"
                 variant="outlined"
@@ -301,7 +302,7 @@ const CreateStatement = (props:Props) => {
                 margin="normal"
                 style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
             />)}
-            { showAdditionalFields ? (
+            { showAdditionalFields && (
             <TextField // TODO: fix tags
                 id="tags"
                 variant="outlined"
@@ -316,11 +317,13 @@ const CreateStatement = (props:Props) => {
                 value={tagInput}
                 sx={{backgroundColor: '#eeeeee', marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
             />)
-            :
-            (<Button color="primary" onClick={()=>setShowAdditionalFields(true)} style={{marginTop: "12px"}}>
-                Show additional fields</Button>
-            )}
-        </React.Fragment>
+            }
+            {!showAdditionalFields &&
+                (<Button color="primary" onClick={()=>setShowAdditionalFields(true)} style={{marginTop: "12px"}}>
+                    Show additional fields</Button>
+                )
+            }
+        </>
     )
 
     return (

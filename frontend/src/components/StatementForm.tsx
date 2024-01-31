@@ -5,8 +5,8 @@ import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement } from '../statementFormats'
-import GenerateStatement from './GenerateStatement';
-import { generateEmail } from './generateEmail';
+import PublishStatement from './PublishStatement';
+import { sendEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
 
@@ -15,9 +15,15 @@ const StatementForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setPublishingMethod(method)
+        if(method === 'represent'){
+            sendEmail({content, props})
+            return
+        }
         let statement = ''
         try {
-            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
+            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
+                representative: props.metaData.representative, tags: props.metaData.tags,
+                supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             parseStatement({statement})
         } catch (e) {
             props.setAlertMessage('' + e)
@@ -27,9 +33,6 @@ const StatementForm = (props:FormProps) => {
         props.setStatement(statement)
         sha256(statement).then((hash) => {
             props.setStatementHash(hash)
-            if(method === 'represent'){
-                generateEmail({statement, hash})
-        }
         })
     }
 
@@ -46,9 +49,10 @@ const StatementForm = (props:FormProps) => {
                 margin="normal"
                 value={content}
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                required
             />
             {props.children}
-        <GenerateStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
+        <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
         </FormControl>
     )
 }
