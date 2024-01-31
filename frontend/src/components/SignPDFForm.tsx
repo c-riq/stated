@@ -12,7 +12,7 @@ import {
 } from "../statementFormats";
 import PublishStatement from "./PublishStatement";
 import { uploadPdf, backendHost } from "../api";
-import { generateEmail } from "./generateEmail";
+import { sendEmail } from "./generateEmail";
 import { FormProps, prepareStatement } from "../types";
 
 export const filePath = (hash:string, host:string|undefined) => (host || backendHost) + "/files/" + hash + ".pdf"
@@ -38,6 +38,11 @@ const SignPDFForm = (props:FormProps) => {
     try {
       props.setPublishingMethod(method);
       const content = buildPDFSigningContent({ hash: fileHash });
+      if(method === 'represent'){
+        parsePDFSigning(content)
+        sendEmail({content, props})
+        return
+    }
       const statement = buildStatement({
         domain: props.metaData.domain,
         author: props.metaData.author,
@@ -50,10 +55,7 @@ const SignPDFForm = (props:FormProps) => {
       const parsedStatement = parseStatement({statement});
       parsePDFSigning(parsedStatement.content);
       props.setStatement(statement);
-      sha256(statement).then((hash) => { props.setStatementHash(hash);
-        if(method === 'represent'){
-          generateEmail({statement, hash})
-      } });
+      sha256(statement).then((hash) => props.setStatementHash(hash))
     } catch (error) {
       props.setAlertMessage("Invalid PDF signing statement format");
       props.setisError(true);

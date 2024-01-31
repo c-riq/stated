@@ -10,7 +10,7 @@ import FormLabel from '@mui/material/FormLabel';
 
 import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
 import PublishStatement from './PublishStatement';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { TextField } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { getStatement } from '../api';
@@ -69,16 +69,17 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
             props.setPublishingMethod(method)
             let voteString = (vote === 'other' || !options.length) ? freeTextVote : vote
             const content = buildVoteContent({pollHash: pollHash, poll: poll, vote: voteString})
+            if(method === 'represent'){
+                parseVote(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement({statement})
             parseVote(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => {props.setStatementHash(hash)
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                }
-            })
+            sha256(statement).then((hash) => {props.setStatementHash(hash)})
         }
         catch (e) {
             props.setAlertMessage('' + e)

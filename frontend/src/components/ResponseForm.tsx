@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import { sha256 } from '../utils/hash';
 import { parseResponseContent, buildResponseContent, buildStatement, parseStatement } from '../statementFormats'
 import PublishStatement from './PublishStatement';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FormProps, prepareStatement } from '../types';
@@ -34,17 +34,18 @@ const ResponseForm = (props:(FormProps & {statementToRespond?: StatementDB | Sta
         try {
             props.setPublishingMethod(method)
             const content = buildResponseContent({hash: referencedHash, response})
-            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
-
+            if(method === 'represent'){
+                parseResponseContent(content)
+                sendEmail({content, props})
+                return
+            }
+            const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
+                representative: props.metaData.representative, tags: props.metaData.tags,
+                supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement({statement})
             parseResponseContent(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => { 
-                props.setStatementHash(hash);
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                }
-            });
+            sha256(statement).then((hash) => props.setStatementHash(hash))
         } catch (error) {
             props.setAlertMessage('Invalid dispute statement format')
             props.setisError(true)

@@ -7,7 +7,7 @@ import FormControl from '@mui/material/FormControl';
 
 import { parseStatement, parseBounty, buildStatement, buildBounty } from '../statementFormats'
 import PublishStatement from './PublishStatement';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
 export const BountyForm = (props:FormProps) => {
@@ -39,6 +39,11 @@ export const BountyForm = (props:FormProps) => {
         props.setPublishingMethod(method)
         try {
             const content = buildBounty({motivation, bounty, reward, judge, judgePay})
+            if(method === 'represent'){
+                parseBounty(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement({statement})
@@ -46,9 +51,6 @@ export const BountyForm = (props:FormProps) => {
             props.setStatement(statement)
             sha256(statement).then((hash) => {
                 props.setStatementHash(hash)
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                }
             })
         } catch (error) {
             props.setAlertMessage('Invalid bounty format')

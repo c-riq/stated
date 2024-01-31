@@ -1,5 +1,6 @@
+import { FormProps } from "../types"
 
-export const generateEmail = ({content, author}:{content:string, author:string}) => {
+const generateEmail = ({content, author}:{content:string, author:string}) => {
     const email = `stated@${window.location.host.replace('stated.','')}`
     const urlEncodedSubject = encodeURIComponent('Publish a statement')
     const publishingRequest = 'Please publish the following statement on our behalf:'
@@ -13,6 +14,20 @@ export const generateEmail = ({content, author}:{content:string, author:string})
     const text = `${publishingRequest}\n\n\n${redactedStatement}\n\n\n${verificationRequest}`
     const urlEncodedbody = encodeURIComponent(text)
     const href = `mailto:${email}?subject=${urlEncodedSubject}&body=${urlEncodedbody}`
-    console.log(href)
+    return href
+}
+
+export const sendEmail = ({content, props}:{content:string, props: FormProps}) => {
+    if (!props.metaData.author) {
+        props.setAlertMessage('Author is required')
+        props.setisError(true)
+        return
+    }
+    if (!content) {
+        props.setAlertMessage('Statement is required')
+        props.setisError(true)
+        return
+    }
+    const href = generateEmail({content, author: props.metaData.author})
     window.location.href = href
 }

@@ -16,7 +16,7 @@ import PublishStatement from './PublishStatement'
 import { sha256 } from '../utils/hash'
 
 import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { Button, Checkbox, FormControlLabel } from '@mui/material';
 import { FormProps, prepareStatement } from '../types';
 
@@ -63,15 +63,16 @@ const PollForm = (props:FormProps) => {
             const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, 
                 judges: nodes, deadline: votingDeadline.toDate(), poll, options, scopeDescription, scopeQueryLink,
                 allowArbitraryVote, requiredProperty, requiredPropertyValue, requiredPropertyObserver})
+            if(method === 'represent'){
+                parsePoll(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement({statement})
             parsePoll(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => { props.setStatementHash(hash)         
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                }
-            });
+            sha256(statement).then((hash) => props.setStatementHash(hash))
         } catch (e) {
             props.setAlertMessage('' + e)
             props.setisError(true)

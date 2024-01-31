@@ -17,7 +17,7 @@ import { parseStatement, buildStatement,
     parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
 import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
 const PersonVerificationForm = (props:FormProps) => {
@@ -54,14 +54,16 @@ const PersonVerificationForm = (props:FormProps) => {
             date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
             const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
                 cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
+            if(method === 'represent'){
+                parsePersonVerification(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             const parsedStatement = parseStatement({statement})
             parsePersonVerification(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => { props.setStatementHash(hash);
-            if(method === 'represent'){
-                generateEmail({statement, hash})
-            } });
+            sha256(statement).then((hash) => props.setStatementHash(hash))
         }
         catch (e: any) {
             props.setAlertMessage('Error: ' + (e?.message??''))

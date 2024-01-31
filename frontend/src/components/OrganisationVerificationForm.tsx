@@ -11,7 +11,7 @@ import { parseStatement, buildStatement,
     buildOrganisationVerificationContent, parseOrganisationVerification, peopleCountBuckets } from '../statementFormats'
 import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
 const OrganisationVerificationForm = (props:FormProps) => {
@@ -60,6 +60,11 @@ const OrganisationVerificationForm = (props:FormProps) => {
             const content = buildOrganisationVerificationContent({name: verifyName, domain: verifyDomain, city, country, province, serialNumber, legalForm,
                 foreignDomain: "", confidence: parseFloat(confidence), reliabilityPolicy, pictureHash: "", employeeCount, department,
             })
+            if(method === 'represent'){
+                parseOrganisationVerification(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, 
                 tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
 
@@ -68,10 +73,7 @@ const OrganisationVerificationForm = (props:FormProps) => {
             const parsedStatement = parseStatement({statement})
             parseOrganisationVerification(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => { props.setStatementHash(hash);
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                } });
+            sha256(statement).then((hash) => { props.setStatementHash(hash)})
         } catch (e: any) {
             props.setAlertMessage('Error: ' + (e?.message??''))
             props.setisError(true)

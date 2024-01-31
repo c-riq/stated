@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement } from '../statementFormats'
 import PublishStatement from './PublishStatement';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
 
@@ -16,17 +16,7 @@ const StatementForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method}) => {
         props.setPublishingMethod(method)
         if(method === 'represent'){
-            if (!props.metaData.author) {
-                props.setAlertMessage('Author is required')
-                props.setisError(true)
-                return
-            }
-            if (!content) {
-                props.setAlertMessage('Statement is required')
-                props.setisError(true)
-                return
-            }
-            generateEmail({content, author: props.metaData.author})
+            sendEmail({content, props})
             return
         }
         let statement = ''

@@ -10,7 +10,7 @@ import { TextField } from '@mui/material';
 
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import PublishStatement from './PublishStatement';
-import { generateEmail } from './generateEmail';
+import { sendEmail } from './generateEmail';
 import { FormProps, prepareStatement } from '../types';
 
 export const RatingForm = (props:FormProps) => {
@@ -26,16 +26,17 @@ export const RatingForm = (props:FormProps) => {
         try {
             props.setPublishingMethod(method)
             const content = buildRating({organisation, domain, rating, comment})
+            if(method === 'represent'){
+                parseRating(content)
+                sendEmail({content, props})
+                return
+            }
             const statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, 
                 representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: new Date(props.serverTime), content})
             const parsedStatement = parseStatement({statement})
             parseRating(parsedStatement.content)
             props.setStatement(statement)
-            sha256(statement).then((hash) => { props.setStatementHash(hash); 
-                if(method === 'represent'){
-                    generateEmail({statement, hash})
-                }
-            });
+            sha256(statement).then((hash) => props.setStatementHash(hash))
         } catch (e: any) {
             props.setAlertMessage('Error: ' + (e?.message??''))
             props.setisError(true)
