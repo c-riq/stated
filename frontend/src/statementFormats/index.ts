@@ -44,6 +44,7 @@ export const buildStatement = ({domain, author, time, tags, content, representat
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
 	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	if(typeof time !== 'object' || !time.toUTCString) throw(new Error("Time must be a Date object."))
+	if(!domain) throw(new Error("Publishing domain missing."))
 	const statement = "Publishing domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" + // organisation name
 			(representative && representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +

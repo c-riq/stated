@@ -22,31 +22,28 @@ const PublishStatement = (props:props) => {
                 <Button variant="contained" onClick={() => props.prepareStatement({method: 'represent'})}
                 startIcon={<EmailIcon />}
                     sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}}>
-                    Ask {window.location.hostname} to publish for you via email
+                    Ask {window.location.hostname} via email to publish
                 </Button>
                 {showAdditionalOptions ? (<>
-                    {props.authorDomain && (<>
-                        <Button variant="contained" onClick={() => props.prepareStatement({method: 'static'})}
-                            startIcon={<UploadFileIcon />}
-                            disabled={!props.authorDomain}
-                            sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
-                            Authenticate by publishing a file on {props.authorDomain || 'your website'}
-                        </Button>
-                        <Button variant="contained" onClick={() => props.prepareStatement({method: 'dns'})}
-                            startIcon={<DnsIcon />}
-                            sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
-                            Authenticate by adding a DNS record on {props.authorDomain}
-                        </Button>
-                    </>)}
+                    <Button variant="contained" onClick={() => props.prepareStatement({method: 'static'})}
+                        startIcon={<UploadFileIcon />}
+                        sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
+                        Authenticate by publishing a file on {props.authorDomain || 'your website'}
+                    </Button>
+                    <Button variant="contained" onClick={() => props.prepareStatement({method: 'dns'})}
+                        startIcon={<DnsIcon />}
+                        sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}}>
+                        Authenticate by adding a DNS record for {props.authorDomain || 'your website'}
+                    </Button>
                     <Button variant="contained" onClick={() => props.prepareStatement({method: 'api'})}
                         startIcon={<VpnKeyIcon />}
                         sx={{margin: "12px",flexGrow: 1, minWidth: "200px"}} data-testid="publish-using-api-key">
                         Publish using an API key for {window.location.hostname}
                     </Button>
-                </>) : (props.authorDomain && (<Button onClick={() => setShowAdditionalOptions(true)}
+                </>) : (<Button onClick={() => setShowAdditionalOptions(true)}
                     sx={{margin: "12px", flexGrow: 1, minWidth: "200px"}} data-testid="show-additional-options">
                     Show additional options
-                </Button>))}
+                </Button>)}
             </div>
         </React.Fragment>
     )

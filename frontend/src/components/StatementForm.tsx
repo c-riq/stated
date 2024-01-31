@@ -15,9 +15,25 @@ const StatementForm = (props:FormProps) => {
 
     const prepareStatement:prepareStatement = ({method}) => {
         props.setPublishingMethod(method)
+        if(method === 'represent'){
+            if (!props.metaData.author) {
+                props.setAlertMessage('Author is required')
+                props.setisError(true)
+                return
+            }
+            if (!content) {
+                props.setAlertMessage('Statement is required')
+                props.setisError(true)
+                return
+            }
+            generateEmail({content, author: props.metaData.author})
+            return
+        }
         let statement = ''
         try {
-            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author, representative: props.metaData.representative, tags: props.metaData.tags, supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
+            statement = buildStatement({domain: props.metaData.domain, author: props.metaData.author,
+                representative: props.metaData.representative, tags: props.metaData.tags,
+                supersededStatement: props.metaData.supersededStatement, time: props.serverTime, content})
             parseStatement({statement})
         } catch (e) {
             props.setAlertMessage('' + e)
@@ -27,9 +43,6 @@ const StatementForm = (props:FormProps) => {
         props.setStatement(statement)
         sha256(statement).then((hash) => {
             props.setStatementHash(hash)
-            if(method === 'represent'){
-                generateEmail({statement, hash})
-        }
         })
     }
 
@@ -46,6 +59,7 @@ const StatementForm = (props:FormProps) => {
                 margin="normal"
                 value={content}
                 sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                required
             />
             {props.children}
         <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
