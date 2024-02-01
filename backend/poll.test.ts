@@ -1,8 +1,8 @@
 
 import {describe, jest, expect, it} from '@jest/globals';
 jest.disableAutomock()
-import { checkRequiredObservations, isVoteQualified, parseAndCreateVote } from './poll'
-import { parseObservation, parseOrganisationVerification, parsePoll, parseStatement, parseVote } from './statementFormats';
+import { checkRequiredObservations, isOrganisationVoteQualified, isPersonVoteQualified, parseAndCreateVote } from './poll'
+import { parseObservation, parseOrganisationVerification, parsePersonVerification, parsePoll, parseStatement, parseVote } from './statementFormats';
 import { getVotes } from "./database";
 import { QueryResult } from 'pg';
 
@@ -39,6 +39,18 @@ type OrganisationVerificationDB = {
     city: string | null;
     department: string | null;
     confidence: number | null;
+};
+
+type PersonVerificationDB = {
+    id: number;
+    statement_hash: string;
+    verifier_domain: string;
+    verified_domain: string | null;
+    foreign_domain: string | null;
+    name: string;
+    birth_country: string;
+    birth_city: string | null;
+    birth_date: string | null;
 };
 
 type StatementDB = {
@@ -78,12 +90,31 @@ const dummyDBValues = {
 jest.mock('./database', () => ({
     createPoll: jest.fn(() => false),
     getOrganisationVerifications: jest.fn(() => ({rows: [1]})),
+    getPersonVerifications: jest.fn(() => ({rows: []})),
     getPoll: jest.fn(() => ({rows: [1]})),
     createVote: jest.fn(() => ({rows: [1]})),
     getVotes: jest.fn(() => ({rows: []})),
     updateVote: jest.fn(() => ({rows: [1]})),
     getObservationsForEntity: jest.fn(() => ({})),
 }));
+
+const pollStatement = `Publishing domain: localhost
+Author: localhost
+Time: Thu, 11 Jan 2024 20:34:02 GMT
+Format version: 4
+Statement content: 
+	Type: Poll
+	Voting deadline: Thu, 25 Jan 5024 20:34:05 GMT
+	Poll: Is this a boring poll?
+	Option 1: Yes
+	Option 2: No
+	Allow free text votes: No
+	Who can vote: 
+		Description: All corporations in Copenhagen
+		Country scope: Denmark
+		City scope: Copenhagen
+		Legal form scope: corporation
+`
 
 describe('checkRequiredObservations', () => {
     it('should return true when there is a valid observation', () => {
@@ -119,35 +150,18 @@ Statement content:
     });
 });
 
-describe('isVoteQualified', () => {
-    const pollStatement = `Publishing domain: localhost
-Author: localhost
-Time: Thu, 11 Jan 2024 20:34:02 GMT
-Format version: 4
-Statement content: 
-	Type: Poll
-	Voting deadline: Thu, 25 Jan 5024 20:34:05 GMT
-	Poll: Is this a boring poll?
-	Option 1: Yes
-	Option 2: No
-	Allow free text votes: No
-	Who can vote: 
-		Description: All corporations in Copenhagen
-		Country scope: Denmark
-		City scope: Copenhagen
-		Legal form scope: corporation
-`
-        const parsedPollStatment = parseStatement({statement: pollStatement, allowNoVersion: true})
-        const parsedPoll = parsePoll(parsedPollStatment.content)
-        const pollDBObject = {...dummyDBValues,
-            statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
-            poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
-            participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
-            options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
-            required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
-            statement_hash: '', proclaimed_publication_time: new Date()
-        }
-        const voteStatement = `Publishing domain: localhost
+describe('isOrganisationVoteQualified', () => {
+    const parsedPollStatment = parseStatement({statement: pollStatement, allowNoVersion: true})
+    const parsedPoll = parsePoll(parsedPollStatment.content)
+    const pollDBObject = {...dummyDBValues,
+        statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
+        poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
+        participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
+        options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
+        required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
+        statement_hash: '', proclaimed_publication_time: new Date()
+    }
+    const voteStatement = `Publishing domain: localhost
 Author: localhost
 Time: Thu, 11 Jan 2024 20:47:39 GMT
 Format version: 4
@@ -157,9 +171,9 @@ Statement content:
 	Poll: Is this a boring poll?
 	Option: Yes
 `
-        const parsedVoteStatment = parseStatement({statement: voteStatement, allowNoVersion: true})
-        const parsedVote = parseVote(parsedVoteStatment.content)
-        const verificationStatement = `Publishing domain: localhost
+    const parsedVoteStatment = parseStatement({statement: voteStatement, allowNoVersion: true})
+    const parsedVote = parseVote(parsedVoteStatment.content)
+    const verificationStatement = `Publishing domain: localhost
 Author: localhost
 Time: Thu, 11 Jan 2024 20:59:35 GMT
 Format version: 4
@@ -185,8 +199,8 @@ Statement content:
         statement_hash: '', proclaimed_publication_time: new Date()
     }
     it('should return true when the required country, legal form are met', async () => {
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(true)
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(170500850900000),  author:'', domain:'', statement_hash:''})).toBe(false)
+        expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(true)
+        expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObject, proclaimed_publication_time: new Date(170500850900000),  author:'', domain:'', statement_hash:''})).toBe(false)
 
 
         const statementDBObjectWrongCountry: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
@@ -196,7 +210,7 @@ Statement content:
             foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCountry, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
+        expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObjectWrongCountry, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
 
         const statementDBObjectWrongLegalForm: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
@@ -205,7 +219,7 @@ Statement content:
             foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongLegalForm, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
+        expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObjectWrongLegalForm, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
 
         const statementDBObjectWrongCity: OrganisationVerificationDB & StatementDB = {...dummyDBValues,
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
@@ -214,16 +228,96 @@ Statement content:
             foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
-        expect(await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObjectWrongCity, proclaimed_publication_time: new Date(0),  author:'', domain:'', statement_hash:''})).toBe(false)
+        expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObjectWrongCity, proclaimed_publication_time: new Date(0),  author:'', domain:'', statement_hash:''})).toBe(false)
 
     });
 
     it('should return false when the author@domain already voted on the same poll', async () => {
         (getVotes as jest.MockedFunction<typeof getVotes>).mockImplementation(() => ({rows: [1]} as unknown as Promise<QueryResult<any>>))
-        const doubleVoteTry = await isVoteQualified({vote: parsedVote, poll: pollDBObject, verification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})
+        const doubleVoteTry = await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})
         expect(doubleVoteTry).toBe(false)
     });
 
+});
+
+describe('isPersonVoteQualified', () => {
+    const parsedPollStatment = parseStatement({statement: pollStatement, allowNoVersion: true})
+    const parsedPoll = parsePoll(parsedPollStatment.content)
+    const pollDBObject = {...dummyDBValues,
+        statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
+        poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
+        participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
+        options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
+        required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
+        statement_hash: '', proclaimed_publication_time: new Date()
+    }
+    const voteStatement = `Publishing domain: localhost
+Author: John Doe
+Time: Thu, 11 Jan 2024 20:47:39 GMT
+Format version: 4
+Statement content: 
+	Type: Vote
+	Poll id: xW4v7VmNOh2iYYonqfRDh2JPo00JMLrl4-vZAXsY4oc
+	Poll: Is this a boring poll?
+	Option: Yes
+`
+    const parsedVoteStatment = parseStatement({statement: voteStatement, allowNoVersion: true})
+    const parsedVote = parseVote(parsedVoteStatment.content)
+    const verificationStatement = `Publishing domain: localhost
+Author: localhost
+Time: Fri, 26 Jan 2024 18:45:25 GMT
+Format version: 4
+Statement content: 
+	Type: Person verification
+	Description: We verified the following information about a person.
+	Name: John Doe
+	Date of birth: 02 Feb 1992
+	City of birth: Berlin
+	Country of birth: Germany
+	Foreign domain used for publishing statements: localhost
+`
+    const parsedVerificationStatment = parseStatement({statement: verificationStatement, allowNoVersion: true})
+    const verification = parsePersonVerification(parsedVerificationStatment.content)
+    const statementDBObject: PersonVerificationDB & StatementDB = {...dummyDBValues,
+        statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
+        verified_domain: null && verification.ownDomain, name: verification.name, birth_country: verification.countryOfBirth, birth_city: verification.cityOfBirth,
+        foreign_domain: null && verification.foreignDomain, birth_date: verification.dateOfBirth.toDateString(),
+        statement_hash: '', proclaimed_publication_time: new Date()
+    }
+    it('should return false for corporation polls', async () => {
+        (getVotes as jest.MockedFunction<typeof getVotes>).mockImplementation(() => ({rows: []} as unknown as Promise<QueryResult<any>>))
+        expect(await isPersonVoteQualified({vote: parsedVote, poll: pollDBObject, personVerification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
+    })
+
+    it('should return true for unrestriced polls', async () => {
+        const unrestrictedPollStatement = `Publishing domain: localhost
+Author: localhost
+Time: Thu, 11 Jan 2024 20:34:02 GMT
+Format version: 4
+Statement content: 
+	Type: Poll
+	Voting deadline: Thu, 25 Jan 5024 20:34:05 GMT
+	Poll: Is this a boring poll?
+	Option 1: Yes
+	Option 2: No
+	Allow free text votes: No
+`
+        const parsedPollStatment = parseStatement({statement: unrestrictedPollStatement, allowNoVersion: true})
+        const parsedPoll = parsePoll(parsedPollStatment.content)
+        const pollDBObject = {...dummyDBValues,
+            statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
+            poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
+            participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
+            options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
+            required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
+            statement_hash: '', proclaimed_publication_time: new Date()
+        };
+        (getVotes as jest.MockedFunction<typeof getVotes>).mockImplementation(() => ({rows: []} as unknown as Promise<QueryResult<any>>))
+        expect(await isPersonVoteQualified({vote: parsedVote, poll: pollDBObject, personVerification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(true)
+        ;
+        (getVotes as jest.MockedFunction<typeof getVotes>).mockImplementation(() => ({rows: [1]} as unknown as Promise<QueryResult<any>>))
+        expect(await isPersonVoteQualified({vote: parsedVote, poll: pollDBObject, personVerification: statementDBObject, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
+    });
 });
 
 describe('parseAndCreateVote', () => {

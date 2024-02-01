@@ -1,6 +1,6 @@
 import { QueryResult } from 'pg'
 import {createPoll, getOrganisationVerifications, getPoll, 
-    createVote, getVotes, updateVote, getObservationsForEntity} from './database'
+    createVote, getVotes, updateVote, getObservationsForEntity, getPersonVerifications} from './database'
 import {parseVote, parsePoll, parseStatement, vote, parseObservation} from './statementFormats'
 
 export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
@@ -47,25 +47,25 @@ export const checkRequiredObservations = ({requiredProperty, requiredPropertyVal
     return result
 }
 
-export const isVoteQualified = async ({vote, poll, verification, proclaimed_publication_time, statement_hash, domain, author}:{
-        vote: vote, poll: (PollDB & StatementDB), verification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date,
+export const isOrganisationVoteQualified = async ({vote, poll, organisationVerification, proclaimed_publication_time, statement_hash, domain, author}:{
+        vote: vote, poll: (PollDB & StatementDB), organisationVerification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date,
         statement_hash: string, domain:string, author:string
     }) => {
     let voteTimeQualified = false
     let votingEntityQualified = false
     let observationsQualified = false
     let noExistingVotesFromAuthor = false
-    if (verification && poll) {
+    if (organisationVerification && poll) {
         // TODO: if ownDomain == poll judge, then compare against current time
         if(proclaimed_publication_time <= poll.deadline) {
             voteTimeQualified = true
         }
         if( 
-            ( (!poll.participants_entity_type) || (poll.participants_entity_type === verification.legal_entity_type) )
+            ( (!poll.participants_entity_type) || (poll.participants_entity_type === organisationVerification.legal_entity_type) )
             &&
-            ( (!poll.participants_country) || (poll.participants_country === verification.country) )
+            ( (!poll.participants_country) || (poll.participants_country === organisationVerification.country) )
             &&
-            ( (!poll.participants_city) || (poll.participants_city === verification.city) )
+            ( (!poll.participants_city) || (poll.participants_city === organisationVerification.city) )
         ) {
             votingEntityQualified = true
         }
@@ -90,6 +90,43 @@ export const isVoteQualified = async ({vote, poll, verification, proclaimed_publ
     return qualified
 }
 
+export const isPersonVoteQualified = async ({vote, poll, personVerification, proclaimed_publication_time, statement_hash, domain, author}:{
+        vote: vote, poll: (PollDB & StatementDB), personVerification: (PersonVerificationDB & StatementDB), proclaimed_publication_time: Date,
+        statement_hash: string, domain:string, author:string
+    }) => {
+    let voteTimeQualified = false
+    let votingEntityQualified = false
+    let observationsQualified = false
+    let noExistingVotesFromAuthor = false
+    if (personVerification && poll) {
+        // TODO: if ownDomain == poll judge, then compare against current time
+        if(proclaimed_publication_time <= poll.deadline) {
+            voteTimeQualified = true
+        }
+        if( 
+            ( (!poll.participants_entity_type))
+            &&
+            ( (!poll.participants_country))
+            &&
+            ( (!poll.participants_city))
+        ) {
+            votingEntityQualified = true
+        }
+        const parsedPollStatement = parseStatement({statement: poll.statement})
+        const parsedPoll = parsePoll(parsedPollStatement.content)
+        const { requiredProperty, requiredPropertyValue, requiredPropertyObserver, allowArbitraryVote, options } = parsedPoll
+        if(!allowArbitraryVote && !options.includes(vote.vote)) {
+            return false
+        }
+        if(!requiredProperty) {
+            observationsQualified = true
+        }
+        const dbResultExistingVotes = await getVotes({ poll_hash: poll.hash_b64, ignore_vote_hash: statement_hash, domain, author })
+        noExistingVotesFromAuthor = ! (dbResultExistingVotes.rows.length > 0)
+    }
+    const qualified = voteTimeQualified && votingEntityQualified && observationsQualified && noExistingVotesFromAuthor
+    return qualified
+}
 
 export const parseAndCreateVote = ({statement_hash, domain, author, content, proclaimed_publication_time }:{
             statement_hash: string, domain: string, author: string, content: string, proclaimed_publication_time: Date}
@@ -103,19 +140,22 @@ export const parseAndCreateVote = ({statement_hash, domain, author, content, pro
             console.log("Missing required fields")
             return reject({error: "Missing required fields"})
         }
-        const dbResultVerification = await getOrganisationVerifications({domain})
-        const verifications = dbResultVerification.rows
-        let verification = undefined as (StatementDB & OrganisationVerificationDB) | undefined
-        verifications.forEach((v) => {
-            if(v.name === author) {
-                verification = v
-            }
-        })
+        const dbResultOrgVerification = await getOrganisationVerifications({domain, name: author})
+        const organisationVerifications = dbResultOrgVerification.rows
+        let organisationVerification = organisationVerifications.find(v => (v.name === author))
+
+        const dbResultPersVerification = await getPersonVerifications({domain, name: author})
+        const personVerifications = dbResultPersVerification.rows
+        let personVerification = personVerifications.find(v => (v.name === author))
+
         const dbResultPoll = await getPoll({statement_hash: pollHash})
         const poll = dbResultPoll.rows[0]
 
-        const qualified = !!(verification && poll && 
-            await isVoteQualified({vote: parsedVote, poll, verification, proclaimed_publication_time, statement_hash, domain, author}))
+        const organisationVoteQualified = !!(organisationVerification && poll && 
+            await isOrganisationVoteQualified({vote: parsedVote, poll, organisationVerification, proclaimed_publication_time, statement_hash, domain, author}))
+        const personVoteQualified = !!(personVerification && poll && 
+            await isPersonVoteQualified({vote: parsedVote, poll, personVerification, proclaimed_publication_time, statement_hash, domain, author}))
+        const qualified = organisationVoteQualified || personVoteQualified
         let dbResultVoteCreation = undefined
         try {
             dbResultVoteCreation = await createVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified })

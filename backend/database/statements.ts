@@ -213,6 +213,7 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
       }))
 
 export const getObservationsForEntityFactory = pool => ({ domain, name, observerDomain, observerName }) => (
+  // TODO: support persons
   new Promise((resolve: DBCallback<StatementDB>, reject) => {
         log && console.log('findObservationsForEntity', domain, name, observerDomain, observerName)
         try {
