@@ -71,7 +71,10 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
               WITH domains AS (
                 SELECT 
                  domain,
-                 author
+                 author,
+                 $1 as input1,
+                 $2 as input2,
+                 $3 as input3
                 FROM statements
                 WHERE hash_b64=$1
                 LIMIT 1
@@ -85,30 +88,30 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
                   AND superseding_statement IS NULL
               WHERE 
               (
-                $1 is NULL
+                LENGTH($1) = 0
                 OR
                 v.verified_domain IN (SELECT domain FROM domains)
                 OR
                 v.foreign_domain IN (SELECT domain FROM domains)
               )
               AND (
-                $1 is NULL
+                LENGTH($1) = 0
                 OR
                 LOWER(v.name) IN (SELECT LOWER(author) FROM domains)
               )
               AND (
-                $2 is NULL
+                LENGTH($2) = 0
                 OR
                 LOWER(v.name) = LOWER($2)
               )
               AND (
-                $3 is NULL
+                LENGTH($3) = 0
                 OR
                 v.verified_domain = $3
                 OR
                 v.foreign_domain = $3
               )
-              ;`,[hash_b64, name, domain], (error, results) => {
+              ;`,[hash_b64 || '', name || '', domain || ''], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -131,7 +134,10 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
             WITH domains AS (
               SELECT 
               domain,
-              author
+              author,
+              $1 as input1,
+              $2 as input2,
+              $3 as input3
               FROM statements
               WHERE hash_b64=$1
               LIMIT 1
@@ -145,31 +151,31 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
                 AND superseding_statement IS NULL
             WHERE 
             (
-              $1 is NULL
+              LENGTH($1) = 0
               OR
               v.verified_domain IN (SELECT domain FROM domains)
               OR
               v.foreign_domain IN (SELECT domain FROM domains)
             )
             AND (
-              $1 is NULL
+              LENGTH($1) = 0
               OR
               LOWER(v.name) IN (SELECT LOWER(author) FROM domains)
             )
             AND (
-              $2 is NULL
+              LENGTH($2) = 0
               OR
               LOWER(v.name) = LOWER($2)
             )
             AND (
-              $3 is NULL
+              LENGTH($3) = 0
               OR
               v.verified_domain = $3
               OR
               v.foreign_domain = $3
             )
               LIMIT 2000;
-              `,[domain, name], (error, results) => {
+              `,[hash_b64 || '', name || '', domain || ''], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()

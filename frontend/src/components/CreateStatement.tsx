@@ -49,7 +49,6 @@ type Props = {
 }
 type domainOption = {domain: string, organisation: string, department: string}
 type ssl = {domain: string, O: string, issuer_o: string, sha256: string}
-type statedVerification = {verified_domain: string, name: string, verifier_domain: string, statement_hash: string, department: string}
 
 const CreateStatement = (props:Props) => {
     const [content, setContent] = React.useState(props.statementToJoin?.content || "");
@@ -148,7 +147,7 @@ const CreateStatement = (props:Props) => {
 
     React.useEffect(()=>{
         if(!domain || !domain.match(/\.[a-z]{2,18}$/i)) {
-            setAuthor("")
+            !author && setAuthor("")
             setDNSSECInfo({domain: null, validated: null})
             setOVInfo([])
             setStatedVerification([])
@@ -161,7 +160,7 @@ const CreateStatement = (props:Props) => {
                 r.domain === 'stated.' + domain ||
                 r.domain === 'www.' + domain) && r.O)
             if(matchingOV) { 
-                setAuthor(matchingOV.O)
+                !author && setAuthor(matchingOV.O)
                 setOVInfo(OVInfo)
             }
         })
@@ -242,7 +241,7 @@ const CreateStatement = (props:Props) => {
                     // @ts-ignore
                     setDomain(newInputValue?.domain)
                     // @ts-ignore
-                    setAuthor(newInputValue?.department ? newInputValue.department : newInputValue?.organisation)
+                    !author && setAuthor(newInputValue?.department ? newInputValue.department : newInputValue?.organisation)
                 }}
                 onInputChange={(event, newValue) => {
                     setDomainInputValue(newValue)
