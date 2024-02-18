@@ -40,7 +40,7 @@ type props = {
     respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementContent: (arg0: StatementWithDetailsDB | StatementDB) => void,
-    supersedeStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    supersedeStatement: (arg0:{statement: StatementWithDetailsDB | StatementDB, pollOfVote: StatementDB | undefined }) => void,
 }
 
 const StatementDetail = (props:props) => {
@@ -48,6 +48,7 @@ const StatementDetail = (props:props) => {
     const [votes, setVotes] = React.useState([] as (VoteDB & StatementWithSupersedingDB)[]);
     const [responses, setResponses] = React.useState([] as StatementDB[]);
     const [disputes, setDisputes] = React.useState([] as StatementDB[]);
+    const [pollOfVote, setPollOfVote] = React.useState(undefined as undefined | StatementWithSupersedingDB);
     const [statement, setStatement] = React.useState(undefined as StatementWithSupersedingDB | StatementWithHiddenDB | undefined );
     const [parsedStatement, setParsedStatement] = React.useState(undefined as undefined | Observation | 
         Bounty | Rating | PDFSigning | DisputeAuthenticity | DisputeContent | Boycott | OrganisationVerification 
@@ -128,7 +129,9 @@ const StatementDetail = (props:props) => {
                     } if (type === statementTypes.personVerification) {
                         setParsedStatement(parsePersonVerification(content) as PersonVerification)
                     } if (type === statementTypes.vote) {
-                        setParsedStatement(parseVote(content) as Vote)
+                        const vote = parseVote(content) as Vote
+                        setParsedStatement(vote)
+                        getStatement(vote.pollHash, p => p?.[0] && setPollOfVote(p[0] as StatementWithSupersedingDB))
                     } if (type === statementTypes.poll) {
                         setParsedStatement(parsePoll(content) as Poll)
                         getVotes(hash, v => setVotes(v || []))
@@ -208,7 +211,7 @@ const StatementDetail = (props:props) => {
                 <div style={{position: 'absolute', top: '5px', right: '10px'}}>
                     <RouterLink to="/create-statement">
                         <Tooltip title={"Replace with a new statement as "+ statement.author} >
-                            <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement(statement);}}>
+                            <IconButton aria-label="Replace with a new statement" onClick={()=>{props.supersedeStatement({statement, pollOfVote})}}>
                                 <EditIcon/>
                             </IconButton>
                         </Tooltip>

@@ -53,7 +53,7 @@ function App() {
   const [maxSkipId, setMaxSkipId] = React.useState(0);
   const [canLoadMore, setCanLoadMore] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
-  const [statementTypes, setStatementTypes] = React.useState<string[]>(typesFromUrl || []);
+  const [statementTypesFilter, setStatementTypesFilter] = React.useState<string[]>(typesFromUrl || []);
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
   const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
   const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
@@ -69,15 +69,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, statementTypes})
-  }, [searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, triggerUrlRefresh])
+    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, statementTypes: statementTypesFilter})
+  }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, triggerUrlRefresh])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
       return
     }
     const limit = 20
-    getStatements({searchQuery, tag: tagFilter, limit, skip: 0, statementTypes, domain: domainFilter, author: authorFilter,
+    getStatements({searchQuery, tag: tagFilter, limit, skip: 0, statementTypes: statementTypesFilter, domain: domainFilter, author: authorFilter,
         cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
@@ -98,11 +98,11 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypes, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh, tagFilter])
+  }, [statementTypesFilter, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh, tagFilter])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20
-      getStatements({searchQuery, tag: tagFilter, limit, skip, statementTypes, domain: domainFilter, author: authorFilter,
+      getStatements({searchQuery, tag: tagFilter, limit, skip, statementTypes: statementTypesFilter, domain: domainFilter, author: authorFilter,
          cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
           if (s?.statements && (s.statements.length > 0)) {
               const existingStatements = statements
@@ -125,7 +125,7 @@ function App() {
       }})
       setShouldLoadMore(false)
     }
-  }, [shouldLoadMore, statementTypes, searchQuery, skip, statements, domainFilter, authorFilter, tagFilter])
+  }, [shouldLoadMore, statementTypesFilter, searchQuery, skip, statements, domainFilter, authorFilter, tagFilter])
   const joinStatement = (statement: (StatementWithDetailsDB | StatementDB)) => {
     setStatementToJoin(statement)
     setModalOpen(true)
@@ -142,7 +142,11 @@ function App() {
     setStatementToDisputeContent(statement)
     setModalOpen(true)
   }
-  const supersedeStatement = (statement: (StatementWithDetailsDB | StatementDB)) => {
+  const supersedeStatement = ({statement, pollOfVote}:
+  {statement: (StatementWithDetailsDB | StatementDB), pollOfVote: StatementDB | undefined}) => {
+    if (pollOfVote) {
+      setPoll({statement: pollOfVote?.statement as string, hash_b64: pollOfVote?.hash_b64 as string})
+    } 
     setStatementToSupersede(statement)
     setModalOpen(true)
   }
@@ -159,7 +163,7 @@ function App() {
     setStatementToSupersede(undefined); setPoll(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
   }
   const resetFilters = () => {
-    setDomainFilter(undefined); setAuthorFilter(undefined); setStatementTypes([]); setSearchQuery(undefined);
+    setDomainFilter(undefined); setAuthorFilter(undefined); setStatementTypesFilter([]); setSearchQuery(undefined);
     setTriggerUrlRefresh(!triggerUrlRefresh)
   }
 
@@ -169,7 +173,7 @@ function App() {
     <div className='App-main'>
       <Routes>
           <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
-          setStatementTypes={setStatementTypes} maxSkipId={maxSkipId} resetFilters={resetFilters}
+          setStatementTypes={setStatementTypesFilter} maxSkipId={maxSkipId} resetFilters={resetFilters}
           loadMore={()=>{
             setShouldLoadMore(true)
             setLoadingMore(true)
