@@ -61,7 +61,7 @@ const PollForm = (props:FormProps) => {
         try {
             let domainScope = domainScopeConcat ? domainScopeConcat.split(',').map(s => s.trim()) : undefined
             const content = buildPollContent({country, city, legalEntity: legalForm, domainScope, 
-                judges: nodes, deadline: votingDeadline.toDate(), poll, options, scopeDescription, scopeQueryLink,
+                judges: nodes, deadline: votingDeadline ? votingDeadline.toDate() : undefined, poll, options, scopeDescription, scopeQueryLink,
                 allowArbitraryVote, requiredProperty, requiredPropertyValue, requiredPropertyObserver})
             if(method === 'represent'){
                 parsePoll(content)
@@ -165,6 +165,7 @@ const PollForm = (props:FormProps) => {
             }} />}
             label="Allow free text vote"
         />
+        {showOptionalFields ? (<>
         <LocalizationProvider dateAdapter={AdapterMoment}>
             <DateTimePicker
             label="deadline"
@@ -173,7 +174,6 @@ const PollForm = (props:FormProps) => {
             renderInput={(params) => <TextField {...params} style={{marginTop: '24px'}} />}
             />
         </LocalizationProvider>
-        {showOptionalFields ? (<>
         <TextField
             id="who can vote"
             variant="outlined"
