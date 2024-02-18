@@ -1,20 +1,13 @@
-DROP TABLE IF EXISTS ssl_cert_cache;
-CREATE TABLE IF NOT EXISTS ssl_cert_cache (
-    sha256 TEXT PRIMARY KEY,
-    host TEXT,
-    subject_o TEXT,
-    subject_c TEXT,
-    subject_st TEXT,
-    subject_l TEXT,
-    subject_cn TEXT,
-    subject_serialnumber TEXT,
-    subjectaltname TEXT,
-    issuer_o TEXT,
-    issuer_c TEXT,
-    issuer_cn TEXT,
-    valid_from timestamp, 
-    valid_to timestamp,
-    first_seen timestamp,
-    last_seen timestamp,
-    _rank int
+CREATE TABLE IF NOT EXISTS observation (
+    id SERIAL PRIMARY KEY,
+    statement_hash VARCHAR(500) UNIQUE NOT NULL,
+    approach VARCHAR(500),
+    confidence VARCHAR(500),
+    _subject VARCHAR(500) NOT NULL,
+    subject_reference VARCHAR(500),
+    observed_property VARCHAR(500) NOT NULL,
+    observed_value VARCHAR(500),
+    CONSTRAINT observation_statement_hash_fkey
+        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
+        ON DELETE CASCADE
 );
