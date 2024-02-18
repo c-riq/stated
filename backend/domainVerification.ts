@@ -43,9 +43,8 @@ export const createPersVerification = ({statement_hash, domain: verifier_domain,
             !name || name.length < 1 || 
             !countryOfBirth || countryOfBirth.length < 1|| 
             !cityOfBirth || cityOfBirth.length < 1|| 
-            !dateOfBirth || (typeof dateOfBirth.getMonth === 'function')) {
-            resolve({error: "Missing required fields"})
-            return
+            !dateOfBirth || (typeof dateOfBirth.getMonth !== 'function')) {
+            return reject(new Error("Missing required fields"))
         }
         const dbResult = await createPersonVerification({statement_hash, verifier_domain, verified_domain: domain, 
             name, 

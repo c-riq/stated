@@ -63,57 +63,18 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
       return reject(error)
     }
   }))
-
-
-
-export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+  
+  export const getPersonVerificationsFactory = pool => ({ hash_b64 = null, name = null, domain = null }) => (new Promise((resolve: DBCallback, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
               WITH domains AS (
                 SELECT 
                  domain,
-                 author
-                FROM statements
-                WHERE hash_b64=$1
-                LIMIT 1
-              )
-              SELECT 
-                  v.*,
-                  s.*
-              FROM organisation_verifications v
-                JOIN statements s ON v.statement_hash=s.hash_b64
-              WHERE (
-                v.verified_domain IN (SELECT domain FROM domains)
-                OR
-                v.foreign_domain IN (SELECT domain FROM domains)
-              )
-              AND LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
-              `,[hash_b64], (error, results) => {
-        if (error) {
-          console.log(error)
-          console.trace()
-          return reject(error)
-        } else {
-          return resolve(results)
-        }
-      })
-    } catch (error) {
-      console.log(error)
-      console.trace()
-      return reject(error)
-    }
-  }));
-  
-  
-  export const getPersonVerificationsForStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
-    try {
-      checkIfMigrationsAreDone()
-      pool.query(`
-              WITH domains AS (
-                SELECT 
-                 domain,
-                 author
+                 author,
+                 $1 as input1,
+                 $2 as input2,
+                 $3 as input3
                 FROM statements
                 WHERE hash_b64=$1
                 LIMIT 1
@@ -122,16 +83,35 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
                   v.*,
                   s.*
               FROM person_verifications v
-                JOIN statements s ON v.statement_hash=s.hash_b64
+                JOIN statement_with_superseding s 
+                  ON v.statement_hash=s.hash_b64
+                  AND superseding_statement IS NULL
               WHERE 
               (
+                LENGTH($1) = 0
+                OR
                 v.verified_domain IN (SELECT domain FROM domains)
                 OR
                 v.foreign_domain IN (SELECT domain FROM domains)
               )
-              AND 
-                LOWER(v.name) IN (SELECT LOWER(author) FROM domains);
-              `,[hash_b64], (error, results) => {
+              AND (
+                LENGTH($1) = 0
+                OR
+                LOWER(v.name) IN (SELECT LOWER(author) FROM domains)
+              )
+              AND (
+                LENGTH($2) = 0
+                OR
+                LOWER(v.name) = LOWER($2)
+              )
+              AND (
+                LENGTH($3) = 0
+                OR
+                v.verified_domain = $3
+                OR
+                v.foreign_domain = $3
+              )
+              ;`,[hash_b64 || '', name || '', domain || ''], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -147,20 +127,55 @@ export const getOrganisationVerificationsForStatementFactory = pool => ({ hash_b
     }
   }));
   
-  export const getVerificationsForDomainFactory = pool => ({ domain = null }) => (new Promise((resolve: DBCallback<OrganisationVerificationDB & StatementDB>, reject) => {
+  export const getOrganisationVerificationsFactory = pool => ({ hash_b64 = null, domain = null, name = null }) => (new Promise((resolve: DBCallback<OrganisationVerificationDB & StatementWithSupersedingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
-              WITH _ AS( SELECT $1 as _)
+            WITH domains AS (
               SELECT 
-                  *
-              FROM organisation_verifications
-              JOIN statement_with_superseding 
-                ON organisation_verifications.statement_hash=statement_with_superseding.hash_b64
+              domain,
+              author,
+              $1 as input1,
+              $2 as input2,
+              $3 as input3
+              FROM statements
+              WHERE hash_b64=$1
+              LIMIT 1
+            )
+            SELECT 
+                v.*,
+                s.*
+            FROM organisation_verifications v
+              JOIN statement_with_superseding s 
+                ON v.statement_hash=s.hash_b64
                 AND superseding_statement IS NULL
-              WHERE true
-              ${domain ? 'AND verified_domain = $1' : ''} LIMIT 2000;
-              `,[domain], (error, results) => {
+            WHERE 
+            (
+              LENGTH($1) = 0
+              OR
+              v.verified_domain IN (SELECT domain FROM domains)
+              OR
+              v.foreign_domain IN (SELECT domain FROM domains)
+            )
+            AND (
+              LENGTH($1) = 0
+              OR
+              LOWER(v.name) IN (SELECT LOWER(author) FROM domains)
+            )
+            AND (
+              LENGTH($2) = 0
+              OR
+              LOWER(v.name) = LOWER($2)
+            )
+            AND (
+              LENGTH($3) = 0
+              OR
+              v.verified_domain = $3
+              OR
+              v.foreign_domain = $3
+            )
+              LIMIT 2000;
+              `,[hash_b64 || '', name || '', domain || ''], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()

@@ -213,6 +213,7 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
       }))
 
 export const getObservationsForEntityFactory = pool => ({ domain, name, observerDomain, observerName }) => (
+  // TODO: support persons
   new Promise((resolve: DBCallback<StatementDB>, reject) => {
         log && console.log('findObservationsForEntity', domain, name, observerDomain, observerName)
         try {
@@ -746,14 +747,19 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
                   SELECT * FROM (
                     SELECT 
                         s.*,
-                        v.name,
+                        COALESCE(v.name, pv.name) name,
                         rank() over(partition by s.id order by verification_statement.proclaimed_publication_time desc) _rank
-                    FROM statements s        
+                    FROM statement_with_superseding s        
                       LEFT JOIN organisation_verifications v 
-                        ON s.domain=v.verified_domain 
-                        AND v.verifier_domain='rixdata.net'
+                        ON (s.domain=v.verified_domain 
+                          OR s.domain=v.foreign_domain)
+                        --AND v.verifier_domain='rixdata.net'
+                      LEFT JOIN person_verifications pv 
+                        ON (s.domain=pv.verified_domain OR s.domain=pv.foreign_domain)
+                        --AND pv.verifier_domain='rixdata.net'
                       LEFT JOIN statements verification_statement
-                        ON v.statement_hash = verification_statement.hash_b64
+                        ON ( v.statement_hash = verification_statement.hash_b64
+                          OR pv.statement_hash = verification_statement.hash_b64)
                     WHERE s.content_hash IN (SELECT content_hash FROM content_hashes)
                     AND s.hash_b64 <> $1) AS result
                   WHERE _rank = 1;

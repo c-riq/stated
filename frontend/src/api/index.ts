@@ -70,9 +70,11 @@ export const getNameSuggestions = (searchQuery:string, cb:(arg0:nameSuggestionRe
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getDomainVerifications = (domain:string|undefined, cb:_cb) => {
-    req('GET',(domain ? 'domain_verifications?domain=' + domain : 'domain_verifications'), {}, (json) => {
-        cb(json)
+export const getDomainVerifications = (domain:string|undefined, cb:cb<OrganisationVerificationDB & StatementWithSupersedingDB>) => {
+    req('GET',(domain ? 'organisation_verifications?domain=' + domain : 'organisation_verifications'), {}, (json) => {
+        if("statements" in json){
+            cb(json.statements)
+        }
     }, e => {console.log(e); return})
 }
 export const getNodes = (cb:_cb) => {

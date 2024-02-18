@@ -72,8 +72,22 @@ const StatementDetail = (props:props) => {
         setOpenDeleteDialog(true)
     }
 
+    const clearState = () => {
+        setVotes([])
+        setJoiningStatements([])
+        setDisputes([])
+        setStatement(undefined)
+        setParsedStatement(undefined)
+        setWorkingFileURL('')
+        setStatementCollision(undefined)
+        setOrganisationVerifications([])
+        setPersonVerifications([])
+        setResponses([])
+    }
+
     React.useEffect(() => {
         if (hashInURL !== hash) {
+            clearState()
             setHash(hashInURL)
             setDataFetched(false)
         }
