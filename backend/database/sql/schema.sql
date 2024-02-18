@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS polls (
     participants_entity_type VARCHAR(500),
     participants_country VARCHAR(500),
     participants_city VARCHAR(500),
-    deadline timestamp NOT NULL,
+    deadline timestamp,
     CONSTRAINT polls_statement_hash_fkey
         FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
         ON DELETE CASCADE

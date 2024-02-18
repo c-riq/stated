@@ -71,7 +71,7 @@ test('statement build & parse function compatibility: input=parse(build(input))'
     const parsedStatement = parseStatement({ statement: statementContent })
     expect(parsedStatement.domain).toBe(domain)
     expect(parsedStatement.author).toBe(author)
-    expect(parsedStatement.time.toUTCString()).toBe(time.toUTCString())
+    expect(parsedStatement.time?.toUTCString()).toBe(time.toUTCString())
     expect(parsedStatement.content).toBe(contentWithTrailingNewline)
     expect(parsedStatement.representative).toBe(representative)
     expect(parsedStatement.supersededStatement).toBe(supersededStatement)
@@ -436,7 +436,7 @@ Statement content:
     expect(pollTitle).toBe('Should the UK join the EU')
     expect(parsedPoll.options[0]).toBe('Yes')
     expect(parsedPoll.options[1]).toBe('No')
-    expect(parsedPoll.deadline.toUTCString()).toBe(
+    expect(parsedPoll.deadline?.toUTCString()).toBe(
         'Thu, 01 Dec 2022 13:38:26 GMT'
     )
     expect(parsedPoll.scopeDescription).toBe('All universities with a ROR ID')
@@ -472,7 +472,7 @@ test('poll build & parse function compatibility: input=parse(build(input))', () 
     expect(parsedPoll.country).toBe(country)
     expect(parsedPoll.legalEntity).toBe(legalEntity)
     expect(parsedPoll.judges).toBe(judges)
-    expect(parsedPoll.deadline.toUTCString()).toBe(deadline.toUTCString())
+    expect(parsedPoll.deadline?.toUTCString()).toBe(deadline.toUTCString())
     expect(parsedPoll.options[0]).toEqual(options[0])
     expect(parsedPoll.options[1]).toEqual(options[1])
 })

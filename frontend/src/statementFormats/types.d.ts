@@ -40,7 +40,7 @@ type Poll = {
     legalEntity: string | undefined
     domainScope: string[] | undefined
     judges?: string
-    deadline: Date
+    deadline?: Date
     poll: string
     scopeDescription?: string
     scopeQueryLink?: string
