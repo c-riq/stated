@@ -429,7 +429,7 @@ export const getStatementsWithDetailFactory =
 
 export const getStatementsFactory =
   (pool) =>
-  ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20 }) =>
+  ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20, ignoreSuperseded = false }) =>
     new Promise((resolve: DBCallback<StatementDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
@@ -447,8 +447,9 @@ export const getStatementsFactory =
                     first_verification_time,
                     proclaimed_publication_time at time zone 'UTC' proclaimed_publication_time,
                     derived_entity_creation_retry_count
-                  FROM statements 
+                  FROM statement_with_superseding 
                   WHERE id > $1 
+                  ${ ignoreSuperseded ? "superseding_statement IS NULL" : "" }
                   ${
                     onlyStatementsWithMissingEntities
                       ? " AND derived_entity_created IS FALSE " +

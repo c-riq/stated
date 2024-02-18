@@ -42,7 +42,7 @@ const tryVerifyUnverifiedStatements = async () => {
 const addMissingDerivedEntities = async () => {
     /* Use cases: Poll might arrive after votes; version upgrades may be necessary. */
     try {
-        const dbResult = await getStatements({onlyStatementsWithMissingEntities : true})
+        const dbResult = await getStatements({onlyStatementsWithMissingEntities : true, ignoreSuperseded: true})
         let statements = dbResult.rows
         log && console.log('statements without entity ', statements.length)
         statements = statements.filter(s => {
