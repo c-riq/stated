@@ -376,7 +376,6 @@ export const VerificationGraph = (props:props) => {
           "spacing.nodeNodeBetweenLayers": 80,
         },
     }).run();
-    console.log(nodes, edges)
   }, [props, sslCerts, setSslCerts, fetchedSslCerts]);
 
   return (
