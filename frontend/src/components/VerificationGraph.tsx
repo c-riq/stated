@@ -46,6 +46,9 @@ export const VerificationGraph = (props:props) => {
     let nodes:node[] = [];
     let edges:edge[] = [];
     let domains:string[] = [];
+    
+    // add verification nodes
+
     [...organisationVerifications, ...personVerifications].forEach(
       (
         {
@@ -55,18 +58,15 @@ export const VerificationGraph = (props:props) => {
           author,
           name,
           hash_b64,
+          type
         },
         i
       ) => {
+
         const sourceParentId = (
           (verifier_domain) +
           ":" +
           author
-        ).replace(/ /g, "_").toLowerCase();
-        const targetParentId = (
-          (verified_domain || foreign_domain) +
-          ":" +
-          name
         ).replace(/ /g, "_").toLowerCase();
         if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
           domains.push(verifier_domain);
@@ -81,7 +81,7 @@ export const VerificationGraph = (props:props) => {
             data: {
               id: sourceParentId + ":" + verifier_domain,
               name:
-              verifier_domain.length > 20 ? verifier_domain.substring(0, 17) + "..." : verifier_domain,
+                verifier_domain.length > 20 ? verifier_domain.substring(0, 17) + "..." : verifier_domain,
               parent: sourceParentId,
               backgroundColor: "rgba(42,74,103,1)",
             },
@@ -96,6 +96,12 @@ export const VerificationGraph = (props:props) => {
             },
           });
         }
+
+        const targetParentId = (
+          (verified_domain || foreign_domain) +
+          ":" +
+          name
+        ).replace(/ /g, "_").toLowerCase();
         if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
           const domain = verified_domain || foreign_domain;
           domains.push(domain);
@@ -109,18 +115,18 @@ export const VerificationGraph = (props:props) => {
             data: {
               id: targetParentId + ":" + domain,
               name:
-              domain.length > 20 ? domain.substring(0, 17) + "..." : domain,
+                domain.length > 20 ? domain.substring(0, 17) + "..." : domain,
               parent: targetParentId,
               backgroundColor: "rgba(42,74,103,1)",
             },
           });
           nodes.push({
             data: {
-              id: targetParentId + ":" + author,
+              id: targetParentId + ":" + name,
               name:
                 name.length > 20 ? name.substring(0, 17) + "..." : name,
               parent: targetParentId,
-              backgroundColor: "rgba(42,74,103,1)",
+              backgroundColor: type === 'person_verification' ? "rgba(80,74,50,1)" : "rgba(42,74,103,1)",
             },
           });
         }
@@ -144,6 +150,9 @@ export const VerificationGraph = (props:props) => {
       / /g,
       "_"
     ).toLowerCase();
+
+    // add statement node
+    
     if (statement.domain && statement.author){
         if(!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
         domains.push(statement.domain);
@@ -170,8 +179,7 @@ export const VerificationGraph = (props:props) => {
               / /g,
               "_"
             ).toLowerCase(),
-            name:
-            statement.author.length > 20 ? statement.author.substring(0, 17) + "..." : statement.author,
+            name: statement.author.length > 20 ? statement.author.substring(0, 17) + "..." : statement.author,
             backgroundColor: "rgba(42,74,103,1)",
             parent: sourceParentId,
           },
@@ -194,8 +202,8 @@ export const VerificationGraph = (props:props) => {
               statement.domain?.length > 20
                 ? statement.domain?.substring(0, 17) + "..."
                 : statement.domain,
-                backgroundColor: "rgba(42,74,103,1)",
-                parent: targetParentId,
+            backgroundColor: "rgba(42,74,103,1)",
+            parent: targetParentId,
           },
         });
         nodes.push({
@@ -368,6 +376,7 @@ export const VerificationGraph = (props:props) => {
           "spacing.nodeNodeBetweenLayers": 80,
         },
     }).run();
+    console.log(nodes, edges)
   }, [props, sslCerts, setSslCerts, fetchedSslCerts]);
 
   return (
