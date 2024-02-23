@@ -124,7 +124,7 @@ type PollDB = {
     participants_entity_type: string | null;
     participants_country: string | null;
     participants_city: string | null;
-    deadline: Date;
+    deadline: Date | null;
 };
 
 type RatingDB = {

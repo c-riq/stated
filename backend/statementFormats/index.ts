@@ -44,6 +44,7 @@ export const buildStatement = ({domain, author, time, tags, content, representat
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
 	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	if(typeof time !== 'object' || !time.toUTCString) throw(new Error("Time must be a Date object."))
+	if(!domain) throw(new Error("Publishing domain missing."))
 	const statement = "Publishing domain: " + domain + "\n" +
 			"Author: " + (author || "") + "\n" + // organisation name
 			(representative && representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
@@ -164,7 +165,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
 	(judges ? "\t" + "The poll outcome is finalized when the following nodes agree: " + judges + "\n" : "") +
-	(deadline ?"\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
+	(deadline ? "\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
 	"\t" + "Poll: " + poll + "\n" +
 	(options.length > 0 && options[0] ? "\t" + "Option 1: " + options[0] + "\n" : "") +
 	(options.length > 1 && options[1] ? "\t" + "Option 2: " + options[1] + "\n" : "") +
@@ -229,7 +230,7 @@ export const parsePoll = (s: string, version?:string):Poll => {
 	const allowArbitraryVote = (m['allowArbitraryVote'] === 'Yes' ? true : 
 		(m['allowArbitraryVote'] === 'No' ? false : undefined))
 	const deadlineStr = m.deadline
-	if(!deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
+	if(deadlineStr && !deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
 	return {
 		judges: m['judges'],
 		deadline: new Date(deadlineStr),
