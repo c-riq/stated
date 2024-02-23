@@ -38,7 +38,7 @@ export const minPeopleCountToRange = (n: number) => {
 
 const UTCFormat:RegExp = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/
 
-export type statement = {
+export type statementV2 = {
 	domain: string,
 	author: string,
 	time: Date,
@@ -47,7 +47,7 @@ export type statement = {
 	representative?: string,
 	supersededStatement?: string,
 } 
-export const buildStatement = ({domain, author, time, tags, content, representative, supersededStatement}: statement) => {
+export const buildStatement = ({domain, author, time, tags, content, representative, supersededStatement}: statementV2) => {
 	if(content.match(/\nPublishing domain: /)) throw(new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
 	if(content.match(/\n\n/)) throw(new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
 	if(typeof time !== 'object' || !time.toUTCString) throw(new Error("Time must be a Date object."))
@@ -60,7 +60,7 @@ export const buildStatement = ({domain, author, time, tags, content, representat
             "Statement content: " + content + (content.match(/\n$/) ? '' : "\n");
 	return statement
 }
-export const parseStatement = (s: string):statement & { type: string } => {
+export const parseStatement = (s: string):statementV2 & { type: string } => {
 	if(s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
 	const statementRegex= new RegExp(''
 	+ /^Publishing domain: (?<domain>[^\n]+?)\n/.source
@@ -98,7 +98,7 @@ export const parseStatement = (s: string):statement & { type: string } => {
 	}
 }
 
-type quotation = {
+type quotationV2 = {
 	originalAuthor: string,
 	authorVerification: string,
 	originalTime?: string,
@@ -109,7 +109,7 @@ type quotation = {
 	confidence?: string
 }
 export const buildQuotationContent = ({originalAuthor, authorVerification, originalTime, source,
-		quotation, paraphrasedStatement, picture, confidence}: quotation) => {
+		quotation, paraphrasedStatement, picture, confidence}: quotationV2) => {
 	if(quotation && quotation.match(/\n/)) throw(new Error("Quotation must not contain line breaks."))
 	if(!paraphrasedStatement && !quotation) throw(new Error("Quotation must contain either a quotation or a paraphrased statement."))
 	const content = "\n" +
@@ -126,7 +126,7 @@ export const buildQuotationContent = ({originalAuthor, authorVerification, origi
 	""
 	return content
 }
-export const parseQuotation = (s: string): quotation & {type: string|undefined} => {
+export const parseQuotation = (s: string): quotationV2 & {type: string|undefined} => {
 	const voteRegex= new RegExp(''
 	+ /^\n\tType: Quotation\n/.source
 	+ /\tOriginal author: (?<originalAuthor>[^\n]+?)\n/.source
@@ -159,7 +159,7 @@ export const parseQuotation = (s: string): quotation & {type: string|undefined} 
 		type: m['type']?.toLowerCase().replace(' ','_'),
 	}
 }
-export type poll = {
+export type pollV2 = {
 	country: string|undefined,
 	city: string|undefined,
 	legalEntity: string|undefined,
@@ -170,7 +170,7 @@ export type poll = {
 	pollType?: string,
 	options: string[]
 }
-export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: poll) => {
+export const buildPollContent = ({country, city, legalEntity, domainScope, judges, deadline, poll, pollType, options}: pollV2) => {
 	if(!poll) throw(new Error("Poll must contain a poll question."))
 	const content = "\n" +
 	"\t" + "Type: Poll" + "\n" +
@@ -190,7 +190,7 @@ export const buildPollContent = ({country, city, legalEntity, domainScope, judge
 	""
 	return content
 }
-export const parsePoll = (s: string):poll &{pollType:string} => {
+export const parsePoll = (s: string):pollV2 &{pollType:string} => {
 	const pollRegex= new RegExp(''
 	+ /^\n\tType: Poll\n/.source
 	+ /(?:\tPoll type: (?<pollType>[^\n]+?)\n)?/.source
@@ -231,7 +231,7 @@ export const parsePoll = (s: string):poll &{pollType:string} => {
 		options
 	}
 }
-export type organisationVerification = {
+export type organisationVerificationV2 = {
 	name: string,
 	englishName?: string,
 	country: string,
@@ -250,7 +250,7 @@ export type organisationVerification = {
 
 export const buildOrganisationVerificationContent = (
 		{name, englishName, country, city, province, legalForm, parent, domain, foreignDomain, serialNumber,
-		confidence, reliabilityPolicy, employeeCount, pictureHash} : organisationVerification) => {
+		confidence, reliabilityPolicy, employeeCount, pictureHash} : organisationVerificationV2) => {
 	/* Omit any fields that may have multiple values */
 	if(!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
 	// if(city && !cities.cities.map(c => c[1]).includes(city)) throw new Error("Invalid city " + city)
@@ -283,7 +283,7 @@ export const buildOrganisationVerificationContent = (
 
 export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Parent: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
 
-export const parseOrganisationVerification = (s:string):organisationVerification => {
+export const parseOrganisationVerification = (s:string):organisationVerificationV2 => {
 	const organisationVerificationRegex= new RegExp(''
 	+ /^\n\tType: Organisation verification\n/.source
 	+ /\tDescription: We verified the following information about an organisation.\n/.source
@@ -323,7 +323,7 @@ export const parseOrganisationVerification = (s:string):organisationVerification
 	}
 }
 
-export type personVerification = {
+export type personVerificationV2 = {
 	name: string,
 	countryOfBirth: string,
 	cityOfBirth: string,
@@ -341,7 +341,7 @@ export type personVerification = {
 export const buildPersonVerificationContent = (
 		{name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
 		dateOfBirth, jobTitle, employer, verificationMethod, confidence,
-		picture, reliabilityPolicy}:personVerification) => {
+		picture, reliabilityPolicy}:personVerificationV2) => {
 	if(!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) return ""
 	const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j))
 	let content = "\n" +
@@ -366,7 +366,7 @@ export const buildPersonVerificationContent = (
 const monthIndex = (month:string) => ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(month.toLowerCase().substr(0,3))
 const birthDateFormat:RegExp = /(?<d>\d{1,2})\s(?<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(?<y>\d{4})/
 
-export const parsePersonVerification = (s: string):personVerification => {
+export const parsePersonVerification = (s: string):personVerificationV2 => {
 	const domainVerificationRegex= new RegExp(''
 	+ /^\n\tType: Person verification\n/.source
 	+ /\tDescription: We verified the following information about a person.\n/.source
@@ -405,13 +405,13 @@ export const parsePersonVerification = (s: string):personVerification => {
 	}
 }
 
-export type vote = {
+export type voteV2 = {
 	pollHash: string,
 	poll: string,
 	vote: string,
 }
 
-export const buildVoteContent = ({pollHash, poll, vote}:vote) => {
+export const buildVoteContent = ({pollHash, poll, vote}:voteV2) => {
 	const content = "\n" +
 	"\t" + "Type: Vote" + "\n" +
 	"\t" + "Poll id: " + pollHash + "\n" +
@@ -422,7 +422,7 @@ export const buildVoteContent = ({pollHash, poll, vote}:vote) => {
 }
 export const voteKeys = /(Type: |Poll id: |Poll: |Option: )/g
 
-export const parseVote = (s: string):vote => {
+export const parseVote = (s: string):voteV2 => {
 	const voteRegex= new RegExp(''
 	+ /^\n\tType: Vote\n/.source
 	+ /\tPoll id: (?<pollHash>[^\n]+?)\n/.source
@@ -471,12 +471,12 @@ export const parseDisputeAuthenticity = (s: string):disputeAuthenticity => {
 		reliabilityPolicy: m[3]
 	}
 }
-export type disputeContent = {
+export type disputeContentV2 = {
 	hash: string,
 	confidence?: number,
 	reliabilityPolicy?: string,
 }
-export const buildDisputeContentContent = ({hash, confidence, reliabilityPolicy}:disputeContent) => {
+export const buildDisputeContentContent = ({hash, confidence, reliabilityPolicy}:disputeContentV2) => {
 	const content = "\n" +
 	"\t" + "Type: Dispute statement content" + "\n" +
 	"\t" + "Description: We think that the content of the referenced statement is false.\n" +
@@ -486,7 +486,7 @@ export const buildDisputeContentContent = ({hash, confidence, reliabilityPolicy}
 	""
 	return content
 }
-export const parseDisputeContent = (s: string):disputeContent => {
+export const parseDisputeContent = (s: string):disputeContentV2 => {
 	const disputeRegex= new RegExp(''
 	+ /^\n\tType: Dispute statement content\n/.source
 	+ /\tDescription: We think that the content of the referenced statement is false.\n/.source
@@ -503,11 +503,11 @@ export const parseDisputeContent = (s: string):disputeContent => {
 		reliabilityPolicy: m[3]
 	}
 }
-export type responseContent = {
+export type responseContentV2 = {
 	hash: string,
 	response: string,
 }
-export const buildResponseContent = ({hash, response}:responseContent) => {
+export const buildResponseContent = ({hash, response}:responseContentV2) => {
 	const content = "\n" +
 	"\t" + "Type: Response" + "\n" +
 	"\t" + "Hash of referenced statement: " + hash + "\n" +
@@ -515,7 +515,7 @@ export const buildResponseContent = ({hash, response}:responseContent) => {
 	""
 	return content
 }
-export const parseResponseContent = (s: string):responseContent => {
+export const parseResponseContent = (s: string):responseContentV2 => {
 	const disputeRegex= new RegExp(''
 	+ /^\n\tType: Response\n/.source
 	+ /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
@@ -529,11 +529,11 @@ export const parseResponseContent = (s: string):responseContent => {
 		response: m[2]
 	}
 }
-export type PDFSigning = {
+export type PDFSigningV2 = {
 	hash: string,
 }
 export const PDFSigningKeys = /(Type: |Description: |PDF file hash: )/
-export const buildPDFSigningContent = ({hash}:PDFSigning) => {
+export const buildPDFSigningContent = ({hash}:PDFSigningV2) => {
 	const content = "\n" +
 	"\t" + "Type: Sign PDF" + "\n" +
 	"\t" + "Description: We hereby digitally sign the referenced PDF file.\n" +
@@ -541,7 +541,7 @@ export const buildPDFSigningContent = ({hash}:PDFSigning) => {
 	""
 	return content
 }
-export const parsePDFSigning = (s: string):PDFSigning => {
+export const parsePDFSigning = (s: string):PDFSigningV2 => {
 	const signingRegex= new RegExp(''
 	+ /^\n\tType: Sign PDF\n/.source
 	+ /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
@@ -554,7 +554,7 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 		hash: m[1]
 	}
 }
-export type rating = {
+export type ratingV2 = {
 	organisation: string,
 	domain: string,
 	rating: string,
@@ -562,7 +562,7 @@ export type rating = {
 }
 export const ratingKeys = /(Type: |Organisation name: |Organisation domain: |Our rating: |Comment: )/
 
-export const buildRating = ({organisation, domain, rating, comment}:rating) => {
+export const buildRating = ({organisation, domain, rating, comment}:ratingV2) => {
 	const content = "\n" +
 	"\t" + "Type: Rating" + "\n" +
 	"\t" + "Organisation name: " + organisation + "\n" +
@@ -572,7 +572,7 @@ export const buildRating = ({organisation, domain, rating, comment}:rating) => {
 	""
 	return content
 }
-export const parseRating = (s: string):rating => {
+export const parseRating = (s: string):ratingV2 => {
 	const ratingRegex= new RegExp(''
 	+ /^\n\tType: Rating\n/.source
 	+ /\tOrganisation name: (?<organisation>[^\n]*?)\n/.source
@@ -590,7 +590,7 @@ export const parseRating = (s: string):rating => {
 		comment: m[4]
 	}
 }
-export type bounty = {
+export type bountyV2 = {
 	motivation?: string,
 	bounty: string,
 	reward: string,
@@ -598,7 +598,7 @@ export type bounty = {
 	judgePay?: string,
 }
 export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be paid per investigated case with a maxium of: )/
-export const buildBounty = ({motivation, bounty, reward, judge, judgePay}:bounty) => {
+export const buildBounty = ({motivation, bounty, reward, judge, judgePay}:bountyV2) => {
 	const content = "\n" +
 	"\t" + "Type: Bounty" + "\n" +
 	(motivation ? "\t" + "In order to: " + motivation + "\n" : "") +
@@ -609,7 +609,7 @@ export const buildBounty = ({motivation, bounty, reward, judge, judgePay}:bounty
 	""
 	return content
 }
-export const parseBounty = (s: string):bounty => {
+export const parseBounty = (s: string):bountyV2 => {
 	const bountyRegex= new RegExp(''
 	+ /^\n\tType: Bounty\n/.source
 	+ /(?:\tIn order to: (?<motivation>[^\n]*?)\n)?/.source
@@ -629,7 +629,7 @@ export const parseBounty = (s: string):bounty => {
 		judgePay: m[5]
 	}
 }
-export type observation = {
+export type observationV2 = {
 	description?: string,
 	approach?: string,
 	confidence?: number,
@@ -641,7 +641,7 @@ export type observation = {
 	value: string,
 }
 export const ObservationKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observed property: |Observed value: )/
-export const buildObservation = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, property, value}: observation) => {
+export const buildObservation = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, property, value}: observationV2) => {
 	const content = "\n" +
 	"\t" + "Type: Observation" + "\n" +
 	(approach ? "\t" + "Approach: " + approach + "\n" : "") +
@@ -655,7 +655,7 @@ export const buildObservation = ({approach, confidence, reliabilityPolicy, subje
 	""
 	return content
 }
-export const parseObservation = (s: string):observation => {
+export const parseObservation = (s: string):observationV2 => {
 	const observationRegex= new RegExp(''
 	+ /^\n\tType: Observation\n/.source
 	+ /(?:\tApproach: (?<approach>[^\n]*?)\n)?/.source
@@ -683,14 +683,14 @@ export const parseObservation = (s: string):observation => {
 }
 
 
-export type boycott = {
+export type boycottV2 = {
 	description?: string,
 	reliabilityPolicy?: string,
 	subject: string,
 	subjectReference?: string,
 }
 export const BoycottKeys = /(Type: |Description: |Subject: |Subject identity reference: )/
-export const buildBoycott = ({description, subject, subjectReference}: boycott) => {
+export const buildBoycott = ({description, subject, subjectReference}: boycottV2) => {
 	const content = "\n" +
 	"\t" + "Type: Boycott" + "\n" +
 	(description ? "\t" + "Description: " + description + "\n" : "") +
@@ -699,7 +699,7 @@ export const buildBoycott = ({description, subject, subjectReference}: boycott) 
 	""
 	return content
 }
-export const parseBoycott = (s: string):boycott => {
+export const parseBoycott = (s: string):boycottV2 => {
 	const observationRegex= new RegExp(''
 	+ /^\n\tType: Boycott\n/.source
 	+ /(?:\tDescription: (?<description>[^\n]*?)\n)?/.source
