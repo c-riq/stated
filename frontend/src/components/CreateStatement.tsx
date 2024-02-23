@@ -249,7 +249,7 @@ const CreateStatement = (props:Props) => {
                 }}
                 renderInput={(params) => <TextField {...params} 
                   label="Your domain used for publishing/ authenticating" placeholder='example.com' />}
-                style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
+                style={{backgroundColor: '#eeeeee', marginTop: "16px", marginBottom: "8px"}}
             />
             { (OVInfo && OVInfo.reduce((acc, i) => acc || i.domain === domain, false)) &&
                 (  OVInfo.reduce((acc, i) => acc || i.O, '') 
@@ -289,7 +289,7 @@ const CreateStatement = (props:Props) => {
                 value={representative}
                 onChange={e => { setRepresentative(e.target.value) }}
                 margin="normal"
-                style={{backgroundColor: '#eeeeee', marginTop: "24px"}}
+                style={{backgroundColor: '#eeeeee', marginTop: "16px"}}
             />
             )}
             {props.statementToSupersede && (
@@ -301,7 +301,7 @@ const CreateStatement = (props:Props) => {
                 value={supersededStatement}
                 onChange={e => { setSupersededStatement(e.target.value) }}
                 margin="normal"
-                style={{backgroundColor: '#eeeeee', marginTop: "12px"}}
+                style={{backgroundColor: '#eeeeee', marginTop: "16px"}}
             />)}
             { showAdditionalFields && (
             <TextField // TODO: fix tags
@@ -316,7 +316,7 @@ const CreateStatement = (props:Props) => {
                 onBlur={onTagBlur}
                 onKeyDown={onTagKeyDown}
                 value={tagInput}
-                sx={{backgroundColor: '#eeeeee', marginTop: "24px", marginBottom: "8px", width: "50vw", maxWidth: "500px"}}
+                sx={{backgroundColor: '#eeeeee', marginTop: "16px", width: "50vw", maxWidth: "500px"}}
             />)
             }
             {!showAdditionalFields &&
@@ -324,6 +324,7 @@ const CreateStatement = (props:Props) => {
                     Show additional fields</Button>
                 )
             }
+            <div style={{marginTop: "24px"}}></div>
         </>
     )
 
