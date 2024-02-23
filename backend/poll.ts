@@ -1,14 +1,14 @@
 import { QueryResult } from 'pg'
 import {createPoll, getOrganisationVerifications, getPoll, 
     createVote, getVotes, updateVote, getObservationsForEntity, getPersonVerifications} from './database'
-import {parseVote, parsePoll, parseStatement, vote, parseObservation} from './statementFormats'
+import {parseVote, parsePoll, parseStatement, parseObservation} from './statementFormats'
 
 export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
     console.log('createPoll', statement_hash, domain, content)
     try {
         const parsedPoll = parsePoll(content)
         const { country, city, legalEntity, deadline } = parsedPoll
-        if(isNaN(deadline.getTime())) {
+        if(deadline && isNaN(deadline.getTime())) {
             resolve({error: "Invalid deadline date"})
             return
         }
@@ -48,7 +48,7 @@ export const checkRequiredObservations = ({requiredProperty, requiredPropertyVal
 }
 
 export const isOrganisationVoteQualified = async ({vote, poll, organisationVerification, proclaimed_publication_time, statement_hash, domain, author}:{
-        vote: vote, poll: (PollDB & StatementDB), organisationVerification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date,
+        vote: Vote, poll: (PollDB & StatementDB), organisationVerification: (OrganisationVerificationDB & StatementDB), proclaimed_publication_time: Date,
         statement_hash: string, domain:string, author:string
     }) => {
     let voteTimeQualified = false
@@ -57,7 +57,7 @@ export const isOrganisationVoteQualified = async ({vote, poll, organisationVerif
     let noExistingVotesFromAuthor = false
     if (organisationVerification && poll) {
         // TODO: if ownDomain == poll judge, then compare against current time
-        if(proclaimed_publication_time <= poll.deadline) {
+        if(!poll.deadline || proclaimed_publication_time <= poll.deadline) {
             voteTimeQualified = true
         }
         if( 
@@ -91,7 +91,7 @@ export const isOrganisationVoteQualified = async ({vote, poll, organisationVerif
 }
 
 export const isPersonVoteQualified = async ({vote, poll, personVerification, proclaimed_publication_time, statement_hash, domain, author}:{
-        vote: vote, poll: (PollDB & StatementDB), personVerification: (PersonVerificationDB & StatementDB), proclaimed_publication_time: Date,
+        vote: Vote, poll: (PollDB & StatementDB), personVerification: (PersonVerificationDB & StatementDB), proclaimed_publication_time: Date,
         statement_hash: string, domain:string, author:string
     }) => {
     let voteTimeQualified = false

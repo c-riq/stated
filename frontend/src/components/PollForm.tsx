@@ -34,7 +34,7 @@ const PollForm = (props:FormProps) => {
     const [options, setOptions] = React.useState(['','']);
     const [domainScopeConcat, setDomainScopeConcat] = React.useState("");
     const [nodes, setNodes] = React.useState("");
-    const [votingDeadline, setVotingDeadline] = React.useState(moment().add(14,'days'));
+    const [votingDeadline, setVotingDeadline] = React.useState(undefined as moment.Moment|undefined);
     const [poll, setPoll] = React.useState("");
     const [countries, setCountries] = React.useState([] as [string, string, string ,string][])
     const [cities, setCities] = React.useState([] as [string, string ,string][])
@@ -298,7 +298,9 @@ const PollForm = (props:FormProps) => {
             sx={{marginTop: "20px", marginBottom: "20px"}}
         />
         </>) :
-        <Button onClick={() => setShowOptionalFields(true)}>Show optional fields</Button>
+        <Button onClick={() => {
+            setShowOptionalFields(true)
+            setVotingDeadline(moment().add(14,'days'))}}>Show optional fields</Button>
         }
         {props.children}
         <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>
