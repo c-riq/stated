@@ -8,7 +8,7 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
     try {
         const parsedPoll = parsePoll(content)
         const { country, city, legalEntity, deadline } = parsedPoll
-        if(isNaN(deadline.getTime())) {
+        if(deadline && isNaN(deadline.getTime())) {
             resolve({error: "Invalid deadline date"})
             return
         }
@@ -57,7 +57,7 @@ export const isOrganisationVoteQualified = async ({vote, poll, organisationVerif
     let noExistingVotesFromAuthor = false
     if (organisationVerification && poll) {
         // TODO: if ownDomain == poll judge, then compare against current time
-        if(proclaimed_publication_time <= poll.deadline) {
+        if(!poll.deadline || proclaimed_publication_time <= poll.deadline) {
             voteTimeQualified = true
         }
         if( 

@@ -233,7 +233,7 @@ export const parsePoll = (s: string, version?:string):Poll => {
 	if(deadlineStr && !deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
 	return {
 		judges: m['judges'],
-		deadline: new Date(deadlineStr),
+		deadline: deadlineStr ? new Date(deadlineStr) : undefined,
 		poll: m['poll'],
 		options,
 		allowArbitraryVote,
