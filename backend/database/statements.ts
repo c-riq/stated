@@ -449,7 +449,7 @@ export const getStatementsFactory =
                     derived_entity_creation_retry_count
                   FROM statement_with_superseding 
                   WHERE id > $1 
-                  ${ ignoreSuperseded ? "superseding_statement IS NULL" : "" }
+                  ${ ignoreSuperseded ? "AND superseding_statement IS NULL" : "" }
                   ${
                     onlyStatementsWithMissingEntities
                       ? " AND derived_entity_created IS FALSE " +
