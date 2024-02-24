@@ -10,7 +10,7 @@ type DNSSECResult = {
     trust: string
 }
 
-export const checkDnssecValidation = (output, strict) => {
+export const checkDnssecValidation = (output: string, strict: boolean) => {
     const TXTEntries = (''+output).split('\n').map(s=>s.replace(/\"/g,''))
     const trust = TXTEntries.splice(0,1)[0]
     if (strict && trust !== '; fully validated') {
@@ -20,7 +20,7 @@ export const checkDnssecValidation = (output, strict) => {
     }
 }
 
-export const getTXTEntriesDNSSEC = ({domain, strict}) => new Promise((resolve: (result: DNSSECResult) => void, reject) => {
+export const getTXTEntriesDNSSEC = ({domain, strict}: {domain: string, strict: boolean}) => new Promise((resolve: (result: DNSSECResult) => void, reject) => {
     if(!validateDomainFormat(domain)){
         return reject(Error('invalid domain format'))
     }

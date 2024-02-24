@@ -15,7 +15,7 @@ const verificationRetryScheduleHours = [0, 0.01, 0.05, 0.1, 0.2, 1, 10, 24, 100,
 const tryVerifyUnverifiedStatements = async () => {
     try {
         const dbResult = await getUnverifiedStatements()
-        let unverifiedStatements = dbResult.rows
+        let unverifiedStatements = dbResult?.rows ?? []
         log && console.log('unverifiedStatements count ', unverifiedStatements.length)
         unverifiedStatements = unverifiedStatements.filter(s => {
             // @ts-ignore
@@ -29,8 +29,8 @@ const tryVerifyUnverifiedStatements = async () => {
         log && console.log('unverifiedStatements up for retry ', unverifiedStatements.length)
 
         const res = await Promise.allSettled(unverifiedStatements.map(({statement, hash_b64, source_node_id, verification_method}) =>
-            validateAndAddStatementIfMissing({statement, hash_b64, source_node_id,
-                verification_method, api_key: undefined })
+            validateAndAddStatementIfMissing({statement, hash_b64, source_node_id: source_node_id || undefined,
+                verification_method: verification_method || undefined, api_key: undefined })
         ))
         return res
     } catch (error) {
@@ -43,14 +43,14 @@ const addMissingDerivedEntities = async () => {
     /* Use cases: Poll might arrive after votes; version upgrades may be necessary. */
     try {
         const dbResult = await getStatements({onlyStatementsWithMissingEntities : true, ignoreSuperseded: true})
-        let statements = dbResult.rows
+        let statements = dbResult?.rows || [];
         log && console.log('statements without entity ', statements.length)
         statements = statements.filter(s => {
             // @ts-ignore
             const diffTime = (new Date()) - s.first_verification_time
             const diffHours = diffTime / (1000 * 60 * 60)
             const targetRetryCount = verificationRetryScheduleHours.filter(h => h < diffHours).length
-            if (targetRetryCount > s.derived_entity_creation_retry_count) {
+            if (s.derived_entity_creation_retry_count !== null && targetRetryCount > s.derived_entity_creation_retry_count) {
                 return true
             } return false
         })
@@ -74,7 +74,7 @@ const deleteDerivedEntitiesWhoseStatementsAreSuperseded = async () => {
     }
 }
 
-const setupSchedule = (retryIntervalSeconds) => {
+const setupSchedule = (retryIntervalSeconds: number) => {
     setInterval(async () => {
         log && console.log('retry verification started')
         try {

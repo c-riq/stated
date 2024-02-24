@@ -1,9 +1,10 @@
 
 const log = false;
 
+import { Pool } from "pg";
 import { DBCallback, checkIfMigrationsAreDone } from ".";
 
-export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallback, reject) => {
+export const getAllNodesFactory = (pool: Pool) => () => (new Promise((resolve: DBCallback<P2PNodeDB>, reject) => {
     try {
       pool.query(`
               SELECT 
@@ -25,7 +26,7 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
     }
   }));
   
-  export const addNodeFactory = pool => ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
+  export const addNodeFactory = (pool: Pool) => ({ domain }:{domain:string}) => (new Promise((resolve: DBCallback<any>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -50,7 +51,9 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
   }));
   
   
-  export const updateNodeFactory = pool => ({ domain, lastReceivedStatementId, certificateAuthority, fingerprint, ip }) => (new Promise((resolve: DBCallback, reject) => {
+  export const updateNodeFactory = (pool: Pool) => (
+    { domain, last_received_statement_id, certificate_authority, fingerprint, ip }:
+    Omit<P2PNodeDB, "first_seen"|"last_seen"|"id"|"reputation">) => (new Promise((resolve: DBCallback<any>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -58,7 +61,7 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
               SET 
               last_received_statement_id = $1,
               last_seen = CURRENT_TIMESTAMP,
-              ${certificateAuthority ? `certificate_authority = $3,` : ''}
+              certificate_authority = $3,
               ${fingerprint ? `fingerprint = $4,` : ''}
               ip = $5
               WHERE domain = $2
@@ -67,9 +70,9 @@ export const getAllNodesFactory = pool => () => (new Promise((resolve: DBCallbac
                   last_received_statement_id <= $1
                 ) 
                 OR (FALSE AND $3 = $4);
-              `,[lastReceivedStatementId,
+              `,[last_received_statement_id,
                 domain, 
-                certificateAuthority || 'certificateAuthority', 
+                certificate_authority || 'certificate_authority', 
                 fingerprint || 'fingerprint',
                 ip], (error, results) => {
         if (error) {

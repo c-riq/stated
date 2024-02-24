@@ -2,6 +2,7 @@
 import {describe, expect, it} from '@jest/globals';
 
 //import {validateDomainFormat} from './validateDomainFormat'
+// @ts-ignore
 const {validateDomainFormat} = jest.requireActual("./validateDomainFormat");
 
 

@@ -1,13 +1,14 @@
 
 const log = false;
 
+import { Pool } from "pg";
 import { DBCallback, checkIfMigrationsAreDone } from ".";
 
-export const createPollFactory = pool => (o) => 
-(new Promise((resolve: DBCallback, reject) => {
+export const createPollFactory = (pool: Pool) => (poll:Omit<PollDB, "id">) => 
+(new Promise((resolve: DBCallback<any>, reject) => {
   try {
     checkIfMigrationsAreDone()
-    const { statement_hash, participants_entity_type, participants_country, participants_city, deadline } = o
+    const { statement_hash, participants_entity_type, participants_country, participants_city, deadline } = poll
     log && console.log([statement_hash, participants_entity_type, participants_country, participants_city, deadline ])
     pool.query(`
             INSERT INTO polls 
@@ -33,7 +34,7 @@ export const createPollFactory = pool => (o) =>
 }))
 
 
-export const getPollFactory = pool => ({ statement_hash }) => (new Promise((resolve: DBCallback<PollDB & StatementDB>, reject) => {
+export const getPollFactory = (pool: Pool) => ({ statement_hash }: { statement_hash: string }) => (new Promise((resolve: DBCallback<PollDB & StatementDB>, reject) => {
     console.log('getPoll', statement_hash)
     try {
       checkIfMigrationsAreDone()
@@ -61,7 +62,7 @@ export const getPollFactory = pool => ({ statement_hash }) => (new Promise((reso
   }))
   
 
-export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback, reject) => {
+export const createVoteFactory = (pool: Pool) => ({ statement_hash, poll_hash, option, domain, qualified }: Omit<VoteDB, "id">) => (new Promise((resolve: DBCallback<any>, reject) => {
   try {
     checkIfMigrationsAreDone()
     log && console.log('createVote', [statement_hash, poll_hash, option, domain, qualified])
@@ -88,7 +89,8 @@ export const createVoteFactory = pool => ({ statement_hash, poll_hash, option, d
 }))
 
 
-export const getVotesFactory = pool => ({ poll_hash, vote_hash=null, domain=null, author=null, ignore_vote_hash=null }) => (new Promise((
+export const getVotesFactory = (pool: Pool) => ({ poll_hash, vote_hash=null, domain=null, author=null, ignore_vote_hash=null }: 
+  { poll_hash: string, vote_hash?: string | null, domain?: string | null, author?: string | null, ignore_vote_hash?: string | null } ) => (new Promise((
       resolve: DBCallback<VoteDB & StatementWithSupersedingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
@@ -119,7 +121,7 @@ export const getVotesFactory = pool => ({ poll_hash, vote_hash=null, domain=null
     }
   }))
 
-export const updateVoteFactory = pool => ({ statement_hash, poll_hash, option, domain, qualified }) => (new Promise((resolve: DBCallback<VoteDB & StatementDB>, reject) => {
+export const updateVoteFactory = (pool: Pool) => ({ statement_hash, poll_hash, option, domain, qualified }: Omit<VoteDB, "id">) => (new Promise((resolve: DBCallback<VoteDB & StatementDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`

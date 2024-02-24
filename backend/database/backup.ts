@@ -11,7 +11,7 @@ const pgPassword = process.env.POSTGRES_PW || "sdf"
 const pgPort = parseInt(process.env.POSTGRES_PORT || '5432')
 const test = process.env.TEST || false
 
-export const backup = () => {return new Promise((resolve: DBCallback, reject: DBErrorCallback) => {
+export const backup = () => {return new Promise((resolve: (arg0?: unknown) => void, reject: (arg0?: any) => void) => {
     if(test) {
         return resolve()
     }
@@ -46,7 +46,7 @@ export const backup = () => {return new Promise((resolve: DBCallback, reject: DB
             return reject(Error('pgdump process exited with code ' + code))
         });
     } catch (error){
-        return reject(Error(error))
+        return reject(error)
     }
 })
 };

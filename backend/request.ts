@@ -12,7 +12,9 @@ type response = {
     ip?: any
 }
 
-export const get = ({hostname, path='', cache=false, json=true}) => new Promise((resolve: (res: response) => void, reject) => {
+export const get = ({hostname, path='', cache=false, json=true}:{
+    hostname: string, path?: string, cache?: boolean, json?: boolean
+}) => new Promise((resolve: (res: response) => void, reject) => {
     log && console.log('get request', hostname, path)
     try {
         if(hostname === 'stated.' + ownDomain || hostname === ownDomain){
@@ -53,9 +55,9 @@ export const get = ({hostname, path='', cache=false, json=true}) => new Promise(
     }
 })
 
-export const post = ({hostname, path, data}) => new Promise((resolve, reject) => {
+export const post = ({hostname, path, data}: {hostname: string, path: string, data: any}) => new Promise((resolve, reject) => {
     log && console.log('post request', hostname, path, data)
-    if(hostname.match(ownDomain)){
+    if(ownDomain && hostname.match(ownDomain)){
         resolve({error: 'skip request to own domain: ' + hostname})
         return
     }

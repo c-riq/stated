@@ -1,7 +1,9 @@
 
+import { Pool } from "pg";
 import { DBCallback } from ".";
 
-export const getStatementsToVerifyFactory = pool => ({n, ownDomain}) => (new Promise((resolve: DBCallback, reject) => {
+export const getStatementsToVerifyFactory = (pool: Pool) => ({n, ownDomain}: {n: any, ownDomain: any}) => (new Promise((
+  resolve: DBCallback<VerificationLogDB&StatementDB&{n:string}>, reject) => {
     try {
       pool.query(`
         with missing_log as (
@@ -60,8 +62,8 @@ export const getStatementsToVerifyFactory = pool => ({n, ownDomain}) => (new Pro
     }
   }));
   
-  export const addLogFactory = pool => ({ hash_b64, api, dns, txt }:{hash_b64: string, api?:boolean, dns?: boolean, txt?:boolean}) => 
-  (new Promise((resolve: DBCallback, reject) => {
+  export const addLogFactory = (pool: Pool) => ({ hash_b64, api, dns, txt }:{hash_b64: string, api?:boolean, dns?: boolean, txt?:boolean}) => 
+  (new Promise((resolve: DBCallback<any>, reject) => {
     try {
       pool.query(`
               INSERT INTO verification_log (statement_hash, t, api, dns, txt) VALUES
@@ -84,7 +86,7 @@ export const getStatementsToVerifyFactory = pool => ({n, ownDomain}) => (new Pro
   }));
   
   
-  export const getLogsForStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+  export const getLogsForStatementFactory = (pool: Pool) => ({ hash_b64 }:{hash_b64: string}) => (new Promise((resolve: DBCallback<VerificationLogDB>, reject) => {
     try {
       pool.query(`
               select * from verification_log where statement_hash = $1 order by t asc;

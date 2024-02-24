@@ -15,10 +15,11 @@ type statement = {
 
 const log = false;
 
+import { Pool } from "pg";
 import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 export const createStatementFactory =
-  (pool) =>
+  (pool: Pool) =>
   ({
     type,
     domain,
@@ -30,10 +31,10 @@ export const createStatementFactory =
     content,
     content_hash_b64,
     verification_method,
-    source_node_id = null,
+    source_node_id,
     supersededStatement
   }: statement) =>
-    new Promise((resolve: DBCallback, reject) => {
+    new Promise((resolve: DBCallback<any>, reject) => {
       try {
         checkIfMigrationsAreDone()
         pool.query(
@@ -79,7 +80,7 @@ export const createStatementFactory =
     });
 
 export const createHiddenStatementFactory =
-    (pool) =>
+    (pool: Pool) =>
     ({
       type,
       domain,
@@ -94,7 +95,7 @@ export const createHiddenStatementFactory =
       source_node_id,
       supersededStatement
     }: statement) =>
-      new Promise((resolve: DBCallback, reject) => {
+      new Promise((resolve: DBCallback<any>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(
@@ -139,7 +140,8 @@ export const createHiddenStatementFactory =
         }
       });
 
-export const getHiddenStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const getHiddenStatementFactory = (pool: Pool) => ({ hash_b64 }: { hash_b64: string }) => (
+  new Promise((resolve: DBCallback<StatementWithHiddenDB>, reject) => {
         log && console.log('getStatement', hash_b64)
         try {
           checkIfMigrationsAreDone()
@@ -165,7 +167,8 @@ export const getHiddenStatementFactory = pool => ({ hash_b64 }) => (new Promise(
         }
       }))
 
-export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const getStatementFactory = (pool: Pool) => ({ hash_b64 }: { hash_b64: string }) => (
+  new Promise((resolve: DBCallback<StatementWithSupersedingDB&{name?:string}>, reject) => {
         log && console.log('getStatement', hash_b64)
         try {
           checkIfMigrationsAreDone()
@@ -212,7 +215,7 @@ export const getStatementFactory = pool => ({ hash_b64 }) => (new Promise((resol
         }
       }))
 
-export const getObservationsForEntityFactory = pool => ({ domain, name, observerDomain, observerName }) => (
+export const getObservationsForEntityFactory = (pool: Pool) => ({ domain, name, observerDomain, observerName }: { domain: string, name: string, observerDomain: string, observerName: string }) => (
   // TODO: support persons
   new Promise((resolve: DBCallback<StatementDB>, reject) => {
         log && console.log('findObservationsForEntity', domain, name, observerDomain, observerName)
@@ -250,7 +253,8 @@ join statements s
         }
       }))
 
-export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback, reject) => {
+export const deleteStatementFactory = (pool: Pool) => ({ hash_b64 }: { hash_b64: string }) => (
+  new Promise((resolve: DBCallback<any>, reject) => {
         log && console.log('deleteStatement', hash_b64)
         try {
           checkIfMigrationsAreDone()
@@ -273,14 +277,14 @@ export const deleteStatementFactory = pool => ({ hash_b64 }) => (new Promise((re
       }))
 
 export const getStatementsWithDetailFactory =
-  (pool) =>
+  (pool: Pool) =>
   ({ skip, searchQuery, tag, limit, types, domain, author } : {skip?: number,
     searchQuery?: string, tag?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
         new Promise((resolve: DBCallback<StatementWithDetailsDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
         let typeQuery = ''
-        for (let t of types){
+        for (let t of (types ?? [])) {
           if ('statement' === t) {
             typeQuery += " OR type = 'statement'"
           }
@@ -428,7 +432,7 @@ export const getStatementsWithDetailFactory =
     });
 
 export const getStatementsFactory =
-  (pool) =>
+  (pool: Pool) =>
   ({ minId = 0, onlyStatementsWithMissingEntities = false, domain = "", n = 20, ignoreSuperseded = false }) =>
     new Promise((resolve: DBCallback<StatementDB>, reject) => {
       try {
@@ -479,14 +483,19 @@ export const getStatementsFactory =
       }
     });
 export const updateStatementFactory =
-  (pool) =>
+  (pool: Pool) =>
   ({
     hash_b64,
     derived_entity_created = false,
     increment_derived_entity_creation_retry_count = false,
     referenced_statement=null
+  }: {
+    hash_b64: string,
+    derived_entity_created?: boolean,
+    increment_derived_entity_creation_retry_count?: boolean,
+    referenced_statement?: any
   }) =>
-    new Promise((resolve: DBCallback, reject) => {
+    new Promise((resolve: DBCallback<any>, reject) => {
       checkIfMigrationsAreDone()
       if (
         !hash_b64 ||
@@ -563,13 +572,13 @@ export const updateStatementFactory =
       }
     });
 
-export const checkIfUnverifiedStatementExistsFactory = (pool) => ({ hash_b64 }:{hash_b64:string}) =>
-  new Promise((resolve: DBCallback, reject) => {
+export const checkIfUnverifiedStatementExistsFactory = (pool: Pool) => ({ hash_b64 }:{hash_b64:string}) =>
+  new Promise((resolve: DBCallback<{exists: boolean}>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(
         `
-                SELECT 1 FROM unverified_statements WHERE hash_b64=$1 LIMIT 1;
+                SELECT TRUE exists FROM unverified_statements WHERE hash_b64=$1 LIMIT 1;
               `,
         [hash_b64],
         (error, results) => {
@@ -590,15 +599,21 @@ export const checkIfUnverifiedStatementExistsFactory = (pool) => ({ hash_b64 }:{
   });
 
 export const createUnverifiedStatementFactory =
-  (pool) =>
+  (pool: Pool) =>
   ({
     statement,
     author,
     hash_b64,
     source_node_id,
     source_verification_method,
+  }: {
+    statement: string;
+    author: string;
+    hash_b64: string;
+    source_node_id: number|null;
+    source_verification_method: VerificationMethodDB | null;
   }) =>
-    new Promise((resolve: DBCallback, reject) => {
+    new Promise((resolve: DBCallback<any>, reject) => {
       try {
         checkIfMigrationsAreDone()
         log &&
@@ -637,8 +652,8 @@ export const createUnverifiedStatementFactory =
       }
     });
 
-export const getUnverifiedStatementsFactory = (pool) => () =>
-  new Promise((resolve: DBCallback, reject) => {
+export const getUnverifiedStatementsFactory = (pool: Pool) => () =>
+  new Promise((resolve: DBCallback<StatementDB&{verification_retry_count:number}>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(
@@ -666,9 +681,9 @@ export const getUnverifiedStatementsFactory = (pool) => () =>
   });
 
 export const updateUnverifiedStatementFactory =
-  (pool) =>
-  ({ hash_b64, increment_verification_retry_count }) =>
-    new Promise((resolve: DBCallback, reject) => {
+  (pool: Pool) =>
+  ({ hash_b64, increment_verification_retry_count }: { hash_b64: string, increment_verification_retry_count: number }) =>
+    new Promise((resolve: DBCallback<any>, reject) => {
       try {
         checkIfMigrationsAreDone();
         if (hash_b64 && increment_verification_retry_count) {
@@ -700,9 +715,9 @@ export const updateUnverifiedStatementFactory =
     });
 
 export const cleanUpUnverifiedStatementsFactory =
-  (pool) =>
-  ({ max_age_hours, max_verification_retry_count }) =>
-    new Promise((resolve: DBCallback, reject) => {
+  (pool: Pool) =>
+  ({ max_age_hours, max_verification_retry_count }: { max_age_hours: number, max_verification_retry_count: number }) =>
+    new Promise((resolve: DBCallback<any>, reject) => {
       try {
         checkIfMigrationsAreDone();
         pool.query(
@@ -736,7 +751,7 @@ export const cleanUpUnverifiedStatementsFactory =
 
 
 
-export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Promise((resolve: DBCallback<StatementDB & {name?: string, _rank: number}>, reject) => {
+export const getJoiningStatementsFactory = (pool: Pool) => ({ hash_b64 }: { hash_b64: string }) => (new Promise((resolve: DBCallback<StatementDB & {name?: string, _rank: number}>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(`
@@ -780,7 +795,7 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
         }
       }))
 
-      export const getOwnStatementFactory = pool => ({ hash_b64, ownDomain }) => (new Promise((resolve: DBCallback<StatementDB>, reject) => {
+      export const getOwnStatementFactory = (pool: Pool) => ({ hash_b64, ownDomain }: { hash_b64: string, ownDomain: string }) => (new Promise((resolve: DBCallback<StatementDB>, reject) => {
         try {
           checkIfMigrationsAreDone()
           pool.query(`
@@ -807,7 +822,7 @@ export const getJoiningStatementsFactory = (pool) => ({ hash_b64 }) => (new Prom
         }
       }))
 
-export const statementExistsFactory = pool => ({ hash_b64 }) => (new Promise((resolve: DBCallback<{exists: boolean}>, reject) => {
+export const statementExistsFactory = (pool: Pool) => ({ hash_b64 }: { hash_b64: string }) => (new Promise((resolve: DBCallback<{exists: boolean}>, reject) => {
         try {
           checkIfMigrationsAreDone()
           log && console.log(hash_b64, 'check')

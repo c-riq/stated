@@ -20,7 +20,7 @@ const ownDomain = process.env.DOMAIN
 const test = process.env.TEST || false
 
 export const validateStatementMetadata = ({ statement, hash_b64, source_node_id }:
-        {statement: string, hash_b64: string, source_node_id: string}) => {
+        {statement: string, hash_b64: string, source_node_id: number|null}) => {
     const parsedStatement = parseStatement({statement, allowNoVersion: true})
     const {domain, author, time, content, tags, type, supersededStatement} = parsedStatement
     if (!hashUtils.verify(statement, hash_b64)){
@@ -61,7 +61,7 @@ export const validateStatementMetadata = ({ statement, hash_b64, source_node_id 
     return result
 }
 
-export const getTXTEntries = (d) => new Promise((resolve: (entries: string[])=>void, reject) => {
+export const getTXTEntries = (d: string) => new Promise((resolve: (entries: string[])=>void, reject) => {
     try {
         log && console.log('getTXTEntries', d)
         if (!test && ! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
@@ -193,7 +193,7 @@ export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, state
     return {validated: false}
 }
 
-export const verifyViaAPIKey = ({domain, api_key}) => {
+export const verifyViaAPIKey = ({domain, api_key}:{domain:string|undefined, api_key:string|undefined}) => {
     log && console.log('verifyViaAPIKey', domain, ownDomain, api_key, ownAPIKey)
     if(!domain){return false}
     if(!api_key){return false}
@@ -204,7 +204,7 @@ export const verifyViaAPIKey = ({domain, api_key}) => {
     return false
 }
 
-const verifyViaStatedApiOrStaticTextFile = async ({domain, hash_b64, statement}) => {
+const verifyViaStatedApiOrStaticTextFile = async ({domain, hash_b64, statement}: {domain: string, hash_b64: string, statement: string}) => {
     let verified = false
     let verifiedByAPI = false
     log && console.log('validate via api', hash_b64)
@@ -225,21 +225,21 @@ const verifyViaStatedApiOrStaticTextFile = async ({domain, hash_b64, statement})
     return {verified, verifiedByAPI}
 }
 
-export const validateAndAddStatementIfMissing: (arg0: {
-    statement: string, hash_b64: string, source_node_id?: string, 
-    verification_method: string, api_key?: string, hidden?: boolean}) => Promise<{existsOrCreated:boolean, tryIncremented:boolean}> = 
+export const validateAndAddStatementIfMissing: ({statement, hash_b64, source_node_id,
+    verification_method, api_key }: {statement: string, hash_b64: string, source_node_id?: number,
+        verification_method?: VerificationMethodDB, api_key?: string, hidden?:boolean }) => Promise<{existsOrCreated:boolean, tryIncremented:boolean}> = 
     ({statement, hash_b64, source_node_id = null, verification_method, api_key, hidden=false }) => 
     (new Promise(async (resolve, reject) => {
     let existsOrCreated = false
     let tryIncremented = false
     try {
-        const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id })
+        const validationResult = validateStatementMetadata({statement, hash_b64, source_node_id})
         const {domain, author, proclaimed_publication_time, tags, 
             content_hash_b64, type, content, supersededStatement } = validationResult
         log && console.log('proclaimed_publication_time', proclaimed_publication_time)
         log && console.log('check if exsits', hash_b64)
-        const result = await statementExists({hash_b64})
-        if (result.rows && result.rows.length > 0){
+        const result = await statementExists({hash_b64}) ?? { rows: [] };
+        if (result.rows.length > 0){
             existsOrCreated = true
             return resolve({existsOrCreated, tryIncremented})
         }
@@ -273,26 +273,54 @@ export const validateAndAddStatementIfMissing: (arg0: {
         if (verified) {
             console.log('verified', verified, verifiedByAPI)
             const dbResult = hidden ?
-            await createHiddenStatement({type: type || statementTypes.statement,
-                domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id, supersededStatement})
-            : await createStatement({type: type || statementTypes.statement,
-                domain, author, statement, proclaimed_publication_time, hash_b64, tags, content, content_hash_b64,
-                verification_method: (verifiedByAPI ? 'api' : 'dns'), source_node_id, supersededStatement})
-            if(dbResult.rows && dbResult.rows[0]){
-                existsOrCreated = true
+                await createHiddenStatement({
+                    type: type || statementTypes.statement,
+                    domain,
+                    author,
+                    statement,
+                    proclaimed_publication_time,
+                    hash_b64,
+                    tags,
+                    content,
+                    content_hash_b64,
+                    verification_method: (verifiedByAPI ? 'api' : 'dns'),
+                    source_node_id: '' + source_node_id,
+                    supersededStatement
+                })
+                : await createStatement({
+                    type: type || statementTypes.statement,
+                    domain,
+                    author,
+                    statement,
+                    proclaimed_publication_time,
+                    hash_b64,
+                    tags,
+                    content,
+                    content_hash_b64,
+                    verification_method: (verifiedByAPI ? 'api' : 'dns'),
+                    source_node_id: '' + source_node_id,
+                    supersededStatement
+                });
+            if (dbResult && dbResult.rows && dbResult.rows[0]) {
+                existsOrCreated = true;
             }
-            if(type && dbResult.rows[0]) {
-                await createDerivedEntity({statement_hash: dbResult.rows[0].hash_b64, 
-                    domain, author, content, type, proclaimed_publication_time: new Date(proclaimed_publication_time * 1000)})
+            if (type && dbResult && dbResult.rows[0]) {
+                await createDerivedEntity({
+                    statement_hash: dbResult.rows[0].hash_b64,
+                    domain,
+                    author,
+                    content,
+                    type,
+                    proclaimed_publication_time: new Date(proclaimed_publication_time * 1000)
+                });
             }
         } else { // could not verify
             if (api_key){
                 return reject(Error('could not verify statement ' + hash_b64 + ' on '+ validationResult.domain))
             } else {
                 const dbResult = await createUnverifiedStatement({statement, author, hash_b64, source_node_id, 
-                    source_verification_method: verification_method})
-                if(dbResult.rows && dbResult.rows[0]){
+                    source_verification_method: verification_method || null})
+                if(dbResult && dbResult.rows && dbResult.rows[0]){
                     return resolve({existsOrCreated, tryIncremented: true})
                 }
             }
@@ -308,21 +336,21 @@ export const validateAndAddStatementIfMissing: (arg0: {
         if(!tryIncremented && !existsOrCreated && !hidden){
             try {
                 const res1 = await checkIfUnverifiedStatmentExists({hash_b64})
-                if(res1.rows && res1.rows[0] && res1.rows[0]){
-                    const res = await updateUnverifiedStatement({hash_b64, increment_verification_retry_count: 1 })
-                    if(res.rows){
-                        tryIncremented = true
+                if (res1 && res1.rows && res1.rows[0]) {
+                    const res = await updateUnverifiedStatement({ hash_b64, increment_verification_retry_count: 1 });
+                    if (res && res.rows) {
+                        tryIncremented = true;
                     } else {
-                        const error = new Error('could not update unverified statement: ' + statement + ' \n ' + hash_b64)
-                        console.error(error)
-                        return reject((error))
+                        const error = new Error('could not update unverified statement: ' + statement + ' \n ' + hash_b64);
+                        console.error(error);
+                        return reject((error));
                     }
-                    return resolve({existsOrCreated, tryIncremented: true})
+                    return resolve({ existsOrCreated, tryIncremented: true });
                 } else {
                     // TODO: replace "_"
                     const res = await createUnverifiedStatement({statement, author : "_", hash_b64, source_node_id, 
-                        source_verification_method: verification_method})
-                    if(res.rows && res.rows[0]){
+                        source_verification_method: verification_method || null})
+                    if(res && res.rows && res.rows[0]){
                         tryIncremented = true
                     }
                 }

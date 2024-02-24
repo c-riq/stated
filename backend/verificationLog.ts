@@ -8,7 +8,7 @@ const ownDomain = process.env.DOMAIN
 
 const verificationRetryScheduleHours = [0, 0.01, 0.05, 0.1, 0.2, 1, 10, 24, 100, 336, 744]
 
-const timeoutWithFalse = (promise, ms) => new Promise((resolve, reject) => {
+const timeoutWithFalse = (promise: () => Promise<any>, ms: number) => new Promise((resolve, reject) => {
     promise()
         .then((r) => {
             log && console.log('result: ', r)
@@ -24,7 +24,7 @@ const timeoutWithFalse = (promise, ms) => new Promise((resolve, reject) => {
     }, ms)
 })
 
-const tryVerifications = ({domain, hash_b64, statement, s}) => new Promise((resolve, reject) => {
+const tryVerifications = ({domain, hash_b64, statement, s}: { domain: string, hash_b64: string, statement: string, s: number }) => new Promise((resolve, reject) => {
     Promise.allSettled([
         timeoutWithFalse(() => verifyViaStatedApi(domain, hash_b64), 0.5 * s * 1000),
         timeoutWithFalse(() => verifyViaStaticTextFile({domain, statement, hash: hash_b64}), 10 * s * 1000),
@@ -36,10 +36,10 @@ const tryVerifications = ({domain, hash_b64, statement, s}) => new Promise((reso
     })
 })
 
-const logVerifications = async (retryIntervalSeconds) => {
+const logVerifications = async (retryIntervalSeconds: number) => {
     try {
         const dbResult = await getStatementsToVerify({n:5, ownDomain})
-        let outdatedVerifications = dbResult.rows
+        let outdatedVerifications = dbResult?.rows || []
         log && console.log('outdated verifications count ', outdatedVerifications.length)
         outdatedVerifications = outdatedVerifications.filter(s => {
             // @ts-ignore
@@ -56,7 +56,8 @@ const logVerifications = async (retryIntervalSeconds) => {
         })
         log && console.log('verifications to check ', outdatedVerifications.length)
 
-        const res = await Promise.allSettled(outdatedVerifications.map(({domain, hash_b64, statement}) =>
+        const res = await Promise.allSettled(outdatedVerifications.map(({domain, hash_b64, statement}:
+            { domain: string, hash_b64: string, statement: string }) =>
             new Promise(async (resolve, reject) => {
                 // prevent DNS throttling
                 await new Promise(resolve => setTimeout(resolve, Math.random() * 0.5 * retryIntervalSeconds * 1000))
@@ -76,7 +77,7 @@ const logVerifications = async (retryIntervalSeconds) => {
     }
 }
 
-const setupSchedule = (retryIntervalSeconds) => {
+const setupSchedule = (retryIntervalSeconds: number) => {
     setInterval(async () => {
         log && console.log('verification log started')
         try {

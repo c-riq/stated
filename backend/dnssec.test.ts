@@ -1,6 +1,7 @@
 
 import {describe, expect, it} from '@jest/globals';
 //import { checkDnssecValidation } from './dnssec';
+// @ts-ignore
 const {checkDnssecValidation} = jest.requireActual("./dnssec");
 
 

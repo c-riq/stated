@@ -1,8 +1,9 @@
 
+import { Pool } from "pg"
 import { DBCallback, checkIfMigrationsAreDone } from "."
 
 
-export const getResponsesFactory = pool => ({ referenced_hash }) => (new Promise((
+export const getResponsesFactory = (pool: Pool) => ({ referenced_hash }: {referenced_hash:string}) => (new Promise((
   resolve: DBCallback<StatementWithSupersedingDB>, reject) => {
 try {
   checkIfMigrationsAreDone()
@@ -29,7 +30,7 @@ try {
 }))
 
 
-export const getDisputesFactory = pool => ({ referenced_hash }) => (new Promise((
+export const getDisputesFactory = (pool: Pool) => ({ referenced_hash }: {referenced_hash:string}) => (new Promise((
   resolve: DBCallback<StatementWithSupersedingDB>, reject) => {
 try {
   checkIfMigrationsAreDone()
