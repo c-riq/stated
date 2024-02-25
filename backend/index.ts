@@ -83,7 +83,7 @@ app.get("*", (req,res)=>{
     res.sendFile(__dirname + '/public/index.html')
 });
 
-app.use((err, req, res, next) => {
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.log(err)
     res.status(500);
     let message = "unknown error"

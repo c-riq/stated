@@ -18,11 +18,9 @@ import { sha256 } from '../utils/hash'
 import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
 import { sendEmail } from './generateEmail';
 import { Button, Checkbox, FormControlLabel } from '@mui/material';
-import { FormProps, prepareStatement } from '../types';
 
 const PollForm = (props:FormProps) => {
     const [showOptionalFields, setShowOptionalFields] = React.useState(false);
-    const province = ''
     const [scopeDescription, setScopeDescription] = React.useState("");
     const [scopeQueryLink, setScopeQueryLink] = React.useState("");
     const [country, setCountry] = React.useState("");
@@ -40,6 +38,7 @@ const PollForm = (props:FormProps) => {
     const [cities, setCities] = React.useState([] as [string, string ,string][])
     const [allowArbitraryVote, setAllowArbitraryVote] = React.useState(undefined as boolean|undefined);
     const [requiredProperty, setRequiredProperty] = React.useState("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [requiredPropertyValue, setRequiredPropertyValue] = React.useState("");
     const [requiredPropertyObserver, setRequiredPropertyObserver] = React.useState("");
 

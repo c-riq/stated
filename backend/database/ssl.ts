@@ -1,6 +1,7 @@
+import { Pool } from "pg";
 import { DBCallback, checkIfMigrationsAreDone } from ".";
 
-export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promise((resolve: DBCallback, reject) => {
+export const matchDomainFactory = (pool: Pool) => ({ domain_substring}:{domain_substring?: string}) => (new Promise((resolve: DBCallback<SSLCertCacheDB&OrganisationVerificationDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -58,8 +59,8 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
     }
   }))
   
-  export const setCertCacheFactory = (pool) => ({ domain, subject_o, subject_c, subject_st, subject_l, subject_serialnumber, subject_cn, subjectaltname,
-    issuer_o, issuer_c, issuer_cn, sha256, validFrom, validTo }) => (new Promise((resolve: DBCallback, reject) => {
+  export const setCertCacheFactory = (pool: Pool) => ({ host, subject_o, subject_c, subject_st, subject_l, subject_serialnumber, subject_cn, subjectaltname,
+    issuer_o, issuer_c, issuer_cn, sha256, valid_from, valid_to }: SSLCertCacheDB) => (new Promise((resolve: DBCallback<any>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`INSERT INTO ssl_cert_cache 
@@ -73,9 +74,9 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
           $14)
   ON CONFLICT (sha256) DO NOTHING
   RETURNING *;`,
-  [domain, subject_o, subject_c, subject_st, subject_l,
-    subject_serialnumber, subject_cn, subjectaltname, sha256, validFrom,
-    validTo, issuer_o, issuer_c, issuer_cn], (error, results) => {
+  [host, subject_o, subject_c, subject_st, subject_l,
+    subject_serialnumber, subject_cn, subjectaltname, sha256, valid_from,
+    valid_to, issuer_o, issuer_c, issuer_cn], (error, results) => {
         if (error) {
           console.log(error)
           console.trace()
@@ -91,7 +92,7 @@ export const matchDomainFactory = (pool) => ({ domain_substring }) => (new Promi
     }
   }))
   
-  export const getCertCacheFactory = (pool) => ({ domain }) => (new Promise((resolve: DBCallback, reject) => {
+  export const getCertCacheFactory = (pool: Pool) => ({ domain }:{domain: string}) => (new Promise((resolve: DBCallback<SSLCertCacheDB>, reject) => {
     if (!domain) return reject(Error('no domain'))
     try {
       checkIfMigrationsAreDone()

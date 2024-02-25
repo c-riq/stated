@@ -11,7 +11,6 @@ import { TextField } from '@mui/material';
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
-import { FormProps, prepareStatement } from '../types';
 
 export const RatingForm = (props:FormProps) => {
 

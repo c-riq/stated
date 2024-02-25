@@ -2,6 +2,8 @@ import * as cp from 'child_process'
 
 import fs from 'node:fs'
 import {sha256} from './hash'
+import { Request } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
 
 const log=false
 
@@ -9,7 +11,7 @@ if (!fs.existsSync(__dirname + '/public/files')){
     fs.mkdirSync(__dirname + '/public/files');
 }
 
-export const saveFile = async(req) => {
+export const saveFile = async(req: Request<any>) => {
     let result
     const b64 = req.body.file.split("data:application/pdf;base64,")[1]
     const buf = Buffer.from(b64, 'base64')
@@ -34,7 +36,7 @@ export const saveFile = async(req) => {
     return result
 }
 
-export const checkPDF = (filePath) => new Promise((resolve, reject) => {
+export const checkPDF = (filePath: string) => new Promise((resolve, reject) => {
     try {
         log && console.log('checkPDF', filePath)
         if (! /^[a-zA-Z0-9\.\-_\/]{1,290}\.pdf$/.test(filePath)) {

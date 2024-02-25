@@ -59,7 +59,7 @@ type StatementDB = {
     domain: string;
     author: string;
     statement: string;
-    proclaimed_publication_time: Date | null;
+    proclaimed_publication_time: Date;
     hash_b64: string;
     referenced_statement: string | null;
     tags: string | null;
@@ -150,13 +150,14 @@ Statement content:
     });
 });
 
+
 describe('isOrganisationVoteQualified', () => {
     const parsedPollStatment = parseStatement({statement: pollStatement, allowNoVersion: true})
     const parsedPoll = parsePoll(parsedPollStatment.content)
     const pollDBObject = {...dummyDBValues,
         statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
-        poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
-        participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
+        poll_hash: '', deadline: parsedPoll.deadline || null, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
+        participants_entity_type: parsedPoll.legalEntity || null, participants_country: parsedPoll.country || null, participants_city: parsedPoll.city || null,
         options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
         required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
         statement_hash: '', proclaimed_publication_time: new Date()
@@ -245,8 +246,8 @@ describe('isPersonVoteQualified', () => {
     const parsedPoll = parsePoll(parsedPollStatment.content)
     const pollDBObject = {...dummyDBValues,
         statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
-        poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
-        participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
+        poll_hash: '', deadline: parsedPoll.deadline || null, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
+        participants_entity_type: parsedPoll.legalEntity || null, participants_country: parsedPoll.country || null, participants_city: parsedPoll.city || null,
         options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
         required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
         statement_hash: '', proclaimed_publication_time: new Date()
@@ -278,7 +279,7 @@ Statement content:
 `
     const parsedVerificationStatment = parseStatement({statement: verificationStatement, allowNoVersion: true})
     const verification = parsePersonVerification(parsedVerificationStatment.content)
-    const statementDBObject: PersonVerificationDB & StatementDB = {...dummyDBValues,
+    const statementDBObject: PersonVerificationDB & StatementDB & {proclaimed_publication_time:Date} = {...dummyDBValues,
         statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
         verified_domain: null && verification.ownDomain, name: verification.name, birth_country: verification.countryOfBirth, birth_city: verification.cityOfBirth,
         foreign_domain: null && verification.foreignDomain, birth_date: verification.dateOfBirth.toDateString(),
@@ -306,8 +307,8 @@ Statement content:
         const parsedPoll = parsePoll(parsedPollStatment.content)
         const pollDBObject = {...dummyDBValues,
             statement: pollStatement, author: parsedPollStatment.author, domain: parsedPollStatment.domain, content: parsedPollStatment.content,
-            poll_hash: '', deadline: parsedPoll.deadline, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
-            participants_entity_type: parsedPoll.legalEntity, participants_country: parsedPoll.country, participants_city: parsedPoll.city,
+            poll_hash: '', deadline: parsedPoll.deadline || null, allow_arbitrary_vote: parsedPoll.allowArbitraryVote,
+            participants_entity_type: parsedPoll.legalEntity || null, participants_country: parsedPoll.country || null, participants_city: parsedPoll.city || null,
             options: parsedPoll.options, required_property: parsedPoll.requiredProperty, required_property_value: parsedPoll.requiredPropertyValue,
             required_property_observer: parsedPoll.requiredPropertyObserver, required_property_domain: null,
             statement_hash: '', proclaimed_publication_time: new Date()

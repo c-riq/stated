@@ -3,7 +3,7 @@ import {parsePersonVerification, parseOrganisationVerification} from './statemen
 
 const log = true
 
-export const createOrgVerification = ({statement_hash, domain: verifier_domain, content }) => (new Promise(async (resolve, reject)=>{
+export const createOrgVerification = ({statement_hash, domain: verifier_domain, content }: { statement_hash: string, domain: string, content: string }) => (new Promise(async (resolve, reject)=>{
     try {
         log && console.log(content)
         const parsedOrganisationVerification = parseOrganisationVerification(content)
@@ -19,8 +19,9 @@ export const createOrgVerification = ({statement_hash, domain: verifier_domain, 
                 return reject(new Error("Missing required fields"))
         }
         const dbResult = await createOrganisationVerification({statement_hash, verifier_domain, verified_domain: domain, 
-            name, foreignDomain, legal_entity_type: legalForm, country, province, city, serialNumber, confidence, department})
-        if(dbResult.rows[0]){
+            name, foreign_domain: foreignDomain, legal_entity_type: legalForm, country, province, city, serial_number: serialNumber,
+            confidence: confidence || null, department: department || null})
+        if(dbResult?.rows[0]){
             return resolve({entityCreated: true})
         }
     }catch(e) {
@@ -30,7 +31,7 @@ export const createOrgVerification = ({statement_hash, domain: verifier_domain, 
     reject(new Error("No organisation verification created"))
 }))
 
-export const createPersVerification = ({statement_hash, domain: verifier_domain, content }) => (new Promise(async (resolve, reject)=>{
+export const createPersVerification = ({statement_hash, domain: verifier_domain, content }: { statement_hash: string, domain: string, content: string }) => (new Promise(async (resolve, reject)=>{
     try {
         log && console.log(content)
         const parsedPersonVerification = parsePersonVerification(content)
@@ -46,10 +47,9 @@ export const createPersVerification = ({statement_hash, domain: verifier_domain,
             !dateOfBirth || (typeof dateOfBirth.getMonth !== 'function')) {
             return reject(new Error("Missing required fields"))
         }
-        const dbResult = await createPersonVerification({statement_hash, verifier_domain, verified_domain: domain, 
-            name, 
-            countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain})        
-        if(dbResult.rows[0]){
+        const dbResult = await createPersonVerification({statement_hash, verifier_domain, verified_domain: domain || null, 
+            name, birth_country: countryOfBirth, birth_city: cityOfBirth, birth_date: dateOfBirth, foreign_domain: foreignDomain || null})        
+        if(dbResult?.rows[0]){
             return resolve({entityCreated: true})
         }
     } catch(e) {

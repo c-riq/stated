@@ -1,4 +1,5 @@
 import { apiQueryString, queryValueToStatementType } from "../utils/searchQuery"
+import { _cb, cb, dnsRes, domainSuggestionResponse, method, nameSuggestionResponse, resDB, validatedResponseHandler, vlogRes } from "./types"
 
 // For demos: backendHost = 'http://'+ window.location.host 
 export const backendHost = process.env.NODE_ENV === 'development' || window.location.host.match(/^localhost.*/) ? (

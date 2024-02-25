@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 enum StatementTypeDB {
     Statement = "statement",
     DisputeStatementAuthenticity = "dispute_statement_authenticity",
@@ -37,7 +38,7 @@ type StatementDB = {
     domain: string;
     author: string;
     statement: string;
-    proclaimed_publication_time: Date | null;
+    proclaimed_publication_time: Date;
     hash_b64: string;
     referenced_statement: string | null;
     tags: string | null;
@@ -178,9 +179,9 @@ type SSLCertCacheDB = {
     issuer_cn: string | null;
     valid_from: Date | null;
     valid_to: Date | null;
-    first_seen: Date | null;
-    last_seen: Date | null;
-    _rank: number | null;
+    first_seen?: Date;
+    last_seen?: Date;
+    _rank?: number;
 };
 
 // extended types

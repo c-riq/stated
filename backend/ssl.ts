@@ -3,7 +3,7 @@ import { validateDomainFormat } from './domainNames/validateDomainFormat'
 import {getCertCache, setCertCache} from './database'
 
 
-export const getOVInfo = ({domain, cacheOnly}) => new Promise(async (resolve, reject) => {
+export const getOVInfo = ({domain, cacheOnly}: {domain: string, cacheOnly: boolean}) => new Promise(async (resolve, reject) => {
     console.log('get SSL OV info for ', domain)
     const cached = await getCertCache({domain})
     if (cached && cached.rows && cached.rows[0] && cached.rows[0].subject_o){
@@ -20,10 +20,10 @@ export const getOVInfo = ({domain, cacheOnly}) => new Promise(async (resolve, re
         const subject = cert && cert.subject 
         const issuer = cert && cert.issuer 
         if (subject && subject.O && subject.C){
-           setCertCache({domain, subject_o: subject.O, subject_l: subject.L, subject_st: subject.ST, subject_c: subject.C, 
+           setCertCache({host: domain, subject_o: subject.O, subject_l: subject.L, subject_st: subject.ST, subject_c: subject.C, 
             subject_cn: subject.CN, subject_serialnumber: subject.serialNumber, subjectaltname: cert.subjectaltname,
             issuer_o: issuer.O, issuer_c: issuer.C, issuer_cn: issuer.CN,
-            sha256: cert.fingerprint256.replace(/:/g,""), validFrom: cert.valid_from, validTo: cert.valid_to})
+            sha256: cert.fingerprint256.replace(/:/g,""), valid_from: cert.valid_from, valid_to: cert.valid_to})
             resolve({...subject, issuer_o: issuer.O, issuer_c: issuer.C, issuer_cn: issuer.CN, domain, sha256: cert.fingerprint256?.replace(/:/g,"")})
         }
         else {
@@ -35,7 +35,7 @@ export const getOVInfo = ({domain, cacheOnly}) => new Promise(async (resolve, re
     }
 })
 
-export const getOVInfoForSubdomains = ({domain, cacheOnly}) => new Promise(async (resolve, reject) => {
+export const getOVInfoForSubdomains = ({domain, cacheOnly}: {domain: string, cacheOnly: boolean}) => new Promise(async (resolve, reject) => {
     if(!validateDomainFormat(domain)){
         resolve({error: 'invalid domain format'})
         return

@@ -13,7 +13,6 @@ import {
 import PublishStatement from "./PublishStatement";
 import { uploadPdf, backendHost } from "../api";
 import { sendEmail } from "./generateEmail";
-import { FormProps, prepareStatement } from "../types";
 
 export const filePath = (hash:string, host:string|undefined) => (host || backendHost) + "/files/" + hash + ".pdf"
 

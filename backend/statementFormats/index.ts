@@ -337,7 +337,10 @@ export const buildPersonVerificationContent = (
 		{name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
 		dateOfBirth, jobTitle, employer, verificationMethod, confidence,
 		picture, reliabilityPolicy}:PersonVerification) => {
-	if(!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) return ""
+	if(!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)){
+		console.log("Missing required fields: ", {name, countryOfBirth, cityOfBirth, dateOfBirth, ownDomain, foreignDomain})
+		return ""
+	}
 	const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i,j)=>[1,2,3].includes(j))
 	let content = "\n" +
 		"\t" + "Type: Person verification" + "\n" +

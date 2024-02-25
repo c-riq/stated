@@ -12,7 +12,6 @@ import { parseStatement, buildStatement,
 import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
 import { sendEmail } from './generateEmail';
-import { FormProps, prepareStatement } from '../types';
 
 const OrganisationVerificationForm = (props:FormProps) => {
     const [country, setCountry] = React.useState("");

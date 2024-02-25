@@ -1,10 +1,11 @@
 
 const log = false;
 
-import { DBCallback, DBErrorCallback, checkIfMigrationsAreDone } from ".";
+import { Pool } from "pg";
+import { DBCallback, checkIfMigrationsAreDone } from ".";
 
 
-export const createRatingFactory = pool => ({ statement_hash, organisation, domain, rating, comment }) => (new Promise((resolve: DBCallback, reject) => {
+export const createRatingFactory = (pool: Pool) => ({ statement_hash, organisation, domain, rating, comment }: Omit<RatingDB, "id">) => (new Promise((resolve: DBCallback<any>, reject) => {
     try {
       checkIfMigrationsAreDone()
       log && console.log('create rating', [statement_hash, organisation, domain, rating, comment])

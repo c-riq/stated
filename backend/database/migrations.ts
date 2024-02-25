@@ -55,11 +55,11 @@ const migrateToVersion = {
 };
 
 const currentCodeVersion = 11;
-const test = process.env.TEST || false
-const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION) || currentCodeVersion
+const test = process.env.TEST || false;
+const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION ?? "") || currentCodeVersion;
 
-const deleteData = process.env.TEST && (process.env.DELETE_DATA=== "true")
-let dataDeleted = false
+const deleteData = process.env.TEST && (process.env.DELETE_DATA === "true");
+let dataDeleted = false;
 
 const testMigrationTableExistence = (pool: Pool) =>
   new Promise((resolve, reject) => {
@@ -142,12 +142,12 @@ export const performMigrations = async (pool: Pool, cb: () => any) => {
       } else {
         const dbVersion = parseInt("" + maxVersion);
         const targetVersion = dbVersion + 1;
-        if (targetVersion > 1 && migrateToVersion[targetVersion]) {
+        if (targetVersion > 1 && migrateToVersion[targetVersion as keyof typeof migrateToVersion]) {
           await backup();
           await transaction(
             (client) =>
               new Promise((resolve, reject) => {
-                const sql = migrateToVersion[targetVersion]["sql"];
+                const sql = migrateToVersion[targetVersion as keyof typeof migrateToVersion]["sql"];
                 console.log(
                   `migrating from ${dbVersion} to version ${targetVersion}`
                 );

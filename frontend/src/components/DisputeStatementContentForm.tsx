@@ -9,8 +9,6 @@ import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 import { getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { FormProps, prepareStatement } from '../types';
-
 
 
 const DisputeStatementContentForm = (props:FormProps & {statementToDisputeContent?: StatementDB | StatementWithDetailsDB}) => {

@@ -7,7 +7,6 @@ import { sha256 } from '../utils/hash';
 import { buildStatement, parseStatement } from '../statementFormats'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
-import { FormProps, prepareStatement } from '../types';
 
 
 const StatementForm = (props:FormProps) => {

@@ -1,10 +1,11 @@
 
 const log = false;
 
+import { Pool } from "pg";
 import { DBCallback, checkIfMigrationsAreDone } from ".";
 
-export const createOrganisationVerificationFactory = (pool) => ({ statement_hash, verifier_domain, verified_domain, 
-    name, legal_entity_type, country, province, city, serialNumber, foreignDomain=null, confidence=null, department=null }) => (new Promise((resolve: DBCallback, reject) => {
+export const createOrganisationVerificationFactory = (pool: Pool) => ({ statement_hash, verifier_domain, verified_domain, 
+  name, legal_entity_type, country, province, city, serial_number, foreign_domain, confidence, department }: Omit<OrganisationVerificationDB, "id">) => (new Promise((resolve: DBCallback<any>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -18,15 +19,15 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
               ON CONFLICT (statement_hash) DO NOTHING
               RETURNING *`,
         [statement_hash, verifier_domain, verified_domain, name, legal_entity_type, country, province, city,
-           serialNumber, foreignDomain, confidence, department], (error, results) => {
-          if (error) {
-            console.log(error)
-            console.trace()
-            return reject(error)
-          } else {
-            return resolve(results)
-          }
-        })
+          serial_number, foreign_domain, confidence, department], (error, results) => {
+              if (error) {
+                console.log(error)
+                console.trace()
+                return reject(error)
+              } else {
+                return resolve(results)
+              }
+            })
     } catch (error) {
       console.log(error)
       console.trace()
@@ -34,9 +35,9 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
     }
   }))
   
-  export const createPersonVerificationFactory = (pool) => ({ statement_hash, verifier_domain, verified_domain,
-     name,
-     countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain }) => (new Promise((resolve: DBCallback, reject) => {
+  export const createPersonVerificationFactory = (pool: Pool) => ({ statement_hash, verifier_domain, verified_domain,
+    name, birth_country, birth_city, birth_date, foreign_domain }: Omit<PersonVerificationDB, "id" | "birth_date"> & {birth_date: Date}) => (
+      new Promise((resolve: DBCallback<any>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -48,7 +49,7 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
                   $6, $7, $8)
               RETURNING *`,
         [statement_hash, verifier_domain, verified_domain, name,
-          countryOfBirth, cityOfBirth, dateOfBirth, foreignDomain], (error, results) => {
+          birth_country, birth_city, birth_date, foreign_domain], (error, results) => {
           if (error) {
             console.log(error)
             console.trace()
@@ -64,7 +65,7 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
     }
   }))
   
-  export const getPersonVerificationsFactory = pool => ({ hash_b64 = null, name = null, domain = null }) => (new Promise((resolve: DBCallback, reject) => {
+  export const getPersonVerificationsFactory = (pool: Pool) => ({ hash_b64, name, domain }: { hash_b64?: string, name?: string, domain?: string }) => (new Promise((resolve: DBCallback<PersonVerificationDB&StatementWithSupersedingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -127,7 +128,8 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
     }
   }));
   
-  export const getOrganisationVerificationsFactory = pool => ({ hash_b64 = null, domain = null, name = null }) => (new Promise((resolve: DBCallback<OrganisationVerificationDB & StatementWithSupersedingDB>, reject) => {
+  export const getOrganisationVerificationsFactory = (pool: Pool) => ({ hash_b64, domain, name }: { hash_b64?: string, domain?: string, name?: string }
+    ) => (new Promise((resolve: DBCallback<OrganisationVerificationDB & StatementWithSupersedingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
       pool.query(`
@@ -191,7 +193,7 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
     }
   }))
   
-  export const getAllVerificationsFactory = pool => () => (new Promise((resolve: DBCallback, reject) => {
+  export const getAllVerificationsFactory = (pool: Pool) => () => (new Promise((resolve: DBCallback<OrganisationVerificationDB & StatementDB>, reject) => {
     try {
       pool.query(`
               SELECT 
@@ -215,11 +217,11 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
     }
   }));
 
-  export const checkIfVerificationExistsFactory = pool => ({hash}) => (new Promise((resolve: DBCallback, reject) => {
+  export const checkIfVerificationExistsFactory = (pool: Pool) => ({hash}: {hash: string}) => (new Promise((resolve: DBCallback<{exists: boolean}>, reject) => {
     try {
       pool.query(`
       SELECT EXISTS (
-        SELECT 
+        SELECT TRUE exists
         FROM organisation_verifications 
         WHERE statement_hash=$1
     );`,[hash], (error, results) => {
@@ -239,7 +241,15 @@ export const createOrganisationVerificationFactory = (pool) => ({ statement_hash
   }));
   
 
-  export const matchNameFactory = pool => ({name_substring}) => (new Promise((resolve: DBCallback, reject) => {
+  export const matchNameFactory = (pool: Pool) => ({name_substring}: {name_substring: string}) => (new Promise((resolve: DBCallback<{
+    verified_domain: string,
+    organisation: string,
+    country: string,
+    state: string,
+    city: string,
+    statement_hash: string,
+    first_verification_time: Date
+  }>, reject) => {
     try {
       pool.query(`
         with regex AS ( SELECT '.*' || $1 || '.*' pattern)

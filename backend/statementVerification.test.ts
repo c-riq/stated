@@ -1,7 +1,8 @@
-import { describe, jest, it, afterEach } from "@jest/globals";
+import { describe, jest, it, afterEach, expect } from "@jest/globals";
+
 
 jest.mock('./database', () => ({
-  statementExists: jest.fn(() => false),
+  statementExists: jest.fn(() => ({rows: []})),
   createStatement: jest.fn(() => ({rows: [1]})),
   updateStatement: jest.fn(() => ({rows: [1]})),
   createUnverifiedStatement: jest.fn(() => ({rows: [1]})),
@@ -9,6 +10,11 @@ jest.mock('./database', () => ({
   createHiddenStatement: jest.fn(() => ({rows: [1]})),
   checkIfUnverifiedStatmentExists: jest.fn(() => ({})),
 }));
+
+enum VerificationMethodDB {
+  Api = "api",
+  Dns = "dns",
+}
 
 import * as _m from "./statementVerification";
 const m = jest.requireActual<typeof _m>("./statementVerification");
@@ -37,12 +43,13 @@ describe("validateAndAddStatementIfMissing", () => {
     const withWrongApiKey = {
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Api,
       api_key: "wrong key",
       hidden: false,
     }
-    expect(m.validateAndAddStatementIfMissing(withWrongApiKey)).rejects.toThrow('could not verify statement hash on _');
+    const promise = m.validateAndAddStatementIfMissing(withWrongApiKey)
+    expect(promise).rejects.toThrow('invalid api key');
     expect(createUnverifiedStatement).toHaveBeenCalledTimes(0);
   });
 
@@ -53,8 +60,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const result = await m.validateAndAddStatementIfMissing({
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: "_" as VerificationMethodDB,
       hidden: false,
     })
     expect(result).toStrictEqual({"existsOrCreated": false, "tryIncremented": true});
@@ -68,8 +75,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const result = await m.validateAndAddStatementIfMissing({
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     })
     expect(result).toStrictEqual({"existsOrCreated": true, "tryIncremented": false});
@@ -84,8 +91,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const result = await m.validateAndAddStatementIfMissing({
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     })
     expect(result).toStrictEqual({"existsOrCreated": true, "tryIncremented": false});
@@ -99,8 +106,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const result = await m.validateAndAddStatementIfMissing({
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     })
     expect(result).toStrictEqual({"existsOrCreated": true, "tryIncremented": false});
@@ -114,8 +121,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const statement = {
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     }
     //expect(m.validateAndAddStatementIfMissing(statement)).rejects.toStrictEqual('mock error');
@@ -132,8 +139,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const statement = {
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     }
     const result = await m.validateAndAddStatementIfMissing(statement);
@@ -148,8 +155,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const statement = {
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     }
     const result = await m.validateAndAddStatementIfMissing(statement);
@@ -163,8 +170,8 @@ describe("validateAndAddStatementIfMissing", () => {
     const statement = {
       statement: "_",
       hash_b64: "hash",
-      source_node_id: "_",
-      verification_method: "_",
+      source_node_id: -1,
+      verification_method: VerificationMethodDB.Dns,
       hidden: false,
     }
     const result = await m.validateAndAddStatementIfMissing(statement);

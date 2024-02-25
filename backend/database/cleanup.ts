@@ -1,9 +1,10 @@
+import { Pool } from "pg";
 import { DBCallback } from ".";
 
 export const deleteSupersededDerivedEntitiesFactory =
-  (pool) =>
+  (pool: Pool) =>
   () =>
-    new Promise((resolve: DBCallback, reject) => {
+    new Promise((resolve: DBCallback<any>, reject) => {
       try {
         pool.query(
           `

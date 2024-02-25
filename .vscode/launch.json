@@ -19,7 +19,7 @@
         },{
             "type": "node",
             "request": "launch",
-            "preLaunchTask": "npm: build - backend",
+            "preLaunchTask": "npm: build - backend && rm *.test.js",
             "cwd": "${workspaceRoot}/backend",
             "console": "integratedTerminal",
             "name": "test-backend",

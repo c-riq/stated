@@ -1,4 +1,4 @@
-import { Pool, QueryResult } from 'pg'
+import { Pool, QueryResult, QueryResultRow } from 'pg'
 import {performMigrations} from './migrations'
 
 const pgHost = process.env.POSTGRES_HOST || "localhost"
@@ -21,7 +21,8 @@ pool.on('error', (error) => {
   console.trace()
 })
 
-export type DBCallback<T = any> = (result?: QueryResult<T>) => void
+export type DBCallback<T extends QueryResultRow> = (result?: QueryResult<T>) => void
+
 export type DBErrorCallback = (error: Error) => void
 
 const log = false

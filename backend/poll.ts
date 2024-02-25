@@ -3,7 +3,7 @@ import {createPoll, getOrganisationVerifications, getPoll,
     createVote, getVotes, updateVote, getObservationsForEntity, getPersonVerifications} from './database'
 import {parseVote, parsePoll, parseStatement, parseObservation} from './statementFormats'
 
-export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new Promise(async (resolve, reject)=>{
+export const parseAndCreatePoll = ({statement_hash, domain, content }: { statement_hash: string, domain: string, content: string }) => (new Promise(async (resolve, reject)=>{
     console.log('createPoll', statement_hash, domain, content)
     try {
         const parsedPoll = parsePoll(content)
@@ -12,9 +12,9 @@ export const parseAndCreatePoll = ({statement_hash, domain, content }) => (new P
             resolve({error: "Invalid deadline date"})
             return
         }
-        const dbResult = await createPoll({ statement_hash, participants_entity_type: legalEntity, 
-            participants_country: country, participants_city: city, deadline })   
-        if(dbResult.rows[0]){
+        const dbResult = await createPoll({ statement_hash, participants_entity_type: legalEntity || null, 
+            participants_country: country || null, participants_city: city || null, deadline: deadline || null })   
+        if(dbResult && dbResult.rows[0]){
             resolve(dbResult)
         }
     } catch (error) {
@@ -57,7 +57,7 @@ export const isOrganisationVoteQualified = async ({vote, poll, organisationVerif
     let noExistingVotesFromAuthor = false
     if (organisationVerification && poll) {
         // TODO: if ownDomain == poll judge, then compare against current time
-        if(!poll.deadline || proclaimed_publication_time <= poll.deadline) {
+        if(!poll.deadline || (proclaimed_publication_time <= poll.deadline)) {
             voteTimeQualified = true
         }
         if( 
@@ -77,14 +77,15 @@ export const isOrganisationVoteQualified = async ({vote, poll, organisationVerif
         }
         if(requiredProperty && requiredPropertyObserver) {
             const [observerName, observerDomain] = requiredProperty.split('@')
-            const observations = (await getObservationsForEntity({name: parsedPollStatement.author, 
-                domain: parsedPollStatement.domain, observerName, observerDomain})).rows
+            const observationsResult = await getObservationsForEntity({name: parsedPollStatement.author, 
+                domain: parsedPollStatement.domain, observerName, observerDomain})
+            const observations = observationsResult?.rows ?? []
             observationsQualified = checkRequiredObservations({requiredProperty, requiredPropertyValue, observations})
         } else {
             observationsQualified = true
         }
-        const dbResultExistingVotes = await getVotes({ poll_hash: poll.hash_b64, ignore_vote_hash: statement_hash, domain, author })
-        noExistingVotesFromAuthor = ! (dbResultExistingVotes.rows.length > 0)
+        const dbResultExistingVotes = await getVotes({ poll_hash: poll.hash_b64, ignore_vote_hash: statement_hash, domain: domain ?? null, author: author ?? null })
+        noExistingVotesFromAuthor = ! (dbResultExistingVotes?.rows?.length ?? 0 > 0)
     }
     const qualified = voteTimeQualified && votingEntityQualified && observationsQualified && noExistingVotesFromAuthor
     return qualified
@@ -100,7 +101,7 @@ export const isPersonVoteQualified = async ({vote, poll, personVerification, pro
     let noExistingVotesFromAuthor = false
     if (personVerification && poll) {
         // TODO: if ownDomain == poll judge, then compare against current time
-        if(proclaimed_publication_time <= poll.deadline) {
+        if(!poll.deadline || (proclaimed_publication_time <= poll.deadline)) {
             voteTimeQualified = true
         }
         if( 
@@ -122,7 +123,7 @@ export const isPersonVoteQualified = async ({vote, poll, personVerification, pro
             observationsQualified = true
         }
         const dbResultExistingVotes = await getVotes({ poll_hash: poll.hash_b64, ignore_vote_hash: statement_hash, domain, author })
-        noExistingVotesFromAuthor = ! (dbResultExistingVotes.rows.length > 0)
+        noExistingVotesFromAuthor = ! ((dbResultExistingVotes?.rows?.length ?? 0) > 0)
     }
     const qualified = voteTimeQualified && votingEntityQualified && observationsQualified && noExistingVotesFromAuthor
     return qualified
@@ -141,15 +142,15 @@ export const parseAndCreateVote = ({statement_hash, domain, author, content, pro
             return reject({error: "Missing required fields"})
         }
         const dbResultOrgVerification = await getOrganisationVerifications({domain, name: author})
-        const organisationVerifications = dbResultOrgVerification.rows
+        const organisationVerifications = dbResultOrgVerification?.rows ?? []
         let organisationVerification = organisationVerifications.find(v => (v.name === author))
 
         const dbResultPersVerification = await getPersonVerifications({domain, name: author})
-        const personVerifications = dbResultPersVerification.rows
+        const personVerifications = dbResultPersVerification?.rows ?? []
         let personVerification = personVerifications.find(v => (v.name === author))
 
         const dbResultPoll = await getPoll({statement_hash: pollHash})
-        const poll = dbResultPoll.rows[0]
+        const poll = dbResultPoll?.rows?.[0]
 
         const organisationVoteQualified = !!(organisationVerification && poll && 
             await isOrganisationVoteQualified({vote: parsedVote, poll, organisationVerification, proclaimed_publication_time, statement_hash, domain, author}))
@@ -167,10 +168,14 @@ export const parseAndCreateVote = ({statement_hash, domain, author, content, pro
             return resolve(dbResultVoteCreation)
         } else {
             const voteExists = await getVotes({ poll_hash: pollHash, vote_hash: statement_hash })
-            if(voteExists.rows[0]) {
+            if(voteExists && voteExists.rows[0]) {
                 try {
                     const updateResult = await updateVote({statement_hash, poll_hash: pollHash, option: vote, domain, qualified })
-                    return resolve(updateResult)
+                    if (updateResult) {
+                        return resolve(updateResult)
+                    } else {
+                        throw ({error: 'vote not created ' + statement_hash})
+                    }
                 }
                 catch (error) {
                     console.log(error)

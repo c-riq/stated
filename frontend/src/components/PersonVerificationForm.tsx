@@ -18,7 +18,6 @@ import { parseStatement, buildStatement,
 import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
 import { sendEmail } from './generateEmail';
-import { FormProps, prepareStatement } from '../types';
 
 const PersonVerificationForm = (props:FormProps) => {
     const [birthCountry, setBirthCountry] = React.useState("");
@@ -52,7 +51,7 @@ const PersonVerificationForm = (props:FormProps) => {
             props.setPublishingMethod(method)
             let date = birthDate.toDate()
             date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-            const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {verifyDomain} : {foreignDomain}), 
+            const content = buildPersonVerificationContent({name: verifyName, ...(ownsDomain ? {ownDomain: verifyDomain} : {foreignDomain}), 
                 cityOfBirth: birthCity, countryOfBirth: birthCountry, dateOfBirth: date})
             if(method === 'represent'){
                 parsePersonVerification(content)
