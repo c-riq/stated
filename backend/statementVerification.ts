@@ -238,7 +238,7 @@ export const validateAndAddStatementIfMissing: ({statement, hash_b64, source_nod
             content_hash_b64, type, content, supersededStatement } = validationResult
         log && console.log('proclaimed_publication_time', proclaimed_publication_time)
         log && console.log('check if exsits', hash_b64)
-        const result = await statementExists({hash_b64}) ?? { rows: [] };
+        const result = (await statementExists({hash_b64})) ?? { rows: [] };
         if (result.rows.length > 0){
             existsOrCreated = true
             return resolve({existsOrCreated, tryIncremented})
