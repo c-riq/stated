@@ -70,12 +70,18 @@ type OrganisationVerification = {
     longitude?: number
     population?: string
 }
+type withOwnDomain = {
+    ownDomain: string
+    foreignDomain?: string
+}
+type withForeignDomain = {
+    foreignDomain: string
+    ownDomain?: string
+}
 type PersonVerification = {
     name: string
     countryOfBirth: string
     cityOfBirth: string
-    ownDomain?: string
-    foreignDomain?: string
     dateOfBirth: Date
     jobTitle?: string
     employer?: string
@@ -83,7 +89,7 @@ type PersonVerification = {
     confidence?: number
     picture?: string
     reliabilityPolicy?: string
-}
+} & (withOwnDomain | withForeignDomain)
 type Vote = {
     pollHash: string
     poll: string
