@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react";
 import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 
-jest.mock('d3-scale', () => ({}));
-jest.mock('d3-shape', () => ({}));
-jest.mock('d3-color', () => ({}));
+jest.mock("d3-scale", () => ({}));
+jest.mock("d3-shape", () => ({}));
+jest.mock("d3-color", () => ({}));
 
 describe("Test", () => {
   test("renders learn react link", () => {
@@ -20,7 +20,7 @@ describe("Test", () => {
     render(
       <BrowserRouter>
         <App />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
     const header = screen.getByText(/statements/i, { selector: "h3" });
     expect(header).toBeInTheDocument();

@@ -5,9 +5,8 @@ import elk from "cytoscape-elk";
 
 import { getSSLOVInfo, backendHost } from "../api";
 
-
 cytoscape.use(elk);
-cytoscape.warnings(false)
+cytoscape.warnings(false);
 export type node = {
   data: {
     id: string;
@@ -30,23 +29,29 @@ export type edge = {
   };
 };
 type props = {
-    organisationVerifications: any[];
-    personVerifications: any[];
-    statement: StatementDB;
-    lt850px: boolean;
-}
-type ssl = {domain: string, O: string, issuer_o: string, issuer_cn: string, sha256: string}
-export const VerificationGraph = (props:props) => {
+  organisationVerifications: any[];
+  personVerifications: any[];
+  statement: StatementDB;
+  lt850px: boolean;
+};
+type ssl = {
+  domain: string;
+  O: string;
+  issuer_o: string;
+  issuer_cn: string;
+  sha256: string;
+};
+export const VerificationGraph = (props: props) => {
   const graphRef = useRef(null);
   const [sslCerts, setSslCerts] = React.useState([] as ssl[]);
   const [fetchedSslCerts, setFetchedSslCerts] = React.useState(false);
 
   useEffect(() => {
     const { organisationVerifications, personVerifications, statement } = props;
-    let nodes:node[] = [];
-    let edges:edge[] = [];
-    let domains:string[] = [];
-    
+    let nodes: node[] = [];
+    let edges: edge[] = [];
+    let domains: string[] = [];
+
     // add verification nodes
 
     [...organisationVerifications, ...personVerifications].forEach(
@@ -58,16 +63,13 @@ export const VerificationGraph = (props:props) => {
           author,
           name,
           hash_b64,
-          type
+          type,
         },
-        i
+        i,
       ) => {
-
-        const sourceParentId = (
-          (verifier_domain) +
-          ":" +
-          author
-        ).replace(/ /g, "_").toLowerCase();
+        const sourceParentId = (verifier_domain + ":" + author)
+          .replace(/ /g, "_")
+          .toLowerCase();
         if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
           domains.push(verifier_domain);
           nodes.push({
@@ -81,7 +83,9 @@ export const VerificationGraph = (props:props) => {
             data: {
               id: sourceParentId + ":" + verifier_domain,
               name:
-                verifier_domain.length > 20 ? verifier_domain.substring(0, 17) + "..." : verifier_domain,
+                verifier_domain.length > 20
+                  ? verifier_domain.substring(0, 17) + "..."
+                  : verifier_domain,
               parent: sourceParentId,
               backgroundColor: "rgba(42,74,103,1)",
             },
@@ -101,7 +105,9 @@ export const VerificationGraph = (props:props) => {
           (verified_domain || foreign_domain) +
           ":" +
           name
-        ).replace(/ /g, "_").toLowerCase();
+        )
+          .replace(/ /g, "_")
+          .toLowerCase();
         if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
           const domain = verified_domain || foreign_domain;
           domains.push(domain);
@@ -123,10 +129,12 @@ export const VerificationGraph = (props:props) => {
           nodes.push({
             data: {
               id: targetParentId + ":" + name,
-              name:
-                name.length > 20 ? name.substring(0, 17) + "..." : name,
+              name: name.length > 20 ? name.substring(0, 17) + "..." : name,
               parent: targetParentId,
-              backgroundColor: type === 'person_verification' ? "rgba(80,74,50,1)" : "rgba(42,74,103,1)",
+              backgroundColor:
+                type === "person_verification"
+                  ? "rgba(80,74,50,1)"
+                  : "rgba(42,74,103,1)",
             },
           });
         }
@@ -139,22 +147,20 @@ export const VerificationGraph = (props:props) => {
             href: `${backendHost}/statements/${hash_b64}`,
           },
         });
-      }
+      },
     );
 
-    const sourceParentId = (statement.domain + ":" + statement.author).replace(
-      / /g,
-      "_"
-    ).toLowerCase();
-    const targetParentId = ("statement:" + statement.hash_b64).replace(
-      / /g,
-      "_"
-    ).toLowerCase();
+    const sourceParentId = (statement.domain + ":" + statement.author)
+      .replace(/ /g, "_")
+      .toLowerCase();
+    const targetParentId = ("statement:" + statement.hash_b64)
+      .replace(/ /g, "_")
+      .toLowerCase();
 
     // add statement node
-    
-    if (statement.domain && statement.author){
-        if(!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
+
+    if (statement.domain && statement.author) {
+      if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
         domains.push(statement.domain);
         nodes.push({
           data: {
@@ -168,23 +174,29 @@ export const VerificationGraph = (props:props) => {
         nodes.push({
           data: {
             id: sourceParentId + ":" + statement.domain,
-            name: statement.domain.length > 20 ? statement.domain.substring(0, 17) + "..." : statement.domain,
+            name:
+              statement.domain.length > 20
+                ? statement.domain.substring(0, 17) + "..."
+                : statement.domain,
             backgroundColor: "rgba(42,74,103,1)",
             parent: sourceParentId,
           },
         });
         nodes.push({
           data: {
-            id: sourceParentId + ":" + statement.author.replace(
-              / /g,
-              "_"
-            ).toLowerCase(),
-            name: statement.author.length > 20 ? statement.author.substring(0, 17) + "..." : statement.author,
+            id:
+              sourceParentId +
+              ":" +
+              statement.author.replace(/ /g, "_").toLowerCase(),
+            name:
+              statement.author.length > 20
+                ? statement.author.substring(0, 17) + "..."
+                : statement.author,
             backgroundColor: "rgba(42,74,103,1)",
             parent: sourceParentId,
           },
         });
-      };
+      }
       if (!nodes.map((n) => n?.data?.id).includes(targetParentId)) {
         nodes.push({
           data: {
@@ -213,8 +225,8 @@ export const VerificationGraph = (props:props) => {
               statement.content?.length > 20
                 ? statement.content?.substring(0, 17) + "..."
                 : statement.content,
-                backgroundColor: "rgba(42,42,42,1)",
-                parent: targetParentId,
+            backgroundColor: "rgba(42,42,42,1)",
+            parent: targetParentId,
           },
         });
       }
@@ -229,42 +241,59 @@ export const VerificationGraph = (props:props) => {
       });
     }
 
-    [...new Set(sslCerts)].filter(d=>d?.domain && d?.O && (d.issuer_o || d.issuer_cn)).forEach((d) => {
-      const issuer = d.issuer_o || d.issuer_cn
-      const sourceParentId = "CA:" + issuer.replace(/ /g, "_").toLowerCase();
-      const {O, domain} = d
-      const baseDomain = domain.replace(/^stated.|^www./,'')
-      const targetParentId = (baseDomain + ":" + O).replace(/ /g, "_").toLowerCase();
-      if (nodes.map((n) => n?.data?.id).includes(targetParentId)) {
-      if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
-        nodes.push({
-          data: {
-            id: sourceParentId,
-            name: issuer?.length > 20 ? issuer?.substring(0, 17) + "..." : issuer
-          }})
+    [...new Set(sslCerts)]
+      .filter((d) => d?.domain && d?.O && (d.issuer_o || d.issuer_cn))
+      .forEach((d) => {
+        const issuer = d.issuer_o || d.issuer_cn;
+        const sourceParentId = "CA:" + issuer.replace(/ /g, "_").toLowerCase();
+        const { O, domain } = d;
+        const baseDomain = domain.replace(/^stated.|^www./, "");
+        const targetParentId = (baseDomain + ":" + O)
+          .replace(/ /g, "_")
+          .toLowerCase();
+        if (nodes.map((n) => n?.data?.id).includes(targetParentId)) {
+          if (!nodes.map((n) => n?.data?.id).includes(sourceParentId)) {
+            nodes.push({
+              data: {
+                id: sourceParentId,
+                name:
+                  issuer?.length > 20
+                    ? issuer?.substring(0, 17) + "..."
+                    : issuer,
+              },
+            });
+          }
+
+          edges.push({
+            data: {
+              id: sourceParentId + "-" + targetParentId,
+              source: sourceParentId,
+              target: targetParentId,
+              name: "SSL:" + d.sha256?.substring(0, 5),
+              href: "https://crt.sh/?sha256=" + d.sha256,
+            },
+          });
         }
-
-      edges.push({
-        data: {
-          id: sourceParentId + "-" + targetParentId,
-          source: sourceParentId,
-          target: targetParentId,
-          name: "SSL:" + d.sha256?.substring(0, 5),
-          href: "https://crt.sh/?sha256=" + d.sha256,
-        },
       });
-      }
-    });
 
-    if(!fetchedSslCerts && domains.length > 0 && domains[0]){
+    if (!fetchedSslCerts && domains.length > 0 && domains[0]) {
       const uniqueDomains = [...new Set(domains)];
       uniqueDomains.forEach((domain) => {
-        getSSLOVInfo(domain, res  => {
-          const newCerts = res?.result?.filter((r:PromiseSettledResult<any>)=> r.status ="fulfilled").map((r:PromiseFulfilledResult<any>)=>r.value);
-          if (res?.result?.length > 0) {
-            setSslCerts([...sslCerts, ...newCerts]);
-          }
-      },true);});
+        getSSLOVInfo(
+          domain,
+          (res) => {
+            const newCerts = res?.result
+              ?.filter(
+                (r: PromiseSettledResult<any>) => (r.status = "fulfilled"),
+              )
+              .map((r: PromiseFulfilledResult<any>) => r.value);
+            if (res?.result?.length > 0) {
+              setSslCerts([...sslCerts, ...newCerts]);
+            }
+          },
+          true,
+        );
+      });
       setFetchedSslCerts(true);
     }
 
@@ -357,31 +386,39 @@ export const VerificationGraph = (props:props) => {
       }
     });
     cy.on("mouseover", "edge", () =>
-      document.body.setAttribute("style", "cursor: pointer;")
+      document.body.setAttribute("style", "cursor: pointer;"),
     );
     cy.on("mouseout", "edge", () =>
-      document.body.setAttribute("style", "cursor: auto;")
+      document.body.setAttribute("style", "cursor: auto;"),
     );
     cy.layout({
-        // @ts-ignore
-        directed: true,
-        name: "elk",
-        rankDir: "LR",
-        spacingFactor: 1.5,
-        padding: 20,
-        //roots: "#CA",
-        elk: {
-          algorithm: "layered",
-          "elk.direction": "RIGHT",
-          "spacing.nodeNodeBetweenLayers": 80,
-        },
+      // @ts-ignore
+      directed: true,
+      name: "elk",
+      rankDir: "LR",
+      spacingFactor: 1.5,
+      padding: 20,
+      //roots: "#CA",
+      elk: {
+        algorithm: "layered",
+        "elk.direction": "RIGHT",
+        "spacing.nodeNodeBetweenLayers": 80,
+      },
     }).run();
   }, [props, sslCerts, setSslCerts, fetchedSslCerts]);
 
   return (
     <Fragment>
       <h3>Identity Verification Graph</h3>
-      <div ref={graphRef} style={{ width: "100%", height: "50vh", backgroundColor: "#ffffff", borderRadius: '8px'}}></div>
+      <div
+        ref={graphRef}
+        style={{
+          width: "100%",
+          height: "50vh",
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+        }}
+      ></div>
     </Fragment>
   );
 };

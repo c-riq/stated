@@ -2,7 +2,6 @@
   text-align: center;
 }
 
-
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
@@ -10,7 +9,7 @@
 }
 
 .App-main {
-  background-color: rgba(238,238,238,1);
+  background-color: rgba(238, 238, 238, 1);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -23,9 +22,10 @@
   margin-bottom: 16px;
 }
 
-.statement,a {
-    text-decoration: none;
-    color: black
+.statement,
+a {
+  text-decoration: none;
+  color: black;
 }
 
 /*drag drop*/

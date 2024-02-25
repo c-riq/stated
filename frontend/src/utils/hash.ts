@@ -1,17 +1,21 @@
-
-import {Buffer} from 'buffer';
+import { Buffer } from "buffer";
 
 export const sha256 = async (input: string) => {
-    var enc = new TextEncoder(); // utf-8
-    const buf = enc.encode(input)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buf)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hashB64 = Buffer.from(hashArray).toString('base64');
-    const urlSafe = hashB64.replace(/=/g, '').replace(/\+/g, '-')
-        .replace(/\//g, '_')
-    return urlSafe
-}
+  var enc = new TextEncoder(); // utf-8
+  const buf = enc.encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashB64 = Buffer.from(hashArray).toString("base64");
+  const urlSafe = hashB64
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+  return urlSafe;
+};
 
 export const fromUrlSafe = (urlSafe: string) => {
-    return urlSafe.replace(/-/g, "+").replace(/_/g, "/") + '='.repeat(urlSafe.length % 4);
-}
+  return (
+    urlSafe.replace(/-/g, "+").replace(/_/g, "/") +
+    "=".repeat(urlSafe.length % 4)
+  );
+};
