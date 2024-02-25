@@ -9,7 +9,7 @@ type statement = {
   content: string;
   content_hash_b64: string;
   verification_method?: string;
-  source_node_id?: string;
+  source_node_id: number | null;
   supersededStatement?: string;
 };
 

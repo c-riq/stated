@@ -284,7 +284,7 @@ export const validateAndAddStatementIfMissing: ({statement, hash_b64, source_nod
                     content,
                     content_hash_b64,
                     verification_method: (verifiedByAPI ? 'api' : 'dns'),
-                    source_node_id: '' + source_node_id,
+                    source_node_id: source_node_id,
                     supersededStatement
                 })
                 : await createStatement({
@@ -298,7 +298,7 @@ export const validateAndAddStatementIfMissing: ({statement, hash_b64, source_nod
                     content,
                     content_hash_b64,
                     verification_method: (verifiedByAPI ? 'api' : 'dns'),
-                    source_node_id: '' + source_node_id,
+                    source_node_id: source_node_id,
                     supersededStatement
                 });
             if (dbResult && dbResult.rows && dbResult.rows[0]) {
