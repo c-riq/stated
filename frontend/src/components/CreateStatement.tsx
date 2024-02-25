@@ -33,7 +33,6 @@ import StatementForm from './StatementForm';
 import { BountyForm } from './BountyForm';
 import { Chip, Link } from '@mui/material';
 import ObservationForm from './ObservationForm';
-import { publishingMethod } from '../types';
 
 type Props = {
     lt850px: boolean,

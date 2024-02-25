@@ -24,9 +24,9 @@ import { statementTypes, parsePDFSigning, parseStatement,
     parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
     parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
 
-import {VerificationGraph} from './VerificationGraph'
+import { VerificationGraph } from './VerificationGraph'
 
-import {filePath, getWorkingFileURL} from './SignPDFForm'
+import { getWorkingFileURL } from './SignPDFForm'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
@@ -86,7 +86,7 @@ const StatementDetail = (props:props) => {
             setHash(hashInURL)
             setDataFetched(false)
         }
-    }, [hashInURL])
+    }, [hash, hashInURL])
 
     React.useEffect(() => { if(!dataFetched) {
         getStatement(hash, s => {
@@ -159,11 +159,6 @@ const StatementDetail = (props:props) => {
         }
     }, [statement])
 
-    let fileURL = ""
-    if (statement && (statement.type === statementTypes.signPdf) && statement.content) {
-        const parsedSigning = parsePDFSigning(statement.content)
-        fileURL = filePath(parsedSigning.hash, undefined)
-    }
     if (statementCollision) return (
         <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
@@ -256,19 +251,19 @@ const StatementDetail = (props:props) => {
                 </>
             ))}
             {statement?.type === statementTypes.observation && (parsedStatement as Observation)?.subjectReference && 
-                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as Observation).subjectReference}`} target='_blank'>
+                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as Observation).subjectReference}`} target='_blank' rel="noreferrer">
                 <OpenInNewIcon style={{height: '14px'}} />View referenced verification statement</a></div>)
             }
             {statement?.type === statementTypes.vote && (parsedStatement as Vote)?.pollHash && 
-                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as Vote).pollHash}`} target='_blank'>
+                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as Vote).pollHash}`} target='_blank' rel="noreferrer">
                 <OpenInNewIcon style={{height: '14px'}} />View referenced poll statement</a></div>)
             }
             {statement?.type === statementTypes.poll && (parsedStatement as Poll)?.scopeQueryLink && 
-                (<div><a style={{color: '#1976d2'}} href={(parsedStatement as Poll).scopeQueryLink} target='_blank'>
+                (<div><a style={{color: '#1976d2'}} href={(parsedStatement as Poll).scopeQueryLink} target='_blank' rel="noreferrer">
                 <OpenInNewIcon style={{height: '14px'}} />View referenced query defining who can participate</a></div>)
             }
             {statement?.type === statementTypes.response && (parsedStatement as ResponseContent)?.hash && 
-                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as ResponseContent).hash}`} target='_blank'>
+                (<div><a style={{color: '#1976d2'}} href={`/statements/${(parsedStatement as ResponseContent).hash}`} target='_blank' rel="noreferrer">
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a></div>)
             }
             {responses.length > 0 && responses.map((s,i) => (

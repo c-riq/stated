@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 enum StatementTypeDB {
     Statement = "statement",
     DisputeStatementAuthenticity = "dispute_statement_authenticity",

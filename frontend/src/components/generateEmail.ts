@@ -1,4 +1,3 @@
-import { FormProps } from "../types"
 
 const generateEmail = ({content, author}:{content:string, author:string}) => {
     const email = `stated@${window.location.host.replace('stated.','')}`

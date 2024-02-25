@@ -10,8 +10,6 @@ import { sendEmail } from './generateEmail';
 import { getNameSuggestions, getStatement } from '../api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Autocomplete, Box } from '@mui/material';
-import { FormProps, prepareStatement } from '../types';
-
 
 
 const ObservationForm = (props:FormProps) => {

@@ -14,8 +14,6 @@ import { sendEmail } from './generateEmail';
 import { TextField } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { getStatement } from '../api';
-import { FormProps, prepareStatement } from '../types';
-
 
 export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64: string}}) => {
 
@@ -106,7 +104,7 @@ export const VoteForm = (props:FormProps & {poll?: {statement: string, hash_b64:
         {
         pollStatement && (pollStatement as StatementDB)?.content
         ? 
-            <a style={{color: '#1976d2'}} href={`/statements/${(pollStatement as StatementDB).hash_b64}`} target='_blank'>
+            <a style={{color: '#1976d2'}} href={`/statements/${(pollStatement as StatementDB).hash_b64}`} target='_blank' rel="noreferrer">
                 <OpenInNewIcon style={{height: '14px'}} />View referenced statement</a>
         : 
             <div>No statement found.</div>

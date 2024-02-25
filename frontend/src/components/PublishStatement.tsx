@@ -5,7 +5,6 @@ import EmailIcon from '@mui/icons-material/Email';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DnsIcon from '@mui/icons-material/Dns';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import { prepareStatement } from '../types';
 
 type props = {
     serverTime: Date,

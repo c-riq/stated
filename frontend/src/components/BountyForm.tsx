@@ -8,7 +8,6 @@ import FormControl from '@mui/material/FormControl';
 import { parseStatement, parseBounty, buildStatement, buildBounty } from '../statementFormats'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
-import { FormProps, prepareStatement } from '../types';
 
 export const BountyForm = (props:FormProps) => {
 
