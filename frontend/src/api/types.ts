@@ -1,26 +1,27 @@
+import { QueryResult, QueryResultRow } from "pg"
 
-type method = 'GET' | 'POST' | 'PUT' | 'DELETE'
-type resDB<T extends QueryResultRow> = {
+export type method = 'GET' | 'POST' | 'PUT' | 'DELETE'
+export type resDB<T extends QueryResultRow> = {
         statements: QueryResult<T>['rows'],
         time: string
     }
-type cb<T> = (arg0:T[]|undefined) => void
-type validatedResponseHandler<T> = (arg0:T)=>void
-type _cb = (arg0:any)=>void
+export type cb<T> = (arg0:T[]|undefined) => void
+export type validatedResponseHandler<T> = (arg0:T)=>void
+export type _cb = (arg0:any)=>void
 
-type dnsRes = {
+export type dnsRes = {
     records:string[]
 }
-type vlogRes = {
+export type vlogRes = {
     result:VerificationLogDB[]
 }
-type domainSuggestionResponse = {
+export type domainSuggestionResponse = {
     result: {
         domain: string,
         organisation: string
     }[]
 }
-type nameSuggestionResponse = {
+export type nameSuggestionResponse = {
     result: {
         domain: string,
         organisation: string,
