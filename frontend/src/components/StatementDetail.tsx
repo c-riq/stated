@@ -59,7 +59,6 @@ const StatementDetail = (props:props) => {
     const [personVerifications, setPersonVerifications] = React.useState([] as PersonVerificationDB[]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
-    const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
 
     const hashInURL = useParams().statementId || ''
     const [hash, setHash] = React.useState(hashInURL)
@@ -67,11 +66,6 @@ const StatementDetail = (props:props) => {
     const queryParams = new URLSearchParams(search)
     const key = queryParams.get('key')
     const algorithm = queryParams.get('algorithm')
-
-    const deleteStatement = () => {
-        console.log('delete statement')
-        setOpenDeleteDialog(true)
-    }
 
     const clearState = () => {
         setVotes([])
@@ -216,7 +210,7 @@ const StatementDetail = (props:props) => {
                             </IconButton>
                         </Tooltip>
                     </RouterLink>
-                    <ConfirmActionWithApiKey statementHash={hash} open={openDeleteDialog} statement={statement}/>
+                    <ConfirmActionWithApiKey statementHash={hash} statement={statement}/>
                 </div>
             </CompactStatementSmall>
             {statement && ([statementTypes.bounty, statementTypes.statement, statementTypes.signPdf,

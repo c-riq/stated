@@ -7,11 +7,10 @@ import { deleteStatement } from '../api';
 type props = {
     statementHash: string,
     statement: StatementDB
-    open: boolean
 }
 
 export const ConfirmActionWithApiKey = (props: props) => {
-    const [open, setOpen] = React.useState(props.open);
+    const [open, setOpen] = React.useState(false);
     const [apiKey, setApiKey] = React.useState('');
     const [error, setError] = React.useState('');
 
