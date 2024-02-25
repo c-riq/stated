@@ -43,7 +43,7 @@
     "start": "react-scripts start",
     "build": "npm run copyFilesFromBackend && CI=false react-scripts build && rm -rf ../backend/public/* && cp -r build/* ../backend/public/ && rm -f ../backend/public/**/*.map && npm run copyFilesToBackend",
     "copyFilesToBackend": "cp -r ./src/statementFormats/*.ts ../backend/statementFormats/ & rm -rf ../backend/constants/* && cp ./src/constants/* ../backend/constants/",
-    "copyFilesFromBackend": "rm -rf ./src/api/dbTypes.d.ts && cp ../backend/database/dbTypes.d.ts ./src/api",
+    "copyFilesFromBackend": "rm -rf ./src/api/dbTypes.ts && cp ../backend/database/dbTypes.ts ./src/api",
     "test": "react-scripts test",
     "e2e": "playwright test --project=chromium",
     "e2e:ui": "playwright test --project=chromium --ui",
