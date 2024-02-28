@@ -115,7 +115,7 @@ type PDFSigning = {
 type Rating = {
     subjectName: string
     subjectReference: string
-    rating: string
+    rating: number
     comment?: string
 }
 type Bounty = {

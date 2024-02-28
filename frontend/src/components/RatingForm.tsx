@@ -2,11 +2,8 @@ import React from 'react'
 
 import { sha256 } from '../utils/hash';
 
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
-import { TextField } from '@mui/material';
+import { Rating, TextField, Typography } from '@mui/material';
 
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import PublishStatement from './PublishStatement';
@@ -16,15 +13,13 @@ export const RatingForm = (props:FormProps) => {
 
     const [subjectName, setSubjectName] = React.useState("");
     const [subjectReference, setSubjectReference] = React.useState("");
-    const [rating, setRating] = React.useState("");
+    const [rating, setRating] = React.useState(null as null | number);
     const [comment, setComment] = React.useState("");
-
-    const options = ["1/5 Stars", "2/5 Stars", "3/5 Stars", "4/5 Stars", "5/5 Stars"]
 
     const prepareStatement:prepareStatement = ({method})  => {
         try {
             props.setPublishingMethod(method)
-            const content = buildRating({subjectName, subjectReference, rating, comment})
+            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment})
             if(method === 'represent'){
                 parseRating(content)
                 sendEmail({content, props})
@@ -40,9 +35,6 @@ export const RatingForm = (props:FormProps) => {
             props.setAlertMessage('Error: ' + (e?.message??''))
             props.setisError(true)
         }
-    }
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRating(event.target.value)
     }
         
     return (
@@ -66,14 +58,14 @@ export const RatingForm = (props:FormProps) => {
             margin="normal"
             sx={{marginBottom: "12px"}}
         />
-
-        <div style={{marginTop: "12px", marginBottom:"12px"}}> <h5>Your rating: </h5> </div>
-        <RadioGroup
+        <Typography component="legend">Your rating</Typography>
+        <Rating
+            name="simple-controlled"
             value={rating}
-            onChange={handleChange}>
-            {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
-        ))}
-        </RadioGroup>
+            onChange={(event, newValue) => {
+                setRating(newValue);
+            }}
+        />
 
         <TextField
                     id="comment"

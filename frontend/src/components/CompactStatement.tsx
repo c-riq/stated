@@ -1,5 +1,5 @@
 import PlusOneIcon from '@mui/icons-material/PlusOne';
-import { Button, Chip, Tooltip } from "@mui/material";
+import { Button, Chip, Rating, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
 import { timeSince } from '../utils/time'
 
@@ -26,6 +26,20 @@ const highlightedStatement = (text: string, type: string, adjustColor=false) => 
     }
     if (type === statementTypes.rating) {
         regex = ratingKeys
+        const parts = text.split(new RegExp(regex, 'g'));
+        return <span>{parts.map((v, i) =>
+            <span key={i}><span style={regex.test(v) ?
+                { fontWeight: '200', color: 'rgb(58,58,58)', fontSize: '13px' } :
+                { fontWeight: '550', color: highlightColor }}>
+                {(['1/5 Stars', '2/5 Stars', '3/5 Stars', '4/5 Stars', '5/5 Stars'].includes(v)) ?
+                    (<Rating name="read-only" size="small" value={parseInt(v[0])} readOnly />)
+                :
+                (regex.test(v) ? v.replace(/: $/, ':') : v)
+                }
+            </span>
+                {regex.test(v) ? ' ' : ''}
+            </span>)
+        } </span>;
     }
     if (type === statementTypes.boycott) {
         regex = BoycottKeys
