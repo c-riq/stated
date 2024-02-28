@@ -123,7 +123,9 @@ const ObservationForm = (props:FormProps) => {
                 ["Q1054766-P127","Uses this public 1024 bit RSA key"],
                 ["P463","Is a member of"],
                 ["Q562566","Breached this contract"],
-                ["P6782","ROR ID"] // identifier for the Research Organization Registry
+                ["P6782","ROR ID"], // identifier for the Research Organization Registry
+                ["P127","Owned by"],
+                ["P1709","Is the same as"],
             ]}
             autoHighlight
             getOptionLabel={(option) => option ? option[1] : ''}
