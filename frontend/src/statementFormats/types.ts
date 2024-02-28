@@ -113,8 +113,8 @@ type PDFSigning = {
     hash: string
 }
 type Rating = {
-    organisation: string
-    domain: string
+    subjectName: string
+    subjectReference: string
     rating: string
     comment?: string
 }

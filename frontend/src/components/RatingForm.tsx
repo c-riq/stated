@@ -14,8 +14,8 @@ import { sendEmail } from './generateEmail';
 
 export const RatingForm = (props:FormProps) => {
 
-    const [organisation, setOrganisation] = React.useState("");
-    const [domain, setDomain] = React.useState("");
+    const [subjectName, setSubjectName] = React.useState("");
+    const [subjectReference, setSubjectReference] = React.useState("");
     const [rating, setRating] = React.useState("");
     const [comment, setComment] = React.useState("");
 
@@ -24,7 +24,7 @@ export const RatingForm = (props:FormProps) => {
     const prepareStatement:prepareStatement = ({method})  => {
         try {
             props.setPublishingMethod(method)
-            const content = buildRating({organisation, domain, rating, comment})
+            const content = buildRating({subjectName, subjectReference, rating, comment})
             if(method === 'represent'){
                 parseRating(content)
                 sendEmail({content, props})
@@ -49,20 +49,20 @@ export const RatingForm = (props:FormProps) => {
         <FormControl sx={{width: "100%"}}>
         
         <TextField
-            id="Name of organisation to be rated"
+            id="Name of the organisation, product or service to be rated"
             variant="outlined"
             placeholder='Walmart Inc.'
-            label="Name of organisation to be rated"
-            onChange={e => { setOrganisation(e.target.value) }}
+            label="Name of the organisation, product or service to be rated"
+            onChange={e => { setSubjectName(e.target.value) }}
             margin="normal"
             sx={{marginTop: "12px"}}
         />
         <TextField
-            id="domain of organisation to be rated (optional)"
+            id="URL that identifies the subject (optional)"
             variant="outlined"
             placeholder='walmart.com'
-            label="Domain / URL of organisation (optional)"
-            onChange={e => { setDomain(e.target.value) }}
+            label="URL that identifies the subject (optional)"
+            onChange={e => { setSubjectReference(e.target.value) }}
             margin="normal"
             sx={{marginBottom: "12px"}}
         />

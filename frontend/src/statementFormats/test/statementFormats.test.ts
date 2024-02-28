@@ -282,8 +282,8 @@ Time: Tue, 18 Apr 2023 18:20:26 GMT
 Format version: 4
 Statement content: 
 	Type: Rating
-	Organisation name: AMBOSS GmbH
-	Organisation domain: amboss.com
+	Subject name: AMBOSS GmbH
+	URL that identifies the subject: amboss.com
 	Our rating: 5/5 Stars
 `
     const parsedStatement = parseStatement({ statement: rating })
@@ -293,16 +293,16 @@ Statement content:
 })
 
 test('rating build & parse function compatibility: input=parse(build(input))', () => {
-    const [organisation, domain, comment] = Array.from(
+    const [subjectName, subjectReference, comment] = Array.from(
         { length: 3 },
         randomUnicodeString
     )
     const ratingInt = Math.ceil(Math.random() * 5)
     const rating = `${ratingInt}/5 Stars`
-    const ratingContent = buildRating({ organisation, domain, rating, comment })
+    const ratingContent = buildRating({ subjectName, subjectReference, rating, comment })
     const parsedRating = parseRating(ratingContent)
-    expect(parsedRating.organisation).toBe(organisation)
-    expect(parsedRating.domain).toBe(domain)
+    expect(parsedRating.subjectName).toBe(subjectName)
+    expect(parsedRating.subjectReference).toBe(subjectReference)
     expect(parsedRating.rating).toBe('' + ratingInt)
     expect(parsedRating.comment).toBe(comment)
 })
