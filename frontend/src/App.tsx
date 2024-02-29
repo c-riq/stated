@@ -23,6 +23,7 @@ import { CenterModal } from './components/CenterModal';
 import { Layout } from './components/Layout';
 import { backwardsCompatibility, statementTypeQueryValues, updateQueryString } from './utils/searchQuery';
 import Ratings from './components/Ratings';
+import RatingList from './components/RatingList';
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -229,6 +230,7 @@ function App() {
           <Route path='/full-verification-graph' element={<FullVerificationGraph />} />
           <Route path='/full-network-graph' element={<FullNetworkGraph/>} />
           <Route path='/aggregated-ratings' element={(<Ratings lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} />
+          <Route path='/rating-list' element={(<RatingList lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} />
       </Routes>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */
