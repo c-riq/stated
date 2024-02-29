@@ -1,4 +1,4 @@
-import PlusOneIcon from '@mui/icons-material/PlusOne';
+import Reviews from '@mui/icons-material/Reviews';
 import { Button, Rating } from "@mui/material";
 import { Link } from "react-router-dom";
 import { styled } from '@mui/material/styles';
@@ -25,15 +25,15 @@ export const CompactRating = (props: {
     const avg = r.average_rating ? parseFloat('' + r.average_rating).toFixed(2) : '';
     return (
         <div key={i} style={{ display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin: "1%", borderRadius: 8 }}>
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "start" }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <Link to="/create-statement">
                     <Button onClick={() => {return }} variant='contained'
                         sx={{ backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>
-                        <PlusOneIcon />
+                        <Reviews />
                     </Button>
                 </Link>
             </div>
-            <Link to={"/rating/" + r.subject_reference} style={{ flexGrow: 1 }} onClick={() => { return }} >
+            <Link to={`/?search_query=subject%20name:%20${r.subject_name}&types=Ratings` + r.subject_reference} style={{ flexGrow: 1 }} onClick={() => { return }} >
                 <div className="statement"
                     // @ts-ignore 
                     style={{ padding: "10px", margin: "10px", width: "100%", textAlign: "left", flexGrow: 1, "a:textDecoration": 'none' }} key={i}>
