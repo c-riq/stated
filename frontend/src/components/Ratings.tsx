@@ -17,7 +17,7 @@ const Ratings = (props:props) => {
                 setRatings(result)
             }
         })
-    }, [])
+    }, [subjectNameFilter])
     console.log(ratings)
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8 }}>
@@ -27,7 +27,7 @@ const Ratings = (props:props) => {
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {ratings && ratings.length === 0 && (<div style={{marginTop: '50px'}}>no results found.</div>)}
                     {ratings && ratings.length > 0 && ratings.map((r,i) => {
-                        return (<CompactRating i={''+i} r={r} rateSubject={props.rateSubject}/>)
+                        return (<CompactRating key={'' + i} i={''+i} r={r} rateSubject={props.rateSubject}/>)
                     }
                 )}
             </div>

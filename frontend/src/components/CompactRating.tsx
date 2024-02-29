@@ -49,7 +49,7 @@ export const CompactRating = (props: {
                     <div style={{flexGrow: 1}}>
                         {[1,2,3,4,5].reverse().map((i) => {
                             return (
-                                <div style={{ display: "flex", flexDirection: "row", justifyContent: "start", alignItems: "center" }}>
+                                <div key={''+i} style={{ display: "flex", flexDirection: "row", justifyContent: "start", alignItems: "center" }}>
                                     <div style={{paddingRight: '6px'}}>{i}</div>
                                     <div style={{flexGrow: 1}}>
                                         {/** @ts-ignore */}
@@ -61,7 +61,7 @@ export const CompactRating = (props: {
                     </div>
                     <div style={{paddingLeft: '10px'}}>
                         <div style={{fontSize: '40pt', color: '#888888'}}>{avg}</div>
-                        <Rating name="rating" defaultValue={r.average_rating} precision={0.25} readOnly />
+                        <Rating name="rating" defaultValue={r.average_rating ? parseFloat(r.average_rating): undefined} precision={0.25} readOnly />
                         <div>{`${r.rating_count} Ratings` }</div>
                     </div>
                 </div>
