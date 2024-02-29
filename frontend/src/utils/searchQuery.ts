@@ -28,15 +28,16 @@ export const queryValueToStatementType = (queryValue: string) => {
     }[queryValue]
 }
 
-export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domainFilter, authorFilter}:
-        {searchQuery?: string, tagFilter?:string, statementTypes?: string[], domainFilter?: string, authorFilter?: string}        
+export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, subjectNameFilter}:
+        {searchQuery?: string, tagFilter?:string, statementTypes?: string[], domainFilter?: string, authorFilter?: string, subjectNameFilter?: string}        
     ) => {
     const queryString = [
         (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09')  : ''),
         (tagFilter ? 'tag=' + tagFilter : ''),
         (statementTypes?.length ? 'types=' + statementTypes : ''),
         (domainFilter ? 'domain=' + domainFilter : ''),
-        (authorFilter ? 'author=' + authorFilter : '')
+        (authorFilter ? 'author=' + authorFilter : ''),
+        (subjectNameFilter ? 'subject_name=' + subjectNameFilter : '')
       ].filter(s => s.length > 0).join('&')
       window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
 }

@@ -7,12 +7,11 @@ export const parseAndCreateRating = ({statement_hash, domain, content }: { state
     log && console.log('createRating', statement_hash, domain, content)
     try {
         const parsedRating = parseRating(content)
-        const { rating, organisation, domain, comment } = parsedRating
-        const ratingInt = parseInt(rating)
-        if ((!(ratingInt > 0 && ratingInt < 6)) || (organisation.length < 1 || domain.length < 1) ) {
+        const { rating, subjectName, subjectReference, comment } = parsedRating
+        if ((!(rating > 0 && rating < 6)) || (subjectName.length < 1 || subjectReference.length < 1) ) {
             return reject(Error("Missing required fields"))
         }
-        const dbResult = await createRating({ statement_hash, organisation, domain, rating: parseInt(rating), comment: comment || ''})   
+        const dbResult = await createRating({ statement_hash, subject_name: subjectName, subject_reference: subjectReference, rating, comment: comment || ''})   
         if(dbResult?.rows[0]){
             return resolve(true)
         } else {

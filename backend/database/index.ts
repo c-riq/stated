@@ -89,9 +89,10 @@ export const getPersonVerifications = getPersonVerificationsFactory(pool)
 export const getOrganisationVerifications = getOrganisationVerificationsFactory(pool)
 export const matchName = matchNameFactory(pool)
 
-import { createRatingFactory } from './rating'
+import { createRatingFactory, getAggregatedRatingsFactory } from './rating'
 
 export const createRating = createRatingFactory(pool)
+export const getAggregatedRatings = getAggregatedRatingsFactory(pool)
 
 import { createPollFactory, getPollFactory, createVoteFactory, getVotesFactory, updateVoteFactory } from './poll'
 

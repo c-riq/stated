@@ -22,12 +22,14 @@ import DebugStatement from './components/DebugStatement';
 import { CenterModal } from './components/CenterModal';
 import { Layout } from './components/Layout';
 import { backwardsCompatibility, statementTypeQueryValues, updateQueryString } from './utils/searchQuery';
+import Ratings from './components/Ratings';
 
 
 const urlParams = new URLSearchParams(window.location.search);
 const queryFromUrl = urlParams.get('search_query')
 const domainFilterFromUrl = undefined || urlParams.get('domain')
 const tagFilterFromUrl = undefined || urlParams.get('tag')
+const subjectNameFilterFromUrl = undefined || urlParams.get('subject_name')
 const typesFromUrl = urlParams.get('types')?.split(',')
   .map((t:string)=> (backwardsCompatibility[t] ? backwardsCompatibility[t] : t))
   .filter((t:string) => statementTypeQueryValues.includes(t))
@@ -42,6 +44,7 @@ function App() {
   const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
+  const [subjectToRate, setSubjectToRate] = React.useState(undefined as subjectToRate | undefined);
   const [statements, setStatements] = React.useState([] as StatementWithDetailsDB[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
@@ -58,6 +61,7 @@ function App() {
   const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
   const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
   const [tagFilter, setTagFilter] = React.useState<string | undefined>(tagFilterFromUrl || undefined);
+  const [subjectNameFilter, setSubjectNameFilter] = React.useState<string | undefined>(subjectNameFilterFromUrl || undefined)
   const [triggerUrlRefresh, setTriggerUrlRefresh] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -69,8 +73,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, statementTypes: statementTypesFilter})
-  }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, triggerUrlRefresh])
+    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, subjectNameFilter, statementTypes: statementTypesFilter})
+  }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, subjectNameFilter, triggerUrlRefresh])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
@@ -154,13 +158,17 @@ function App() {
     setPoll(poll)
     setModalOpen(true)
   }
+  const rateSubject = (subject: subjectToRate) => {
+    setSubjectToRate(subject)
+    setModalOpen(true)
+  }
   const onPostSuccess = () => {
     resetState()
   }
   const resetState = () => {
     navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
-    setStatementToSupersede(undefined); setPoll(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
+    setStatementToSupersede(undefined); setPoll(undefined); setSubjectToRate(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
   }
   const resetFilters = () => {
     setDomainFilter(undefined); setAuthorFilter(undefined); setStatementTypesFilter([]); setSearchQuery(undefined);
@@ -172,7 +180,7 @@ function App() {
     <CssBaseline />
     <div className='App-main'>
       <Routes>
-          <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
+          <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} rateSubject={rateSubject}
           setStatementTypes={setStatementTypesFilter} maxSkipId={maxSkipId} resetFilters={resetFilters}
           loadMore={()=>{
             setShouldLoadMore(true)
@@ -186,7 +194,7 @@ function App() {
             {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDetail voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
@@ -196,7 +204,7 @@ function App() {
             />
             <Route path='/statements/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDetail voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
@@ -209,7 +217,7 @@ function App() {
                 <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} statementToRespond={statementToRespond} 
                 statementToDisputeAuthenticity={statementToDisputeAuthenticity} statementToDisputeContent={statementToDisputeContent}
                 statementToSupersede={statementToSupersede}
-                 onPostSuccess={onPostSuccess} poll={poll} lt850px={lt850px}/>
+                 onPostSuccess={onPostSuccess} poll={poll} subjectToRate={subjectToRate} lt850px={lt850px}/>
               </CenterModal>} 
             />
             <Route path='/debug-statement' element={
@@ -220,6 +228,7 @@ function App() {
           </Route>
           <Route path='/full-verification-graph' element={<FullVerificationGraph />} />
           <Route path='/full-network-graph' element={<FullNetworkGraph/>} />
+          <Route path='/aggregated-ratings' element={(<Ratings lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} />
       </Routes>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */

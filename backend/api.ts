@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerifications, getPersonVerifications, getJoiningStatements, getAllNodes,
     getVotes, deleteStatement, matchName, getLogsForStatement, getHiddenStatement, 
-    checkIfMigrationsAreDone, getResponses, getDisputes
+    checkIfMigrationsAreDone, getResponses, getDisputes, getAggregatedRatings
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -26,7 +26,7 @@ api.use((req, res, next) => {
 
 api.get("/txt_records", async (req, res, next) => {
     try {
-        const domain = '' + req.query.domain;
+        const domain = '' + (req.query.domain || '');
         const records = await getTXTEntries(domain);
         res.end(JSON.stringify({ records: records }));
     } catch (error) {
@@ -76,7 +76,7 @@ api.get("/statements_with_details", async (req, res, next) => {
         if(limitStr && limitStr.length > 0){
             limit = parseInt(limitStr as string)
         }
-        const typesStr = '' + (req.query && req.query.types)
+        const typesStr = '' + ((req.query && req.query.types) || '')
         let types: string[] = []
         if(typesStr && typesStr.length > 0){
             types = (typesStr as string).split(',')
@@ -87,6 +87,32 @@ api.get("/statements_with_details", async (req, res, next) => {
         const tag = (req.query && req.query.tag) as string | undefined
         const dbResult = await getStatementsWithDetail({skip, limit, searchQuery, tag, types, domain, author})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))       
+    } catch (error) {
+        next(error)
+    }
+})
+
+api.get("/aggregated_ratings", async (req, res, next) => {
+    try {
+        const skipStr = req.query && req.query.skip
+        let skip = 0
+        if(skipStr && (('' + (skipStr || '')).length > 0)){
+            skip = parseInt(skipStr as string)
+        }
+        const limitStr = req.query && req.query.limit
+        let limit = 0
+        if(limitStr && (('' + (limitStr || '')).length > 0)){
+            limit = parseInt(limitStr as string)
+        }
+        const typesStr = '' + ((req.query && req.query.types) || '')
+        let types: string[] = []
+        if(typesStr && typesStr.length > 0){
+            types = (typesStr as string).split(',')
+        }
+        const subject = (req.query && req.query.subject) as string | undefined
+        const subject_reference = (req.query && req.query.subject_reference) as string | undefined
+        const dbResult = await getAggregatedRatings({skip, limit, subject, subjectReference: subject_reference})
+        res.end(JSON.stringify({result: dbResult?.rows, time: new Date().toUTCString()}))       
     } catch (error) {
         next(error)
     }
@@ -146,7 +172,7 @@ api.delete("/statements/:hash", async (req, res, next) => {
 
 api.get("/organisation_verifications", async (req, res, next) => {
     try {
-        const dbResult = await getOrganisationVerifications({hash_b64: '' + req.query.hash})
+        const dbResult = await getOrganisationVerifications({hash_b64: '' + (req.query.hash || '')})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
@@ -155,7 +181,7 @@ api.get("/organisation_verifications", async (req, res, next) => {
 
 api.get("/person_verifications", async (req, res, next) => {
     try {
-        const dbResult = await getPersonVerifications({hash_b64: '' + req.query.hash})
+        const dbResult = await getPersonVerifications({hash_b64: '' + (req.query.hash || '')})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
@@ -164,7 +190,7 @@ api.get("/person_verifications", async (req, res, next) => {
 
 api.get("/verification_logs", async (req, res, next) => {
     try {
-        const dbResult = await getLogsForStatement({hash_b64: '' + req.query.hash})
+        const dbResult = await getLogsForStatement({hash_b64: '' + (req.query.hash || '')})
         res.end(JSON.stringify({result: dbResult?.rows, time: new Date().toUTCString()}))       
     } catch(error){
         next(error)
@@ -173,7 +199,7 @@ api.get("/verification_logs", async (req, res, next) => {
 
 api.get("/joining_statements", async (req, res, next) => {
     try {
-        const dbResult = await getJoiningStatements({hash_b64: '' + req.query.hash})
+        const dbResult = await getJoiningStatements({hash_b64: '' + (req.query.hash || '')})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)
@@ -182,7 +208,7 @@ api.get("/joining_statements", async (req, res, next) => {
 
 api.get("/votes", async (req, res, next) => {
     try {
-        const dbResult = await getVotes({poll_hash: '' + req.query.hash})
+        const dbResult = await getVotes({poll_hash: '' + (req.query.hash || '')})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)
@@ -191,7 +217,7 @@ api.get("/votes", async (req, res, next) => {
 
 api.get("/responses", async (req, res, next) => {
     try {
-        const dbResult = await getResponses({referenced_hash: '' + req.query.hash})
+        const dbResult = await getResponses({referenced_hash: '' + (req.query.hash || '')})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)
@@ -199,7 +225,7 @@ api.get("/responses", async (req, res, next) => {
 })
 api.get("/disputes", async (req, res, next) => {
     try {
-        const dbResult = await getDisputes({referenced_hash: '' + req.query.hash})
+        const dbResult = await getDisputes({referenced_hash: '' + (req.query.hash || '')})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))
     } catch(error){
         next(error)
@@ -238,7 +264,7 @@ api.get("/health", async (req, res, next) => {
 
 api.get("/ssl_ov_info", async (req, res, next) => {
     try {
-        let domain = '' + (req.query && req.query.domain)
+        let domain = '' + ((req.query && req.query.domain) || '')
         let cacheOnly = req.query && (req.query.cache_only  === 'true')
         if(!domain || domain.length == 0){
             throw(Error("missing parameter: domain"))
@@ -252,7 +278,7 @@ api.get("/ssl_ov_info", async (req, res, next) => {
 
 api.get("/check_dnssec", async (req, res, next) => {
     try {
-        let domain = '' + (req.query && req.query.domain)
+        let domain = '' + ((req.query && req.query.domain) || '')
         if(!domain || domain.length == 0){
             throw(Error("missing parameter: domain"))
         }
@@ -266,7 +292,7 @@ api.get("/check_dnssec", async (req, res, next) => {
 
 api.get("/match_domain", async (req, res, next) => {
     try {
-        let domain_substring = '' + (req.query && req.query.domain_substring)
+        let domain_substring = '' + ((req.query && req.query.domain_substring) || '')
         if(!domain_substring || domain_substring.length == 0){
             next(Error("missing parameter: domain"))
             return
@@ -282,7 +308,7 @@ api.get("/match_domain", async (req, res, next) => {
 
 api.get("/match_subject_name", async (req, res, next) => {
     try {
-        let name_substring = '' + (req.query && req.query.name_substring)
+        let name_substring = '' + ((req.query && req.query.name_substring) || '')
         if(!name_substring || name_substring.length == 0){
             next(Error("missing parameter: name_substring"))
             return

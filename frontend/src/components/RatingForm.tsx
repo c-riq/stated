@@ -2,29 +2,24 @@ import React from 'react'
 
 import { sha256 } from '../utils/hash';
 
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
-import { TextField } from '@mui/material';
+import { Rating, TextField, Typography } from '@mui/material';
 
 import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 
-export const RatingForm = (props:FormProps) => {
+export const RatingForm = (props:FormProps & {subjectToRate?: subjectToRate}) => {
 
-    const [organisation, setOrganisation] = React.useState("");
-    const [domain, setDomain] = React.useState("");
-    const [rating, setRating] = React.useState("");
+    const [subjectName, setSubjectName] = React.useState(props.subjectToRate?.subjectName??"");
+    const [subjectReference, setSubjectReference] = React.useState(props.subjectToRate?.subjectReference??"");
+    const [rating, setRating] = React.useState(null as null | number);
     const [comment, setComment] = React.useState("");
-
-    const options = ["1/5 Stars", "2/5 Stars", "3/5 Stars", "4/5 Stars", "5/5 Stars"]
 
     const prepareStatement:prepareStatement = ({method})  => {
         try {
             props.setPublishingMethod(method)
-            const content = buildRating({organisation, domain, rating, comment})
+            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment})
             if(method === 'represent'){
                 parseRating(content)
                 sendEmail({content, props})
@@ -41,39 +36,38 @@ export const RatingForm = (props:FormProps) => {
             props.setisError(true)
         }
     }
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRating(event.target.value)
-    }
         
     return (
         <FormControl sx={{width: "100%"}}>
         
         <TextField
-            id="Name of organisation to be rated"
+            id="Name of the organisation, product or service to be rated"
             variant="outlined"
             placeholder='Walmart Inc.'
-            label="Name of organisation to be rated"
-            onChange={e => { setOrganisation(e.target.value) }}
+            label="Name of the organisation, product or service to be rated"
+            onChange={e => { setSubjectName(e.target.value) }}
+            value={subjectName}
             margin="normal"
             sx={{marginTop: "12px"}}
         />
         <TextField
-            id="domain of organisation to be rated (optional)"
+            id="URL that identifies the subject (optional)"
             variant="outlined"
             placeholder='walmart.com'
-            label="Domain / URL of organisation (optional)"
-            onChange={e => { setDomain(e.target.value) }}
+            label="URL that identifies the subject (optional)"
+            onChange={e => { setSubjectReference(e.target.value) }}
+            value={subjectReference}
             margin="normal"
             sx={{marginBottom: "12px"}}
         />
-
-        <div style={{marginTop: "12px", marginBottom:"12px"}}> <h5>Your rating: </h5> </div>
-        <RadioGroup
+        <Typography component="legend">Your rating</Typography>
+        <Rating
+            name="simple-controlled"
             value={rating}
-            onChange={handleChange}>
-            {options.map((o,i) => (<FormControlLabel key={i} value={o} control={<Radio />} label={o} />
-        ))}
-        </RadioGroup>
+            onChange={(event, newValue) => {
+                setRating(newValue);
+            }}
+        />
 
         <TextField
                     id="comment"

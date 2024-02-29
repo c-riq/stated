@@ -533,14 +533,15 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 		hash: m[1]
 	}
 }
-export const ratingKeys = /(Type: |Organisation name: |Organisation domain: |Our rating: |Comment: )/
+export const ratingKeys = /(Type: |Subject name: |URL that identifies the subject: |Our rating: |Comment: )/
 
-export const buildRating = ({organisation, domain, rating, comment}:Rating) => {
+export const buildRating = ({subjectName, subjectReference, rating, comment}:Rating) => {
+	if (![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + rating)
 	const content = "\n" +
 	"\t" + "Type: Rating" + "\n" +
-	"\t" + "Organisation name: " + organisation + "\n" +
-	"\t" + "Organisation domain: " + domain + "\n" +
-	"\t" + "Our rating: " + rating + "\n" +
+	"\t" + "Subject name: " + subjectName + "\n" +
+	(subjectReference ? "\t" + "URL that identifies the subject: " + subjectReference + "\n" : "") +
+	"\t" + "Our rating: " + rating + "/5 Stars\n" +
 	(comment ? "\t" + "Comment: " + comment + "\n" : "") +
 	""
 	return content
@@ -548,18 +549,20 @@ export const buildRating = ({organisation, domain, rating, comment}:Rating) => {
 export const parseRating = (s: string):Rating => {
 	const ratingRegex= new RegExp(''
 	+ /^\n\tType: Rating\n/.source
-	+ /\tOrganisation name: (?<organisation>[^\n]*?)\n/.source
-	+ /\tOrganisation domain: (?<domain>[^\n]*?)\n/.source
+	+ /\tSubject name: (?<subjectName>[^\n]*?)\n/.source
+	+ /(?:\tURL that identifies the subject: (?<subjectReference>[^\n]*?)\n)?/.source
 	+ /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
 	+ /(?:\tComment: (?<comment>[^\n]*?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(ratingRegex)
 	if(!m) throw new Error("Invalid rating format: " + s)
+	const rating = parseInt(m[3])
+	if(![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + m[3])
 	return {
-		organisation: m[1],
-		domain: m[2],
-		rating: m[3],
+		subjectName: m[1],
+		subjectReference: m[2],
+		rating,
 		comment: m[4]
 	}
 }

@@ -150,8 +150,8 @@ CREATE TABLE IF NOT EXISTS polls (
 CREATE TABLE IF NOT EXISTS ratings (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
-    organisation VARCHAR(500) NOT NULL,
-    domain VARCHAR(500) NOT NULL,
+    subject_name VARCHAR(500) NOT NULL,
+    subject_reference VARCHAR(500) NOT NULL,
     rating INT NOT NULL,
     comment VARCHAR(500) NOT NULL,
     CONSTRAINT ratings_statement_hash_fkey

@@ -19,7 +19,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { getStatement, getJoiningStatements, getOrganisationVerifications,
-    getPersonVerifications, getVotes, getResponses, getDisputes } from '../api'
+    getPersonVerifications, getVotes, getResponses, getDisputes, getAggregatedRatings } from '../api'
 import { statementTypes, parsePDFSigning, parseStatement,
     parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
     parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
@@ -32,10 +32,12 @@ import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
 import { Chip } from '@mui/material';
 import { CompactStatementSmall, Dispute, Response } from './CompactStatement';
+import { CompactRating } from './CompactRating';
 
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+    rateSubject: (arg0: subjectToRate) => void,
     setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
     respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
@@ -59,6 +61,7 @@ const StatementDetail = (props:props) => {
     const [personVerifications, setPersonVerifications] = React.useState([] as PersonVerificationDB[]);
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
+    const [ratings, setRatings] = React.useState([] as AggregatedRatingDB[]);
 
     const hashInURL = useParams().statementId || ''
     const [hash, setHash] = React.useState(hashInURL)
@@ -156,6 +159,12 @@ const StatementDetail = (props:props) => {
         if (statement && (statement.type === statementTypes.signPdf) && statement.content){
             getWorkingFileURL(parsePDFSigning(statement.content).hash, 'https://stated.' + statement.domain)
             .then(setWorkingFileURL)
+        }
+        if (statement && (statement.type === statementTypes.rating) && statement.content){
+            const rating = parseRating(statement.content)
+            getAggregatedRatings({subject: rating.subjectName, subjectReference: rating.subjectReference, cb: (result) => {
+                setRatings(result)
+            }})
         }
     }, [statement])
 
@@ -386,6 +395,13 @@ const StatementDetail = (props:props) => {
                 )}
             </div>
             )}
+            {ratings.length > 0 && (<div><h3>Aggregated ratings</h3>
+                {ratings.map((r,i)=>(
+                    <CompactRating key={i} r={r} i={i.toString()} rateSubject={props.rateSubject} />
+                    )
+                )}
+                </div>)}
+            
             </div>
         </div>
         
