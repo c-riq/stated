@@ -55,6 +55,15 @@ export const getStatements = ({searchQuery, tag, skip, limit, domain, author, st
         cb(json)
     }, e => {console.log(e); return})
 }
+export const getAggregatedRatings = ({subject, subjectReference, skip, limit, cb}:
+    {subject?:string, subjectReference?:string, skip?:number, limit?:number, cb:(arg0: AggregatedRatingDB[])=>void}) => {
+    req('GET',
+    `aggregated_ratings?subject=${subject}&subject_reference=${subjectReference}&skip=${skip||0}&limit=${limit||20}`, 
+    {}, (json: {result:AggregatedRatingDB[]}) => {
+        cb(json["result"])
+    }, e => {console.log(e); return})
+}
+
 export const getDomainSuggestions = (searchQuery:string, cb:(arg0:domainSuggestionResponse|undefined) => void) => {
     if (searchQuery.length < 1) {
         return cb(undefined)

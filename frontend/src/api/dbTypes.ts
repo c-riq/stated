@@ -137,6 +137,20 @@ type RatingDB = {
     comment: string;
 };
 
+type AggregatedRatingDB = {
+    subject_name: string;
+    subject_reference: string;
+    average_rating: number;
+    rating_count: number;
+    _1: number;
+    _2: number;
+    _3: number;
+    _4: number;
+    _5: number;
+    skip_id: number;
+    max_skip_id: number;
+};
+
 type DisputeDB = {
     id: number;
     statement_hash: string;

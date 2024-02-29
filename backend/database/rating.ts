@@ -41,18 +41,34 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
       pool.query(`
       WITH grouped_ratings AS (
         SELECT
-          *,
-          SUM(1) as rating_count FROM
-          ( SELECT
+          subject_name,
+          subject_reference,
+          SUM(_1) as _1,
+          SUM(_2) as _2,
+          SUM(_3) as _3,
+          SUM(_4) as _4,
+          SUM(_5) as _5,
+          AVG(rating) average_rating,
+          SUM(1) rating_count
+          FROM
+          (
+          SELECT
           CASE
             WHEN LENGTH($1) > 0 THEN subject_name
-            WHEN LENGTH($1) = 0 AND LENGTH($2) = 0 THEN subject_name
-          ELSE '' END as subject_name,
-          CASE WHEN
-              LENGTH($2) > 0 THEN subject_reference
-              WHEN LENGTH($1) = 0 AND LENGTH($2) = 0 THEN subject_reference
-          ELSE '' END as subject_reference,
-          rating
+            WHEN (LENGTH($1) = 0 AND LENGTH($2) = 0) THEN subject_name
+            ELSE $2
+          END as subject_name,
+          CASE
+            WHEN LENGTH($2) > 0 THEN subject_reference
+            WHEN (LENGTH($1) = 0 AND LENGTH($2) = 0) THEN subject_reference
+            ELSE $2 END
+          as subject_reference,
+          rating,
+          CASE WHEN rating = 1 THEN 1 END AS _1,
+          CASE WHEN rating = 2 THEN 1 END AS _2,
+          CASE WHEN rating = 3 THEN 1 END AS _3,
+          CASE WHEN rating = 4 THEN 1 END AS _4,
+          CASE WHEN rating = 5 THEN 1 END AS _5
         FROM 
           ratings
         WHERE 
@@ -63,35 +79,23 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
           (
             subject_reference = $2
             OR LENGTH($2) = 0
-          ) 
+          )
           )AS ungrouped
           GROUP BY
             subject_name,
-            subject_reference,
-            rating
+            subject_reference
       )
       SELECT 
         *
       FROM (
         SELECT 
           *,
-          star_sum / total_count as average_rating,
-          rank() OVER(ORDER BY total_count DESC, star_sum DESC) as skip_id,
+          rank() OVER(ORDER BY rating_count DESC, average_rating DESC) as skip_id,
           count(1) OVER() as max_skip_id
-        FROM (
-            SELECT
-                subject_name,
-                subject_reference,
-                rating,
-                rating_count,
-                SUM(rating_count) OVER(PARTITION BY subject_name, subject_reference) as total_count,
-                SUM(rating * rating_count) OVER(PARTITION BY subject_name, subject_reference) as star_sum
-              FROM
-                 grouped_ratings
-              ) with_total_count
+        FROM grouped_ratings
         ORDER BY
-          total_count DESC,
-          star_sum DESC
+          rating_count DESC,
+          average_rating DESC
         ) ranked
       WHERE
         skip_id > $3

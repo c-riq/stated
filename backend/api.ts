@@ -3,7 +3,7 @@ import express from 'express'
 import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
     getOrganisationVerifications, getPersonVerifications, getJoiningStatements, getAllNodes,
     getVotes, deleteStatement, matchName, getLogsForStatement, getHiddenStatement, 
-    checkIfMigrationsAreDone, getResponses, getDisputes
+    checkIfMigrationsAreDone, getResponses, getDisputes, getAggregatedRatings
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'
@@ -87,6 +87,32 @@ api.get("/statements_with_details", async (req, res, next) => {
         const tag = (req.query && req.query.tag) as string | undefined
         const dbResult = await getStatementsWithDetail({skip, limit, searchQuery, tag, types, domain, author})
         res.end(JSON.stringify({statements: dbResult?.rows, time: new Date().toUTCString()}))       
+    } catch (error) {
+        next(error)
+    }
+})
+
+api.get("/aggregated_ratings", async (req, res, next) => {
+    try {
+        const skipStr = req.query && req.query.skip
+        let skip = 0
+        if(skipStr && (('' + (skipStr || '')).length > 0)){
+            skip = parseInt(skipStr as string)
+        }
+        const limitStr = req.query && req.query.limit
+        let limit = 0
+        if(limitStr && (('' + (limitStr || '')).length > 0)){
+            limit = parseInt(limitStr as string)
+        }
+        const typesStr = '' + ((req.query && req.query.types) || '')
+        let types: string[] = []
+        if(typesStr && typesStr.length > 0){
+            types = (typesStr as string).split(',')
+        }
+        const subject = (req.query && req.query.subject) as string | undefined
+        const subject_reference = (req.query && req.query.subject_reference) as string | undefined
+        const dbResult = await getAggregatedRatings({skip, limit, subject, subjectReference: subject_reference})
+        res.end(JSON.stringify({result: dbResult?.rows, time: new Date().toUTCString()}))       
     } catch (error) {
         next(error)
     }
