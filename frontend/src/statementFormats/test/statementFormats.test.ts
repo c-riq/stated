@@ -289,7 +289,7 @@ Statement content:
     const parsedStatement = parseStatement({ statement: rating })
     const parsedRating = parseRating(parsedStatement.content)
     const ratingNumber = parsedRating.rating
-    expect(ratingNumber).toBe('5')
+    expect(ratingNumber).toBe(5)
 })
 
 test('rating build & parse function compatibility: input=parse(build(input))', () => {
@@ -297,13 +297,12 @@ test('rating build & parse function compatibility: input=parse(build(input))', (
         { length: 3 },
         randomUnicodeString
     )
-    const ratingInt = Math.ceil(Math.random() * 5)
-    const rating = `${ratingInt}/5 Stars`
+    const rating = Math.ceil(Math.random() * 5)
     const ratingContent = buildRating({ subjectName, subjectReference, rating, comment })
     const parsedRating = parseRating(ratingContent)
     expect(parsedRating.subjectName).toBe(subjectName)
     expect(parsedRating.subjectReference).toBe(subjectReference)
-    expect(parsedRating.rating).toBe('' + ratingInt)
+    expect(parsedRating.rating).toBe(rating)
     expect(parsedRating.comment).toBe(comment)
 })
 
