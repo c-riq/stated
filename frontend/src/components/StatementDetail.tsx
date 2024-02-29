@@ -37,6 +37,7 @@ import { CompactRating } from './CompactRating';
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+    rateSubject: (arg0: subjectToRate) => void,
     setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
     respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
@@ -396,7 +397,7 @@ const StatementDetail = (props:props) => {
             )}
             {ratings.length > 0 && (<div><h3>Aggregated ratings</h3>
                 {ratings.map((r,i)=>(
-                    <CompactRating key={i} r={r} i={i.toString()} />
+                    <CompactRating key={i} r={r} i={i.toString()} rateSubject={props.rateSubject} />
                     )
                 )}
                 </div>)}

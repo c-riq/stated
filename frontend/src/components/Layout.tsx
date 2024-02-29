@@ -7,6 +7,7 @@ import gh from '../img/github.png'
 // @ts-ignore
 import logo from '../img/logo.png'
 import { backwardsCompatibility, statementTypeQueryValues } from "../utils/searchQuery";
+import { RateReview } from "@mui/icons-material";
 
 const urlParams = new URLSearchParams(window.location.search);
 const queryFromUrl = urlParams.get('search_query')
@@ -19,6 +20,7 @@ type LayoutProps = {
     searchQuery?: string,
     joinStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     voteOnPoll: (arg0: { statement: string, hash_b64: string }) => void,
+    rateSubject: (arg0: subjectToRate) => void,
     setModalOpen: (arg0: boolean) => void,
     setServerTime: (arg0: Date) => void,
     serverTime: Date,
@@ -33,7 +35,7 @@ type LayoutProps = {
     resetFilters: () => void
 }
 
-export const Layout = ({ setSearchQuery, joinStatement, voteOnPoll, resetFilters,
+export const Layout = ({ setSearchQuery, joinStatement, voteOnPoll, rateSubject, resetFilters,
     setModalOpen, setServerTime, statements, lt850px, lt500px, canLoadMore, loadingMore, loadMore, maxSkipId,
     setStatementTypes }: LayoutProps) => {
     const [selectedTypes, setSelectedTypes] = React.useState<string[]>(typesFromUrl || []);
@@ -85,7 +87,8 @@ export const Layout = ({ setSearchQuery, joinStatement, voteOnPoll, resetFilters
                     </div>
                 </div>
             </header>
-            <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll} statements={statements} lt850px={lt850px}
+            <Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll}
+                rateSubject={rateSubject} statements={statements} lt850px={lt850px} 
                 canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={loadMore} maxSkipId={maxSkipId}
                 setModalOpen={() => { setModalOpen(true) }}>
                 {!lt850px && (<div>

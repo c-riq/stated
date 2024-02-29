@@ -43,6 +43,7 @@ type Props = {
     statementToDisputeContent?: StatementWithDetailsDB | StatementDB,
     statementToSupersede?: StatementWithDetailsDB | StatementDB,
     poll?: {statement: string, hash_b64: string},
+    subjectToRate?: subjectToRate,
     serverTime: Date,
     onPostSuccess: () => void,
 }
@@ -57,7 +58,8 @@ const CreateStatement = (props:Props) => {
             : (props.statementToDisputeAuthenticity ? statementTypes.disputeAuthenticity 
                 : (props.statementToDisputeContent ? statementTypes.disputeContent 
                     : (props.statementToSupersede ? statementTypes.statement 
-                    : statementTypes.statement)))));
+                        : (props.subjectToRate ? statementTypes.rating 
+                    : statementTypes.statement))))));
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
     const [OVInfo, setOVInfo] = React.useState([] as ssl[]);
@@ -212,6 +214,12 @@ const CreateStatement = (props:Props) => {
             setisError(true)
         })
     }
+    React.useEffect(() => {
+        const el = document.getElementById('center-modal-scroll-div')
+        if (el) {
+            el.scrollTop = 0
+        }
+    }, [])
     
     const authorFields = () => (
         <>
@@ -370,6 +378,7 @@ const CreateStatement = (props:Props) => {
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</PollForm>)}
             {_type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags, supersededStatement}}
+                subjectToRate={props.subjectToRate}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</RatingForm>)}

@@ -43,6 +43,7 @@ function App() {
   const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
+  const [subjectToRate, setSubjectToRate] = React.useState(undefined as subjectToRate | undefined);
   const [statements, setStatements] = React.useState([] as StatementWithDetailsDB[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
@@ -155,13 +156,17 @@ function App() {
     setPoll(poll)
     setModalOpen(true)
   }
+  const rateSubject = (subject: subjectToRate) => {
+    setSubjectToRate(subject)
+    setModalOpen(true)
+  }
   const onPostSuccess = () => {
     resetState()
   }
   const resetState = () => {
     navigate("/"); setModalOpen(false); setStatementToJoin(undefined); setPostToView(false);
     setStatementToRepsond(undefined); setStatementToDisputeAuthenticity(undefined); setStatementToDisputeContent(undefined);
-    setStatementToSupersede(undefined); setPoll(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
+    setStatementToSupersede(undefined); setPoll(undefined); setSubjectToRate(undefined); setTriggerUrlRefresh(!triggerUrlRefresh)
   }
   const resetFilters = () => {
     setDomainFilter(undefined); setAuthorFilter(undefined); setStatementTypesFilter([]); setSearchQuery(undefined);
@@ -173,7 +178,7 @@ function App() {
     <CssBaseline />
     <div className='App-main'>
       <Routes>
-          <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} 
+          <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} rateSubject={rateSubject}
           setStatementTypes={setStatementTypesFilter} maxSkipId={maxSkipId} resetFilters={resetFilters}
           loadMore={()=>{
             setShouldLoadMore(true)
@@ -187,7 +192,7 @@ function App() {
             {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDetail voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
@@ -197,7 +202,7 @@ function App() {
             />
             <Route path='/statements/:statementId' element={(
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDetail voteOnPoll={voteOnPoll} lt850px={lt850px}
+                <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
                 setStatementToJoin={setStatementToJoin}
                 disputeStatementAuthenticity={disputeStatementAuthenticity}
                 disputeStatementContent={disputeStatementContent}
@@ -210,7 +215,7 @@ function App() {
                 <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} statementToRespond={statementToRespond} 
                 statementToDisputeAuthenticity={statementToDisputeAuthenticity} statementToDisputeContent={statementToDisputeContent}
                 statementToSupersede={statementToSupersede}
-                 onPostSuccess={onPostSuccess} poll={poll} lt850px={lt850px}/>
+                 onPostSuccess={onPostSuccess} poll={poll} subjectToRate={subjectToRate} lt850px={lt850px}/>
               </CenterModal>} 
             />
             <Route path='/debug-statement' element={

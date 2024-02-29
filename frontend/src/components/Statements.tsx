@@ -19,6 +19,7 @@ type props = {
     lt850px: boolean,
     children: any,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+    rateSubject: (arg0: subjectToRate) => void,
     canLoadMore: boolean,
     loadingMore: boolean,
     loadMore: ()=>void,
@@ -47,7 +48,7 @@ const Statements = (props:props) => {
                             statementTypes.signPdf, statementTypes.rating, statementTypes.bounty,
                             statementTypes.boycott, statementTypes.observation, statementTypes.vote
                         ].includes(s.type || '')){
-                            return (<CompactStatement key={i} s={s} 
+                            return (<CompactStatement key={i} s={s} rateSubject={props.rateSubject}
                                 setStatementToJoin={props.setStatementToJoin} setModalOpen={props.setModalOpen} i={i.toString()} />)
                         }
                         if (s.type === statementTypes.poll){

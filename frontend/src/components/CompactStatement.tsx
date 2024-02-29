@@ -6,7 +6,7 @@ import { timeSince } from '../utils/time'
 import {
     statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
     BoycottKeys, ObservationKeys, voteKeys, parseResponseContent, responseKeys, disputeAuthenticityKeys, 
-    disputeContentKeys, pollKeys, personVerificationKeys
+    disputeContentKeys, pollKeys, personVerificationKeys, parseRating
 } from '../statementFormats'
 
 const highlightedStatement = (text: string, type: string, adjustColor=false) => {
@@ -79,6 +79,7 @@ const highlightedStatement = (text: string, type: string, adjustColor=false) => 
 
 export const CompactStatement = (props: {
     s: StatementWithDetailsDB, setStatementToJoin: (s: StatementWithDetailsDB) => void,
+    rateSubject: (s: subjectToRate) => void,
     setModalOpen: () => void, i: string
 }) => {
     const { s, i } = props
@@ -87,7 +88,10 @@ export const CompactStatement = (props: {
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "start" }}>
                 <div>{s.repost_count}</div>
                 <Link to="/create-statement">
-                    <Button onClick={() => { props.setStatementToJoin(s); props.setModalOpen() }} variant='contained'
+                    <Button onClick={() => { if (s.type === statementTypes.rating){
+                        const rating = parseRating(s.content)
+                        props.rateSubject({subjectName: rating.subjectName, subjectReference: rating.subjectReference})
+                    } else { props.setStatementToJoin(s); props.setModalOpen() } }} variant='contained'
                         sx={{ backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>
                         <PlusOneIcon />
                     </Button>

@@ -9,10 +9,10 @@ import { buildRating, buildStatement, parseStatement, parseRating } from '../sta
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 
-export const RatingForm = (props:FormProps) => {
+export const RatingForm = (props:FormProps & {subjectToRate?: subjectToRate}) => {
 
-    const [subjectName, setSubjectName] = React.useState("");
-    const [subjectReference, setSubjectReference] = React.useState("");
+    const [subjectName, setSubjectName] = React.useState(props.subjectToRate?.subjectName??"");
+    const [subjectReference, setSubjectReference] = React.useState(props.subjectToRate?.subjectReference??"");
     const [rating, setRating] = React.useState(null as null | number);
     const [comment, setComment] = React.useState("");
 
@@ -46,6 +46,7 @@ export const RatingForm = (props:FormProps) => {
             placeholder='Walmart Inc.'
             label="Name of the organisation, product or service to be rated"
             onChange={e => { setSubjectName(e.target.value) }}
+            value={subjectName}
             margin="normal"
             sx={{marginTop: "12px"}}
         />
@@ -55,6 +56,7 @@ export const RatingForm = (props:FormProps) => {
             placeholder='walmart.com'
             label="URL that identifies the subject (optional)"
             onChange={e => { setSubjectReference(e.target.value) }}
+            value={subjectReference}
             margin="normal"
             sx={{marginBottom: "12px"}}
         />
