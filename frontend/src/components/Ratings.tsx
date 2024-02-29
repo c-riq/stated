@@ -5,13 +5,15 @@ import { CompactRating } from './CompactRating';
 type props = {
     lt850px: boolean,
     maxSkipId: number,
+    rateSubject: (arg0: subjectToRate) => void,
+    subjectNameFilter?: string,
 }
 
 const Ratings = (props:props) => {
-    const { lt850px, maxSkipId } = props
+    const { lt850px, maxSkipId, subjectNameFilter } = props
     const [ratings, setRatings] = useState<AggregatedRatingDB[]>([])
     useEffect(() => {
-        getAggregatedRatings({subject: '', subjectReference: '', skip: 0, limit: 20, cb: (result) => {
+        getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: '', skip: 0, limit: 20, cb: (result) => {
                 setRatings(result)
             }
         })
@@ -25,7 +27,7 @@ const Ratings = (props:props) => {
                 <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
                     {ratings && ratings.length === 0 && (<div style={{marginTop: '50px'}}>no results found.</div>)}
                     {ratings && ratings.length > 0 && ratings.map((r,i) => {
-                        return (<CompactRating i={''+i} r={r} />)
+                        return (<CompactRating i={''+i} r={r} rateSubject={props.rateSubject}/>)
                     }
                 )}
             </div>

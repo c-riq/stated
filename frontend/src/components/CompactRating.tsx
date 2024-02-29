@@ -33,7 +33,9 @@ export const CompactRating = (props: {
                     </Button>
                 </Link>
             </div>
-            <Link to={`/?search_query=subject%20name:%20${r.subject_name}&types=Ratings` + r.subject_reference} style={{ flexGrow: 1 }} onClick={() => { return }} >
+            <Link to={`/?search_query=subject%20name:%20${r.subject_name}&types=Ratings`} style={{ flexGrow: 1 }} onClick={() => { 
+                // TODO: fix refreshing URL query params
+                setTimeout(() => window.location.reload(), 100) }} >
                 <div className="statement"
                     // @ts-ignore 
                     style={{ padding: "10px", margin: "10px", width: "100%", textAlign: "left", flexGrow: 1, "a:textDecoration": 'none' }} key={i}>
