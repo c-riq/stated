@@ -28,8 +28,8 @@ export const queryValueToStatementType = (queryValue: string) => {
     }[queryValue]
 }
 
-export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, subjectNameFilter, qualityFilter}:
-        {searchQuery?: string, tagFilter?:string, statementTypes?: string[], domainFilter?: string, authorFilter?: string, subjectNameFilter?: string, qualityFilter?: string}        
+export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, qualityFilter}:
+        {searchQuery?: string, tagFilter?:string, statementTypes?: string[], domainFilter?: string, authorFilter?: string, subjectNameFilter?: string, subjectReferenceFilter?:string, qualityFilter?: string}        
     ) => {
     const queryString = [
         (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09')  : ''),
@@ -38,6 +38,7 @@ export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domai
         (domainFilter ? 'domain=' + domainFilter : ''),
         (authorFilter ? 'author=' + authorFilter : ''),
         (subjectNameFilter ? 'subject_name=' + subjectNameFilter : ''),
+        (subjectReferenceFilter ? 'subject_reference=' + subjectReferenceFilter : ''),
         (qualityFilter ? 'quality=' + qualityFilter : '')
       ].filter(s => s.length > 0).join('&')
       window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)

@@ -39,6 +39,7 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
       checkIfMigrationsAreDone()
       log && console.log('get aggregated ratings', { subject, subjectReference, quality, skip, limit })
       // TODO: case insensitive & http:// ignoring grouping
+      const subjectReferenceWithoutAsterisk = (subjectReference  || '')?.replace(/\*$/g, '')
       pool.query(`
       WITH grouped_ratings AS (
         SELECT
@@ -54,16 +55,8 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
           FROM
           (
           SELECT
-          CASE
-            WHEN LENGTH($1) > 0 THEN subject_name
-            WHEN (LENGTH($1) = 0 AND LENGTH($2) = 0) THEN subject_name
-            ELSE ''
-          END as subject_name,
-          CASE
-            WHEN LENGTH($2) > 0 THEN subject_reference
-            WHEN (LENGTH($1) = 0 AND LENGTH($2) = 0) THEN subject_reference
-            ELSE ''
-          END as subject_reference,
+          subject_name,
+          subject_reference,
           rating,
           CASE WHEN rating = 1 THEN 1 END AS _1,
           CASE WHEN rating = 2 THEN 1 END AS _2,
@@ -74,12 +67,13 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
           ratings
         WHERE 
           (
-            subject_name = $1
+            LOWER(subject_name) = LOWER($1)
             OR LENGTH($1) = 0
           )
           AND
           (
-            subject_reference = $2
+            LOWER(subject_reference) = LOWER($2)
+            ${subjectReference?.endsWith('*') ? ` OR LOWER(subject_reference) LIKE LOWER($2||'%')` : ''}
             OR LENGTH($2) = 0
           )
           AND
@@ -107,7 +101,7 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
       WHERE
         skip_id > $3
       LIMIT $4`,
-        [subject || '', subjectReference || '', skip || 0, limit || 100, quality || ''], (error, results) => {
+        [subject || '', subjectReferenceWithoutAsterisk, skip || 0, limit || 100, quality || ''], (error, results) => {
           if (error) {
             console.log(error)
             console.trace()

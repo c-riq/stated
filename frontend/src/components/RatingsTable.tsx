@@ -17,14 +17,15 @@ type props = {
     maxSkipId: number,
     rateSubject: (arg0: subjectToRate) => void,
     subjectNameFilter?: string,
+    subjectReferenceFilter?: string,
     qualityFilter?: string
 }
 
 const RatingsTable = (props:props) => {
-    const { lt850px, maxSkipId, subjectNameFilter, qualityFilter } = props
+    const { lt850px, maxSkipId, subjectNameFilter, subjectReferenceFilter, qualityFilter } = props
     const [ratings, setRatings] = useState<AggregatedRatingDB[]>([])
     useEffect(() => {
-        getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: '', quality: qualityFilter, skip: 0, limit: 20, cb: (result) => {
+        getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: subjectReferenceFilter??'', quality: qualityFilter, skip: 0, limit: 20, cb: (result) => {
                 if (result) {
                     let sorted = result.sort((a, b) => { return parseInt(b.rating_count || '0') - parseInt(a.rating_count || '0') })
                     setRatings(sorted)
