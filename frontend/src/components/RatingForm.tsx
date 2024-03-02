@@ -14,12 +14,13 @@ export const RatingForm = (props:FormProps & {subjectToRate?: subjectToRate}) =>
     const [subjectName, setSubjectName] = React.useState(props.subjectToRate?.subjectName??"");
     const [subjectReference, setSubjectReference] = React.useState(props.subjectToRate?.subjectReference??"");
     const [rating, setRating] = React.useState(null as null | number);
+    const [quality, setQuality] = React.useState(undefined as undefined | string);
     const [comment, setComment] = React.useState("");
 
     const prepareStatement:prepareStatement = ({method})  => {
         try {
             props.setPublishingMethod(method)
-            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment})
+            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment, quality})
             if(method === 'represent'){
                 parseRating(content)
                 sendEmail({content, props})
@@ -57,6 +58,16 @@ export const RatingForm = (props:FormProps & {subjectToRate?: subjectToRate}) =>
             label="URL that identifies the subject (optional)"
             onChange={e => { setSubjectReference(e.target.value) }}
             value={subjectReference}
+            margin="normal"
+            sx={{marginBottom: "12px"}}
+        />
+        <TextField
+            id="quality"
+            variant="outlined"
+            placeholder="Reducing existential risks / reducing risks to democracy"
+            label="Quality of the subject which is rated (optional)"
+            onChange={e => { setQuality(e.target.value) }}
+            value={quality}
             margin="normal"
             sx={{marginBottom: "12px"}}
         />

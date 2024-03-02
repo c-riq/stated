@@ -533,14 +533,15 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 		hash: m[1]
 	}
 }
-export const ratingKeys = /(Type: |Subject name: |URL that identifies the subject: |Our rating: |Comment: )/
+export const ratingKeys = /(Type: |Subject name: |URL that identifies the subject: |Rated quality: |Our rating: |Comment: )/
 
-export const buildRating = ({subjectName, subjectReference, rating, comment}:Rating) => {
+export const buildRating = ({subjectName, subjectReference, rating, quality, comment}:Rating) => {
 	if (![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + rating)
 	const content = "\n" +
 	"\t" + "Type: Rating" + "\n" +
 	"\t" + "Subject name: " + subjectName + "\n" +
 	(subjectReference ? "\t" + "URL that identifies the subject: " + subjectReference + "\n" : "") +
+	(quality ? "\t" + "Rated quality: " + quality + "\n" : "") +
 	"\t" + "Our rating: " + rating + "/5 Stars\n" +
 	(comment ? "\t" + "Comment: " + comment + "\n" : "") +
 	""
@@ -551,19 +552,21 @@ export const parseRating = (s: string):Rating => {
 	+ /^\n\tType: Rating\n/.source
 	+ /\tSubject name: (?<subjectName>[^\n]*?)\n/.source
 	+ /(?:\tURL that identifies the subject: (?<subjectReference>[^\n]*?)\n)?/.source
+	+ /(?:\tRated quality: (?<quality>[^\n]*?)\n)?/.source
 	+ /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
 	+ /(?:\tComment: (?<comment>[^\n]*?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(ratingRegex)
 	if(!m) throw new Error("Invalid rating format: " + s)
-	const rating = parseInt(m[3])
+	const rating = parseInt(m[4])
 	if(![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + m[3])
 	return {
 		subjectName: m[1],
 		subjectReference: m[2],
+		quality: m[3],
 		rating,
-		comment: m[4]
+		comment: m[5]
 	}
 }
 export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be paid per investigated case with a maxium of: )/

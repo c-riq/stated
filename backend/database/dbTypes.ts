@@ -133,13 +133,16 @@ type RatingDB = {
     statement_hash: string;
     subject_name: string;
     subject_reference: string;
+    quality: string | null;
     rating: number;
     comment: string;
+    qualified: boolean
 };
 
 type AggregatedRatingDB = {
     subject_name: string;
     subject_reference: string;
+    quality: string | null;
     average_rating: null | string;
     rating_count: null | string;
     _1: null | string;
