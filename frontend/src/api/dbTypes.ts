@@ -136,6 +136,7 @@ type RatingDB = {
     quality: string | null;
     rating: number;
     comment: string;
+    qualified: boolean
 };
 
 type AggregatedRatingDB = {
