@@ -83,7 +83,8 @@ function App() {
   }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, triggerUrlRefresh, qualityFilter])
 
   React.useEffect(() => {
-    if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
+    if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph') ||
+    location.pathname.match('ratings') || location.pathname.match('create-statement')) {
       return
     }
     const limit = 20
