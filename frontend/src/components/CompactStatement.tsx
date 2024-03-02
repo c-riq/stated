@@ -32,7 +32,7 @@ const highlightedStatement = (text: string, type: string, adjustColor=false) => 
                 { fontWeight: '200', color: 'rgb(58,58,58)', fontSize: '13px' } :
                 { fontWeight: '550', color: highlightColor }}>
                 {(['1/5 Stars', '2/5 Stars', '3/5 Stars', '4/5 Stars', '5/5 Stars'].includes(v)) ?
-                    (<Rating name="read-only" size="small" value={parseInt(v[0])} readOnly />)
+                    (<span style={{position: 'relative', bottom: '-4px'}}><Rating name="read-only" size="small" value={parseInt(v[0])} readOnly /></span>)
                 :
                 (regex.test(v) ? v.replace(/: $/, ':') : v)
                 }
