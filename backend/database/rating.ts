@@ -1,5 +1,5 @@
 
-const log = false;
+const log = true;
 
 import { Pool } from "pg";
 import { DBCallback, checkIfMigrationsAreDone } from ".";
@@ -37,7 +37,8 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
   new Promise((resolve: DBCallback<AggregatedRatingDB>, reject) => {
     try {
       checkIfMigrationsAreDone()
-      log && console.log('get aggregated ratings', [subject, subjectReference])
+      log && console.log('get aggregated ratings', { subject, subjectReference, quality, skip, limit })
+      // TODO: case insensitive & http:// ignoring grouping
       pool.query(`
       WITH grouped_ratings AS (
         SELECT
@@ -56,13 +57,13 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
           CASE
             WHEN LENGTH($1) > 0 THEN subject_name
             WHEN (LENGTH($1) = 0 AND LENGTH($2) = 0) THEN subject_name
-            ELSE $2
+            ELSE ''
           END as subject_name,
           CASE
             WHEN LENGTH($2) > 0 THEN subject_reference
             WHEN (LENGTH($1) = 0 AND LENGTH($2) = 0) THEN subject_reference
-            ELSE $2 END
-          as subject_reference,
+            ELSE ''
+          END as subject_reference,
           rating,
           CASE WHEN rating = 1 THEN 1 END AS _1,
           CASE WHEN rating = 2 THEN 1 END AS _2,
@@ -83,7 +84,7 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
           )
           AND
           (
-            quality = $5
+            LOWER(quality) = LOWER($5)
             OR LENGTH($5) = 0
           )
           )AS ungrouped
@@ -96,7 +97,7 @@ export const getAggregatedRatingsFactory = (pool: Pool) => ({ subject, subjectRe
       FROM (
         SELECT 
           *,
-          rank() OVER(ORDER BY rating_count DESC, average_rating DESC) as skip_id,
+          ROW_NUMBER() OVER(ORDER BY rating_count DESC, average_rating DESC) as skip_id,
           count(1) OVER() as max_skip_id
         FROM grouped_ratings
         ORDER BY

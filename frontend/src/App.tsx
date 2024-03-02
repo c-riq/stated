@@ -24,6 +24,7 @@ import { Layout } from './components/Layout';
 import { backwardsCompatibility, statementTypeQueryValues, updateQueryString } from './utils/searchQuery';
 import Ratings from './components/Ratings';
 import RatingList from './components/RatingList';
+import RatingsTable from './components/RatingsTable';
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -31,6 +32,7 @@ const queryFromUrl = urlParams.get('search_query')
 const domainFilterFromUrl = undefined || urlParams.get('domain')
 const tagFilterFromUrl = undefined || urlParams.get('tag')
 const subjectNameFilterFromUrl = undefined || urlParams.get('subject_name')
+const qualityFilterFromUrl = undefined || urlParams.get('quality')
 const typesFromUrl = urlParams.get('types')?.split(',')
   .map((t:string)=> (backwardsCompatibility[t] ? backwardsCompatibility[t] : t))
   .filter((t:string) => statementTypeQueryValues.includes(t))
@@ -63,6 +65,7 @@ function App() {
   const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
   const [tagFilter, setTagFilter] = React.useState<string | undefined>(tagFilterFromUrl || undefined);
   const [subjectNameFilter, setSubjectNameFilter] = React.useState<string | undefined>(subjectNameFilterFromUrl || undefined)
+  const [qualityFilter, setQualityFilter] = React.useState<string | undefined>(qualityFilterFromUrl || undefined)
   const [triggerUrlRefresh, setTriggerUrlRefresh] = React.useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -74,8 +77,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, subjectNameFilter, statementTypes: statementTypesFilter})
-  }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, subjectNameFilter, triggerUrlRefresh])
+    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, subjectNameFilter, statementTypes: statementTypesFilter, qualityFilter})
+  }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, subjectNameFilter, triggerUrlRefresh, qualityFilter])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph')) {
@@ -229,8 +232,9 @@ function App() {
           </Route>
           <Route path='/full-verification-graph' element={<FullVerificationGraph />} />
           <Route path='/full-network-graph' element={<FullNetworkGraph/>} />
-          <Route path='/aggregated-ratings' element={(<Ratings lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} />
-          <Route path='/rating-list' element={(<RatingList lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} />
+          {/* <Route path='/aggregated-ratings' element={(<Ratings lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter} qualityFilter={qualityFilter}/>)} /> */}
+          <Route path='/ratings' element={(<RatingsTable lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter} qualityFilter={qualityFilter}/>)} />
+          {/* <Route path='/rating-list' element={(<RatingList lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} /> */}
       </Routes>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */

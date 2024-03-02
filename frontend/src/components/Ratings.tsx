@@ -7,17 +7,18 @@ type props = {
     maxSkipId: number,
     rateSubject: (arg0: subjectToRate) => void,
     subjectNameFilter?: string,
+    qualityFilter?: string
 }
 
 const Ratings = (props:props) => {
-    const { lt850px, maxSkipId, subjectNameFilter } = props
+    const { lt850px, maxSkipId, subjectNameFilter, qualityFilter } = props
     const [ratings, setRatings] = useState<AggregatedRatingDB[]>([])
     useEffect(() => {
-        getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: '', skip: 0, limit: 20, cb: (result) => {
+        getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: '', quality: qualityFilter, skip: 0, limit: 20, cb: (result) => {
                 setRatings(result)
             }
         })
-    }, [subjectNameFilter])
+    }, [subjectNameFilter, qualityFilter])
     console.log(ratings)
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8 }}>

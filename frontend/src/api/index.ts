@@ -55,10 +55,10 @@ export const getStatements = ({searchQuery, tag, skip, limit, domain, author, st
         cb(json)
     }, e => {console.log(e); return})
 }
-export const getAggregatedRatings = ({subject, subjectReference, skip, limit, cb}:
-    {subject?:string, subjectReference?:string, skip?:number, limit?:number, cb:(arg0: AggregatedRatingDB[])=>void}) => {
-    req('GET',
-    `aggregated_ratings?subject=${subject}&subject_reference=${subjectReference}&skip=${skip||0}&limit=${limit||20}`, 
+export const getAggregatedRatings = ({subject, subjectReference, quality, skip = 0, limit = 20, cb}:
+    {subject?:string, subjectReference?:string, quality?:string, skip?:number, limit?:number, cb:(arg0: AggregatedRatingDB[])=>void}) => {
+        const parameter = apiQueryString({subject, subjectReference, quality, skip, limit})
+    req('GET',`aggregated_ratings?${parameter}`, 
     {}, (json: {result:AggregatedRatingDB[]}) => {
         cb(json["result"])
     }, e => {console.log(e); return})

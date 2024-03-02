@@ -33,9 +33,6 @@ const RatingList = (props: props) => {
     const [entities, setEntities] = useState<ratingItem[]>([
         { "subject": "DIRECTIVE (EU) 2016/680", "alias": "", "reference": "https://eur-lex.europa.eu/eli/dir/2016/680/oj" },
         { "subject": "Regulation (EU) 2016/679", "alias": "GDPR", "reference": "https://eur-lex.europa.eu/eli/reg/2016/679/oj" },
-        { "subject": "ss", "alias": "", "reference": "" },
-        { "subject": "s", "alias": "", "reference": "" },
-        { "subject": "Government of Russia", "alias": "", "reference": "" },
     ])
     useEffect(() => {
         entities.forEach((e) => {
