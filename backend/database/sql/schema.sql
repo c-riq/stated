@@ -152,9 +152,9 @@ CREATE TABLE IF NOT EXISTS ratings (
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     subject_name VARCHAR(500) NOT NULL,
     subject_reference VARCHAR(500) NOT NULL,
-    quality VARCHAR(500),
     rating INT NOT NULL,
     comment VARCHAR(500) NOT NULL,
+    quality VARCHAR(500),
     qualified BOOLEAN DEFAULT FALSE,
     CONSTRAINT ratings_statement_hash_fkey
         FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
