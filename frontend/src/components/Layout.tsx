@@ -26,7 +26,10 @@ export const Layout = ({ setSearchQuery, lt850px, lt500px, disableSearch }: Layo
                         <div>
                             {!lt850px && (<Link style={{ color: "rgba(255,255,255,1)" }} to="/" onClick={() => {
                                 setLocalSearchQuery('')
-                            }}>{window.location.hostname}</Link>)}
+                            }}>Statements</Link>)}
+                            {!lt850px && (<Link style={{ color: "rgba(255,255,255,1)" , marginLeft: "2vw"}} to="/ratings" onClick={() => {
+                                setLocalSearchQuery('')
+                            }}>Ratings</Link>)}
                             <a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-verification-graph" target='_blank'>Verifications</a>
                             {!lt500px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-network-graph" target='_blank'>Network</a>)}
                             <a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="https://stated.ai" target='_blank'>stated.ai</a>

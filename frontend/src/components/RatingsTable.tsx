@@ -12,6 +12,7 @@ import Paper from '@mui/material/Paper';
 import { Autocomplete, Box, Rating, TextField } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import { Link } from 'react-router-dom';
+import { qualitiesToRateOn } from './RatingForm';
 
 type props = {
     lt850px: boolean,
@@ -43,7 +44,6 @@ const RatingsTable = (props:props) => {
             }
         })
     }, [subjectNameFilter, quality, subjectReferenceFilter])
-    console.log(ratings)
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8}}>
             <div style={{display: "flex", flexDirection:"row"}}>
@@ -60,11 +60,7 @@ const RatingsTable = (props:props) => {
             </div>
             {(quality || showFilters) && (<Autocomplete
                 id="quality"
-                options={[
-                    ["Reducing existential risks"],
-                    ["Reducing risks to democracy"],
-                    ["Benefitting society"],
-                ]}
+                options={qualitiesToRateOn}
                 autoHighlight
                 getOptionLabel={(option) => option ? option[0] : ''}
                 freeSolo
