@@ -285,7 +285,11 @@ function App() {
                 <DebugStatement lt850px={lt850px}/>
               </CenterModal>} 
             />
-            <Route path='/ratings' element={(<RatingsTable lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter} subjectReferenceFilter={subjectReferenceFilter} qualityFilter={qualityFilter}/>)}
+            <Route path='/ratings' element={(
+              <RatingsTable lt850px={lt850px} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}
+                subjectReferenceFilter={subjectReferenceFilter} qualityFilter={qualityFilter} setSubjectNameFilter={setSubjectNameFilter}
+                setSubjectReferenceFilter={setSubjectReferenceFilter} setQualityFilter={setQualityFilter}
+              />)}
             />
           </Route>
           <Route path='/full-verification-graph' element={<FullVerificationGraph />} />
