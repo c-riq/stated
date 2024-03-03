@@ -104,14 +104,10 @@ api.get("/aggregated_ratings", async (req, res, next) => {
         if(limitStr && (('' + (limitStr || '')).length > 0)){
             limit = parseInt(limitStr as string)
         }
-        const typesStr = '' + ((req.query && req.query.types) || '')
-        let types: string[] = []
-        if(typesStr && typesStr.length > 0){
-            types = (typesStr as string).split(',')
-        }
         const subject = (req.query && req.query.subject) as string | undefined
         const subject_reference = (req.query && req.query.subject_reference) as string | undefined
-        const dbResult = await getAggregatedRatings({skip, limit, subject, subjectReference: subject_reference})
+        const quality = (req.query && req.query.quality) as string | undefined
+        const dbResult = await getAggregatedRatings({skip, limit, subject, subjectReference: subject_reference, quality})
         res.end(JSON.stringify({result: dbResult?.rows, time: new Date().toUTCString()}))       
     } catch (error) {
         next(error)

@@ -116,6 +116,7 @@ type Rating = {
     subjectName: string
     subjectReference: string
     rating: number
+    quality?: string
     comment?: string
 }
 type Bounty = {

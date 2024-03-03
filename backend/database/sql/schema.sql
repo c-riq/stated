@@ -154,6 +154,8 @@ CREATE TABLE IF NOT EXISTS ratings (
     subject_reference VARCHAR(500) NOT NULL,
     rating INT NOT NULL,
     comment VARCHAR(500) NOT NULL,
+    quality VARCHAR(500),
+    qualified BOOLEAN DEFAULT FALSE,
     CONSTRAINT ratings_statement_hash_fkey
         FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
         ON DELETE CASCADE

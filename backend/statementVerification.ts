@@ -391,7 +391,7 @@ export const createDerivedEntity = ({statement_hash, domain, author, content, ty
                 entityCreated = !! (result.rows && result.rows[0] && result.rows[0].qualified)
             }
             if (type === statementTypes.rating) {
-                entityCreated = !!await parseAndCreateRating({statement_hash, domain, content})
+                entityCreated = !!await parseAndCreateRating({statement_hash, domain, author, content})
             }
             if (type === statementTypes.response) {
                 entityCreated = !!await addResponseReference({statement_hash, content})
