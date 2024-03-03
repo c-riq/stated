@@ -38,10 +38,8 @@ const RatingsTable = (props:props) => {
 
     useEffect(() => {
         getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: subjectReferenceFilter??'', quality, skip: 0, limit: 20, cb: (result) => {
-                if (result) {
-                    let sorted = result.sort((a, b) => { return parseInt(b.rating_count || '0') - parseInt(a.rating_count || '0') })
-                    setRatings(sorted)
-                }
+                let sorted = result.sort((a, b) => { return parseInt(b.rating_count || '0') - parseInt(a.rating_count || '0') })
+                setRatings(sorted)
             }
         })
     }, [subjectNameFilter, quality, subjectReferenceFilter])
@@ -124,9 +122,9 @@ const RatingsTable = (props:props) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {ratings.map((r) => (
+                                {ratings.map((r, i) => (
                                     <TableRow
-                                        key={r.subject_name}
+                                        key={'' + i + r.subject_name + r.subject_reference}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
                                         <TableCell component="th" scope="row">
