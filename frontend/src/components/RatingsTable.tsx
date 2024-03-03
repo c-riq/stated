@@ -10,6 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 import { Autocomplete, Box, Rating, TextField } from '@mui/material';
+import TuneIcon from '@mui/icons-material/Tune';
 import { Link } from 'react-router-dom';
 
 type props = {
@@ -33,6 +34,8 @@ const RatingsTable = (props:props) => {
     const [subjectNameFilter, setSubjectNameFilter] = useState(props.subjectNameFilter  || "");
     const [subjectReferenceFilter, setSubjectReferenceFilter] = useState(props.subjectReferenceFilter  || "");
 
+    const [showFilters, setShowFilters] = useState(false)
+
     useEffect(() => {
         getAggregatedRatings({subject: subjectNameFilter??'', subjectReference: subjectReferenceFilter??'', quality, skip: 0, limit: 20, cb: (result) => {
                 if (result) {
@@ -44,8 +47,20 @@ const RatingsTable = (props:props) => {
     }, [subjectNameFilter, quality, subjectReferenceFilter])
     console.log(ratings)
     return (
-        <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8 }}>
-            <Autocomplete
+        <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8}}>
+            <div style={{display: "flex", flexDirection:"row"}}>
+                <div>
+
+                    <h3>Rated entities ({ratings.length}) <span onClick={()=>{
+                        setShowFilters(!showFilters)
+                        }}><TuneIcon sx={{ color: "rgba(0,0,0,0.5)", cursor: "pointer",
+                        position: "relative", top: "5px", left: "5px"
+                        }} /></span>
+                    </h3>
+                </div>
+                <div style={{flexGrow: 1}}></div>
+            </div>
+            {(quality || showFilters) && (<Autocomplete
                 id="quality"
                 options={[
                     ["Reducing existential risks"],
@@ -66,8 +81,9 @@ const RatingsTable = (props:props) => {
                 // @ts-ignore
                 renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[0]}</Box>)}
                 sx={{marginBottom: "12px"}}
-            />
+            />)}
             <div style={{display: "flex", flexDirection:"row"}}>
+                {(subjectNameFilter || showFilters) && (
                 <TextField
                     id="subjectNameFilter"
                     label="Subject name"
@@ -77,7 +93,8 @@ const RatingsTable = (props:props) => {
                         props.setSubjectNameFilter?.(subjectNameFilter||'')
                     }}
                     sx={{flexGrow: 1, minWidth: "220px"}}
-                />
+                />)}
+                {(subjectNameFilter || showFilters) && (
                 <TextField
                     id="subjectReferenceFilter"
                     label="Subject reference"
@@ -88,11 +105,12 @@ const RatingsTable = (props:props) => {
                     }}
                     sx={{marginLeft: "20px", flexGrow: 1, width: "100%"}}
                     />
+                )}
             </div>
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
-            <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
-                <h3>Rated entities ({ratings.length})</h3> {}</div>
-                <div style ={(lt850px ? {} : {minHeight: '50vh'})}>
+            <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"1%"}:{})}}>
+                </div>
+                <div style ={(lt850px ? {} : {minHeight: '50vh', marginTop: "2%"})}>
                     {ratings && ratings.length === 0 && (<div style={{marginTop: '50px'}}>no results found.</div>)}
                     {ratings && ratings.length > 0 && (<TableContainer component={Paper}>
                         <Table sx={{ minWidth: 650 }} aria-label="simple table">
