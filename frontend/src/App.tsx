@@ -14,7 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { Route, Routes, useNavigate, useLocation, Link } from 'react-router-dom';
 
 import { getStatements } from './api'
 
@@ -25,6 +25,8 @@ import { backwardsCompatibility, statementTypeQueryValues, updateQueryString } f
 import Ratings from './components/Ratings';
 import RatingList from './components/RatingList';
 import RatingsTable from './components/RatingsTable';
+import Statements from './components/Statements';
+import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -72,6 +74,56 @@ function App() {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleStatementTypeChange = (event: SelectChangeEvent<string[]>) => {
+      const value = event.target.value;
+      const result = typeof value === 'string' ? value.split(',') : value
+      setStatementTypesFilter(result)
+  };
+
+  const StatementsSection = () => (<Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll}
+    rateSubject={rateSubject} statements={statements} lt850px={lt850px} 
+    canLoadMore={canLoadMore} loadingMore={loadingMore} loadMore={()=>{
+      setShouldLoadMore(true)
+      setLoadingMore(true)
+    }} maxSkipId={maxSkipId}
+    setModalOpen={() => { setModalOpen(true) }}>
+    {!lt850px && (<div>
+        <FormControl sx={{ width: 300, height: "40px" }} size="small">
+            <InputLabel id="filter-label" sx={{ margin: "0px 0px 0px 5px" }} >Filter statement types</InputLabel>
+            <Select
+                labelId="filter-label"
+                id="filter"
+                multiple
+                value={statementTypesFilter}
+                onChange={handleStatementTypeChange}
+                input={<OutlinedInput sx={{ height: "40px" }} label="Filter statement types" />}
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={{
+                    PaperProps: {
+                        style: {
+                            maxHeight: 224,
+                            width: 250,
+                        }
+                    }
+                }}
+                style={{ backgroundColor: "rgba(255,255,255,1)", borderRadius: 20 }}
+            >
+                {statementTypeQueryValues.map((_type) => (
+                    <MenuItem key={_type} value={_type}>
+                        <Checkbox checked={statementTypesFilter.indexOf(_type) > -1} />
+                        <ListItemText primary={_type} />
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+    </div>)}
+    <Link to="/create-statement">
+        <Button onClick={() => { setModalOpen(true) }} variant='contained' data-testid="create-statement"
+            sx={{ margin: "5px 5px 5px 60px", height: "40px", backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>Create Statement</Button>
+    </Link>
+    </Statements>)
+
 
   React.useEffect(() => {
     window.matchMedia("(max-width: 850px)").addEventListener('change', e => setlt850px( e.matches ));
@@ -187,57 +239,59 @@ function App() {
     <CssBaseline />
     <div className='App-main'>
       <Routes>
-          <Route element={(<Layout canLoadMore={canLoadMore} loadingMore={loadingMore} rateSubject={rateSubject}
-          setStatementTypes={setStatementTypesFilter} maxSkipId={maxSkipId} resetFilters={resetFilters}
-          loadMore={()=>{
-            setShouldLoadMore(true)
-            setLoadingMore(true)
-          }}
-          setSearchQuery={setSearchQuery} searchQuery={searchQuery} serverTime={serverTime} joinStatement={joinStatement}
-           voteOnPoll={voteOnPoll} setModalOpen={setModalOpen} setServerTime={setServerTime} statements={statements}
-           lt850px={lt850px} lt500px={lt500px} />)} >
-            {/* @ts-ignore */}
-            <Route path='/' exact />
+          <Route path='/' element={(<Layout disableSearch={!location.pathname.match('ratings')} 
+              setSearchQuery={setSearchQuery} 
+              lt850px={lt850px} lt500px={lt500px} />)}
+          >
+            <Route index element={(<StatementsSection />)} />
             {/* keep singular until all references are migrated to plural */}
             <Route path='/statement/:statementId' element={(
-              <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
-                setStatementToJoin={setStatementToJoin}
-                disputeStatementAuthenticity={disputeStatementAuthenticity}
-                disputeStatementContent={disputeStatementContent}
-                supersedeStatement={supersedeStatement}
-                respondToStatement={respondToStatement} />
-              </CenterModal>)} 
+              <>
+                <StatementsSection />
+                <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
+                  <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
+                    setStatementToJoin={setStatementToJoin}
+                    disputeStatementAuthenticity={disputeStatementAuthenticity}
+                    disputeStatementContent={disputeStatementContent}
+                    supersedeStatement={supersedeStatement}
+                    respondToStatement={respondToStatement} />
+                </CenterModal>
+              </>)} 
             />
             <Route path='/statements/:statementId' element={(
-              <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
-                <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
-                setStatementToJoin={setStatementToJoin}
-                disputeStatementAuthenticity={disputeStatementAuthenticity}
-                disputeStatementContent={disputeStatementContent}
-                supersedeStatement={supersedeStatement}
-                respondToStatement={respondToStatement} />
-              </CenterModal>)} 
+              <>
+                <StatementsSection />
+                <CenterModal modalOpen={true} lt850px={lt850px} onClose={resetState}>
+                  <StatementDetail voteOnPoll={voteOnPoll} rateSubject={rateSubject} lt850px={lt850px}
+                    setStatementToJoin={setStatementToJoin}
+                    disputeStatementAuthenticity={disputeStatementAuthenticity}
+                    disputeStatementContent={disputeStatementContent}
+                    supersedeStatement={supersedeStatement}
+                    respondToStatement={respondToStatement} />
+                </CenterModal>
+              </>)} 
             />
-            <Route path='/create-statement' element={
-              <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
-                <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} statementToRespond={statementToRespond} 
-                statementToDisputeAuthenticity={statementToDisputeAuthenticity} statementToDisputeContent={statementToDisputeContent}
-                statementToSupersede={statementToSupersede}
-                 onPostSuccess={onPostSuccess} poll={poll} subjectToRate={subjectToRate} lt850px={lt850px}/>
-              </CenterModal>} 
+            <Route path='/create-statement' element={(
+              <>
+                <StatementsSection />
+                <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
+                  <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} statementToRespond={statementToRespond} 
+                    statementToDisputeAuthenticity={statementToDisputeAuthenticity} statementToDisputeContent={statementToDisputeContent}
+                    statementToSupersede={statementToSupersede}
+                    onPostSuccess={onPostSuccess} poll={poll} subjectToRate={subjectToRate} lt850px={lt850px}/>
+                </CenterModal>
+              </>)} 
             />
             <Route path='/debug-statement' element={
               <CenterModal modalOpen={true} lt850px={lt850px} onClose={({warning}:{warning:string}) => {warning ? setDialogOpen(true) : resetState() }}>
                 <DebugStatement lt850px={lt850px}/>
               </CenterModal>} 
             />
+            <Route path='/ratings' element={(<RatingsTable lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter} subjectReferenceFilter={subjectReferenceFilter} qualityFilter={qualityFilter}/>)}
+            />
           </Route>
           <Route path='/full-verification-graph' element={<FullVerificationGraph />} />
           <Route path='/full-network-graph' element={<FullNetworkGraph/>} />
-          {/* <Route path='/aggregated-ratings' element={(<Ratings lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter} qualityFilter={qualityFilter}/>)} /> */}
-          <Route path='/ratings' element={(<RatingsTable lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter} subjectReferenceFilter={subjectReferenceFilter} qualityFilter={qualityFilter}/>)} />
-          {/* <Route path='/rating-list' element={(<RatingList lt850px={lt850px} maxSkipId={99} rateSubject={rateSubject} subjectNameFilter={subjectNameFilter}/>)} /> */}
       </Routes>
     </div>
     <Dialog /* TODO: fix rerendering deleting state */
