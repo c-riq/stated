@@ -22,8 +22,6 @@ import DebugStatement from './components/DebugStatement';
 import { CenterModal } from './components/CenterModal';
 import { Layout } from './components/Layout';
 import { backwardsCompatibility, statementTypeQueryValues, updateQueryString } from './utils/searchQuery';
-import Ratings from './components/Ratings';
-import RatingList from './components/RatingList';
 import RatingsTable from './components/RatingsTable';
 import Statements from './components/Statements';
 import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
