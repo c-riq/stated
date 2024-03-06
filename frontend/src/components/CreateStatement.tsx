@@ -43,7 +43,7 @@ type Props = {
     statementToDisputeContent?: StatementWithDetailsDB | StatementDB,
     statementToSupersede?: StatementWithDetailsDB | StatementDB,
     poll?: {statement: string, hash_b64: string},
-    subjectToRate?: subjectToRate,
+    ratingToJoin?: Partial<RatingDB>,
     serverTime: Date,
     onPostSuccess: () => void,
 }
@@ -58,7 +58,7 @@ const CreateStatement = (props:Props) => {
             : (props.statementToDisputeAuthenticity ? statementTypes.disputeAuthenticity 
                 : (props.statementToDisputeContent ? statementTypes.disputeContent 
                     : (props.statementToSupersede ? statementTypes.statement 
-                        : (props.subjectToRate ? statementTypes.rating 
+                        : (props.ratingToJoin ? statementTypes.rating 
                     : statementTypes.statement))))));
     const [statement, setStatement] = React.useState("");
     const [domain, setDomain] = React.useState("");
@@ -378,7 +378,7 @@ const CreateStatement = (props:Props) => {
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</PollForm>)}
             {_type === statementTypes.rating &&(<RatingForm metaData={{domain, author, representative, tags, supersededStatement}}
-                subjectToRate={props.subjectToRate}
+                subjectToRate={props.ratingToJoin}
                 setStatement={setStatement} setStatementHash={setStatementHash} serverTime={props.serverTime}
                 setisError={setisError} setAlertMessage={setAlertMessage} setPublishingMethod={setPublishingMethod } >
                 {authorFields()}</RatingForm>)}

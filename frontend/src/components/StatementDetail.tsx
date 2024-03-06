@@ -37,7 +37,7 @@ import { CompactRating } from './CompactRating';
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-    rateSubject: (arg0: subjectToRate) => void,
+    rateSubject: (arg0: Partial<RatingDB>) => void,
     setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
     respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
@@ -231,7 +231,15 @@ const StatementDetail = (props:props) => {
                     </RouterLink>))}
                     <RouterLink to="/create-statement">
                         <Tooltip title="Join statement">
-                            <IconButton aria-label="join statement" onClick={()=>{props.setStatementToJoin(statement);}}>
+                            <IconButton aria-label="join statement" onClick={()=>{
+                                const s = statement
+                                if (s.type === statementTypes.rating){
+                                    const rating = parseRating(s.content)
+                                    props.rateSubject({subject_name: rating.subjectName,
+                                        subject_reference: rating.subjectReference, comment: rating.comment,
+                                        quality: rating.quality, rating: rating.rating})
+                                } else { props.setStatementToJoin(s); }
+                            }}>
                                 <PlusOneIcon />
                             </IconButton>
                         </Tooltip>

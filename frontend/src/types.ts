@@ -18,12 +18,3 @@ type FormProps = {
 };
 type publishingMethod = "api" | "dns" | "represent" | "static";
 type prepareStatement = (arg0: { method: publishingMethod }) => void;
-type subjectWithName = {
-  subjectName: string;
-  subjectReference?: string;
-};
-type subjectWithReference = {
-  subjectName?: string;
-  subjectReference: string;
-};
-type subjectToRate = subjectWithName | subjectWithReference;

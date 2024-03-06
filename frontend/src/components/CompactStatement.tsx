@@ -79,7 +79,7 @@ const highlightedStatement = (text: string, type: string, adjustColor=false) => 
 
 export const CompactStatement = (props: {
     s: StatementWithDetailsDB, setStatementToJoin: (s: StatementWithDetailsDB) => void,
-    rateSubject: (s: subjectToRate) => void,
+    rateSubject: (s: Partial<RatingDB>) => void,
     setModalOpen: () => void, i: string
 }) => {
     const { s, i } = props
@@ -88,10 +88,12 @@ export const CompactStatement = (props: {
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "start" }}>
                 <div>{s.repost_count}</div>
                 <Link to="/create-statement">
-                    <Button onClick={() => { if (s.type === statementTypes.rating){
-                        const rating = parseRating(s.content)
-                        props.rateSubject({subjectName: rating.subjectName, subjectReference: rating.subjectReference})
-                    } else { props.setStatementToJoin(s); props.setModalOpen() } }} variant='contained'
+                    <Button onClick={() => {
+                        if (s.type === statementTypes.rating){
+                            const rating = parseRating(s.content)
+                            props.rateSubject(rating)
+                        } else { props.setStatementToJoin(s); props.setModalOpen() }
+                    }} variant='contained'
                         sx={{ backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>
                         <PlusOneIcon />
                     </Button>

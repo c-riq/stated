@@ -131,11 +131,11 @@ type PollDB = {
 type RatingDB = {
     id: number;
     statement_hash: string;
-    subject_name: string;
-    subject_reference: string;
+    subject_name: string | null;
+    subject_reference: string | null;
     quality: string | null;
     rating: number;
-    comment: string;
+    comment: string | null;
     qualified: boolean
 };
 
