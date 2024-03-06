@@ -16,19 +16,19 @@ export const qualitiesToRateOn = [
     ["Honest use of the stated.ai platform"],
 ]
 
-export const RatingForm = (props:FormProps & {subjectToRate?: subjectToRate}) => {
+export const RatingForm = (props:FormProps & {subjectToRate?: Partial<RatingDB>}) => {
 
-    const [subjectName, setSubjectName] = React.useState(props.subjectToRate?.subjectName??"");
-    const [subjectReference, setSubjectReference] = React.useState(props.subjectToRate?.subjectReference??"");
-    const [rating, setRating] = React.useState(null as null | number);
-    const [quality, setQuality] = React.useState(undefined as undefined | string);
+    const [subjectName, setSubjectName] = React.useState(props.subjectToRate?.subject_name??"");
+    const [subjectReference, setSubjectReference] = React.useState(props.subjectToRate?.subject_reference??"");
+    const [rating, setRating] = React.useState(props.subjectToRate?.rating as null | undefined | number);
+    const [quality, setQuality] = React.useState(props.subjectToRate?.quality);
     const [qualityObject, setQualityObject] = React.useState(undefined as undefined | string[]);
-    const [comment, setComment] = React.useState("");
+    const [comment, setComment] = React.useState(props.subjectToRate?.comment??"");
 
     const prepareStatement:prepareStatement = ({method})  => {
         try {
             props.setPublishingMethod(method)
-            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment, quality})
+            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment, quality: quality ?? undefined})
             if(method === 'represent'){
                 parseRating(content)
                 sendEmail({content, props})
@@ -76,7 +76,7 @@ export const RatingForm = (props:FormProps & {subjectToRate?: subjectToRate}) =>
             getOptionLabel={(option) => option ? option[0] : ''}
             freeSolo
             onChange={(e,newvalue)=>setQualityObject(newvalue as string[]) }
-            inputValue={quality}
+            inputValue={quality ?? undefined}
             value={qualityObject}
             onInputChange={(event, newInputValue) => setQuality(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Quality of the subject which is rated (optional)" />}

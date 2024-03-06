@@ -19,7 +19,7 @@ type props = {
     lt850px: boolean,
     children: any,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-    rateSubject: (arg0: subjectToRate) => void,
+    rateSubject: (arg0: Partial<RatingDB>) => void,
     canLoadMore: boolean,
     loadingMore: boolean,
     loadMore: ()=>void,

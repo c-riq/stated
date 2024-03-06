@@ -16,7 +16,7 @@ import { qualitiesToRateOn } from './RatingForm';
 
 type props = {
     lt850px: boolean,
-    rateSubject: (arg0: subjectToRate) => void,
+    rateSubject: (arg0: Partial<RatingDB>) => void,
     subjectNameFilter?: string,
     setSubjectNameFilter?: (arg0: string) => void,
     subjectReferenceFilter?: string,

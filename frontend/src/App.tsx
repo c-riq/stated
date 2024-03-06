@@ -48,7 +48,7 @@ function App() {
   const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
-  const [subjectToRate, setSubjectToRate] = React.useState(undefined as subjectToRate | undefined);
+  const [subjectToRate, setSubjectToRate] = React.useState(undefined as Partial<RatingDB> | undefined);
   const [statements, setStatements] = React.useState([] as StatementWithDetailsDB[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
@@ -215,7 +215,7 @@ function App() {
     setPoll(poll)
     setModalOpen(true)
   }
-  const rateSubject = (subject: subjectToRate) => {
+  const rateSubject = (subject: Partial<RatingDB>) => {
     setSubjectToRate(subject)
     setModalOpen(true)
   }
@@ -276,7 +276,7 @@ function App() {
                   <CreateStatement serverTime={serverTime} statementToJoin={statementToJoin} statementToRespond={statementToRespond} 
                     statementToDisputeAuthenticity={statementToDisputeAuthenticity} statementToDisputeContent={statementToDisputeContent}
                     statementToSupersede={statementToSupersede}
-                    onPostSuccess={onPostSuccess} poll={poll} subjectToRate={subjectToRate} lt850px={lt850px}/>
+                    onPostSuccess={onPostSuccess} poll={poll} ratingToJoin={subjectToRate} lt850px={lt850px}/>
                 </CenterModal>
               </>)} 
             />

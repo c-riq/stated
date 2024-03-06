@@ -19,7 +19,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 
 
 export const CompactRating = (props: {
-    r: AggregatedRatingDB, i: string, rateSubject: (subject: subjectToRate) => void
+    r: AggregatedRatingDB, i: string, rateSubject: (subject: Partial<RatingDB>) => void
 }) => {
     const { r, i } = props
     const avg = r.average_rating ? parseFloat('' + r.average_rating).toFixed(2) : '';
@@ -27,7 +27,7 @@ export const CompactRating = (props: {
         <div key={i} style={{ display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin: "1%", borderRadius: 8 }}>
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <Link to="/create-statement">
-                    <Button onClick={() => { props.rateSubject({subjectName: r.subject_name, subjectReference: r.subject_reference}) }} variant='contained'
+                    <Button onClick={() => { props.rateSubject(r)}} variant='contained'
                         sx={{ backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>
                         <Reviews />
                     </Button>
