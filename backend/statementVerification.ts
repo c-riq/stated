@@ -61,7 +61,7 @@ export const validateStatementMetadata = ({ statement, hash_b64, source_node_id 
     return result
 }
 
-export const getTXTEntries = (d: string) => new Promise((resolve: (entries: string[])=>void, reject) => {
+export const getTXTEntries = (d: string, fast?: boolean) => new Promise((resolve: (entries: string[])=>void, reject) => {
     try {
         log && console.log('getTXTEntries', d)
         if (!test && ! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
@@ -69,7 +69,8 @@ export const getTXTEntries = (d: string) => new Promise((resolve: (entries: stri
             reject(Error('invalid domain '+ d))
         }
         // TODO: use delv and require DNSSEC
-        const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
+        // TODO: use dns over https and cross check with cloudflare for fast method
+        const dig = cp.spawn('dig', [(fast ? '@8.8.8.8' : undefined), '-t', 'txt', `${d}`, '+dnssec', '+short'].filter(i=>!!i) as string[])
         setTimeout(() => {
             dig.kill();
             reject(Error('dig timeout'))

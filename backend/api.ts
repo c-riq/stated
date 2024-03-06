@@ -27,7 +27,7 @@ api.use((req, res, next) => {
 api.get("/txt_records", async (req, res, next) => {
     try {
         const domain = '' + (req.query.domain || '');
-        const records = await getTXTEntries(domain);
+        const records = await getTXTEntries(domain, true);
         res.end(JSON.stringify({ records: records }));
     } catch (error) {
         next(error);
