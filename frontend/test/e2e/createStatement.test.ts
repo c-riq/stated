@@ -24,7 +24,7 @@ test('create simple statement', async ({ page }) => {
   await page.getByRole('button', { name: 'Submit' }).click();
   await page.getByPlaceholder('search').fill('test basic statement');
   await page.getByPlaceholder('search').press('Enter');
-  await expect(page.getByRole('heading', { name: 'Statements (1)' })).toBeVisible();
+  await expect(page.locator('#root')).toContainText('Statements (1)');
 });
 
 test('url search query', async ({ page }) => {

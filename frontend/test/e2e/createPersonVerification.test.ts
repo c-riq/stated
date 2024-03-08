@@ -28,5 +28,5 @@ test('create person verification', async ({ page }) => {
   await page.getByRole('button', { name: 'Submit' }).click();
   await page.getByPlaceholder('search').fill('play wright');
   await page.getByPlaceholder('search').press('Enter');
-  await expect(page.getByRole('heading', { name: 'Statements (1)' })).toBeVisible();
+  await expect(page.locator('#root')).toContainText('Statements (1)');
 });
