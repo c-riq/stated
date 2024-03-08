@@ -22,7 +22,7 @@ describe("Test", () => {
         <App />
       </BrowserRouter>
     );
-    const header = screen.getByText(/statements/i, { selector: "h3" });
+    const header = screen.getByText(/statements \(/i);
     expect(header).toBeInTheDocument();
   });
 });
