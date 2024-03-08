@@ -29,12 +29,12 @@ export const CenterModal = (props: CenterModalProps) => {
           boxShadow: 24,
           p: 0
         }}>
-          <div id="center-modal-scroll-div" style={{ ...(lt850px ? { padding: '20px 0px 50px 0px' } : { padding: '30px 50px 50px 50px' }), overflowY: 'scroll', height: '100%' }}>
+          <div id="center-modal-scroll-div" style={{ ...(lt850px ? { padding: '70px 0px 50px 0px' } : { padding: '30px 50px 50px 50px' }), overflowY: 'scroll', height: '100%' }}>
             {
               props.children
             }
           </div>
-          <div style={{ height: '50px', width: '50px', padding: '16px 16px 16px 16px', position: 'fixed', top: 0, left: 0 }}>
+          <div style={{ height: '50px', width: '50px', padding: '16px 16px 16px 16px', position: 'fixed', top: "40px", left: 0 }}>
             <a onClick={() => props.onClose({ warning: false })} style={{ cursor: 'pointer' }}>
               <CloseIcon sx={{ fontSize: "30px" }} /></a>
           </div>
