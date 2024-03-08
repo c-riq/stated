@@ -26,7 +26,7 @@ const Statements = (props:props) => {
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
             <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
                 <h3>Statements ({maxSkipId})</h3> {props.children}</div>
-                <div style ={{width: "100%", overflow: "hidden", wordWrap:"break-word", ...(lt850px ? {} : {minHeight: '50vh'})}}>
+                <div style ={{overflow: "hidden", wordWrap:"break-word", ...(lt850px ? {margin: '8px'} : {minHeight: '50vh'})}}>
                     {statements && statements.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
                     {statements && statements.length > 0 && statements.map((s,i) => {
                         if ([

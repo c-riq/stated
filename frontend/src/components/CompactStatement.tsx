@@ -87,7 +87,7 @@ export const CompactStatement = (props: {
     const { s, i } = props
     return (
         <div key={i} style={{ display: "flex", flexDirection: "row", backgroundColor: "#ffffff",
-        padding: '16px', marginBottom: "1%", borderRadius: 8, width: "100%", overflow: "hidden"}}>
+        padding: '16px', marginBottom: "8px", borderRadius: 8, width: "100%", overflow: "hidden"}}>
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "start",  overflow: "hidden", width: "70px" }}>
                 <div>{s.repost_count}</div>
                 <Link to="/create-statement">
@@ -284,7 +284,7 @@ export const CompactPoll = (props: CompactPollProps) => {
                 }
             }
             const totalVotes = Object.values((votes || [0])).reduce((a:number,b:number)=>a+b, 0)
-            return (<div key={props.i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', marginBottom:"1%", borderRadius: 8 }}>
+            return (<div key={props.i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', marginBottom:"8px", borderRadius: 8 }}>
             <div style={{display: "flex", flexDirection: "column", justifyContent:"start", width: "70px"}}>
                     <div>{s.repost_count}</div>
                 <Link to="/create-statement">
