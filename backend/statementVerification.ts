@@ -61,7 +61,7 @@ export const validateStatementMetadata = ({ statement, hash_b64, source_node_id 
     return result
 }
 
-export const getTXTEntries = (d: string) => new Promise((resolve: (entries: string[])=>void, reject) => {
+export const getTXTEntries = (d: string, fast?: boolean) => new Promise((resolve: (entries: string[])=>void, reject) => {
     try {
         log && console.log('getTXTEntries', d)
         if (!test && ! /^[a-zA-Z\.-]{7,260}$/.test(d)) {
@@ -69,7 +69,8 @@ export const getTXTEntries = (d: string) => new Promise((resolve: (entries: stri
             reject(Error('invalid domain '+ d))
         }
         // TODO: use delv and require DNSSEC
-        const dig = cp.spawn('dig', ['-t', 'txt', `${d}`, '+dnssec', '+short'])
+        // TODO: use dns over https and cross check with cloudflare for fast method
+        const dig = cp.spawn('dig', [(fast ? '@8.8.8.8' : undefined), '-t', 'txt', `${d}`, '+dnssec', '+short'].filter(i=>!!i) as string[])
         setTimeout(() => {
             dig.kill();
             reject(Error('dig timeout'))
@@ -159,7 +160,8 @@ export const verifyViaStaticBulkTextFile : (arg0:string, arg1:string) => Promise
 }
 
 export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, statement:string}) => 
-    Promise<{validated:boolean, response?: string}> = async ({domain, hash, statement}) => {
+    Promise<{validated:boolean, response?: any}> = async ({domain, hash, statement}) => {
+        const responses: any = {}
     try {
         let result = await get({hostname: 'static.stated.' + domain,
             path: `/statements/${hash}.txt`, json: false})
@@ -168,8 +170,8 @@ export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, state
             if (result.data === statement){
                 return {validated: true, response: result.data}
             }
-            return {validated: false, response: result.data}
         }
+        responses["static.stated." + domain + `/statements/${hash}.txt`] = {data: result.data, error: result.error}
         result = await get({hostname: 'www.' + domain, 
             path: `/.well-known/statements/${hash}.txt`, json: false})
         if (result.data?.length > 0){
@@ -178,6 +180,7 @@ export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, state
                 return {validated: true, response: result.data}
             }
         }
+        responses["www." + domain + `/.well-known/statements/${hash}.txt`] = {data: result.data, error: result.error}
         result = await get({hostname: domain, 
             path: `/.well-known/statements/${hash}.txt`, json: false})
         if (result.data?.length > 0){
@@ -186,11 +189,12 @@ export const verifyViaStaticTextFile : (arg0: {domain:string, hash:string, state
                 return {validated: true, response: result.data}
             }
         }
+        responses[domain + `/.well-known/statements/${hash}.txt`] = {data: result.data, error: result.error}
+        return {validated: false, response: JSON.stringify(responses)}
     } catch(e) {
         console.log(e)
-        return {validated: false, response: e}
+        return {validated: false, response: {error: e}}
     }
-    return {validated: false}
 }
 
 export const verifyViaAPIKey = ({domain, api_key}:{domain:string|undefined, api_key:string|undefined}) => {

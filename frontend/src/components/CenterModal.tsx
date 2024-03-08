@@ -29,7 +29,7 @@ export const CenterModal = (props: CenterModalProps) => {
           boxShadow: 24,
           p: 0
         }}>
-          <div id="center-modal-scroll-div" style={{ ...(lt850px ? { padding: '30px' } : { padding: '30px 50px 50px 50px' }), overflowY: 'scroll', height: '100%' }}>
+          <div id="center-modal-scroll-div" style={{ ...(lt850px ? { padding: '20px 0px 50px 0px' } : { padding: '30px 50px 50px 50px' }), overflowY: 'scroll', height: '100%' }}>
             {
               props.children
             }

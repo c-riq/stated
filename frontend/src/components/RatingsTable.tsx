@@ -45,10 +45,9 @@ const RatingsTable = (props:props) => {
         })
     }, [subjectNameFilter, quality, subjectReferenceFilter])
     return (
-        <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8}}>
+        <div style={lt850px ? {marginBottom : "10%"} : { margin: "2%", borderRadius: 8}}>
             <div style={{display: "flex", flexDirection:"row"}}>
-                <div>
-
+                <div style={{ padding: "8px" }}>
                     <h3>Rated entities ({ratings.length}) <span onClick={()=>{
                         setShowFilters(!showFilters)
                         }}><TuneIcon sx={{ color: "rgba(0,0,0,0.5)", cursor: "pointer",
@@ -74,9 +73,9 @@ const RatingsTable = (props:props) => {
                 renderInput={(params) => <TextField {...params} label="Rated quality" />}
                 // @ts-ignore
                 renderOption={(props, option) => (<Box {...props} id={option[0]} >{option[0]}</Box>)}
-                sx={{marginBottom: "12px"}}
+                sx={{margin: "8px 8px 12px 8px"}}
             />)}
-            <div style={{display: "flex", flexDirection:"row"}}>
+            <div style={{display: "flex", flexDirection:"row",  padding: "8px"}}>
                 {(subjectNameFilter || showFilters) && (
                 <TextField
                     id="subjectNameFilter"
@@ -101,17 +100,16 @@ const RatingsTable = (props:props) => {
                     />
                 )}
             </div>
-            <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
-            <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}, ...(lt850px ? {margin:"1%"}:{})}}>
-                </div>
+            <div style={lt850px ? {width: "100vw", padding: "8px"} : { width: "70vw", maxWidth: "900px" }}>
+
                 <div style ={(lt850px ? {} : {minHeight: '50vh', marginTop: "2%"})}>
                     {ratings && ratings.length === 0 && (<div style={{marginTop: '50px'}}>no results found.</div>)}
                     {ratings && ratings.length > 0 && (<TableContainer component={Paper}>
-                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <Table sx={{...(lt850px ? {minWidth: "90vw"} : { minWidth: 650 })}} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
                                     <TableCell align="left">Name</TableCell>
-                                    <TableCell align="left">Defining URL</TableCell>
+                                    <TableCell align="left" style={{whiteSpace: "normal",wordWrap: "break-word"}}>Defining URL</TableCell>
                                     <TableCell align="left">Rating</TableCell>
                                     <TableCell></TableCell>
                                     <TableCell align="left" >Rating count</TableCell>
@@ -121,12 +119,15 @@ const RatingsTable = (props:props) => {
                                 {ratings.map((r, i) => (
                                     <TableRow
                                         key={'' + i + r.subject_name + r.subject_reference}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 }, whiteSpace: "normal", wordWrap: "break-word" }}
                                     >
                                         <TableCell component="th" scope="row">
                                             {r.subject_name}
                                         </TableCell>
-                                        <TableCell align="left">{r.subject_reference}</TableCell>
+                                        <TableCell align="left" style={{whiteSpace: "normal", wordWrap: "break-word"}}>{lt850px? (
+                                            <div style={{width: "100px", whiteSpace: "normal", wordWrap: "break-word"}}>{r.subject_reference}</div>):
+                                            r.subject_reference
+                                        }</TableCell>
                                         <TableCell align="left">
                                             <Link to={`/?search_query=subject%20name:%20${r.subject_name}&types=Ratings`} target='blank'>
                                                 {parseFloat(r.average_rating!).toFixed(2)}

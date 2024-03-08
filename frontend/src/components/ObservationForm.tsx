@@ -147,7 +147,7 @@ const ObservationForm = (props:FormProps) => {
                 multiline
                 onChange={e => { setObervationValue(e.target.value) }}
                 margin="normal"
-                sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                sx={{marginTop: "24px"}}
             />
         <TextField
             id="confidence"

@@ -1,12 +1,14 @@
 import PlusOneIcon from '@mui/icons-material/PlusOne';
-import { Button, Chip, Rating, Tooltip } from "@mui/material";
+import PollIcon from '@mui/icons-material/Poll';
+
+import { Button, Chip, Rating, Stack, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
 import { timeSince } from '../utils/time'
 
 import {
     statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
     BoycottKeys, ObservationKeys, voteKeys, parseResponseContent, responseKeys, disputeAuthenticityKeys, 
-    disputeContentKeys, pollKeys, personVerificationKeys, parseRating
+    disputeContentKeys, pollKeys, personVerificationKeys, parseRating, parsePoll, parseStatement
 } from '../statementFormats'
 
 const highlightedStatement = (text: string, type: string, adjustColor=false) => {
@@ -84,8 +86,9 @@ export const CompactStatement = (props: {
 }) => {
     const { s, i } = props
     return (
-        <div key={i} style={{ display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', margin: "1%", borderRadius: 8 }}>
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "start" }}>
+        <div key={i} style={{ display: "flex", flexDirection: "row", backgroundColor: "#ffffff",
+        padding: '16px', marginBottom: "8px", borderRadius: 8, width: "100%", overflow: "hidden"}}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "start",  overflow: "hidden", width: "70px" }}>
                 <div>{s.repost_count}</div>
                 <Link to="/create-statement">
                     <Button onClick={() => {
@@ -99,10 +102,10 @@ export const CompactStatement = (props: {
                     </Button>
                 </Link>
             </div>
-            <Link to={"/statements/" + s.hash_b64} style={{ flexGrow: 1 }} onClick={() => { props.setModalOpen() }} >
+            <Link to={"/statements/" + s.hash_b64} onClick={() => { props.setModalOpen() }} >
                 <div className="statement"
                     // @ts-ignore 
-                    style={{ padding: "10px", margin: "10px", width: "100%", textAlign: "left", flexGrow: 1, "a:textDecoration": 'none' }} key={i}>
+                    style={{ padding: "10px", margin: "10px", width: "100%", textAlign: "left", flexGrow: 1, "a:textDecoration": 'none', overflow:"hidden", maxWidth:"60vw" }} key={i}>
 
                     <span>{s.domain}</span>
                     {s.author && (<>
@@ -122,7 +125,7 @@ export const CompactStatement = (props: {
                             {s.tags.split(',').map((t: string, i: number) => (<Chip key={i} label={t} style={{ margin: '5px' }} />))}
                         </>
                     )}
-                    {s.content.split("\n").map((s1: string, i: number) => (<div key={i}>{highlightedStatement(s1, s.type || '')}</div>))}
+                    {s.content.split("\n").map((s1: string, i: number) => (<div key={i} style={{width: "100%", overflow:"hidden"}}>{highlightedStatement(s1, s.type || '')}</div>))}
                 </div>
             </Link>
         </div>
@@ -240,5 +243,102 @@ export const Dispute = (props: { s: StatementDB }) => {
             </div>
         </div>
         </Link>
+    )
+}
+
+type CompactPollProps = {
+    setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
+    setModalOpen: any,
+    lt850px: boolean,
+    voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
+    statement: StatementWithDetailsDB,
+    i: string
+}
+
+export const CompactPoll = (props: CompactPollProps) => {
+    const s = props.statement
+    let author = undefined
+    try {
+        author = parseStatement({ statement: s.statement, allowNoVersion: true }).author
+    } catch (error) {
+        // console.log(error)
+    }
+    let parsedPoll = undefined
+            try{
+                parsedPoll = parsePoll(s.content)
+            } catch (e){
+                console.log(e)
+                return (<></>)
+            }
+            const options = parsedPoll.options
+            let votes: {[key: string]: number} = {} 
+            if (s.votes){
+                for (let o of Object.keys(s.votes)){
+                    // @ts-ignore
+                    votes[o] = s.votes[o]
+                }
+            }
+            for (let o of options){
+                if(!(votes[o])){
+                    votes[o] = 0
+                }
+            }
+            const totalVotes = Object.values((votes || [0])).reduce((a:number,b:number)=>a+b, 0)
+            return (<div key={props.i} style={{display: "flex", flexDirection: "row", backgroundColor: "#ffffff", padding: '16px', marginBottom:"8px", borderRadius: 8 }}>
+            <div style={{display: "flex", flexDirection: "column", justifyContent:"start", width: "70px"}}>
+                    <div>{s.repost_count}</div>
+                <Link to="/create-statement">
+                    <Button data-testid='vote-on-poll' onClick={()=>{
+                        const {statement,hash_b64} = s
+                        props.voteOnPoll({statement, hash_b64})
+                        props.setModalOpen()}} variant='contained' 
+                    sx={{backgroundColor:"rgba(42,74,103,1)", borderRadius: 8}}>
+                        <PollIcon/>
+                    </Button>
+                </Link>
+            </div>
+            <Link to={"/statements/" + s.hash_b64} style={{flexGrow: 1}}>
+                <div className="statement"
+                    // @ts-ignore
+                    style={{padding: "10px",margin: "10px", width:"100%", textAlign: "left", flexGrow: 1, "a:textDecoration":'none'}}> 
+                    
+                    <span>{s.domain}</span>
+                    {author && (<>
+                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                        <span style={{fontSize: "10pt", color: "rgba(80,80,80,1"}}>{author}</span>
+                    </>)}
+                    <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                    {s.proclaimed_publication_time && <Tooltip title={s.proclaimed_publication_time}>
+                        <span>{timeSince(new Date(s.proclaimed_publication_time))}</span>
+                    </Tooltip>}
+                    
+                    {s.tags && (
+                        <>
+                        <span style={{marginLeft: '5px', marginRight: '5px'}}>•</span>
+                        <span>tags: </span>
+                        { s.tags.split(',').map((t:string, i:number)=>(<Chip key={i} label={t} style={{margin: '5px'}}/>)) }
+                        </>
+                    )}
+                    <div>{parsedPoll.poll}</div>
+                    <Stack spacing={2} sx={{paddingTop: "10px", paddingBottom: "10px"}}>
+                        {Object.keys(votes).map(o=>(
+                            <div key={o} style={{display: "grid"}}>
+                                <div style={{gridArea: "1 / 1"}}>
+                                    <div style={{backgroundColor: "rbga(0,0,0,0)", width:"200px", height:"30px", borderRadius: "15px", borderWidth: "1px", borderStyle: "solid", borderColor: "#cccccc"}} />
+                                </div>
+                                <div style={{gridArea: "1 / 1"}}>
+                                    <div style={{backgroundColor: "rgba(42, 74, 103, 0.5)", width: (totalVotes === 0 ? 0 : 200 * votes[o] / totalVotes) + 'px', height:"30px", borderRadius: "15px"}} />
+                                </div>
+                                <div style={{gridArea: "1 / 1"}}>
+                                    <div style={{backgroundColor: "rbga(0,0,0,0)", width:"200px", height:"30px", borderRadius: "15px", padding: "3px 5px 0px 10px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                                        {o + ": " + votes[o] + "/" + totalVotes}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </Stack>
+                </div>
+            </Link>
+        </div>
     )
 }

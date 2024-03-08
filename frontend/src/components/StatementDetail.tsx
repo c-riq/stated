@@ -169,9 +169,9 @@ const StatementDetail = (props:props) => {
     }, [statement])
 
     if (statementCollision) return (
-        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
+        <div style={{ maxWidth: "100vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
-            <div>
+            <div style={{width : "100%"}}>
             <h3>Multiple statements found</h3>
             <p>To avoid confusion, use the complete statement id when referencing.</p>
             {statementCollision.map((s,i) => (
@@ -187,9 +187,9 @@ const StatementDetail = (props:props) => {
     )
     if (!statement) return (<div style={{marginTop: "20px"}}>Statement not found</div>)
     return (
-        <div style={{ maxWidth: "90vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
-         flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
-            <div>
+        <div style={{ maxWidth: "100vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
+         flexDirection:'row', justifyContent: 'center', overflow: 'hidden', padding: "8px" }}>
+            <div style={{width : "100%"}}>
             <h3>Statement details</h3>
             {(statement as StatementWithSupersedingDB).superseding_statement && (<Alert severity="error">
                 This statement has been replaced by the author with another statement:
