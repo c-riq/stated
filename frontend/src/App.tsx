@@ -87,7 +87,7 @@ function App() {
     }} maxSkipId={maxSkipId}
     setModalOpen={() => { setModalOpen(true) }}>
       <div style={{ width: "100%", display: "flex", flexDirection: (lt850px ? "column" : "row"), justifyContent: "space-between", alignItems: "center"}}>
-      <div ><h3>{`Statements (${statements.length??0})`}</h3></div>
+      <div style={{height: "30px", fontSize: "1.17em"}}>{`Statements (${statements.length??0})`}</div>
       <div>
         <FormControl sx={{ width: 300, height: "40px", margin: "8px" }} size="small">
             <InputLabel id="filter-label" sx={{ margin: "0px 0px 0px 5px" }} >Filter statement types</InputLabel>

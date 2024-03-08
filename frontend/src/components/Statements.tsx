@@ -24,7 +24,7 @@ const Statements = (props:props) => {
     return (
         <div style={lt850px ? {marginBottom : "10%" } : { margin: "2%", borderRadius: 8 }}>
             <div style={lt850px ? {width: "100vw"} : { width: "70vw", maxWidth: "900px" }}>
-            <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}, ...(lt850px ? {margin:"4%"}:{})}}>
+            <div style={{...{display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}, margin:"2%"}}>
                 {props.children}</div>
             <div style ={{overflow: "hidden", wordWrap:"break-word", ...(lt850px ? {margin: '8px'} : {minHeight: '50vh'})}}>
                     {statements && statements.length === 0 && (<div style={{marginTop: '50px'}}>no statements found.</div>)}
