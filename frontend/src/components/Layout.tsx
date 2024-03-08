@@ -22,8 +22,15 @@ export const Layout = ({ setSearchQuery, lt850px, lt500px, disableSearch }: Layo
         <React.Fragment>
             <header style={{ width: "100vw", height: "70px", backgroundColor: "rgba(42,74,103,1)", color: "rgba(255,255,255,1)" }}>
                 <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px" }}>
+                    <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: (lt850px ? "8px" : "30px") }}>
                         <div>
+                            <a href="https://stated.ai" style={{
+                                backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "6px",
+                                paddingLeft: "7px", marginRight: "16px", borderRadius: "20px", textDecoration: "none",
+                                position: "relative", top: "4px"
+                            }}>
+                                <img src={logo} style={{ height: "20px", width: '20px', flexGrow: 0 }}></img>
+                            </a>
                             <Link style={{ color: "rgba(255,255,255,1)" }} to="/" onClick={() => {
                                 setLocalSearchQuery('')
                             }}>Statements</Link>
@@ -32,7 +39,6 @@ export const Layout = ({ setSearchQuery, lt850px, lt500px, disableSearch }: Layo
                             }}>Ratings</Link>)}
                             {!lt850px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-verification-graph" target='_blank'>Verifications</a>)}
                             {!lt850px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-network-graph" target='_blank'>Network</a>)}
-                            {!lt500px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="https://stated.ai" target='_blank'>stated.ai</a>)}
                         </div>
                         <div style={{ flexGrow: 1 }}></div>
                         {disableSearch === false ? <></> : <div style={{ minWidth: "200px" }}>
