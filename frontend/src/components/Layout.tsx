@@ -24,15 +24,15 @@ export const Layout = ({ setSearchQuery, lt850px, lt500px, disableSearch }: Layo
                 <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: "30px" }}>
                         <div>
-                            {!lt850px && (<Link style={{ color: "rgba(255,255,255,1)" }} to="/" onClick={() => {
+                            <Link style={{ color: "rgba(255,255,255,1)" }} to="/" onClick={() => {
                                 setLocalSearchQuery('')
-                            }}>Statements</Link>)}
-                            {!lt850px && (<Link style={{ color: "rgba(255,255,255,1)" , marginLeft: "2vw"}} to="/ratings" onClick={() => {
+                            }}>Statements</Link>
+                            {!false && (<Link style={{ color: "rgba(255,255,255,1)" , marginLeft: "2vw"}} to="/ratings" onClick={() => {
                                 setLocalSearchQuery('')
                             }}>Ratings</Link>)}
-                            <a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-verification-graph" target='_blank'>Verifications</a>
-                            {!lt500px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-network-graph" target='_blank'>Network</a>)}
-                            <a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="https://stated.ai" target='_blank'>stated.ai</a>
+                            {!lt850px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-verification-graph" target='_blank'>Verifications</a>)}
+                            {!lt850px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="/full-network-graph" target='_blank'>Network</a>)}
+                            {!lt500px && (<a style={{ color: "rgba(255,255,255,1)", marginLeft: "2vw" }} href="https://stated.ai" target='_blank'>stated.ai</a>)}
                         </div>
                         <div style={{ flexGrow: 1 }}></div>
                         {disableSearch === false ? <></> : <div style={{ minWidth: "200px" }}>
