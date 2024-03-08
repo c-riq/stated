@@ -80,7 +80,7 @@ const ResponseForm = (props:(FormProps & {statementToRespond?: StatementDB | Sta
                 label="Statement"
                 onChange={e => { setResponse(e.target.value) }}
                 margin="normal"
-                sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                sx={{marginTop: "24px", width: (props.lt850px ? "90vw" :"50vw"), maxWidth: "500px"}}
             /> 
         {props.children}
         <PublishStatement prepareStatement={prepareStatement} serverTime={props.serverTime} authorDomain={props.metaData.domain}/>

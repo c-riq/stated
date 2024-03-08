@@ -47,7 +47,7 @@ const StatementForm = (props:FormProps) => {
                 onChange={e => { setContent(e.target.value) }}
                 margin="normal"
                 value={content}
-                sx={{marginTop: "24px", width: "50vw", maxWidth: "500px"}}
+                sx={{marginTop: "24px", width: (props.lt850px ? "90vw" : "50vw"), maxWidth: "500px"}}
                 required
             />
             {props.children}

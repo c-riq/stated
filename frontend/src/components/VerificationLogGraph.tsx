@@ -78,7 +78,8 @@ const VerificationLogGraph = (props: Props) => {
     <>
       <h3>Statement Verification Log</h3>
       <div>
-        <TextField label="Monitoring node hostname" value={nodeHostName} onChange={(e) => setNodeHostName(e.target.value)} />
+        <TextField label="Monitoring node hostname" value={nodeHostName} 
+                sx={{width: "100%", maxWidth : (props.lt850px? "100%": "250px")}} onChange={(e) => setNodeHostName(e.target.value)} />
         {!(data && data[0]) ? (<div style={{ padding: '24px' }}>no verification log data</div>)
           : (
             <div style={{ padding: '24px', ...(props.lt850px ? { paddingLeft: '0px', paddingRight: '0px' } : {}) }}>

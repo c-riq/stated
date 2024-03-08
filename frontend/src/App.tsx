@@ -86,8 +86,10 @@ function App() {
       setLoadingMore(true)
     }} maxSkipId={maxSkipId}
     setModalOpen={() => { setModalOpen(true) }}>
-    {!lt850px && (<div>
-        <FormControl sx={{ width: 300, height: "40px" }} size="small">
+      <div style={{ width: "100%", display: "flex", flexDirection: (lt850px ? "column" : "row"), justifyContent: "space-between", alignItems: "center"}}>
+      <div ><h3>{`Statements (${statements.length??0})`}</h3></div>
+      <div>
+        <FormControl sx={{ width: 300, height: "40px", margin: "8px" }} size="small">
             <InputLabel id="filter-label" sx={{ margin: "0px 0px 0px 5px" }} >Filter statement types</InputLabel>
             <Select
                 labelId="filter-label"
@@ -115,11 +117,12 @@ function App() {
                 ))}
             </Select>
         </FormControl>
-    </div>)}
+    </div>
     <Link to="/create-statement">
         <Button onClick={() => { setModalOpen(true) }} variant='contained' data-testid="create-statement"
             sx={{ margin: "5px 5px 5px 60px", height: "40px", backgroundColor: "rgba(42,74,103,1)", borderRadius: 8 }}>Create Statement</Button>
     </Link>
+  </div>
     </Statements>)
 
 

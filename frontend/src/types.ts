@@ -15,6 +15,7 @@ type FormProps = {
   setAlertMessage: (message: string) => void;
   setisError: (isError: boolean) => void;
   setPublishingMethod: (arg0: publishingMethod) => void;
+  lt850px: boolean;
 };
 type publishingMethod = "api" | "dns" | "represent" | "static";
 type prepareStatement = (arg0: { method: publishingMethod }) => void;
