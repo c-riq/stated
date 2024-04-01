@@ -37,7 +37,7 @@ import { CompactRating } from './CompactRating';
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-    rateSubject: (arg0: Partial<RatingDB>) => void,
+    rateSubject: (arg0: Partial<RatingDB & StatementDB>) => void,
     setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
     respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
@@ -237,7 +237,7 @@ const StatementDetail = (props:props) => {
                                     const rating = parseRating(s.content)
                                     props.rateSubject({subject_name: rating.subjectName,
                                         subject_reference: rating.subjectReference, comment: rating.comment,
-                                        quality: rating.quality, rating: rating.rating})
+                                        quality: rating.quality, rating: rating.rating, ...s})
                                 } else { props.setStatementToJoin(s); }
                             }}>
                                 <PlusOneIcon />

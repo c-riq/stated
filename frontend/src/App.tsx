@@ -48,7 +48,7 @@ function App() {
   const [statementToDisputeContent, setStatementToDisputeContent] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [statementToSupersede, setStatementToSupersede] = React.useState(undefined as (StatementWithDetailsDB | StatementDB) | undefined);
   const [poll, setPoll] = React.useState(undefined as {statement: string, hash_b64: string} | undefined);
-  const [subjectToRate, setSubjectToRate] = React.useState(undefined as Partial<RatingDB> | undefined);
+  const [subjectToRate, setSubjectToRate] = React.useState(undefined as Partial<RatingDB & StatementDB> | undefined);
   const [statements, setStatements] = React.useState([] as StatementWithDetailsDB[]);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [postToView, setPostToView] = React.useState(false);
@@ -218,7 +218,7 @@ function App() {
     setPoll(poll)
     setModalOpen(true)
   }
-  const rateSubject = (subject: Partial<RatingDB>) => {
+  const rateSubject = (subject: Partial<RatingDB & StatementDB>) => {
     setSubjectToRate(subject)
     setModalOpen(true)
   }
