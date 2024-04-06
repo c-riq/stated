@@ -53,8 +53,8 @@ export const RatingForm = (props:FormProps & {subjectToRate?: Partial<RatingDB &
     const prepareStatement:prepareStatement = ({method})  => {
         try {
             props.setPublishingMethod(method)
-            const content = buildRating({subjectName, subjectReference, rating: rating as number, comment, 
-                quality: quality ?? undefined, documentFileHash: fileHash})
+            const content = buildRating({subjectName, subjectType: subjectType as RatingSubjectTypeValue ?? undefined,
+                subjectReference, rating: rating as number, comment, quality: quality ?? undefined, documentFileHash: fileHash})
             if(method === 'represent'){
                 parseRating(content)
                 sendEmail({content, props})

@@ -567,6 +567,7 @@ export const parseRating = (s: string):Rating => {
 	if(![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + m[6])
 	if(m[1] && !['Organisation','Policy proposal','Regulation',
 		'Treaty draft', 'Product', 'Research publication'].includes(m[1])) throw new Error("Invalid subject type: " + m[1])
+	if(!m[2]) throw new Error("Missing subject name")
 	return {
 		subjectType: m[1] as RatingSubjectTypeValue,
 		subjectName: m[2],
