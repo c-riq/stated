@@ -541,7 +541,7 @@ export const buildRating = ({subjectName, subjectType, subjectReference, documen
 	"\t" + "Type: Rating" + "\n" +
 	(subjectType ? "\t" + "Subject type: " + subjectType + "\n" : "") +
 	"\t" + "Subject name: " + subjectName + "\n" +
-	(subjectReference ? "\t" + "URL that identifies the subject:: " + subjectReference + "\n" : "") +
+	(subjectReference ? "\t" + "URL that identifies the subject: " + subjectReference + "\n" : "") +
 	(documentFileHash ? "\t" + "Document file hash: " + documentFileHash + "\n" : "") +
 	(quality ? "\t" + "Rated quality: " + quality + "\n" : "") +
 	"\t" + "Our rating: " + rating + "/5 Stars\n" +
