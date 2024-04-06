@@ -102,7 +102,7 @@ function App() {
                 MenuProps={{
                     PaperProps: {
                         style: {
-                            maxHeight: 224,
+                            maxHeight: 254,
                             width: 250,
                         }
                     }

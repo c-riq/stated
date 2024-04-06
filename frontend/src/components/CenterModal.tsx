@@ -34,9 +34,12 @@ export const CenterModal = (props: CenterModalProps) => {
               props.children
             }
           </div>
-          <div style={{ height: '50px', width: '50px', padding: '16px 16px 16px 16px', position: 'fixed', top: "40px", left: 0 }}>
+          <div style={{ height: '50px', width: '50px', padding: '16px 16px 16px 16px', position: 'fixed', top: 
+            (lt850px ? "40px" : "10px"), left: 0 }}>
+              <div style={{backgroundColor: 'rgba(238,238,238,1)', width: "30px", height: "30px"}}>
             <a onClick={() => props.onClose({ warning: false })} style={{ cursor: 'pointer' }}>
               <CloseIcon sx={{ fontSize: "30px" }} /></a>
+              </div>
           </div>
         </Box>
       </div>
