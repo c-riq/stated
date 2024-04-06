@@ -10,6 +10,7 @@ import api from './api'
 import p2p from './p2p'
 import retryAndCleanUp from './retryAndCleanUp'
 import verificationLog from './verificationLog'
+import cloudStorage from './cloudStorage'
 
 import { fetchOVInfoForMostPopularDomains } from './prefillOV'
 
@@ -28,6 +29,7 @@ const prefillSSLOVInfo = (!!process.env.PREFILL_SSL_OV_INFO)
 const enableVerificationLog = (!!process.env.VERIFICATION_LOG)
 const enableRetry = (process.env.RETRY === 'false') ? false : true
 const test = (!!process.env.TEST);
+const s3BucketExists = !!process.env.S3_BUCKET;
 
 (async () => {
     if (test) {
@@ -41,9 +43,23 @@ p2p.setupSchedule(pullIntervalSeconds)
 if(enableRetry) retryAndCleanUp.setupSchedule(retryIntervalSeconds)
 if(prefillSSLOVInfo) fetchOVInfoForMostPopularDomains()
 if(enableVerificationLog) verificationLog.setupSchedule(logIntervalSeconds)
+s3BucketExists && cloudStorage.setupSchedule(5000)
 
 const app = express();
 
+app.get("/files/*",  async (req, res, next) =>{
+    if (!s3BucketExists) {
+        return next()
+    }
+    const cloudUrl = await cloudStorage.getCloudStorageUrl(req.path.replace("/files/",""))
+    if(cloudUrl){
+        res.header("Content-Type", "application/pdf")
+        res.header("Content-Disposition", "inline")
+        res.redirect('' + cloudUrl)
+    } else {
+        next()
+    }
+});
 app.use("/", express.static(__dirname + '/public/'));
 app.disable('x-powered-by')
 app.all('/*', function (req, res, next) {

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
     "test": "tsc && jest",
     "start": "nodemon --exec ts-node ./index.ts",
@@ -12,6 +15,7 @@
   "author": "Christopher Rieckmann",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.1590.0",
     "axios": "^1.2.0",
     "core-js": "^3.26.1",
     "crypto": "^1.0.1",
