@@ -10,7 +10,7 @@ test('create signature statement', async ({ page }) => {
   await page.goto('http://localhost:3000/');
   await page.getByRole('button', { name: 'Create Statement' }).click();
   await page.getByLabel('Type', { exact: true }).click();
-  await page.getByRole('option', { name: 'Sign PDF' }).click();
+  await page.getByRole('option', { name: 'Sign Document' }).click();
   await page.getByPlaceholder('imdba856CQZlcZVhxFt4RP/').fill('jkl');
   await page.getByPlaceholder('example.com').fill('localhost');
   await page.getByPlaceholder('Example Inc.').fill('localhost');

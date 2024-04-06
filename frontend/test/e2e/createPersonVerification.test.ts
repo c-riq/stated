@@ -20,7 +20,7 @@ test('create person verification', async ({ page }) => {
   await page.getByLabel('City of birth').click();
   await page.getByRole('option', { name: 'Tirana' }).click();
   await page.getByPlaceholder('example.com').fill('localhost');
-  await page.locator('.MuiBox-root > div > div').click();
+  //await page.locator('.MuiBox-root > div > div').click();
   await page.getByPlaceholder('Example Inc.').fill('localhost');
   await page.getByRole('button', { name: 'Show additional options' }).click();
   await page.getByRole('button', { name: 'Publish using an API key for' }).click();
