@@ -35,8 +35,12 @@ export const parseAndCreateRating = ({statement_hash, domain, author, content }:
     log && console.log('createRating', statement_hash, domain, author, content)
     try {
         const parsedRating = parseRating(content)
-        const { rating, subjectName, subjectReference, comment, quality } = parsedRating
-        if ((!(rating > 0 && rating < 6)) || (subjectName.length < 1 || subjectReference.length < 1) ) {
+        const { rating, subjectName, subjectReference, documentFileHash, comment, quality } = parsedRating
+        if ((!(rating > 0 && rating < 6)) || (subjectName.length < 1 || (
+                (subjectReference?.length || 0) < 1) 
+                &&
+                (documentFileHash?.length || 0) < 1
+        )) {
             return reject(Error("Missing required fields"))
         }
         const ratingExists = await ratingAlreadyExists(statement_hash)
@@ -49,7 +53,7 @@ export const parseAndCreateRating = ({statement_hash, domain, author, content }:
                 return reject(Error('Could not update rating'))
             }
         }
-        const dbResult = await createRating({ statement_hash, subject_name: subjectName, subject_reference: subjectReference, rating, comment: comment || '', quality: quality || null, qualified: isQualified})   
+        const dbResult = await createRating({ statement_hash, subject_name: subjectName, subject_reference: subjectReference || null, rating, comment: comment || '', quality: quality || null, qualified: isQualified})   
         if(dbResult?.rows[0]){
             if (!isQualified){
                 return reject(Error('Author lacks a verification or has already rated the subject on that quality'))

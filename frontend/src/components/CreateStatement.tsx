@@ -353,7 +353,7 @@ const CreateStatement = (props:Props) => {
                     style={{marginBottom: "16px"}}
                 >
                     <MenuItem value={statementTypes.statement}>Statement</MenuItem>
-                    <MenuItem value={statementTypes.signPdf}>Sign PDF</MenuItem>
+                    <MenuItem value={statementTypes.signPdf}>Sign document</MenuItem>
                     <MenuItem value={statementTypes.organisationVerification} data-testid='organisation-verification'>Verify an organisation</MenuItem>
                     <MenuItem value={statementTypes.personVerification}>Verify a person</MenuItem>
                     <MenuItem value={statementTypes.rating}>Rating</MenuItem>

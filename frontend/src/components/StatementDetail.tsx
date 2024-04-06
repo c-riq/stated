@@ -30,14 +30,14 @@ import { getWorkingFileURL } from './SignPDFForm'
 import { DecryptedContent } from './DecryptedContent';
 import VerificationLogGraph from './VerificationLogGraph';
 import { ConfirmActionWithApiKey } from './ConfirmActionWithApiKey';
-import { Chip } from '@mui/material';
+import { Chip, Portal, Snackbar } from '@mui/material';
 import { CompactStatementSmall, Dispute, Response } from './CompactStatement';
 import { CompactRating } from './CompactRating';
 
 type props = {
     lt850px: boolean,
     voteOnPoll: (arg0:{statement: string, hash_b64: string}) => void,
-    rateSubject: (arg0: Partial<RatingDB>) => void,
+    rateSubject: (arg0: Partial<RatingDB & StatementDB>) => void,
     setStatementToJoin: (arg0: StatementWithDetailsDB | StatementDB) => void,
     respondToStatement: (arg0: StatementWithDetailsDB | StatementDB) => void,
     disputeStatementAuthenticity: (arg0: StatementWithDetailsDB | StatementDB) => void,
@@ -62,6 +62,8 @@ const StatementDetail = (props:props) => {
     const [dataFetched, setDataFetched] = React.useState(false);
     const [workingFileURL, setWorkingFileURL] = React.useState('');
     const [ratings, setRatings] = React.useState([] as AggregatedRatingDB[]);
+    const [fileHash, setFileHash] = React.useState('');
+    const [errorParsing, setErrorParsing] = React.useState('');
 
     const hashInURL = useParams().statementId || ''
     const [hash, setHash] = React.useState(hashInURL)
@@ -135,7 +137,8 @@ const StatementDetail = (props:props) => {
                     } if (type === statementTypes.response) {
                         setParsedStatement(parseResponseContent(content) as ResponseContent)
                     }
-                } catch (e) {             
+                } catch (e) {    
+                    setErrorParsing('Error parsing statement: ' + e)        
                     console.log(e)              
                 }
                 return
@@ -157,17 +160,38 @@ const StatementDetail = (props:props) => {
     }, [location])
     React.useEffect(() => {
         if (statement && (statement.type === statementTypes.signPdf) && statement.content){
-            getWorkingFileURL(parsePDFSigning(statement.content).hash, 'https://stated.' + statement.domain)
-            .then(setWorkingFileURL)
+            try {
+                const fileHash = parsePDFSigning(statement.content).hash
+                setFileHash(fileHash)
+                getWorkingFileURL(fileHash, 'https://stated.' + statement.domain)
+                .then(setWorkingFileURL)
+            } catch (e) {
+                return
+            }
         }
         if (statement && (statement.type === statementTypes.rating) && statement.content){
-            const rating = parseRating(statement.content)
-            getAggregatedRatings({subject: rating.subjectName, subjectReference: rating.subjectReference, cb: (result) => {
-                setRatings(result)
-            }})
+            try {
+                const fileHash = parseRating(statement.content).documentFileHash
+                if (fileHash) {
+                    setFileHash(fileHash)
+                    getWorkingFileURL(fileHash, 'https://stated.' + statement.domain)
+                    .then(setWorkingFileURL)
+                }
+            } catch (e) {
+                return
+            }
+        }
+        if (statement && (statement.type === statementTypes.rating) && statement.content){
+            try {
+                const rating = parseRating(statement.content)
+                getAggregatedRatings({subject: rating.subjectName, subjectReference: rating.subjectReference, cb: (result) => {
+                    setRatings(result)
+                }})
+            } catch (e) {
+                return
+            }
         }
     }, [statement])
-
     if (statementCollision) return (
         <div style={{ maxWidth: "100vw", width: "100%", backgroundColor: "rgba(238,238,238,1)", borderRadius: 8, display:'flex',
          flexDirection:'row', justifyContent: 'center', overflow: 'hidden' }}>
@@ -234,10 +258,10 @@ const StatementDetail = (props:props) => {
                             <IconButton aria-label="join statement" onClick={()=>{
                                 const s = statement
                                 if (s.type === statementTypes.rating){
-                                    const rating = parseRating(s.content)
+                                    const rating = parsedStatement as Rating
                                     props.rateSubject({subject_name: rating.subjectName,
                                         subject_reference: rating.subjectReference, comment: rating.comment,
-                                        quality: rating.quality, rating: rating.rating})
+                                        quality: rating.quality, rating: rating.rating, ...s})
                                 } else { props.setStatementToJoin(s); }
                             }}>
                                 <PlusOneIcon />
@@ -293,7 +317,7 @@ const StatementDetail = (props:props) => {
             <TextareaAutosize style={{width:"100%", height:((''+statement?.statement).match(/\n/g) ? 
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
                 overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement?.statement} />
-            {statement.type === statementTypes.signPdf && (
+            {fileHash && (
                 <div style={{border: "1px solid rgba(0,0,0,0.1)",
                 minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}>
                     {workingFileURL ? ( 
@@ -411,6 +435,18 @@ const StatementDetail = (props:props) => {
                 </div>)}
             
             </div>
+            <Portal>
+                <Snackbar open={errorParsing !== undefined && errorParsing.length > 0} autoHideDuration={6000} onClose={() => {setErrorParsing('')}}
+                sx={{position: "absolute", top: "0px"}}
+                anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "center"
+                }}>
+                    <Alert onClose={() => {setErrorParsing('')}} severity={errorParsing ? "error" : "success"} sx={{ width: '100%' }}>
+                        {errorParsing.split('\n').map((t,i) => (<div key={i}>{t}</div>))}
+                    </Alert>
+                </Snackbar>
+            </Portal>
         </div>
         
     )

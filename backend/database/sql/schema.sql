@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS ratings (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
     subject_name VARCHAR(500) NOT NULL,
-    subject_reference VARCHAR(500) NOT NULL,
+    subject_reference VARCHAR(500),
     rating INT NOT NULL,
     comment VARCHAR(500) NOT NULL,
     quality VARCHAR(500),

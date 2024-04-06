@@ -19,7 +19,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 
 
 export const CompactRating = (props: {
-    r: AggregatedRatingDB, i: string, rateSubject: (subject: Partial<RatingDB>) => void
+    r: AggregatedRatingDB, i: string, rateSubject: (subject: Partial<RatingDB & StatementDB>) => void
 }) => {
     const { r, i } = props
     const avg = r.average_rating ? parseFloat('' + r.average_rating).toFixed(2) : '';

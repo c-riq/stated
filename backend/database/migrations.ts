@@ -45,6 +45,9 @@ const migration12 = fs
 const migration13 = fs
   .readFileSync(__dirname + "/sql/migration_13.sql", "utf8")
   .toString();
+const migration14 = fs
+  .readFileSync(__dirname + "/sql/migration_14.sql", "utf8")
+  .toString();
 
 const migrateToVersion = {
     1: { sql: migration1 },
@@ -60,9 +63,10 @@ const migrateToVersion = {
     11: { sql: migration11 },
     12: { sql: migration12 },
     13: { sql: migration13 },
+    14: { sql: migration14 },
 };
 
-const currentCodeVersion = 13;
+const currentCodeVersion = 14;
 const test = process.env.TEST || false;
 const _currentCodeVersion = test && parseInt(process.env.MIGRATION_TEST_VERSION ?? "") || currentCodeVersion;
 

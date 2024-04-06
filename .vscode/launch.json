@@ -6,11 +6,13 @@
     "configurations": [
         {
             "type": "node",
+            "runtimeVersion": "20",
             "request": "launch",
             "name": "backend",
             "preLaunchTask": "npm: build - backend",
             "runtimeExecutable": "node",
             "runtimeArgs": ["--nolazy", "-r", "${workspaceFolder}/backend/node_modules/ts-node/register/transpile-only"],
+            "envFile": "${workspaceFolder}/backend/.env",
             "program": "${workspaceFolder}/backend/index.ts",
             "restart": true,
             "console": "integratedTerminal",

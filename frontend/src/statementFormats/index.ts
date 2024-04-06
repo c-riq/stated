@@ -533,14 +533,16 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 		hash: m[1]
 	}
 }
-export const ratingKeys = /(Type: |Subject name: |URL that identifies the subject: |Rated quality: |Our rating: |Comment: )/
+export const ratingKeys = /(Type: |Subject name: |URL that identifies the subject: |Document file hash: |Rated quality: |Our rating: |Comment: )/
 
-export const buildRating = ({subjectName, subjectReference, rating, quality, comment}:Rating) => {
+export const buildRating = ({subjectName, subjectType, subjectReference, documentFileHash, rating, quality, comment}:Rating) => {
 	if (![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + rating)
 	const content = "\n" +
 	"\t" + "Type: Rating" + "\n" +
+	(subjectType ? "\t" + "Subject type: " + subjectType + "\n" : "") +
 	"\t" + "Subject name: " + subjectName + "\n" +
 	(subjectReference ? "\t" + "URL that identifies the subject: " + subjectReference + "\n" : "") +
+	(documentFileHash ? "\t" + "Document file hash: " + documentFileHash + "\n" : "") +
 	(quality ? "\t" + "Rated quality: " + quality + "\n" : "") +
 	"\t" + "Our rating: " + rating + "/5 Stars\n" +
 	(comment ? "\t" + "Comment: " + comment + "\n" : "") +
@@ -550,8 +552,10 @@ export const buildRating = ({subjectName, subjectReference, rating, quality, com
 export const parseRating = (s: string):Rating => {
 	const ratingRegex= new RegExp(''
 	+ /^\n\tType: Rating\n/.source
+	+ /(?:\tSubject type: (?<subjectType>[^\n]*?)\n)?/.source
 	+ /\tSubject name: (?<subjectName>[^\n]*?)\n/.source
 	+ /(?:\tURL that identifies the subject: (?<subjectReference>[^\n]*?)\n)?/.source
+	+ /(?:\tDocument file hash: (?<documentFileHash>[^\n]*?)\n)?/.source
 	+ /(?:\tRated quality: (?<quality>[^\n]*?)\n)?/.source
 	+ /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
 	+ /(?:\tComment: (?<comment>[^\n]*?)\n)?/.source
@@ -559,14 +563,19 @@ export const parseRating = (s: string):Rating => {
 	);
 	const m = s.match(ratingRegex)
 	if(!m) throw new Error("Invalid rating format: " + s)
-	const rating = parseInt(m[4])
-	if(![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + m[3])
+	const rating = parseInt(m[6])
+	if(![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + m[6])
+	if(m[1] && !['Organisation','Policy proposal','Regulation',
+		'Treaty draft', 'Product', 'Research publication'].includes(m[1])) throw new Error("Invalid subject type: " + m[1])
+	if(!m[2]) throw new Error("Missing subject name")
 	return {
-		subjectName: m[1],
-		subjectReference: m[2],
-		quality: m[3],
+		subjectType: m[1] as RatingSubjectTypeValue,
+		subjectName: m[2],
+		subjectReference: m[3],
+		documentFileHash: m[4],
+		quality: m[5],
 		rating,
-		comment: m[5]
+		comment: m[7]
 	}
 }
 export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be paid per investigated case with a maxium of: )/

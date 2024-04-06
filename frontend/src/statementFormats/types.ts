@@ -112,9 +112,19 @@ type ResponseContent = {
 type PDFSigning = {
     hash: string
 }
+type RatingSubjectTypeValue =
+    | 'Organisation'
+    | 'Policy proposal'
+    | 'Treaty draft'
+    | 'Research publication'
+    | 'Regulation'
+    | 'Product'
+
 type Rating = {
+    subjectType?: RatingSubjectTypeValue
     subjectName: string
-    subjectReference: string
+    subjectReference?: string
+    documentFileHash?: string
     rating: number
     quality?: string
     comment?: string
