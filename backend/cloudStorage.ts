@@ -10,13 +10,10 @@ const s3 = new AWS.S3({
     secretAccessKey: process.env.S3_SECRET_KEY,
 })
 
-s3.listBuckets().promise().then(console.log).catch(console.error)
-
 const url = (key: string) => `https://${s3Bucket}.s3.amazonaws.com/${key}`
 
 const checkIfFileExists = async (fileName: string) => {
     const fullUrl = url(fileName)
-    console.log('checking if file exists: ', fullUrl)
     try {
         const res = await new Promise((resolve, reject) => {
             try {
@@ -24,7 +21,6 @@ const checkIfFileExists = async (fileName: string) => {
                 method: 'HEAD',
             })
             req.on('response', (response) => {
-                console.log('response: ', response.statusCode)
                 resolve(response.statusCode === 200)
             })
             req.on('error', (error) => {
@@ -47,7 +43,6 @@ const checkIfFileExists = async (fileName: string) => {
 }
 
 const uploadFile = async (key: string, body: Buffer) => {
-    console.log('uploading file: ', key)
     await s3.upload({
         Bucket: s3Bucket,
         Key: key,
@@ -71,7 +66,6 @@ const upLoadAndDeleteFiles = async () => {
     }
     const files = fs.readdirSync(__dirname + '/public/files')
     for (const file of files) {
-        console.log('checking file: ', file)
         const exists = await checkIfFileExists(file)
         if (exists) {
             console.log('file exists in cloud storage, deleting: ', file)
