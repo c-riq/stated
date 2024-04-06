@@ -26,7 +26,7 @@ export const subjectTypes = [
     ["Product"],
 ]
 
-const suggestFile = (t:string) => ['Policy proposal', 'Treaty draft', 'Regulation', 'Research publication'].includes(t)
+const suggestFile = (t:string) => ['Policy proposal', 'Treaty draft', 'Research publication'].includes(t)
 
 export const RatingForm = (props:FormProps & {subjectToRate?: Partial<RatingDB & StatementDB>}) => {
 
