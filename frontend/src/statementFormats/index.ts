@@ -651,6 +651,47 @@ export const parseObservation = (s: string):Observation => {
 		value: m[8]
 	}
 }
+export const ForecastKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observed property: |Observed value: )/
+export const buildForecast = ({approach, confidence, reliabilityPolicy, subject, subjectReference, observationReference, property, value}: Observation) => {
+	const content = "\n" +
+	"\t" + "Type: Forecast" + "\n" +
+	(approach ? "\t" + "Approach: " + approach + "\n" : "") +
+	(confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+	(reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+	"\t" + "Subject: " + subject + "\n" +
+	(subjectReference ? "\t" + "Subject identity reference: " + subjectReference + "\n" : "") +
+	(observationReference ? "\t" + "Observation reference: " + observationReference + "\n" : "") +
+	"\t" + "Observed property: " + property + "\n" +
+	(value ? "\t" + "Observed value: " + value + "\n" : "") +
+	""
+	return content
+}
+export const parseForcast = (s: string):Observation => {
+	const observationRegex= new RegExp(''
+	+ /^\n\tType: Observation\n/.source
+	+ /(?:\tApproach: (?<approach>[^\n]*?)\n)?/.source
+	+ /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
+	+ /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+	+ /\tSubject: (?<subject>[^\n]*?)\n/.source
+	+ /(?:\tSubject identity reference: (?<subjectReference>[^\n]*?)\n)?/.source
+	+ /(?:\tObservation reference: (?<observationReference>[^\n]*?)\n)?/.source
+	+ /\tObserved property: (?<property>[^\n]*?)\n/.source
+	+ /(?:\tObserved value: (?<value>[\s\S]+?)\n)?/.source
+	+ /$/.source
+	);
+	const m = s.match(observationRegex)
+	if(!m) throw new Error("Invalid observation format: " + s)
+	return {
+		approach: m[1],
+		confidence: m[2] ? parseFloat(m[2]) : undefined,
+		reliabilityPolicy: m[3],
+		subject: m[4],
+		subjectReference: m[5],
+		observationReference: m[6],
+		property: m[7],
+		value: m[8]
+	}
+}
 export const BoycottKeys = /(Type: |Description: |Subject: |Subject identity reference: )/
 export const buildBoycott = ({description, subject, subjectReference}: Boycott) => {
 	const content = "\n" +
