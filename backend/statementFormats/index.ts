@@ -533,7 +533,7 @@ export const parsePDFSigning = (s: string):PDFSigning => {
 		hash: m[1]
 	}
 }
-export const ratingKeys = /(Type: |Subject name: |URL that identifies the subject: |Document file hash: |Rated quality: |Our rating: |Comment: )/
+export const ratingKeys = /(Type: |Subject type: |Subject name: |URL that identifies the subject: |Document file hash: |Rated quality: |Our rating: |Comment: )/
 
 export const buildRating = ({subjectName, subjectType, subjectReference, documentFileHash, rating, quality, comment}:Rating) => {
 	if (![1,2,3,4,5].includes(rating)) throw new Error("Invalid rating: " + rating)
