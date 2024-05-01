@@ -558,7 +558,7 @@ export const parseRating = (s: string):Rating => {
 	+ /(?:\tDocument file hash: (?<documentFileHash>[^\n]*?)\n)?/.source
 	+ /(?:\tRated quality: (?<quality>[^\n]*?)\n)?/.source
 	+ /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
-	+ /(?:\tComment: (?<comment>[^\n]*?)\n)?/.source
+	+ /(?:\tComment: (?<comment>[\s\S]+?)\n)?/.source
 	+ /$/.source
 	);
 	const m = s.match(ratingRegex)
