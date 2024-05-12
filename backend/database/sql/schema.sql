@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS ratings (
     subject_name VARCHAR(500) NOT NULL,
     subject_reference VARCHAR(500),
     rating INT NOT NULL,
-    comment VARCHAR(500) NOT NULL,
+    comment VARCHAR(3000) NOT NULL,
     quality VARCHAR(500),
     qualified BOOLEAN DEFAULT FALSE,
     CONSTRAINT ratings_statement_hash_fkey
