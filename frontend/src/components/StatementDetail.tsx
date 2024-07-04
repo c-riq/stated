@@ -318,20 +318,26 @@ const StatementDetail = (props:props) => {
             (40 + ((''+statement?.statement).match(/\n/g)?.length || 0) * 18) + 'px' : "250px"), 
                 overflow: "scroll", fontFamily:"Helvetica", fontSize: "15px"}} value={statement?.statement} />
             {fileHash && (
+                <>
+                  {workingFileURL && ( <Button href={workingFileURL} target="_blank" rel="noreferrer">View PDF in another Tab</Button>)}
+                {(!/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) && ( // TODO: Fix Safari
                 <div style={{border: "1px solid rgba(0,0,0,0.1)",
                 minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}>
                     {workingFileURL ? ( 
-                    <embed
-                    src={workingFileURL}
-                    style={{minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}
-                    height="300px"
-                    type="application/pdf"
-                    />) : (
+                        <embed
+                        src={workingFileURL}
+                        style={{minWidth: !props.lt850px ? "50vw": "70vw", minHeight: !props.lt850px ? "50vh": "70vw"}}
+                        height="300px"
+                        type="application/pdf"
+                        />
+                    ) : (
                     <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
                         <p>File not found</p>
                     </div>
                     )}
                 </div>
+                )}
+                </>
             )}
             {key && algorithm &&
             (<DecryptedContent statement={statement} decryptionKey={key} decryptionAlgorithm={algorithm} />)}

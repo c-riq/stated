@@ -88,7 +88,7 @@ export const CompactStatement = (props: {
     return (
         <div key={i} style={{ display: "flex", flexDirection: "row", backgroundColor: "#ffffff",
         padding: '16px', marginBottom: "8px", borderRadius: 8, width: "100%", overflow: "hidden"}}>
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "start",  overflow: "hidden", width: "70px" }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "start",  overflow: "hidden", width: "70px", flexShrink: 0 }}>
                 <div>{s.repost_count}</div>
                 <Link to="/create-statement">
                     <Button onClick={() => {
