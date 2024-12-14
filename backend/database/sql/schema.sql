@@ -125,6 +125,14 @@ INSERT INTO domain_ownership_beliefs (
 VALUES ('rixdata.net', 'Rix Data UG (haftungsbeschränkt)', 1.0,
     'limited liability corporation', 1.0, 'DE', 1.0, 
     'Bamberg', 1.0);
+CREATE TABLE IF NOT EXISTS trust_scores (
+    id SERIAL PRIMARY KEY,
+    domain VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    score DOUBLE PRECISION NOT NULL,
+    distance_to_self bigint,
+    last_updated timestamp NOT NULL
+);
 CREATE TABLE IF NOT EXISTS votes (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
