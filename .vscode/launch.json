@@ -17,7 +17,8 @@
             "restart": true,
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "env": {"API_KEY":"XXX", "DOMAIN":"localhost"}
+            "env": {"API_KEY":"XXX", "DOMAIN":"localhost",
+                "Path": "${env:Path};${workspaceFolder}\\node_modules\\.bin"}
         },{
             "type": "node",
             "request": "launch",

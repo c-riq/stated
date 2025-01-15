@@ -32,12 +32,24 @@ const test = (!!process.env.TEST);
 const s3BucketExists = !!process.env.S3_BUCKET;
 
 (async () => {
+    const addSeedNodesWithRetry = async () => {
+        while (true) {
+            try {
+                await p2p.addSeedNodes()
+                break // Exit loop on success
+            } catch (error) {
+                console.error('Failed to add seed nodes, retrying in 5 seconds:', error)
+                await new Promise(resolve => setTimeout(resolve, 5000))
+            }
+        }
+    }
+
     if (test) {
         setInterval(async () => {
-            await p2p.addSeedNodes()
+            await addSeedNodesWithRetry()
         }, 1000 * pullIntervalSeconds)
     }
-    await p2p.addSeedNodes()
+    await addSeedNodesWithRetry()
 })()
 p2p.setupSchedule(pullIntervalSeconds)
 if(enableRetry) retryAndCleanUp.setupSchedule(retryIntervalSeconds)
