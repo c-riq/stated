@@ -12,13 +12,13 @@ version: '3.5'
 services:
   postgres:
     container_name: postgres
-    image: postgres:15
+    image: postgres:17
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-sdf}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sdf}
       PGDATA: /data/postgres
     volumes:
-       - postgres_1:/data/postgres
+       - postgres_17:/data/postgres
        - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
@@ -31,4 +31,4 @@ networks:
     driver: bridge
 
 volumes:
-    postgres_1:
+    postgres_17:

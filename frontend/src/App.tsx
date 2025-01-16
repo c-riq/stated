@@ -61,6 +61,7 @@ function App() {
   const [canLoadMore, setCanLoadMore] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [statementTypesFilter, setStatementTypesFilter] = React.useState<string[]>(typesFromUrl || []);
+  const [legalFormFilter, setLegalFormFilter] = React.useState<string | undefined>(undefined);
   const [shouldLoadMore, setShouldLoadMore] = React.useState(false);
   const [domainFilter, setDomainFilter] = React.useState<string | undefined>(domainFilterFromUrl || undefined);
   const [authorFilter, setAuthorFilter] = React.useState<string | undefined>(auhtorFilterFromUrl || undefined);
@@ -78,6 +79,10 @@ function App() {
       const result = typeof value === 'string' ? value.split(',') : value
       setStatementTypesFilter(result)
   };
+  const handleLegalFormChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value;
+    setLegalFormFilter(value)
+  };
 
   const StatementsSection = () => (<Statements setServerTime={setServerTime} setStatementToJoin={joinStatement} voteOnPoll={voteOnPoll}
     rateSubject={rateSubject} statements={statements} lt850px={lt850px} 
@@ -89,7 +94,7 @@ function App() {
       <div style={{ width: "100%", display: "flex", flexDirection: (lt850px ? "column" : "row"), justifyContent: "space-between", alignItems: "center"}}>
       <div style={{height: "30px", fontSize: "1.17em"}}>{`Statements (${maxSkipId??0})`}</div>
       <div>
-        <FormControl sx={{ width: 300, height: "40px", margin: "8px" }} size="small">
+        <FormControl sx={{ width: 200, height: "40px", margin: "8px" }} size="small">
             <InputLabel id="filter-label" sx={{ margin: "0px 0px 0px 5px" }} >Filter statement types</InputLabel>
             <Select
                 labelId="filter-label"
@@ -117,6 +122,22 @@ function App() {
                 ))}
             </Select>
         </FormControl>
+        <FormControl sx={{ width: 200, height: "40px", margin: "8px" }} size="small">
+          <InputLabel id="legal-form-label" sx={{ margin: "0px 0px 0px 5px" }} >Filter author type</InputLabel>
+          <Select
+              labelId="legal-form-label"
+              id="legal-form"
+              value={legalFormFilter}
+              input={<OutlinedInput sx={{ height: "40px" }} label="Filter author type" />}
+              style={{ backgroundColor: "rgba(255,255,255,1)", borderRadius: 20 }}
+              onChange={handleLegalFormChange}
+          >
+            <MenuItem value="local government">Local Government</MenuItem>
+            <MenuItem value="state government">State Government</MenuItem>
+            <MenuItem value="foreign affairs ministry">Foreign Affairs Ministry</MenuItem>
+            <MenuItem value="corporation">Corporation</MenuItem>
+          </Select>
+        </FormControl>
     </div>
     <Link to="/create-statement">
         <Button onClick={() => { setModalOpen(true) }} variant='contained' data-testid="create-statement"
@@ -132,8 +153,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, statementTypes: statementTypesFilter, qualityFilter})
-  }, [searchQuery, tagFilter, statementTypesFilter, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, triggerUrlRefresh, qualityFilter])
+    updateQueryString({searchQuery, tagFilter, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, statementTypes: statementTypesFilter, qualityFilter, legalFormFilter})
+  }, [searchQuery, tagFilter, statementTypesFilter, legalFormFilter, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, triggerUrlRefresh, qualityFilter])
 
   React.useEffect(() => {
     if (location.pathname.match('full-verification-graph') || location.pathname.match('full-network-graph') ||
@@ -141,7 +162,7 @@ function App() {
       return
     }
     const limit = 20
-    getStatements({searchQuery, tag: tagFilter, limit, skip: 0, statementTypes: statementTypesFilter, domain: domainFilter, author: authorFilter,
+    getStatements({searchQuery, tag: tagFilter, limit, skip: 0, statementTypes: statementTypesFilter, domain: domainFilter, author: authorFilter, legalForm: legalFormFilter,
         cb: (  s:({statements: StatementWithDetailsDB[], time: string}|undefined) )=>{
         if (s?.statements && (s.statements.length > 0)) {
             setStatements(s.statements)
@@ -162,7 +183,7 @@ function App() {
             setServerTime(new Date(s.time))
         } 
     }})
-  }, [statementTypesFilter, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh, tagFilter])
+  }, [statementTypesFilter, legalFormFilter, searchQuery, location.pathname, domainFilter, authorFilter, triggerUrlRefresh, tagFilter])
   React.useEffect(() => {
     if (shouldLoadMore) {
       const limit = 20

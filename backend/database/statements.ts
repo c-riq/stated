@@ -278,8 +278,8 @@ export const deleteStatementFactory = (pool: Pool) => ({ hash_b64 }: { hash_b64:
 
 export const getStatementsWithDetailFactory =
   (pool: Pool) =>
-  ({ skip, searchQuery, tag, limit, types, domain, author } : {skip?: number,
-    searchQuery?: string, tag?: string, limit?: number, types?: string[], domain?:string, author?: string}) => 
+  ({ skip, searchQuery, tag, limit, types, domain, author, legalForm } : {skip?: number,
+    searchQuery?: string, tag?: string, limit?: number, types?: string[], domain?:string, author?: string, legalForm?: string}) => 
         new Promise((resolve: DBCallback<StatementWithDetailsDB>, reject) => {
       try {
         checkIfMigrationsAreDone();
@@ -318,16 +318,27 @@ export const getStatementsWithDetailFactory =
           WITH 
           query_results as(
             SELECT 
-                content as _content, 
-                count(distinct domain) as repost_count, 
-                first_value(min(id)) over(partition by content order by min(proclaimed_publication_time) asc) as first_id,
+                s.content as _content, 
+                count(distinct s.domain) as repost_count, 
+                first_value(min(s.id)) over(partition by s.content order by min(s.proclaimed_publication_time) asc) as first_id,
                 CAST($1 AS INTEGER) as input1,
                 $2 as input2,
                 $3 as input3,
                 $4 as input4,
                 $5 as input5,
-                $6 as input6
-            FROM statement_with_superseding 
+                $6 as input6,
+                $7 as input7
+            FROM statement_with_superseding s
+            ${
+              legalForm ?
+              `
+              JOIN identity_beliefs_and_reputation ibr
+                ON ibr.domain = s.domain 
+                AND ibr.name = s.author
+                AND ibr.legal_entity_type = $7
+                AND ibr.legal_entity_type_confidence > 0.98
+              ` : ""
+            }
             WHERE 
               superseding_statement IS NULL 
               ${
@@ -413,7 +424,7 @@ export const getStatementsWithDetailFactory =
          WHERE _rank=1
          ORDER BY repost_count DESC, id DESC; 
               `,
-          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || '', tag || ''],
+          [skip || 0, (searchQuery || "searchQuery").toLowerCase(), limit || 20, domain || '', author || '', tag || '', legalForm || ''],
           (error, results) => {
             if (error) {
               console.log(error);

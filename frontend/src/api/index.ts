@@ -45,11 +45,11 @@ export const getStatement = (hash:string, cb:cb<StatementWithSupersedingDB|State
     }, e => {console.log(e); cb(undefined)})
 }
 
-export const getStatements = ({searchQuery, tag, skip, limit, domain, author, statementTypes, cb}:
+export const getStatements = ({searchQuery, tag, skip, limit, domain, author, statementTypes, legalForm, cb}:
     {searchQuery:string|undefined, tag?:string, limit:number, domain:string|undefined, author:string|undefined,
-    skip:number, statementTypes:string[], cb:(arg0: resDB<StatementWithDetailsDB>) => void}) => {
+    skip:number, statementTypes:string[], legalForm?:string, cb:(arg0: resDB<StatementWithDetailsDB>) => void}) => {
     const types = statementTypes.map(queryValueToStatementType).filter(t => t).join(',')
-    const queryString = apiQueryString({searchQuery, tag, limit, skip, types, domain, author})
+    const queryString = apiQueryString({searchQuery, tag, limit, skip, types, domain, author, legalForm})
     req('GET',
         `statements_with_details?${queryString}`, {}, (json: resDB<StatementWithDetailsDB>) => {
         cb(json)
