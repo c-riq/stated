@@ -32,6 +32,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 22.x
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2 libicu-dev libffi-dev libx264-dev
       - name: Install dependencies
         run: npm ci
         working-directory: ./frontend
@@ -118,7 +122,11 @@ jobs:
       run: npm i
     
     - name: Install postgres client
-      run: sudo apt-get install postgresql-client-17 -y
+      run: |
+        sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get -y install postgresql-client-17
 
     - name: Run test
       working-directory: ./test/integration/migration
