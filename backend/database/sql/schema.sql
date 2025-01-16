@@ -103,9 +103,9 @@ CREATE TABLE IF NOT EXISTS person_verifications (
         FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
         ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS domain_ownership_beliefs (
+CREATE TABLE IF NOT EXISTS identity_beliefs_and_reputation (
     id SERIAL PRIMARY KEY,
-    domain VARCHAR(100) UNIQUE NOT NULL,
+    domain VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     name_confidence DOUBLE PRECISION NOT NULL,
     legal_entity_type VARCHAR(100) NOT NULL,
@@ -116,15 +116,17 @@ CREATE TABLE IF NOT EXISTS domain_ownership_beliefs (
     province_confidence DOUBLE PRECISION,
     city VARCHAR(100),
     city_confidence DOUBLE PRECISION,
-    reputation DOUBLE PRECISION
+    reputation DOUBLE PRECISION,
+    reputation_fallback DOUBLE PRECISION,
+    CONSTRAINT identity_beliefs_and_reputation_no_domain_name_duplicates UNIQUE (domain, name)
 );
-INSERT INTO domain_ownership_beliefs (
+INSERT INTO identity_beliefs_and_reputation (
     domain, name, name_confidence, legal_entity_type,
     legal_entity_type_confidence, country, country_confidence,
-    city, city_confidence) 
-VALUES ('rixdata.net', 'Rix Data UG (haftungsbeschränkt)', 1.0,
-    'limited liability corporation', 1.0, 'DE', 1.0, 
-    'Bamberg', 1.0);
+    city, city_confidence, reputation) 
+VALUES ('rixdata.net', 'Rix Data NL B.V.', 1.0,
+    'limited liability corporation', 1.0, 'NL', 1.0, 
+    'Amsterdam', 1.0, 1.0);
 CREATE TABLE IF NOT EXISTS votes (
     id SERIAL PRIMARY KEY,
     statement_hash VARCHAR(500) UNIQUE NOT NULL,
