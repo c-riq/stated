@@ -1,6 +1,6 @@
 #DOCKER_BUILDKIT=1 docker build --file Dockerfile --output docker_output .
 
-FROM node:16-alpine AS stage1
+FROM node:22-alpine AS stage1
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci

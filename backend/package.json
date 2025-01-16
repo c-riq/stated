@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "scripts": {
     "test": "tsc && jest",
