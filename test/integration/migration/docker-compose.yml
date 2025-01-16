@@ -3,7 +3,7 @@
 
 services:
   db_1:
-    image: postgres:14.8
+    image: postgres:17
     environment:
       POSTGRES_USER: sdf
       POSTGRES_PASSWORD: sdf
@@ -17,7 +17,7 @@ services:
       - postgres
     restart: unless-stopped
   db_2:
-    image: postgres:14.8
+    image: postgres:17
     environment:
       POSTGRES_USER: sdf
       POSTGRES_PASSWORD: sdf
