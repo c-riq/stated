@@ -1,11 +1,22 @@
-ALTER TABLE domain_ownership_beliefs DROP CONSTRAINT domain_ownership_beliefs_domain_key;
+DROP TABLE IF EXISTS domain_ownership_beliefs;
 
-ALTER TABLE domain_ownership_beliefs RENAME TO identity_beliefs_and_reputation;
-
--- Add new unique constraint on domain and name combination
-ALTER TABLE identity_beliefs_and_reputation ADD CONSTRAINT identity_beliefs_and_reputation_no_domain_name_duplicates UNIQUE (domain, name);
-
-ALTER TABLE identity_beliefs_and_reputation ADD COLUMN reputation_fallback DOUBLE PRECISION;
+CREATE TABLE identity_beliefs_and_reputation (
+    id SERIAL PRIMARY KEY,
+    domain VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    name_confidence DOUBLE PRECISION NOT NULL,
+    legal_entity_type VARCHAR(100) NOT NULL,
+    legal_entity_type_confidence DOUBLE PRECISION NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    country_confidence DOUBLE PRECISION NOT NULL,
+    province VARCHAR(100),
+    province_confidence DOUBLE PRECISION,
+    city VARCHAR(100),
+    city_confidence DOUBLE PRECISION,
+    reputation DOUBLE PRECISION,
+    reputation_fallback DOUBLE PRECISION,
+    CONSTRAINT identity_beliefs_and_reputation_no_domain_name_duplicates UNIQUE (domain, name)
+);
 
 INSERT INTO identity_beliefs_and_reputation (
     domain, name, name_confidence, legal_entity_type,
