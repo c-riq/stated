@@ -125,7 +125,7 @@ INSERT INTO identity_beliefs_and_reputation (
     legal_entity_type_confidence, country, country_confidence,
     city, city_confidence, reputation) 
 VALUES ('rixdata.net', 'Rix Data NL B.V.', 1.0,
-    'limited liability corporation', 1.0, 'NL', 1.0, 
+    'corporation', 1.0, 'NL', 1.0, 
     'Amsterdam', 1.0, 1.0);
 CREATE TABLE IF NOT EXISTS votes (
     id SERIAL PRIMARY KEY,
@@ -159,16 +159,6 @@ CREATE TABLE IF NOT EXISTS ratings (
     quality VARCHAR(500),
     qualified BOOLEAN DEFAULT FALSE,
     CONSTRAINT ratings_statement_hash_fkey
-        FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
-        ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS disputes (
-    id SERIAL PRIMARY KEY,
-    statement_hash VARCHAR(500) UNIQUE NOT NULL,
-    disputed_statement_hash VARCHAR(500) NOT NULL,
-    domain VARCHAR(500) NOT NULL,
-    p2p_node_id INT,
-    CONSTRAINT disputes_statement_hash_fkey
         FOREIGN KEY (statement_hash) REFERENCES statements (hash_b64)
         ON DELETE CASCADE
 );

@@ -28,8 +28,8 @@ export const queryValueToStatementType = (queryValue: string) => {
     }[queryValue]
 }
 
-export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, qualityFilter}:
-        {searchQuery?: string, tagFilter?:string, statementTypes?: string[], domainFilter?: string, authorFilter?: string, subjectNameFilter?: string, subjectReferenceFilter?:string, qualityFilter?: string}        
+export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domainFilter, authorFilter, subjectNameFilter, subjectReferenceFilter, qualityFilter, legalFormFilter}:
+        {searchQuery?: string, tagFilter?:string, statementTypes?: string[], domainFilter?: string, authorFilter?: string, subjectNameFilter?: string, subjectReferenceFilter?:string, qualityFilter?: string, legalFormFilter?: string}        
     ) => {
     const queryString = [
         (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09')  : ''),
@@ -39,14 +39,15 @@ export const updateQueryString = ({searchQuery, tagFilter, statementTypes, domai
         (authorFilter ? 'author=' + authorFilter : ''),
         (subjectNameFilter ? 'subject_name=' + subjectNameFilter : ''),
         (subjectReferenceFilter ? 'subject_reference=' + subjectReferenceFilter : ''),
-        (qualityFilter ? 'quality=' + qualityFilter : '')
+        (qualityFilter ? 'quality=' + qualityFilter : ''),
+        (legalFormFilter ? 'legal_form=' + legalFormFilter : '')
       ].filter(s => s.length > 0).join('&')
       window.history.replaceState({}, '', queryString.length > 0 ? '?' + queryString : window.location.pathname)
 }
 
-export const apiQueryString = ({searchQuery, tag, limit, skip, types, domain, author, subject, quality, subjectReference}:
+export const apiQueryString = ({searchQuery, tag, limit, skip, types, domain, author, subject, quality, subjectReference, legalForm}:
     {searchQuery?: string, tag?:string, limit?: number, skip?: number, types?: string, domain?: string, author?: string,
-    subject?: string, quality?: string, subjectReference?: string}) => {
+    subject?: string, quality?: string, subjectReference?: string, legalForm?: string}) => {
     const queryString = [
         (searchQuery ? 'search_query=' + searchQuery.replace(/\n/g, '%0A').replace(/\t/g, '%09') : ''),
         (tag ? 'tag=' + tag : ''),
@@ -57,7 +58,8 @@ export const apiQueryString = ({searchQuery, tag, limit, skip, types, domain, au
         (author ? 'author=' + author : ''),
         (subject ? 'subject=' + subject : ''),
         (quality ? 'quality=' + quality : ''),
-        (subjectReference ? 'subject_reference=' + subjectReference : '')
+        (subjectReference ? 'subject_reference=' + subjectReference : ''),
+        (legalForm ? 'legal_form=' + legalForm : '')
     ].filter(s => s.length > 0).join('&')
     return queryString
 }

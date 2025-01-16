@@ -23,5 +23,7 @@ INSERT INTO identity_beliefs_and_reputation (
     legal_entity_type_confidence, country, country_confidence,
     city, city_confidence, reputation) 
 VALUES ('rixdata.net', 'Rix Data NL B.V.', 1.0,
-    'limited liability corporation', 1.0, 'NL', 1.0, 
+    'corporation', 1.0, 'NL', 1.0, 
     'Amsterdam', 1.0, 1.0);
+
+DROP TABLE IF EXISTS disputes;
