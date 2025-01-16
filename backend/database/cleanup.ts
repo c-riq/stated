@@ -16,8 +16,6 @@ export const deleteSupersededDerivedEntitiesFactory =
             where superseding_statement is not null);
         delete from ratings where statement_hash in (select hash_b64 from statement_with_superseding
             where superseding_statement is not null);
-        delete from disputes where statement_hash in (select hash_b64 from statement_with_superseding
-            where superseding_statement is not null);
                   `,
           (error, results) => {
             if (error) {
