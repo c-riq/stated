@@ -10,7 +10,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 22.x
       - name: Install dependencies
         run: npm install
         working-directory: ./frontend
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22.x
       - name: Install dependencies
         run: npm ci
         working-directory: ./frontend
@@ -57,7 +57,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 22.x
       - name: Install dependencies
         run: npm install
         working-directory: ./backend
@@ -78,7 +78,7 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 22.x
   
     - name: Start test nodes
       run: docker compose -f "test/integration/p2p/docker-compose.yml" up -d
@@ -103,7 +103,7 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 22.x
   
     - name: Install backend dependencies
       working-directory: ./backend/
@@ -118,7 +118,7 @@ jobs:
       run: npm i
     
     - name: Install postgres client
-      run: sudo apt-get install postgresql-client-14 -y
+      run: sudo apt-get install postgresql-client-17 -y
 
     - name: Run test
       working-directory: ./test/integration/migration
