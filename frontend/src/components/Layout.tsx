@@ -24,7 +24,7 @@ export const Layout = ({ setSearchQuery, lt850px, lt500px, disableSearch }: Layo
                 <div style={{ width: "100vw", height: "70px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ maxWidth: "900px", flexGrow: 1, marginRight: "32px", marginLeft: "32px", display: "flex", alignItems: "center", justifyContent: "normal", columnGap: (lt850px ? "8px" : "30px") }}>
                         <div>
-                            <a href="https://stated.ai" style={{
+                            <a href="https://stated.network" style={{
                                 backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "6px",
                                 paddingLeft: "7px", marginRight: "16px", borderRadius: "20px", textDecoration: "none",
                                 position: "relative", top: "4px"
@@ -73,7 +73,7 @@ export const Layout = ({ setSearchQuery, lt850px, lt500px, disableSearch }: Layo
                         <a href="https://github.com/c-riq/stated" style={{ color: "rgba(255,255,255,1)", textDecoration: "none" }}>
                             <img src={gh} style={{ height: "40px", width: '30px', marginRight: "20px", paddingTop: "10px", flexGrow: 0 }}></img>
                         </a>
-                        <a href="https://stated.ai" style={{
+                        <a href="https://stated.network" style={{
                             backgroundColor: "rgba(255,255,255,1)", paddingTop: "10px", paddingRight: "10px",
                             paddingLeft: "10px", borderRadius: "20px", textDecoration: "none"
                         }}>

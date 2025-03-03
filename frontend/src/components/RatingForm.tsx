@@ -15,7 +15,7 @@ export const qualitiesToRateOn = [
     ["Reducing existential risks"],
     ["Reducing risks to democracy"],
     ["Benefitting society"],
-    ["Honest use of the stated.ai platform"],
+    ["Honest use of the stated.network platform"],
 ]
 export const subjectTypes = [
     ["Organisation"],
