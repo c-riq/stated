@@ -21,20 +21,20 @@ jobs:
           node-version: 22.x
           
     - name: Build frontend
-      working-directory: ./frontend
-      run: npm i && npm run build 
+      working-directory: ./p2p/frontend
+      run: npm i && npm run build
 
     - name: Build backend
-      working-directory: ./backend
-      run: npm i && npm run build 
+      working-directory: ./p2p/backend
+      run: npm i && npm run build
     
     - name: Archive
-      working-directory: ./backend
+      working-directory: ./p2p/backend
       run: sudo apt-get install zip && zip -r release.zip . -x "**/node_modules/*"
 
     - name: Release to Github
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "backend/release.zip"
+        artifacts: "p2p/backend/release.zip"
         allowUpdates: "true"
         makeLatest: "true"
