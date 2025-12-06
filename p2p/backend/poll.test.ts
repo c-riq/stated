@@ -196,7 +196,7 @@ Statement content:
         statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
         verified_domain: verification.domain, name: verification.name, legal_entity_type: verification.legalForm, country: verification.country, city: verification.city,
         serial_number: verification.serialNumber, confidence: verification.confidence as number,
-        foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
+        foreign_domain: verification.foreignDomain, province: verification.province, department: verification.department || null,
         statement_hash: '', proclaimed_publication_time: new Date()
     }
     it('should return true when the required country, legal form are met', async () => {
@@ -208,7 +208,7 @@ Statement content:
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
             verified_domain: verification.domain, name: verification.name, legal_entity_type: verification.legalForm, country: 'Sweden', city: verification.city,
             serial_number: verification.serialNumber, confidence: verification.confidence as number,
-            foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
+            foreign_domain: verification.foreignDomain, province: verification.province, department: verification.department || null,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
         expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObjectWrongCountry, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
@@ -217,7 +217,7 @@ Statement content:
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
             verified_domain: verification.domain, name: verification.name, legal_entity_type: 'local government', country: verification.country, city: verification.city,
             serial_number: verification.serialNumber, confidence: verification.confidence as number,
-            foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
+            foreign_domain: verification.foreignDomain, province: verification.province, department: verification.department || null,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
         expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObjectWrongLegalForm, proclaimed_publication_time: new Date(0), author:'', domain:'', statement_hash:''})).toBe(false)
@@ -226,7 +226,7 @@ Statement content:
             statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
             verified_domain: verification.domain, name: verification.name, legal_entity_type: verification.legalForm, country: verification.country, city: 'Aarhus',
             serial_number: verification.serialNumber, confidence: verification.confidence as number,
-            foreign_domain: verification.foreignDomain, province: verification.province, department: null && verification.department,
+            foreign_domain: verification.foreignDomain, province: verification.province, department: verification.department || null,
             statement_hash: '', proclaimed_publication_time: new Date()
         }
         expect(await isOrganisationVoteQualified({vote: parsedVote, poll: pollDBObject, organisationVerification: statementDBObjectWrongCity, proclaimed_publication_time: new Date(0),  author:'', domain:'', statement_hash:''})).toBe(false)
@@ -281,8 +281,8 @@ Statement content:
     const verification = parsePersonVerification(parsedVerificationStatment.content)
     const statementDBObject: PersonVerificationDB & StatementDB & {proclaimed_publication_time:Date} = {...dummyDBValues,
         statement: verificationStatement, author: parsedVerificationStatment.author, verifier_domain: parsedVerificationStatment.domain, domain: parsedVerificationStatment.domain, content: parsedVerificationStatment.content,
-        verified_domain: null && verification.ownDomain, name: verification.name, birth_country: verification.countryOfBirth, birth_city: verification.cityOfBirth,
-        foreign_domain: null && verification.foreignDomain, birth_date: verification.dateOfBirth.toDateString(),
+        verified_domain: verification.ownDomain || null, name: verification.name, birth_country: verification.countryOfBirth, birth_city: verification.cityOfBirth,
+        foreign_domain: verification.foreignDomain || null, birth_date: verification.dateOfBirth.toDateString(),
         statement_hash: '', proclaimed_publication_time: new Date()
     }
     it('should return false for corporation polls', async () => {

@@ -5,8 +5,8 @@ export const addContentDisputeReference = ({ statement_hash, content }: { statem
     try {
         const parsedDispute = parseDisputeContent(content)
         const { hash: referenced_hash } = parsedDispute
-        const dbResult = await updateStatement({ hash_b64: statement_hash, referenced_statement: referenced_hash})   
-        if(dbResult && dbResult.rowCount > 0){
+        const dbResult = await updateStatement({ hash_b64: statement_hash, referenced_statement: referenced_hash})
+        if(dbResult && dbResult.rowCount !== null && dbResult.rowCount > 0){
             return resolve(true)
         } else {
             return reject(Error('Could not create response reference'))
