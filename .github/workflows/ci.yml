@@ -19,7 +19,7 @@ jobs:
         if: steps.check_changes.outputs.changed == 'true'
         uses: actions/setup-node@v3
         with:
-          node-version: 22.x
+          node-version: 24.x
       - name: Install dependencies
         if: steps.check_changes.outputs.changed == 'true'
         run: npm install
@@ -41,16 +41,16 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 22.x
+          node-version: 24.x
       - name: Install dependencies
         run: npm install
-        working-directory: ./frontend
+        working-directory: ./p2p/frontend
       - name: Run tests
         run: npm test
-        working-directory: ./frontend
+        working-directory: ./p2p/frontend
       - name: Transpile
         run: npx tsc --noEmit
-        working-directory: ./frontend
+        working-directory: ./p2p/frontend
   e2e_tests:
     timeout-minutes: 5
     runs-on: ubuntu-22.04
@@ -58,24 +58,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run backend
-        run: docker compose -f "docker-compose.yml" up -d
+        run: docker compose -f "p2p/docker-compose.yml" up -d
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 22.x
+          node-version: 24.x
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libasound2 libicu-dev libffi-dev libx264-dev
       - name: Install dependencies
         run: npm ci
-        working-directory: ./frontend
+        working-directory: ./p2p/frontend
       - name: Install Browsers
         run: npx playwright install --with-deps
-        working-directory: ./frontend
+        working-directory: ./p2p/frontend
       - name: Run tests
         run: npx playwright test --project=chromium
-        working-directory: ./frontend
+        working-directory: ./p2p/frontend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -92,16 +92,16 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 22.x
+          node-version: 24.x
       - name: Install dependencies
         run: npm install
-        working-directory: ./backend
+        working-directory: ./p2p/backend
       - name: Run tests
         run: npm test
-        working-directory: ./backend
+        working-directory: ./p2p/backend
       - name: Transpile
         run: npx tsc --noEmit
-        working-directory: ./backend
+        working-directory: ./p2p/backend
 
   p2p_test:
     timeout-minutes: 5
@@ -113,17 +113,17 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v3
       with:
-        node-version: 22.x
+        node-version: 24.x
   
     - name: Start test nodes
-      run: docker compose -f "test/integration/p2p/docker-compose.yml" up -d
+      run: docker compose -f "p2p/test/integration/p2p/docker-compose.yml" up -d
 
     - name: Run tests
-      run: node test/integration/p2p/test.js
+      run: node p2p/test/integration/p2p/test.js
 
     - name: Stop containers
       if: always()
-      run: docker compose -f "test/integration/p2p/docker-compose.yml" down
+      run: docker compose -f "p2p/test/integration/p2p/docker-compose.yml" down
 
   migration_test:
     timeout-minutes: 10
@@ -133,23 +133,23 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Start databases
-      run: docker compose -f "test/integration/migration/docker-compose.yml" up -d
+      run: docker compose -f "p2p/test/integration/migration/docker-compose.yml" up -d
 
     - name: Install node
       uses: actions/setup-node@v3
       with:
-        node-version: 22.x
+        node-version: 24.x
   
     - name: Install backend dependencies
-      working-directory: ./backend/
-      run: npm i 
+      working-directory: ./p2p/backend/
+      run: npm i
 
     - name: Build backend
-      working-directory: ./backend/
+      working-directory: ./p2p/backend/
       run: npm run build
 
     - name: Install test dependencies
-      working-directory: ./test/integration/migration
+      working-directory: ./p2p/test/integration/migration
       run: npm i
     
     - name: Install postgres client
@@ -160,9 +160,9 @@ jobs:
         sudo apt-get -y install postgresql-client-17
 
     - name: Run test
-      working-directory: ./test/integration/migration
+      working-directory: ./p2p/test/integration/migration
       run: node test.js
 
     - name: Stop containers
       if: always()
-      run: docker compose -f "test/integration/migration/docker-compose.yml" down
+      run: docker compose -f "p2p/test/integration/migration/docker-compose.yml" down

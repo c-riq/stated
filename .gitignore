@@ -1,22 +1,22 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-backend/*.js
-!backend/jest.config.js
-backend/*.js.map
-backend/database/*.js
-backend/database/*.js.map
-backend/domainNames/*.js
-backend/domainNames/*.js.map
-backend/constants/*.js
-backend/constants/*.js.map
-backend/scripts/*.js
-backend/scripts/*.js.map
-backend/statementFormats/*.js
-backend/statementFormats/*.js.map
+p2p/backend/*.js
+!p2p/backend/jest.config.js
+p2p/backend/*.js.map
+p2p/backend/database/*.js
+p2p/backend/database/*.js.map
+p2p/backend/domainNames/*.js
+p2p/backend/domainNames/*.js.map
+p2p/backend/constants/*.js
+p2p/backend/constants/*.js.map
+p2p/backend/scripts/*.js
+p2p/backend/scripts/*.js.map
+p2p/backend/statementFormats/*.js
+p2p/backend/statementFormats/*.js.map
 
-backend/public/files/*.pdf
+p2p/backend/public/files/*.pdf
 
-backend/ssh.sh
+p2p/backend/ssh.sh
 
 static/public/statements.txt
 
@@ -24,10 +24,8 @@ static/public/statements.txt
 .~*#
 
 # dependencies
-frontend/node_modules
-frontend/docker_output
-backend/node_modules
-test/**/node_modules
+node_modules
+p2p/frontend/docker_output
 /.pnp
 .pnp.js
 
@@ -35,7 +33,7 @@ test/**/node_modules
 /coverage
 
 # production
-frontend/build
+p2p/frontend/build
 #backend/public
 
 # misc
@@ -49,10 +47,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-backend/log/
-backend/database/backups/*.sql
-backend/database/postgres-version-migration/backups/*.gz
-backend/.env
+p2p/backend/log/
+p2p/backend/database/backups/*.sql
+p2p/backend/database/postgres-version-migration/backups/*.gz
+p2p/backend/.env
 
 # data
 analysis/data/*

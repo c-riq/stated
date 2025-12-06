@@ -9,7 +9,7 @@ The signatures are verified, saved, re-broadcasted and aggregated by each node i
 
 For publishing a statement, organisations or individuals can use the following options:
 1. Publish it on their website domain in a text file. Curently therer are 3 supported URI schemes:
-    - [https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
+    - [https://stated.rixdata.net/statements/qg51IiW3RKIXSxiaF_hVQdZdtHzKsU4YePxFuZ2YVtQ](https://stated.rixdata.net/statements/qg51IiW3RKIXSxiaF_hVQdZdtHzKsU4YePxFuZ2YVtQ)
     - [https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt](https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt)
     - [https://www.rixdata.net/.well-known/statements.txt](https://www.rixdata.net/.well-known/statements.txt)
     If you don't know how to host static text files, check our [instructions](https://github.com/c-riq/stated/blob/master/static/README.md)
@@ -53,18 +53,3 @@ This statement can also be viewed under [https://stated.rixdata.net/statements/N
 #### Simplicity
 - Third party dependency count should be kept small
 - Complex applications building on top of the stated system should be in a separate project
-
-## Current state
-![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/project_progress.png?raw=true)
-<b>Fig.3: Overview over the technical components, their dependencies, the project progress and current focus.<br />
-
-## Getting started
-- [Server Installation Steps](https://github.com/c-riq/stated/blob/master/backend/README.md)
-- [Front end / User Interface development](https://github.com/c-riq/stated/blob/master/frontend/README.md)
-- [Domain ownership data analysis](https://github.com/c-riq/stated/blob/master/analysis/README.md)
-
-## Applications
-- [NGO coordination for AI safety](https://github.com/c-riq/stated/blob/master/documents/ai_safety/README.md)
-
-## Join the community
-- [Slack channel](https://join.slack.com/t/stated/shared_invite/zt-2bns35cz5-~nyTld_zMkJlttOiy29_pw)

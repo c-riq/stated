@@ -9,17 +9,17 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Start databases
-      run: docker-compose -f "test/integration/security/docker-compose.yml" up -d
+      run: docker-compose -f "p2p/test/integration/security/docker-compose.yml" up -d
 
     - name: Install node
       uses: actions/setup-node@v3
       with:
-          node-version: 22.x
+          node-version: 24.x
           
     - name: Run test
-      working-directory: ./test/integration/security
+      working-directory: ./p2p/test/integration/security
       run: node test.js
 
     - name: Stop containers
       if: always()
-      run: docker-compose -f "test/integration/security/docker-compose.yml" down
+      run: docker-compose -f "p2p/test/integration/security/docker-compose.yml" down
