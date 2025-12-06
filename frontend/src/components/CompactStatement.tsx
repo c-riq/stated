@@ -9,7 +9,7 @@ import {
     statementTypes, BountyKeys, organisationVerificationKeys, PDFSigningKeys, ratingKeys,
     BoycottKeys, ObservationKeys, voteKeys, parseResponseContent, responseKeys, disputeAuthenticityKeys, 
     disputeContentKeys, pollKeys, personVerificationKeys, parseRating, parsePoll, parseStatement
-} from '../statementFormats'
+} from 'stated-protocol-parser'
 
 const highlightedStatement = (text: string, type: string, adjustColor=false) => {
     let regex = /(\nType: )/

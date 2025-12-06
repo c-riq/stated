@@ -1,7 +1,8 @@
 import { QueryResult } from 'pg'
 import {createPoll, getOrganisationVerifications, getPoll, 
     createVote, getVotes, updateVote, getObservationsForEntity, getPersonVerifications} from './database'
-import {parseVote, parsePoll, parseStatement, parseObservation} from './statementFormats'
+import {parseVote, parsePoll, parseStatement, parseObservation} from 'stated-protocol-parser'
+import type { Vote } from 'stated-protocol-parser'
 
 export const parseAndCreatePoll = ({statement_hash, domain, content }: { statement_hash: string, domain: string, content: string }) => (new Promise(async (resolve, reject)=>{
     console.log('createPoll', statement_hash, domain, content)

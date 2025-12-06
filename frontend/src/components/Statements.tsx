@@ -1,7 +1,7 @@
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { statementTypes } from '../statementFormats'
+import { statementTypes } from 'stated-protocol-parser'
 import { CompactPoll, CompactStatement } from './CompactStatement';
 
 type props = {

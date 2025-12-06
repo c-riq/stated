@@ -1,5 +1,6 @@
 import {createRating, getOrganisationVerifications, getPersonVerifications, getRatings, updateRating} from './database'
-import {parseRating} from './statementFormats'
+import {parseRating} from 'stated-protocol-parser'
+import type { Rating } from 'stated-protocol-parser'
 
 const log = true
 

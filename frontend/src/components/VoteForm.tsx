@@ -8,7 +8,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
-import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from '../statementFormats'
+import { parseVote, buildVoteContent, parsePoll, parseStatement, buildStatement } from 'stated-protocol-parser'
+import type { Statement, Poll } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 import { TextField } from '@mui/material';

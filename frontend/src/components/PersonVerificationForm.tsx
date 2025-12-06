@@ -14,7 +14,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from 'moment'
 
 import { parseStatement, buildStatement, 
-    parsePersonVerification, buildPersonVerificationContent } from '../statementFormats'
+    parsePersonVerification, buildPersonVerificationContent } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
 import { sendEmail } from './generateEmail';

@@ -9,7 +9,7 @@ import {
   buildStatement,
   parseStatement,
   parsePDFSigning,
-} from "../statementFormats";
+} from "stated-protocol-parser";
 import PublishStatement from "./PublishStatement";
 import { uploadPdf, backendHost } from "../api";
 import { sendEmail } from "./generateEmail";

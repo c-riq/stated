@@ -5,7 +5,8 @@ import { sha256 } from '../utils/hash';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 
-import { parseStatement, parseBounty, buildStatement, buildBounty } from '../statementFormats'
+import { parseStatement, parseBounty, buildStatement, buildBounty } from 'stated-protocol-parser'
+import type { Bounty } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 

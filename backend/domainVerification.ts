@@ -1,5 +1,5 @@
 import {createPersonVerification, createOrganisationVerification} from './database'
-import {parsePersonVerification, parseOrganisationVerification} from './statementFormats'
+import {parsePersonVerification, parseOrganisationVerification} from 'stated-protocol-parser'
 
 const log = true
 

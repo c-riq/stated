@@ -1,5 +1,5 @@
 import {updateStatement} from './database'
-import {parseDisputeAuthenticity} from './statementFormats'
+import {parseDisputeAuthenticity} from 'stated-protocol-parser'
 
 export const addAuthenticityDisputeReference = ({ statement_hash, content }: { statement_hash: string, content: string }) => (new Promise(async (resolve, reject)=>{
     try {
