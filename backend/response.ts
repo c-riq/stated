@@ -1,5 +1,5 @@
 import {updateStatement} from './database'
-import {parseResponseContent} from './statementFormats'
+import {parseResponseContent} from 'stated-protocol-parser'
 
 export const addResponseReference = ({ statement_hash, content }: { statement_hash: string, content: string }) => (new Promise(async (resolve, reject)=>{
     try {

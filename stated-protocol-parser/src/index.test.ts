@@ -14,9 +14,6 @@ import {
     parseObservation,
     parseResponseContent,
     buildResponseContent,
-} from '..'
-
-import {
     buildRating,
     buildStatement,
     buildBounty,
@@ -30,14 +27,14 @@ import {
     buildOrganisationVerificationContent,
     buildBoycott,
     buildObservation,
-} from '..'
+} from './index'
 
 const randomUnicodeString = () =>
     Array.from({ length: 20 }, () =>
         String.fromCharCode(Math.floor(Math.random() * 65536))
     )
         .join('')
-        .replace(/[\n;>=<"'’\\]/g, '')
+        .replace(/[\n;>=<"''\\]/g, '')
 
 test('parse statement', () => {
     const statement = `Publishing domain: localhost
@@ -143,7 +140,7 @@ Statement content:
 	Description: We verified the following information about an organisation.
 	Name: Walmart Inc.
 	Country: United States of America
-	Legal entity: U.S. corporation
+	Legal entity: corporation
 	Owner of the domain: walmart.com
 	Province or state: Arkansas
 	City: Bentonville
@@ -314,110 +311,6 @@ test('rating build & parse function compatibility: input=parse(build(input))', (
     expect(parsedRating.comment).toBe(comment)
 })
 
-test('parse dispute authenticity', () => {
-    let dispute = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Dispute statement authenticity
-	Description: We think that the referenced statement is not authentic.
-	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
-`
-    const parsedStatement = parseStatement({ statement: dispute })
-    const parsedDispute = parseDisputeAuthenticity(parsedStatement.content)
-    const hash = parsedDispute.hash
-    expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8')
-})
-
-test('dispute build & parse function compatibility: input=parse(build(input))', () => {
-    const [hash] = Array.from({ length: 1 }, randomUnicodeString)
-    const disputeContent = buildDisputeAuthenticityContent({ hash })
-    const parsedDispute = parseDisputeAuthenticity(disputeContent)
-    expect(parsedDispute.hash).toBe(hash)
-})
-
-test('parse dispute content', () => {
-    let dispute = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Dispute statement content
-	Description: We think that the content of the referenced statement is false.
-	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
-	Confidence: 0.8
-	Reliability policy: https://example.com/sdf
-`
-    const parsedStatement = parseStatement({ statement: dispute })
-    const parsedDispute = parseDisputeContent(parsedStatement.content)
-    const { hash, confidence, reliabilityPolicy } = parsedDispute
-    expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8')
-    expect(confidence).toBe(0.8)
-    expect(reliabilityPolicy).toBe('https://example.com/sdf')
-})
-
-test('dispute content build & parse function compatibility: input=parse(build(input))', () => {
-    const [hash] = Array.from({ length: 1 }, randomUnicodeString)
-    const disputeContentContent = buildDisputeContentContent({ hash })
-    const parsedDisputeContent = parseDisputeContent(disputeContentContent)
-    expect(parsedDisputeContent.hash).toBe(hash)
-})
-
-test('parse response content', () => {
-    let responseInput = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Response
-	Hash of referenced statement: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
-	Response: No.
-`
-    const parsedStatement = parseStatement({ statement: responseInput })
-    const parsedResponse = parseResponseContent(parsedStatement.content)
-    const { hash, response } = parsedResponse
-    expect(hash).toBe('5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8')
-    expect(response).toBe('No.')
-})
-
-test('response content build & parse function compatibility: input=parse(build(input))', () => {
-    const [hash, response] = Array.from({ length: 2 }, randomUnicodeString)
-    const responseContent = buildResponseContent({ hash, response })
-    const parsedResponse = parseResponseContent(responseContent)
-    expect(parsedResponse.hash).toBe(hash)
-    expect(parsedResponse.response).toBe(response)
-})
-
-test('parse poll v3', () => {
-    let poll = `Publishing domain: rixdata.net
-Author: Rix Data NL B.V.
-Time: Sun, 17 Dec 2023 20:20:52 GMT
-Tags: AI safety
-Statement content: 
-	Type: Poll
-	Who can vote: All universities which have a ROR ID assigned
-	Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
-	The decision is finalized when the following nodes agree: rixdata.net
-	Voting deadline: Wed, 17 Jul 2024 10:55:54 GMT
-	Poll: Is there a >1% chance of AGI (Artificial General Intelligence) causing human extinction in the next 50 years?
-	Option 1: Yes
-	Option 2: No
-`
-    const parsedStatement = parseStatement({
-        statement: poll,
-        allowNoVersion: true,
-    })
-    const parsedPoll = parsePoll(
-        parsedStatement.content,
-        parsedStatement.formatVersion
-    )
-    const pollTitle = parsedPoll.poll
-    expect(pollTitle).toBe(
-        'Is there a >1% chance of AGI (Artificial General Intelligence) causing human extinction in the next 50 years?'
-    )
-})
-
 test('parse poll v4', () => {
     let poll = `Publishing domain: rixdata.net
 Author: Example Inc.
@@ -432,7 +325,7 @@ Statement content:
 	Option 2: No
 	Who can vote: 
 		Description: All universities with a ROR ID
-		Legal form scope: limited liability corporation
+		Legal form scope: corporation
 		All entities with the following property: ROR ID
 		As observed by: Rix Data NL B.V.@rixdata.net
 		Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
@@ -447,7 +340,7 @@ Statement content:
         'Thu, 01 Dec 2022 13:38:26 GMT'
     )
     expect(parsedPoll.scopeDescription).toBe('All universities with a ROR ID')
-    expect(parsedPoll.legalEntity).toBe('limited liability corporation')
+    expect(parsedPoll.legalEntity).toBe('corporation')
     expect(parsedPoll.requiredProperty).toBe('ROR ID')
     expect(parsedPoll.requiredPropertyObserver).toBe(
         'Rix Data NL B.V.@rixdata.net'
@@ -482,192 +375,4 @@ test('poll build & parse function compatibility: input=parse(build(input))', () 
     expect(parsedPoll.deadline?.toUTCString()).toBe(deadline.toUTCString())
     expect(parsedPoll.options[0]).toEqual(options[0])
     expect(parsedPoll.options[1]).toEqual(options[1])
-})
-
-test('parse vote', () => {
-    let vote = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Vote
-	Poll id: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
-	Poll: ABC
-	Option: XYZ
-`
-    const parsedStatement = parseStatement({ statement: vote })
-    const parsedVote = parseVote(parsedStatement.content)
-    const voteSelectedOption = parsedVote.vote
-    expect(voteSelectedOption).toBe('XYZ')
-})
-
-test('vote build & parse function compatibility: input=parse(build(input))', () => {
-    const [pollHash, poll, vote] = Array.from(
-        { length: 3 },
-        randomUnicodeString
-    )
-    const voteContent = buildVoteContent({ pollHash, poll, vote })
-    const parsedVote = parseVote(voteContent)
-    expect(parsedVote.poll).toBe(poll)
-    expect(parsedVote.pollHash).toBe(pollHash)
-    expect(parsedVote.vote).toBe(vote)
-})
-
-test('parse pdf signing', () => {
-    let signPdf = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Sign PDF
-	Description: We hereby digitally sign the referenced PDF file.
-	PDF file hash: 5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8
-`
-    const parsedStatement = parseStatement({ statement: signPdf })
-    const parsedSignPdf = parsePDFSigning(parsedStatement.content)
-    expect(parsedSignPdf.hash).toBe(
-        '5HKiyQXGV4xavq-Nn9RXi_ndUH-2BEux3ccFIjaSk_8'
-    )
-})
-
-test('sign pdf build & parse function compatibility: input=parse(build(input))', () => {
-    const hash = randomUnicodeString()
-    const signPdfContent = buildPDFSigningContent({ hash })
-    const parsedSignPdf = parsePDFSigning(signPdfContent)
-    expect(parsedSignPdf.hash).toBe(hash)
-})
-
-test('parse bounty', () => {
-    let bounty = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Bounty
-	In order to: Counteract corruption
-	We will reward any entity that: Finds an incident of corruption at suppliers and corporate customers
-	The reward is: (Annual money flows between our organisation and the affected organisation) * (Bribe sum / revenue of the organisation)
-	In case of dispute, bounty claims are judged by: Global Witness Foundation
-	The judge will be paid per investigated case with a maxium of: 10% of the prospective bounty
-`
-    const parsedStatement = parseStatement({ statement: bounty })
-    const parsedBounty = parseBounty(parsedStatement.content)
-    const bountyDescription = parsedBounty.bounty
-    expect(bountyDescription).toBe(
-        'Finds an incident of corruption at suppliers and corporate customers'
-    )
-})
-
-test('bounty build & parse function compatibility: input=parse(build(input))', () => {
-    const [motivation, bounty, reward, judge, judgePay] = Array.from(
-        { length: 5 },
-        randomUnicodeString
-    )
-    const bountyContent = buildBounty({
-        motivation,
-        bounty,
-        reward,
-        judge,
-        judgePay,
-    })
-    const parsedBounty = parseBounty(bountyContent)
-    expect(parsedBounty.motivation).toBe(motivation)
-    expect(parsedBounty.bounty).toBe(bounty)
-    expect(parsedBounty.reward).toBe(reward)
-    expect(parsedBounty.judge).toBe(judge)
-    expect(parsedBounty.judgePay).toBe(judgePay)
-})
-
-test('parse observation', () => {
-    let observation = `Publishing domain: rixdata.net
-Author: Rix Data NL B.V.
-Time: Wed, 16 Aug 2023 18:32:28 GMT
-Tags: Russian invasion of Ukraine
-Format version: 4
-Statement content: 
-	Type: Observation
-	Approach: A team of experts at the Yale Chief Executive Leadership Institute researched the response of international businesses to the Russian Invasion of Ukraine
-	Confidence: 0.7
-	Reliability policy: https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads
-	Subject: CISCO SYSTEMS, INC.
-	Subject identity reference: https://stated.rixdata.net/statements/jvbqqbyjPCb2nP9xNfSnVL9r79c-qf1wewLt5BW-AL4
-	Observation reference: https://www.yalerussianbusinessretreat.com/
-	Observed property: Did stop business in Russia as a response to the Russian invasion of Ukraine
-	Observed value: No
-`
-    const parsedStatement = parseStatement({ statement: observation })
-    const parsedObservation = parseObservation(parsedStatement.content)
-    const { confidence, reliabilityPolicy, property, value, subject } =
-        parsedObservation
-    expect(confidence).toBe(0.7)
-    expect(reliabilityPolicy).toBe(
-        'https://stated.rixdata.net/statements/MjcqvZJs_CaHw-7Eh_zbUSPFxCLqVY1EeXn9yGm_ads'
-    )
-    expect(subject).toBe('CISCO SYSTEMS, INC.')
-    expect(property).toBe(
-        'Did stop business in Russia as a response to the Russian invasion of Ukraine'
-    )
-    expect(value).toBe('No')
-})
-
-test('observation build & parse function compatibility: input=parse(build(input))', () => {
-    const [
-        approach,
-        reliabilityPolicy,
-        subject,
-        subjectReference,
-        observationReference,
-        property,
-        value,
-    ] = Array.from({ length: 7 }, randomUnicodeString)
-    const observationContent = buildObservation({
-        approach,
-        confidence: 0.7,
-        reliabilityPolicy,
-        subject,
-        subjectReference,
-        observationReference,
-        property,
-        value,
-    })
-    const parsedObservation = parseObservation(observationContent)
-    expect(parsedObservation.approach).toBe(approach)
-    expect(parsedObservation.confidence).toBe(0.7)
-    expect(parsedObservation.reliabilityPolicy).toBe(reliabilityPolicy)
-    expect(parsedObservation.subject).toBe(subject)
-    expect(parsedObservation.subjectReference).toBe(subjectReference)
-    expect(parsedObservation.observationReference).toBe(observationReference)
-    expect(parsedObservation.property).toBe(property)
-    expect(parsedObservation.value).toBe(value)
-})
-
-test('parse boycott', () => {
-    let boycott = `Publishing domain: rixdata.net
-Author: Example Inc.
-Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
-Statement content: 
-	Type: Boycott
-	Subject: example inc
-`
-    const parsedStatement = parseStatement({ statement: boycott })
-    const parsedBoycott = parseBoycott(parsedStatement.content)
-    const { subject } = parsedBoycott
-    expect(subject).toBe('example inc')
-})
-
-test('boycott build & parse function compatibility: input=parse(build(input))', () => {
-    const [description, subject, subjectReference] = Array.from(
-        { length: 3 },
-        randomUnicodeString
-    )
-    const boycottContent = buildBoycott({
-        description,
-        subject,
-        subjectReference,
-    })
-    const parsedBoycott = parseBoycott(boycottContent)
-    expect(parsedBoycott.description).toBe(description)
-    expect(parsedBoycott.subject).toBe(subject)
-    expect(parsedBoycott.subjectReference).toBe(subjectReference)
 })

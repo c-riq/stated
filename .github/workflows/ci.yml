@@ -1,6 +1,37 @@
 name: CI tests
 on: pull_request
 jobs:
+  library_tests:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Check for library changes
+        id: check_changes
+        run: |
+          if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q '^stated-protocol-parser/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup Node
+        if: steps.check_changes.outputs.changed == 'true'
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+      - name: Install dependencies
+        if: steps.check_changes.outputs.changed == 'true'
+        run: npm install
+        working-directory: ./stated-protocol-parser
+      - name: Run tests
+        if: steps.check_changes.outputs.changed == 'true'
+        run: npm test
+        working-directory: ./stated-protocol-parser
+      - name: Transpile
+        if: steps.check_changes.outputs.changed == 'true'
+        run: npx tsc --noEmit
+        working-directory: ./stated-protocol-parser
   frontend_unit_tests:
     timeout-minutes: 10
     runs-on: ubuntu-latest

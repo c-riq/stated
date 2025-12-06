@@ -4,7 +4,7 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 
 import { sha256 } from '../utils/hash';
-import { parseDisputeAuthenticity, buildDisputeAuthenticityContent, buildStatement, parseStatement } from '../statementFormats'
+import { parseDisputeAuthenticity, buildDisputeAuthenticityContent, buildStatement, parseStatement } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 import { getStatement } from '../api';

@@ -1,4 +1,4 @@
-type StatementTypeValue =
+export type StatementTypeValue =
     | 'statement'
     | 'quotation'
     | 'organisation_verification'
@@ -14,7 +14,7 @@ type StatementTypeValue =
     | 'sign_pdf'
     | 'bounty'
 
-type Statement = {
+export type Statement = {
     domain: string
     author: string
     time: Date
@@ -24,7 +24,8 @@ type Statement = {
     supersededStatement?: string
     formatVersion?: string
 }
-type Quotation = {
+
+export type Quotation = {
     originalAuthor: string
     authorVerification: string
     originalTime?: string
@@ -34,7 +35,8 @@ type Quotation = {
     picture?: string
     confidence?: string
 }
-type Poll = {
+
+export type Poll = {
     country: string | undefined
     city: string | undefined
     legalEntity: string | undefined
@@ -51,7 +53,8 @@ type Poll = {
     requiredPropertyObserver?: string
     requiredMinConfidence?: number
 }
-type OrganisationVerification = {
+
+export type OrganisationVerification = {
     name: string
     englishName?: string
     country: string
@@ -70,15 +73,18 @@ type OrganisationVerification = {
     longitude?: number
     population?: string
 }
-type withOwnDomain = {
+
+export type withOwnDomain = {
     ownDomain: string
     foreignDomain?: string
 }
-type withForeignDomain = {
+
+export type withForeignDomain = {
     foreignDomain: string
     ownDomain?: string
 }
-type PersonVerification = {
+
+export type PersonVerification = {
     name: string
     countryOfBirth: string
     cityOfBirth: string
@@ -90,29 +96,35 @@ type PersonVerification = {
     picture?: string
     reliabilityPolicy?: string
 } & (withOwnDomain | withForeignDomain)
-type Vote = {
+
+export type Vote = {
     pollHash: string
     poll: string
     vote: string
 }
-type DisputeAuthenticity = {
+
+export type DisputeAuthenticity = {
     hash: string
     confidence?: number
     reliabilityPolicy?: string
 }
-type DisputeContent = {
+
+export type DisputeContent = {
     hash: string
     confidence?: number
     reliabilityPolicy?: string
 }
-type ResponseContent = {
+
+export type ResponseContent = {
     hash: string
     response: string
 }
-type PDFSigning = {
+
+export type PDFSigning = {
     hash: string
 }
-type RatingSubjectTypeValue =
+
+export type RatingSubjectTypeValue =
     | 'Organisation'
     | 'Policy proposal'
     | 'Treaty draft'
@@ -120,7 +132,7 @@ type RatingSubjectTypeValue =
     | 'Regulation'
     | 'Product'
 
-type Rating = {
+export type Rating = {
     subjectType?: RatingSubjectTypeValue
     subjectName: string
     subjectReference?: string
@@ -129,14 +141,16 @@ type Rating = {
     quality?: string
     comment?: string
 }
-type Bounty = {
+
+export type Bounty = {
     motivation?: string
     bounty: string
     reward: string
     judge: string
     judgePay?: string
 }
-type Observation = {
+
+export type Observation = {
     description?: string
     approach?: string
     confidence?: number
@@ -147,7 +161,8 @@ type Observation = {
     property: string
     value?: string
 }
-type PollV3 = {
+
+export type PollV3 = {
     country: string | undefined
     city: string | undefined
     legalEntity: string | undefined
@@ -162,7 +177,8 @@ type PollV3 = {
     pollType?: string
     options: string[]
 }
-type Boycott = {
+
+export type Boycott = {
     description?: string
     reliabilityPolicy?: string
     subject: string

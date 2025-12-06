@@ -22,7 +22,9 @@ import { getStatement, getJoiningStatements, getOrganisationVerifications,
     getPersonVerifications, getVotes, getResponses, getDisputes, getAggregatedRatings } from '../api'
 import { statementTypes, parsePDFSigning, parseStatement,
     parseObservation, parseBounty, parseRating, parseDisputeAuthenticity, parseDisputeContent, parseBoycott,
-    parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from '../statementFormats';
+    parseOrganisationVerification, parsePersonVerification, parsePoll, parseVote, parseResponseContent } from 'stated-protocol-parser';
+import type { Observation, Bounty, Rating, PDFSigning, DisputeAuthenticity, DisputeContent,
+    Boycott, OrganisationVerification, PersonVerification, Vote, Poll, ResponseContent } from 'stated-protocol-parser';
 
 import { VerificationGraph } from './VerificationGraph'
 

@@ -1,6 +1,6 @@
 const cp = require("child_process");
-
 const fs = require("fs");
+const { createTwoFilesPatch } = require("diff");
 
 const tsCode = fs
   .readFileSync(__dirname + "/../../../backend/database/migrations.ts", "utf8")
@@ -114,6 +114,9 @@ let client_1 = new Client(config_1);
       pgdump.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
         sql = sql.replace(/SELECT pg_catalog.setval\('public.migrations_id_seq', \d+, true\);/g, '')
+        // Remove random pg_dump security tokens that change on every dump
+        sql = sql.replace(/\\restrict [A-Za-z0-9]+/g, '\\restrict TOKEN')
+        sql = sql.replace(/\\unrestrict [A-Za-z0-9]+/g, '\\unrestrict TOKEN')
         fs.writeFileSync(__dirname + "/actual.sql", sql);
         migrationResultDBDump = sql
       });
@@ -163,6 +166,9 @@ let client_2 = new Client(config_2);
       pgdump.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
         sql = sql.replace(/SELECT pg_catalog.setval\('public.migrations_id_seq', \d+, true\);/g, '')
+        // Remove random pg_dump security tokens that change on every dump
+        sql = sql.replace(/\\restrict [A-Za-z0-9]+/g, '\\restrict TOKEN')
+        sql = sql.replace(/\\unrestrict [A-Za-z0-9]+/g, '\\unrestrict TOKEN')
         fs.writeFileSync(__dirname + "/expected.sql", sql);
         targetSchemaDBDump = sql
       });
@@ -171,27 +177,37 @@ let client_2 = new Client(config_2);
     }
 })();
 
-const stringDiff = (a,b) => {
-  let diff = ''
-  for(let i = 0; i < a.length; i++) {
-    if(a[i] !== b[i]) {
-      diff += a[i]
-    }
-  }
-  return diff
+const generateReadableDiff = (expected, actual) => {
+  const patch = createTwoFilesPatch(
+    'expected.sql',
+    'actual.sql',
+    expected,
+    actual,
+    'Expected schema',
+    'Actual migrated schema',
+    { context: 3 }
+  );
+  return patch;
 }
 
 const interval = setInterval(() => {
   if (migrationResultDBDump.length > 1000 && targetSchemaDBDump.length > 1000) {
     clearInterval(interval);
     if (migrationResultDBDump !== targetSchemaDBDump) {
-      console.log("Error: Migration result does not match target schema");
-      console.log("Target schema: ", targetSchemaDBDump);
-      console.log("Migration result: ", migrationResultDBDump);
-      console.log("Diff: ", stringDiff(targetSchemaDBDump, migrationResultDBDump));
+      console.log("\n❌ Error: Migration result does not match target schema\n");
+      console.log("=" .repeat(80));
+      console.log("SCHEMA DIFF (expected.sql vs actual.sql):");
+      console.log("=" .repeat(80));
+      const diff = generateReadableDiff(targetSchemaDBDump, migrationResultDBDump);
+      console.log(diff);
+      console.log("=" .repeat(80));
+      console.log("\nFull dumps saved to:");
+      console.log("  - expected.sql (target schema)");
+      console.log("  - actual.sql (migrated schema)");
+      console.log("=" .repeat(80));
       process.exit(1);
     } else {
-      console.log("Success: Migration result matches target schema");
+      console.log("✅ Success: Migration result matches target schema");
       process.exit(0);
     }
   }

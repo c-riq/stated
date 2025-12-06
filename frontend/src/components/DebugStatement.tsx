@@ -1,7 +1,7 @@
 import React from 'react'
 
 import TextField from '@mui/material/TextField';
-import { parseStatement } from '../statementFormats';
+import { parseStatement } from 'stated-protocol-parser';
 import Checkbox from '@mui/material/Checkbox';
 import { FormControlLabel } from '@mui/material';
 

@@ -5,7 +5,8 @@ import { sha256 } from '../utils/hash';
 import FormControl from '@mui/material/FormControl';
 import { Autocomplete, Box, Rating, TextField, Typography } from '@mui/material';
 
-import { buildRating, buildStatement, parseStatement, parseRating } from '../statementFormats'
+import { buildRating, buildStatement, parseStatement, parseRating } from 'stated-protocol-parser'
+import type { RatingSubjectTypeValue } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
 import { sendEmail } from './generateEmail';
 import { filePath } from './SignPDFForm';

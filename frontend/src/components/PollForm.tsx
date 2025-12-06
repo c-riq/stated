@@ -15,7 +15,7 @@ import {legalForms} from '../constants/legalForms'
 import PublishStatement from './PublishStatement'
 import { sha256 } from '../utils/hash'
 
-import { parseStatement, parsePoll, buildPollContent, buildStatement } from '../statementFormats'
+import { parseStatement, parsePoll, buildPollContent, buildStatement } from 'stated-protocol-parser'
 import { sendEmail } from './generateEmail';
 import { Button, Checkbox, FormControlLabel } from '@mui/material';
 

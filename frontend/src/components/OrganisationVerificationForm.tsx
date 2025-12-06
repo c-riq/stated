@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 
 import {legalForms} from '../constants/legalForms'
 import { parseStatement, buildStatement, 
-    buildOrganisationVerificationContent, parseOrganisationVerification, peopleCountBuckets } from '../statementFormats'
+    buildOrganisationVerificationContent, parseOrganisationVerification, peopleCountBuckets } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
 import { sha256 } from '../utils/hash';
 import { sendEmail } from './generateEmail';

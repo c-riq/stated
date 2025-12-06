@@ -1,5 +1,5 @@
 import {updateStatement} from './database'
-import {parseDisputeContent} from './statementFormats'
+import {parseDisputeContent} from 'stated-protocol-parser'
 
 export const addContentDisputeReference = ({ statement_hash, content }: { statement_hash: string, content: string }) => (new Promise(async (resolve, reject)=>{
     try {

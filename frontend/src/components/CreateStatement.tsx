@@ -23,7 +23,8 @@ import ResponseForm from './ResponseForm';
 import RatingForm from './RatingForm';
 import SignPDFForm from './SignPDFForm';
 import {VoteForm} from './VoteForm';
-import { statementTypes } from '../statementFormats';
+import { statementTypes } from 'stated-protocol-parser';
+import type { StatementTypeValue } from 'stated-protocol-parser';
 
 import { submitStatement, getTXTRecords, 
     getDomainSuggestions, getSSLOVInfo, getDNSSECInfo, getDomainVerifications, 

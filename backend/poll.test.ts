@@ -2,7 +2,7 @@
 import {describe, jest, expect, it} from '@jest/globals';
 jest.disableAutomock()
 import { checkRequiredObservations, isOrganisationVoteQualified, isPersonVoteQualified, parseAndCreateVote } from './poll'
-import { parseObservation, parseOrganisationVerification, parsePersonVerification, parsePoll, parseStatement, parseVote } from './statementFormats';
+import { parseObservation, parseOrganisationVerification, parsePersonVerification, parsePoll, parseStatement, parseVote } from 'stated-protocol-parser';
 import { getVotes } from "./database";
 import { QueryResult } from 'pg';
 

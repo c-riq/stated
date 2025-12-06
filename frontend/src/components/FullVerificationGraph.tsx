@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 import fcose from 'cytoscape-fcose'; // cola, spread
 import { legalForms } from "../constants/legalForms";
-import { peopleCountBuckets, parseOrganisationVerification } from "../statementFormats";
+import { peopleCountBuckets, parseOrganisationVerification } from "stated-protocol-parser";
 
 import { backendHost, getDomainVerifications } from "../api";
 import { node, edge } from "./VerificationGraph";
