@@ -1,0 +1,16 @@
+# SPARQL query to get all subclasses of city (Q515)
+# This can be executed at https://query.wikidata.org/
+
+SELECT DISTINCT ?citySubclass ?citySubclassLabel ?citySubclassDescription
+WHERE {
+  # Get all subclasses of city (Q515)
+  ?citySubclass wdt:P279* wd:Q515.
+  
+  # Get labels and descriptions in English
+  SERVICE wikibase:label { 
+    bd:serviceParam wikibase:language "en". 
+    ?citySubclass rdfs:label ?citySubclassLabel.
+    OPTIONAL { ?citySubclass schema:description ?citySubclassDescription. }
+  }
+}
+ORDER BY ?citySubclassLabel
