@@ -114,6 +114,9 @@ let client_1 = new Client(config_1);
       pgdump.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
         sql = sql.replace(/SELECT pg_catalog.setval\('public.migrations_id_seq', \d+, true\);/g, '')
+        // Remove random pg_dump security tokens that change on every dump
+        sql = sql.replace(/\\restrict [A-Za-z0-9]+/g, '\\restrict TOKEN')
+        sql = sql.replace(/\\unrestrict [A-Za-z0-9]+/g, '\\unrestrict TOKEN')
         fs.writeFileSync(__dirname + "/actual.sql", sql);
         migrationResultDBDump = sql
       });
@@ -163,6 +166,9 @@ let client_2 = new Client(config_2);
       pgdump.on('close', (code) => {
         console.log(`child process exited with code ${code}`);
         sql = sql.replace(/SELECT pg_catalog.setval\('public.migrations_id_seq', \d+, true\);/g, '')
+        // Remove random pg_dump security tokens that change on every dump
+        sql = sql.replace(/\\restrict [A-Za-z0-9]+/g, '\\restrict TOKEN')
+        sql = sql.replace(/\\unrestrict [A-Za-z0-9]+/g, '\\unrestrict TOKEN')
         fs.writeFileSync(__dirname + "/expected.sql", sql);
         targetSchemaDBDump = sql
       });
