@@ -9,7 +9,7 @@ The signatures are verified, saved, re-broadcasted and aggregated by each node i
 
 For publishing a statement, organisations or individuals can use the following options:
 1. Publish it on their website domain in a text file. Curently therer are 3 supported URI schemes:
-    - [https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
+    - [https://stated.rixdata.net/statements/qg51IiW3RKIXSxiaF_hVQdZdtHzKsU4YePxFuZ2YVtQ](https://stated.rixdata.net/statements/qg51IiW3RKIXSxiaF_hVQdZdtHzKsU4YePxFuZ2YVtQ)
     - [https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt](https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt)
     - [https://www.rixdata.net/.well-known/statements.txt](https://www.rixdata.net/.well-known/statements.txt)
     If you don't know how to host static text files, check our [instructions](https://github.com/c-riq/stated/blob/master/static/README.md)
