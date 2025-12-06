@@ -18,7 +18,7 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v3
       with:
-          node-version: 22.x
+          node-version: 24.x
           
     - name: Build frontend
       working-directory: ./p2p/frontend

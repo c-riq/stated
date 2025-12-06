@@ -1,6 +1,6 @@
 # run npm run build in frontend folder first
 
-FROM node:22-alpine 
+FROM node:24-alpine 
 
 WORKDIR /usr/src/stated
 
