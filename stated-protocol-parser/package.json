@@ -1,6 +1,6 @@
 {
   "name": "stated-protocol-parser",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Parser and formatter for the Stated protocol - a decentralized statement verification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -46,6 +46,7 @@
   },
   "files": [
     "dist",
+    "src",
     "README.md",
     "LICENSE"
   ],
