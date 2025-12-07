@@ -5,7 +5,7 @@ and will be retried according to the schedule below
 and deleted afterwards.
 */
 
-import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, deleteSupersededDerivedEntities, } from './database'
+import { getUnverifiedStatements, getStatements, cleanUpUnverifiedStatements, deleteSupersededDerivedEntities, StatementDB } from './database'
 import { validateAndAddStatementIfMissing, createDerivedEntity } from './statementVerification'
 
 const log = true

@@ -1,7 +1,7 @@
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import AES from 'crypto-js/aes';
 import encodeUTF8 from 'crypto-js/enc-utf8';
-import { fromUrlSafe } from "../utils/hash";
+import { fromUrlSafeBase64 as fromUrlSafe } from 'stated-protocol-parser';
 import { Autocomplete, Box, TextField } from "@mui/material";
 import React from "react";
 

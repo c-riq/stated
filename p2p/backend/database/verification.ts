@@ -2,7 +2,7 @@
 const log = false;
 
 import { Pool } from "pg";
-import { DBCallback, checkIfMigrationsAreDone } from ".";
+import { DBCallback, checkIfMigrationsAreDone, OrganisationVerificationDB, PersonVerificationDB, StatementDB, StatementWithSupersedingDB } from ".";
 
 export const createOrganisationVerificationFactory = (pool: Pool) => ({ statement_hash, verifier_domain, verified_domain, 
   name, legal_entity_type, country, province, city, serial_number, foreign_domain, confidence, department }: Omit<OrganisationVerificationDB, "id">) => (new Promise((resolve: DBCallback<any>, reject) => {

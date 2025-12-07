@@ -7,7 +7,7 @@ import {
   buildBounty,
   buildStatement} from "../statementFormats";
 
-import { sha256 } from "../hash";
+import { sha256Node as sha256 } from "stated-protocol-parser";
 
 /*
 DOMAIN=localhost PROTOCOL=http PORT=7766 FILE_NAME=rixdata_nl_b.v._statements.csv ts-node backend/scripts/publishStatementsFromCSV.ts

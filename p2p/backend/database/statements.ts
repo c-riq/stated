@@ -16,7 +16,7 @@ type statement = {
 const log = false;
 
 import { Pool } from "pg";
-import { DBCallback, checkIfMigrationsAreDone } from ".";
+import { DBCallback, checkIfMigrationsAreDone, StatementDB, StatementWithHiddenDB, StatementWithSupersedingDB, StatementWithDetailsDB, VerificationMethodDB } from ".";
 
 export const createStatementFactory =
   (pool: Pool) =>

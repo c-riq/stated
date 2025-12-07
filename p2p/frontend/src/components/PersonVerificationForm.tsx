@@ -16,7 +16,7 @@ import moment from 'moment'
 import { parseStatement, buildStatement, 
     parsePersonVerification, buildPersonVerificationContent } from 'stated-protocol-parser'
 import PublishStatement from './PublishStatement';
-import { sha256 } from '../utils/hash';
+import { sha256 } from 'stated-protocol-parser';
 import { sendEmail } from './generateEmail';
 
 const PersonVerificationForm = (props:FormProps) => {

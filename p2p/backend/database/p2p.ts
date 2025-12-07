@@ -2,7 +2,7 @@
 const log = false;
 
 import { Pool } from "pg";
-import { DBCallback, checkIfMigrationsAreDone } from ".";
+import { DBCallback, checkIfMigrationsAreDone, P2PNodeDB } from ".";
 
 export const getAllNodesFactory = (pool: Pool) => () => (new Promise((resolve: DBCallback<P2PNodeDB>, reject) => {
     try {

@@ -1,8 +1,8 @@
 
 import axios from 'axios'
-import * as hashUtils from './hash'
-import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement, 
-    updateStatement, createHiddenStatement, checkIfUnverifiedStatmentExists} from './database'
+import { sha256, verify } from 'stated-protocol-parser/node'
+import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement,
+    updateStatement, createHiddenStatement, checkIfUnverifiedStatmentExists, VerificationMethodDB} from './database'
 import {createOrgVerification, createPersVerification} from './domainVerification'
 import {checkIfVerificationExists} from './database'
 import {parseAndCreatePoll, parseAndCreateVote} from './poll'
@@ -23,7 +23,7 @@ export const validateStatementMetadata = ({ statement, hash_b64, source_node_id 
         {statement: string, hash_b64: string, source_node_id: number|null}) => {
     const parsedStatement = parseStatement({statement, allowNoVersion: true})
     const {domain, author, time, content, tags, type, supersededStatement} = parsedStatement
-    if (!hashUtils.verify(statement, hash_b64)){
+    if (!verify(statement, hash_b64)){
         throw(Error("invalid hash: "+statement+hash_b64))
     }
     if (! (
@@ -45,8 +45,8 @@ export const validateStatementMetadata = ({ statement, hash_b64, source_node_id 
     if (!(proclaimed_publication_time > 0)){
         throw(Error("invalid publication timestamp (unix epoch):" + proclaimed_publication_time))
     }
-    let result = {content, domain, author, tags, type, 
-        content_hash_b64: hashUtils.sha256(content), proclaimed_publication_time, supersededStatement}
+    let result = {content, domain, author, tags, type,
+        content_hash_b64: sha256(content), proclaimed_publication_time, supersededStatement}
     if (type) {
         if([ statementTypes.organisationVerification, statementTypes.personVerification,
             statementTypes.poll, statementTypes.vote, statementTypes.bounty,

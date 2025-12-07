@@ -2,7 +2,7 @@
 const log = true;
 
 import { Pool } from "pg";
-import { DBCallback, checkIfMigrationsAreDone } from ".";
+import { DBCallback, checkIfMigrationsAreDone, RatingDB, AggregatedRatingDB } from ".";
 
 
 export const createRatingFactory = (pool: Pool) => ({ statement_hash, subject_name, subject_reference, rating, comment, quality, qualified }: Omit<RatingDB, "id">) => (new Promise((resolve: DBCallback<any>, reject) => {

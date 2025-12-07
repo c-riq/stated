@@ -13,7 +13,7 @@ import {
   buildObservation,
   buildStatement} from "../statementFormats";
 
-import { sha256 } from "../hash";
+import { sha256Node as sha256 } from "stated-protocol-parser";
 
 const host = process.env.HOST || "stated.rixdata.net";
 const useHttps = (process.env.PROTOCOL || "https") === "https";

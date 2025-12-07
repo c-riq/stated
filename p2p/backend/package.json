@@ -23,7 +23,7 @@
     "express": "^4.17.3",
     "fs-extra": "^10.0.1",
     "pg": "^8.8.0",
-    "stated-protocol-parser": "^1.0.0",
+    "stated-protocol-parser": "^1.0.7",
     "typescript": "^5.1.6"
   },
   "devDependencies": {

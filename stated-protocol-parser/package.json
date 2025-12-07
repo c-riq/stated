@@ -1,11 +1,32 @@
 {
   "name": "stated-protocol-parser",
-  "version": "1.0.0",
+  "version": "1.0.7",
   "description": "Parser and formatter for the Stated protocol - a decentralized statement verification system",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.node.js",
+  "module": "dist/esm/index.browser.js",
+  "types": "dist/index.browser.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.browser.d.ts",
+      "browser": "./dist/esm/index.browser.js",
+      "import": "./dist/esm/index.browser.js",
+      "require": "./dist/index.browser.js",
+      "default": "./dist/index.browser.js"
+    },
+    "./node": {
+      "types": "./dist/index.node.d.ts",
+      "import": "./dist/esm/index.node.js",
+      "require": "./dist/index.node.js"
+    }
+  },
+  "browser": {
+    "./dist/esm/index.node.js": "./dist/esm/index.browser.js",
+    "./dist/index.node.js": "./dist/index.browser.js"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc",
+    "build:esm": "tsc -p tsconfig.esm.json",
     "test": "jest",
     "prepublishOnly": "npm run build"
   },
@@ -29,6 +50,7 @@
   },
   "files": [
     "dist",
+    "src",
     "README.md",
     "LICENSE"
   ],

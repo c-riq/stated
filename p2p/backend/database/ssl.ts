@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { DBCallback, checkIfMigrationsAreDone } from ".";
+import { DBCallback, checkIfMigrationsAreDone, SSLCertCacheDB, OrganisationVerificationDB } from ".";
 
 export const matchDomainFactory = (pool: Pool) => ({ domain_substring}:{domain_substring?: string}) => (new Promise((resolve: DBCallback<SSLCertCacheDB&OrganisationVerificationDB>, reject) => {
     try {

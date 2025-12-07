@@ -1,7 +1,7 @@
 import * as cp from 'child_process'
 
 import fs from 'node:fs'
-import {sha256} from './hash'
+import {sha256} from 'stated-protocol-parser/node'
 import { Request } from 'express-serve-static-core';
 
 const log=false

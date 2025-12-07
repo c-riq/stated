@@ -1,6 +1,6 @@
 
 import { Pool } from "pg";
-import { DBCallback } from ".";
+import { DBCallback, VerificationLogDB, StatementDB } from ".";
 
 export const getStatementsToVerifyFactory = (pool: Pool) => ({n, ownDomain}: {n: any, ownDomain: any}) => (new Promise((
   resolve: DBCallback<VerificationLogDB&StatementDB&{n:string}>, reject) => {
