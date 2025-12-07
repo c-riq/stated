@@ -27,7 +27,7 @@ import {
     buildOrganisationVerificationContent,
     buildBoycott,
     buildObservation,
-} from './index'
+} from './protocol'
 
 const randomUnicodeString = () =>
     Array.from({ length: 20 }, () =>
