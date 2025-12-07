@@ -13,7 +13,7 @@ import Box from '@mui/material/Box';
 
 import {legalForms} from '../constants/legalForms'
 import PublishStatement from './PublishStatement'
-import { sha256 } from '../utils/hash'
+import { sha256 } from 'stated-protocol-parser'
 
 import { parseStatement, parsePoll, buildPollContent, buildStatement } from 'stated-protocol-parser'
 import { sendEmail } from './generateEmail';
