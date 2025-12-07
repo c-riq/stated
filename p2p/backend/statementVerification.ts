@@ -1,6 +1,6 @@
 
 import axios from 'axios'
-import { sha256Node as sha256, verifyNode as verify } from 'stated-protocol-parser'
+import { sha256, verify } from 'stated-protocol-parser/node'
 import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement,
     updateStatement, createHiddenStatement, checkIfUnverifiedStatmentExists} from './database'
 import {createOrgVerification, createPersVerification} from './domainVerification'

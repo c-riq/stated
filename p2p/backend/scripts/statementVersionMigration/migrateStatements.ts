@@ -4,7 +4,7 @@ HOST=stated.rixdata.net ts-node backend/scripts/statementVersionMigration/migrat
 import * as v2 from "./2";
 import * as v1 from "./1";
 
-import { sha256Node as sha256 } from "stated-protocol-parser";
+import { sha256 } from "stated-protocol-parser/node";
 
 import { submitStatement, fetchStatements } from "../shared";
 

@@ -11,7 +11,7 @@ import {
   buildOrganisationVerificationContent,
   buildStatement} from "../statementFormats";
 
-import { sha256Node as sha256 } from "stated-protocol-parser";
+import { sha256 } from "stated-protocol-parser/node";
 
 import { legalForms } from "../constants/legalForms";
 
