@@ -1,6 +1,7 @@
 import { QueryResult } from 'pg'
-import {createPoll, getOrganisationVerifications, getPoll, 
-    createVote, getVotes, updateVote, getObservationsForEntity, getPersonVerifications} from './database'
+import {createPoll, getOrganisationVerifications, getPoll,
+    createVote, getVotes, updateVote, getObservationsForEntity, getPersonVerifications,
+    StatementDB, PollDB, OrganisationVerificationDB, PersonVerificationDB, VoteDB} from './database'
 import {parseVote, parsePoll, parseStatement, parseObservation} from 'stated-protocol-parser'
 import type { Vote } from 'stated-protocol-parser'
 

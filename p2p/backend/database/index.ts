@@ -1,6 +1,9 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg'
 import {performMigrations} from './migrations'
 
+// Export all database types
+export * from './dbTypes'
+
 const pgHost = process.env.POSTGRES_HOST || "localhost"
 const pgDatabase = process.env.POSTGRES_DB || "stated"
 const pgUser = process.env.POSTGRES_USER || "sdf"

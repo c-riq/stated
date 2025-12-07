@@ -2,7 +2,7 @@
 const log = false;
 
 import { Pool } from "pg";
-import { DBCallback, checkIfMigrationsAreDone } from ".";
+import { DBCallback, checkIfMigrationsAreDone, PollDB, VoteDB, StatementDB, StatementWithSupersedingDB } from ".";
 
 export const createPollFactory = (pool: Pool) => (poll:Omit<PollDB, "id">) => 
 (new Promise((resolve: DBCallback<any>, reject) => {

@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { sha256, verify } from 'stated-protocol-parser/node'
 import {statementExists, createUnverifiedStatement, updateUnverifiedStatement, createStatement,
-    updateStatement, createHiddenStatement, checkIfUnverifiedStatmentExists} from './database'
+    updateStatement, createHiddenStatement, checkIfUnverifiedStatmentExists, VerificationMethodDB} from './database'
 import {createOrgVerification, createPersVerification} from './domainVerification'
 import {checkIfVerificationExists} from './database'
 import {parseAndCreatePoll, parseAndCreateVote} from './poll'

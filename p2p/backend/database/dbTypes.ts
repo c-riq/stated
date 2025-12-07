@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-enum StatementTypeDB {
+export enum StatementTypeDB {
     Statement = "statement",
     DisputeStatementAuthenticity = "dispute_statement_authenticity",
     Response = "response",
@@ -16,12 +16,12 @@ enum StatementTypeDB {
     Unsupported = "unsupported",
 }
 
-enum VerificationMethodDB {
+export enum VerificationMethodDB {
     Api = "api",
     Dns = "dns",
 }
 
-type UnverifiedStatementDB = {
+export type UnverifiedStatementDB = {
     id: number;
     statement: string;
     author: string;
@@ -32,7 +32,7 @@ type UnverifiedStatementDB = {
     verification_retry_count: number | null;
 };
 
-type StatementDB = {
+export type StatementDB = {
     id: number;
     type: StatementTypeDB;
     domain: string;
@@ -53,11 +53,11 @@ type StatementDB = {
     superseded_statement: string | null;
 };
 
-type StatementWithSupersedingDB = StatementDB & {
+export type StatementWithSupersedingDB = StatementDB & {
     superseding_statement: string | null;
 };
 
-type VerificationLogDB = {
+export type VerificationLogDB = {
     id: number;
     statement_hash: string;
     t: Date;
@@ -66,7 +66,7 @@ type VerificationLogDB = {
     txt: boolean;
 };
 
-type OrganisationVerificationDB = {
+export type OrganisationVerificationDB = {
     id: number;
     statement_hash: string;
     verifier_domain: string;
@@ -82,7 +82,7 @@ type OrganisationVerificationDB = {
     confidence: number | null;
 };
 
-type PersonVerificationDB = {
+export type PersonVerificationDB = {
     id: number;
     statement_hash: string;
     verifier_domain: string;
@@ -94,7 +94,7 @@ type PersonVerificationDB = {
     birth_date: string | null;
 };
 
-type DomainOwnershipBeliefDB = {
+export type DomainOwnershipBeliefDB = {
     id: number;
     domain: string;
     name: string;
@@ -110,7 +110,7 @@ type DomainOwnershipBeliefDB = {
     reputation: number | null;
 };
 
-type VoteDB = {
+export type VoteDB = {
     id: number;
     statement_hash: string;
     poll_hash: string;
@@ -119,7 +119,7 @@ type VoteDB = {
     qualified: boolean | null;
 };
 
-type PollDB = {
+export type PollDB = {
     id: number;
     statement_hash: string;
     participants_entity_type: string | null;
@@ -128,7 +128,7 @@ type PollDB = {
     deadline: Date | null;
 };
 
-type RatingDB = {
+export type RatingDB = {
     id: number;
     statement_hash: string;
     subject_name: string | null;
@@ -139,7 +139,7 @@ type RatingDB = {
     qualified: boolean
 };
 
-type AggregatedRatingDB = {
+export type AggregatedRatingDB = {
     subject_name: string;
     subject_reference: string;
     quality: string | null;
@@ -154,7 +154,7 @@ type AggregatedRatingDB = {
     max_skip_id: null | string;
 };
 
-type DisputeDB = {
+export type DisputeDB = {
     id: number;
     statement_hash: string;
     disputed_statement_hash: string;
@@ -162,7 +162,7 @@ type DisputeDB = {
     p2p_node_id: number | null;
 };
 
-type P2PNodeDB = {
+export type P2PNodeDB = {
     id: number;
     domain: string;
     ip: string | null;
@@ -174,14 +174,14 @@ type P2PNodeDB = {
     fingerprint: string | null;
 };
 
-type MigrationDB = {
+export type MigrationDB = {
     id: number;
     created_at: Date;
     from_version: bigint;
     to_version: bigint;
 };
 
-type SSLCertCacheDB = {
+export type SSLCertCacheDB = {
     sha256: string;
     host: string | null;
     subject_o: string | null;
@@ -203,7 +203,7 @@ type SSLCertCacheDB = {
 
 // extended types
 
-type StatementWithDetailsDB = StatementDB & {
+export type StatementWithDetailsDB = StatementDB & {
     skip_id: string;
     max_skip_id: string;
     repost_count: string | null;
@@ -212,6 +212,6 @@ type StatementWithDetailsDB = StatementDB & {
 };
 
 
-type StatementWithHiddenDB = StatementDB & {
+export type StatementWithHiddenDB = StatementDB & {
     hidden: boolean | null;
 };

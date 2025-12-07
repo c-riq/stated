@@ -1,9 +1,10 @@
 import express from 'express'
 
-import {matchDomain, getStatement, getStatements, getStatementsWithDetail, 
+import {matchDomain, getStatement, getStatements, getStatementsWithDetail,
     getOrganisationVerifications, getPersonVerifications, getJoiningStatements, getAllNodes,
-    getVotes, deleteStatement, matchName, getLogsForStatement, getHiddenStatement, 
-    checkIfMigrationsAreDone, getResponses, getDisputes, getAggregatedRatings
+    getVotes, deleteStatement, matchName, getLogsForStatement, getHiddenStatement,
+    checkIfMigrationsAreDone, getResponses, getDisputes, getAggregatedRatings,
+    StatementWithSupersedingDB, StatementWithHiddenDB
 } from './database'
 import p2p from './p2p'
 import {getOVInfoForSubdomains} from './ssl'

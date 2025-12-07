@@ -1,6 +1,6 @@
 
 import { Pool } from "pg"
-import { DBCallback, checkIfMigrationsAreDone } from "."
+import { DBCallback, checkIfMigrationsAreDone, StatementWithSupersedingDB } from "."
 
 
 export const getResponsesFactory = (pool: Pool) => ({ referenced_hash }: {referenced_hash:string}) => (new Promise((

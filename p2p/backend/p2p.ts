@@ -1,5 +1,5 @@
 import { p2p_seed } from './p2p_seed'
-import { getAllNodes, updateNode, addNode } from './database'
+import { getAllNodes, updateNode, addNode, StatementDB } from './database'
 import { validateAndAddStatementIfMissing } from './statementVerification'
 
 import { get, post } from './request'
