@@ -1,9 +1,26 @@
 {
   "name": "stated-protocol-parser",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Parser and formatter for the Stated protocol - a decentralized statement verification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./hash.node": {
+      "import": "./dist/hash.node.js",
+      "require": "./dist/hash.node.js",
+      "types": "./dist/hash.node.d.ts"
+    },
+    "./hash.browser": {
+      "import": "./dist/hash.browser.js",
+      "require": "./dist/hash.browser.js",
+      "types": "./dist/hash.browser.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest",

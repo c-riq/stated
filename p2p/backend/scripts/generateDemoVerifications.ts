@@ -12,7 +12,7 @@ import {
   parseStatement,
 } from "../statementFormats";
 
-import { sha256 } from "../hash";
+import { sha256Node as sha256 } from "stated-protocol-parser";
 
 import { legalForms } from "../constants/legalForms";
 

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { sha256 } from '../utils/hash';
+import { sha256 } from 'stated-protocol-parser';
 
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';

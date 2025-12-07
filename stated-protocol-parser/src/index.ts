@@ -28,6 +28,18 @@ export * from './constants'
 export * from './utils'
 export * from './v3'
 
+// Export browser-compatible async hash functions (default)
+export * from './hash.browser'
+
+// Export Node.js synchronous hash functions with clear names
+export { 
+    sha256 as sha256Node, 
+    verify as verifyNode,
+    fromUrlSafeBase64,
+    toUrlSafeBase64
+} from './hash.node'
+
+
 export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement }: Statement) => {
     if (content.match(/\nPublishing domain: /)) throw (new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
     if (content.match(/\n\n/)) throw (new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))

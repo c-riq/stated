@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { sha256 } from '../utils/hash';
+import { sha256 } from 'stated-protocol-parser';
 
 import FormControl from '@mui/material/FormControl';
 import { Autocomplete, Box, Rating, TextField, Typography } from '@mui/material';
