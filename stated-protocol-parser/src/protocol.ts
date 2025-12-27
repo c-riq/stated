@@ -2,6 +2,7 @@
 import { legalForms, UTCFormat, peopleCountBuckets } from './constants'
 import { parsePollV3 } from './v3'
 import { monthIndex, birthDateFormat, minPeopleCountToRange } from './utils'
+import { verifySignature } from './signature.node'
 import type {
     Statement,
     Quotation,
@@ -21,7 +22,7 @@ import type {
 } from './types'
 
 const fallBackVersion = 3
-const version = 4
+const version = 5
 
 export * from './types'
 export * from './constants'
@@ -49,6 +50,41 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
     : Statement & { type?: string, formatVersion: string } => {
     if (s.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     if (s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
+    
+    // Check if statement has signature fields
+    const signatureRegex = /^([\s\S]+?)---\nStatement hash: ([A-Za-z0-9_-]+)\nPublic key: ([A-Za-z0-9_-]+)\nSignature: ([A-Za-z0-9_-]+)\nAlgorithm: ([^\n]+)\n$/
+    const signatureMatch = s.match(signatureRegex)
+    
+    let statementToVerify = s
+    let publicKey: string | undefined
+    let signature: string | undefined
+    
+    if (signatureMatch) {
+        statementToVerify = signatureMatch[1]
+        const statementHash = signatureMatch[2]
+        publicKey = signatureMatch[3]
+        signature = signatureMatch[4]
+        const algorithm = signatureMatch[5]
+        
+        // Verify algorithm
+        if (algorithm !== 'Ed25519') {
+            throw new Error("Unsupported signature algorithm: " + algorithm)
+        }
+        
+        // Verify statement hash
+        const { sha256 } = require('./hash.node')
+        const computedHash = sha256(statementToVerify)
+        if (computedHash !== statementHash) {
+            throw new Error("Statement hash mismatch")
+        }
+        
+        // Verify signature
+        const isValid = verifySignature(statementToVerify, signature, publicKey)
+        if (!isValid) {
+            throw new Error("Invalid cryptographic signature")
+        }
+    }
+    
     const statementRegex = new RegExp(''
         + /^Publishing domain: (?<domain>[^\n]+?)\n/.source
         + /Author: (?<author>[^\n]+?)\n/.source
@@ -59,7 +95,7 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
         + /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
         + /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?\n$)|(?<content>[\s\S]+?\n$))/.source
     );
-    const match = s.match(statementRegex)
+    const match = statementToVerify.match(statementRegex)
     if (!match) throw new Error("Invalid statement format:" + s)
     
     const m: Partial<Statement> & { type?: string, formatVersion: string, timeStr: string, tagsStr: string } = {

@@ -25,6 +25,14 @@ export type Statement = {
     formatVersion?: string
 }
 
+export type CryptographicallySignedStatement = {
+    statement: string
+    statementHash: string
+    publicKey: string
+    signature: string
+    algorithm: string
+}
+
 export type Quotation = {
     originalAuthor: string
     authorVerification: string

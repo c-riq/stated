@@ -11,6 +11,7 @@ npm install stated-protocol-parser
 ## Features
 
 - **Statement Parsing & Formatting**: Parse and build statements with domain verification
+- **Cryptographic Signatures**: Sign and verify statements using Ed25519 (Version 5)
 - **Multiple Statement Types**: Support for various statement types including:
   - Basic statements
   - Quotations
@@ -21,8 +22,9 @@ npm install stated-protocol-parser
   - PDF signing
   - Responses
 - **Type Safety**: Full TypeScript support with comprehensive type definitions
-- **Version Support**: Handles multiple format versions (v3 and v4)
+- **Version Support**: Handles multiple format versions (v3, v4, and v5)
 - **Validation**: Built-in validation for all statement formats
+- **Cross-Platform**: Works in both Node.js and browser environments
 
 ## Usage
 
@@ -45,6 +47,90 @@ const parsed = parseStatement({ statement });
 console.log(parsed.domain); // 'example.com'
 console.log(parsed.author); // 'Example Organization'
 ```
+
+### Cryptographic Signatures (Version 5)
+
+Version 5 introduces cryptographic signatures for statements, providing non-repudiation and tamper detection.
+
+#### Node.js Example
+
+```typescript
+import {
+  buildStatement,
+  generateKeyPair,
+  buildSignedStatement,
+  verifySignedStatement,
+  parseSignedStatement
+} from 'stated-protocol-parser/node';
+
+// Generate a key pair
+const { publicKey, privateKey } = generateKeyPair();
+
+// Build a statement
+const statement = buildStatement({
+  domain: 'example.com',
+  author: 'Example Organization',
+  time: new Date(),
+  content: 'This is our official signed statement.',
+});
+
+// Sign the statement
+const signedStatement = buildSignedStatement(statement, privateKey, publicKey);
+
+// Verify the signed statement
+const isValid = verifySignedStatement(signedStatement);
+console.log('Signature valid:', isValid); // true
+
+// Parse the signed statement
+const parsed = parseSignedStatement(signedStatement);
+console.log('Original statement:', parsed?.statement);
+console.log('Public key:', parsed?.publicKey);
+console.log('Signature:', parsed?.signature);
+```
+
+#### Browser Example
+
+```typescript
+import {
+  buildStatement,
+  generateKeyPair,
+  buildSignedStatement,
+  verifySignedStatement
+} from 'stated-protocol-parser';
+
+// Generate a key pair (async in browser)
+const { publicKey, privateKey } = await generateKeyPair();
+
+// Build and sign a statement
+const statement = buildStatement({
+  domain: 'example.com',
+  author: 'Example Organization',
+  time: new Date(),
+  content: 'This is our official signed statement.',
+});
+
+const signedStatement = await buildSignedStatement(statement, privateKey, publicKey);
+
+// Verify the signed statement
+const isValid = await verifySignedStatement(signedStatement);
+console.log('Signature valid:', isValid);
+```
+
+#### Signed Statement Format
+
+```
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Format version: 5
+Statement content: This is our official signed statement.
+---
+Statement hash: <url-safe-base64-sha256-hash>
+Public key: <url-safe-base64-encoded-public-key>
+Signature: <url-safe-base64-encoded-signature>
+Algorithm: Ed25519
+```
+
 
 ### Poll
 
@@ -181,9 +267,40 @@ Optional fields:
 
 The library supports multiple format versions:
 - **Version 3**: Legacy format with different poll structure
-- **Version 4**: Current format (default)
+- **Version 4**: Standard format without signatures
+- **Version 5**: Current format with cryptographic signature support (default)
 
 Use `parsePoll(content, '3')` to parse version 3 polls.
+
+### Signature Functions (Version 5)
+
+#### Key Generation
+- `generateKeyPair()` - Generate Ed25519 key pair
+  - Node.js: Returns `{ publicKey: string, privateKey: string }` (PEM format)
+  - Browser: Returns `Promise<{ publicKey: string, privateKey: string }>` (JWK format)
+
+#### Signing
+- `signStatement(statement, privateKey)` - Sign a statement
+  - Node.js: Synchronous, returns base64 signature
+  - Browser: Async, returns `Promise<string>`
+
+- `buildSignedStatement(statement, privateKey, publicKey)` - Build signed statement wrapper
+  - Node.js: Synchronous
+  - Browser: Async, returns `Promise<string>`
+
+#### Verification
+- `verifySignature(statement, signature, publicKey)` - Verify a signature
+  - Node.js: Synchronous, returns boolean
+  - Browser: Async, returns `Promise<boolean>`
+
+- `verifySignedStatement(signedStatement)` - Verify a signed statement wrapper
+  - Node.js: Synchronous, returns boolean
+  - Browser: Async, returns `Promise<boolean>`
+
+#### Parsing
+- `parseSignedStatement(signedStatement)` - Parse signed statement wrapper
+  - Returns `SignedStatement | null`
+  - Synchronous in both environments
 
 ## Error Handling
 
