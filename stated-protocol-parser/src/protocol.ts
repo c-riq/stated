@@ -59,19 +59,26 @@ export const parseStatement = ({ statement: input }: { statement: string })
     const beforeTranslations = input.split(/\nTranslation [a-z]{2,3}:\n/)[0]
     if (beforeTranslations.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row before translations, as this is used for separating statements.")
     
-    const signatureRegex = /^([\s\S]+?)---\nStatement hash: ([A-Za-z0-9_-]+)\nPublic key: ([A-Za-z0-9_-]+)\nSignature: ([A-Za-z0-9_-]+)\nAlgorithm: ([^\n]+)\n$/
+    const signatureRegex = new RegExp(''
+        + /^(?<statement>[\s\S]+?)---\n/.source
+        + /Statement hash: (?<statementHash>[A-Za-z0-9_-]+)\n/.source
+        + /Public key: (?<publicKey>[A-Za-z0-9_-]+)\n/.source
+        + /Signature: (?<signature>[A-Za-z0-9_-]+)\n/.source
+        + /Algorithm: (?<algorithm>[^\n]+)\n/.source
+        + /$/.source
+    )
     const signatureMatch = input.match(signatureRegex)
     
     let statementToVerify = input
     let publicKey: string | undefined
     let signature: string | undefined
     
-    if (signatureMatch) {
-        statementToVerify = signatureMatch[1]
-        const statementHash = signatureMatch[2]
-        publicKey = signatureMatch[3]
-        signature = signatureMatch[4]
-        const algorithm = signatureMatch[5]
+    if (signatureMatch && signatureMatch.groups) {
+        statementToVerify = signatureMatch.groups.statement
+        const statementHash = signatureMatch.groups.statementHash
+        publicKey = signatureMatch.groups.publicKey
+        signature = signatureMatch.groups.signature
+        const algorithm = signatureMatch.groups.algorithm
         
         if (algorithm !== 'Ed25519') {
             throw new Error("Unsupported signature algorithm: " + algorithm)
