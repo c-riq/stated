@@ -22,25 +22,25 @@ export * from './constants'
 export * from './utils'
 
 export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement, translations, attachments }: Statement) => {
-    if (content.match(/\nPublishing domain: /)) throw (new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
-    if (content.match(/\n\n/)) throw (new Error("Statement content must not contain two line breaks in a row, as this is used for separating statements."))
-    if (content.match(/\nTranslation [a-z]{2,3}:\n/)) throw (new Error("Statement content must not contain 'Translation XX:\\n' pattern, as this is reserved for translations."))
-    if (content.match(/\nAttachments: /)) throw (new Error("Statement content must not contain 'Attachments: ' on a new line, as this is reserved for file attachments."))
-    if (typeof time !== 'object' || !time.toUTCString) throw (new Error("Time must be a Date object."))
-    if (!domain) throw (new Error("Publishing domain missing."))
-    if (attachments && attachments.length > 5) throw (new Error("Maximum 5 attachments allowed."))
+    if (content.match(/\nPublishing domain: /)) throw new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement.")
+    if (content.match(/\n\n/)) throw new Error("Statement content must not contain two line breaks in a row, as this is used for separating statements.")
+    if (content.match(/\nTranslation [a-z]{2,3}:\n/)) throw new Error("Statement content must not contain 'Translation XX:\\n' pattern, as this is reserved for translations.")
+    if (content.match(/\nAttachments: /)) throw new Error("Statement content must not contain 'Attachments: ' on a new line, as this is reserved for file attachments.")
+    if (typeof time !== 'object' || !time.toUTCString) throw new Error("Time must be a Date object.")
+    if (!domain) throw new Error("Publishing domain missing.")
+    if (attachments && attachments.length > 5) throw new Error("Maximum 5 attachments allowed.")
     if (attachments) {
         attachments.forEach((attachment, index) => {
             if (!attachment.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
-                throw (new Error(`Attachment ${index + 1} must be in format 'base64hash.extension' (URL-safe base64)`))
+                throw new Error(`Attachment ${index + 1} must be in format 'base64hash.extension' (URL-safe base64)`)
             }
         })
     }
     
     if (translations) {
         for (const [lang, translation] of Object.entries(translations)) {
-            if (translation.match(/\nPublishing domain: /)) throw (new Error(`Translation for ${lang} must not contain 'Publishing domain: '.`))
-            if (translation.match(/Translation [a-z]{2,3}:\n/)) throw (new Error(`Translation for ${lang} must not contain 'Translation XX:\\n' pattern.`))
+            if (translation.match(/\nPublishing domain: /)) throw new Error(`Translation for ${lang} must not contain 'Publishing domain: '.`)
+            if (translation.match(/Translation [a-z]{2,3}:\n/)) throw new Error(`Translation for ${lang} must not contain 'Translation XX:\\n' pattern.`)
         }
     }
     
@@ -64,13 +64,13 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
         translationLines +
         attachmentLines;
-    if (statement.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
+    if (statement.length > 3000) throw new Error("Statement must not be longer than 3,000 characters.")
     return statement
 }
 
 export const parseStatement = ({ statement: input }: { statement: string })
     : Statement & { type?: string, formatVersion: string } => {
-    if (input.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
+    if (input.length > 3000) throw new Error("Statement must not be longer than 3,000 characters.")
     const beforeTranslations = input.split(/\nTranslation [a-z]{2,3}:\n/)[0]
     if (beforeTranslations.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row before translations, as this is used for separating statements.")
     
@@ -127,7 +127,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
         + /$/.source
     );
     const match = statementToVerify.match(statementRegex)
-    if (!match || !match.groups) throw new Error("Invalid statement format:" + input)
+    if (!match || !match.groups) throw new Error("Invalid statement format: " + input)
     
     const { domain, author, representative, time: timeStr, tags: tagsStr, supersededStatement,
             attachments: attachmentsStr, formatVersion, content, typedContent, type, translations: translationsStr } = match.groups
@@ -321,7 +321,7 @@ export const buildPersonVerificationContent = (
         dateOfBirth, jobTitle, employer, verificationMethod, confidence,
         picture, reliabilityPolicy, publicKey }: PersonVerification) => {
     if (!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) {
-        return ""
+        throw new Error("Missing required fields for person verification")
     }
     if (publicKey && !publicKey.match(/^[A-Za-z0-9_-]+$/)) {
         throw new Error("Public key must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)")
@@ -330,7 +330,7 @@ export const buildPersonVerificationContent = (
     let content = "    Type: Person verification\n" +
         "    Description: We verified the following information about a person.\n" +
         "    Name: " + name + "\n" +
-        "    Date of birth: " + [day.replace(/$0/, ''), month, year].join(' ') + "\n" +
+        "    Date of birth: " + [day.replace(/^0/, ''), month, year].join(' ') + "\n" +
         "    City of birth: " + cityOfBirth + "\n" +
         "    Country of birth: " + countryOfBirth + "\n" +
         (jobTitle ? "    Job title: " + jobTitle + "\n" : "") +
@@ -467,20 +467,20 @@ export const parseDisputeContent = (content: string): DisputeContent => {
 }
 
 export const buildResponseContent = ({ hash, response }: ResponseContent) => {
-    const content = "    Type: Response\n" +
+    const content = "\n    Type: Response\n" +
         "    Hash of referenced statement: " + hash + "\n" +
         "    Response:\n" + response + "\n"
     return content
 }
 
 export const parseResponseContent = (content: string): ResponseContent => {
-    const disputeRegex = new RegExp(''
+    const responseRegex = new RegExp(''
         + /^\n    Type: Response\n/.source
         + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
         + /    Response:\n(?<response>[^\n]*?)\n/.source
         + /$/.source
     );
-    const match = content.match(disputeRegex)
+    const match = content.match(responseRegex)
     if (!match || !match.groups) throw new Error("Invalid response content format: " + content)
     
     const { hash, response } = match.groups
