@@ -18,7 +18,7 @@ describe('Organisation verification parsing', () => {
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Format version: 5
-Statement content: 
+Statement content:
 	Type: Organisation verification
 	Description: We verified the following information about an organisation.
 	Name: Walmart Inc.
@@ -43,7 +43,7 @@ Statement content:
 Author: Verification Authority
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Format version: 5
-Statement content: 
+Statement content:
 	Type: Organisation verification
 	Description: We verified the following information about an organisation.
 	Name: Example Corporation
@@ -59,7 +59,7 @@ Statement content:
 	Employee count: 100-1000
 	Reliability policy: Standard verification
 	Confidence: 0.95
-Translation ar: 
+Translation ar:
 	النوع: التحقق من المنظمة
 	الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
 	الاسم: Example Corporation
@@ -75,7 +75,7 @@ Translation ar:
 	عدد الموظفين: 100-1000
 	سياسة الموثوقية: Standard verification
 	الثقة: 0.95
-Translation zh: 
+Translation zh:
 	类型：组织验证
 	描述：我们验证了有关组织的以下信息。
 	名称：Example Corporation

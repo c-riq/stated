@@ -32,13 +32,13 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
     if (translations) {
         for (const [lang, translation] of Object.entries(translations)) {
             if (translation.match(/\nPublishing domain: /)) throw (new Error(`Translation for ${lang} must not contain 'Publishing domain: '.`))
-            if (translation.match(/Translation [a-z]{2,3}: /)) throw (new Error(`Translation for ${lang} must not contain 'Translation XX: ' pattern.`))
+            if (translation.match(/Translation [a-z]{2,3}:\n/)) throw (new Error(`Translation for ${lang} must not contain 'Translation XX:\\n' pattern.`))
         }
     }
     
     const translationLines = translations
         ? Object.entries(translations)
-            .map(([lang, translation]) => `\nTranslation ${lang}: ${translation}${translation.match(/\n$/) ? '' : "\n"}`)
+            .map(([lang, translation]) => `\nTranslation ${lang}:\n${translation}${translation.match(/\n$/) ? '' : "\n"}`)
             .join('')
         : '';
     
@@ -49,7 +49,7 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
         "Format version: " + version + "\n" +
-        "Statement content: " + content + (content.match(/\n$/) ? '' : "\n") +
+        "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
         translationLines;
     if (statement.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     return statement
@@ -59,7 +59,7 @@ export const parseStatement = ({ statement: s }: { statement: string })
     : Statement & { type?: string, formatVersion: string } => {
     if (s.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     // Check for double line breaks before translations section
-    const beforeTranslations = s.split(/\nTranslation [a-z]{2,3}: /)[0]
+    const beforeTranslations = s.split(/\nTranslation [a-z]{2,3}:\n/)[0]
     if (beforeTranslations.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row before translations, as this is used for separating statements.")
     
     // Check if statement has signature fields
@@ -104,8 +104,8 @@ export const parseStatement = ({ statement: s }: { statement: string })
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
         + /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
-        + /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n?|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n?|$)/.source
-        + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n?[\s\S]+?)*)/.source
+        + /Statement content:\n(?:(?<typedContent>\tType: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
+        + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
         + /$/.source
     );
     const match = statementToVerify.match(statementRegex)
@@ -131,15 +131,14 @@ export const parseStatement = ({ statement: s }: { statement: string })
     let translations: Record<string, string> | undefined = undefined
     if (m['translationsStr'] && m['translationsStr'].length > 0) {
         translations = {}
-        // First, split by translation markers to get individual translations
-        // Support both old format (Translation lang: content) and new format (Translation lang:\ncontent)
-        const translationParts = m['translationsStr'].split(/\nTranslation ([a-z]{2,3}):\n?/).filter(part => part.length > 0)
+        // Split by translation markers to get individual translations
+        const translationParts = m['translationsStr'].split(/\nTranslation ([a-z]{2,3}):\n/).filter(part => part.length > 0)
         // Process pairs: [lang1, content1, lang2, content2, ...]
         for (let i = 0; i < translationParts.length; i += 2) {
             if (i + 1 < translationParts.length) {
                 const lang = translationParts[i]
-                // Trim leading space (from old format) and trailing newlines
-                const translation = translationParts[i + 1].replace(/^\s/, '').replace(/\n+$/, '')
+                // Trim trailing newlines
+                const translation = translationParts[i + 1].replace(/\n+$/, '')
                 translations[lang] = translation
             }
         }
@@ -172,8 +171,7 @@ export const buildPollContent = ({ country, city, legalEntity, domainScope, judg
         (propertyScopeObserver ? "\t\t" + "As observed by: " + propertyScopeObserver + "\n" : "") +
         (scopeQueryLink ? "\t\t" + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "")
     if (scopeContent.length > 0 && !scopeDescription) throw (new Error("Poll must contain a description of who can vote."))
-    const content = "\n" +
-        "\t" + "Type: Poll" + "\n" +
+    const content = "\t" + "Type: Poll" + "\n" +
         (judges ? "\t" + "The poll outcome is finalized when the following nodes agree: " + judges + "\n" : "") +
         (deadline ? "\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
         "\t" + "Poll: " + poll + "\n" +
@@ -191,7 +189,7 @@ export const buildPollContent = ({ country, city, legalEntity, domainScope, judg
 export const parsePoll = (s: string, version?: string): Poll => {
     if (version !== '5') throw new Error("Invalid version " + version)
     const pollRegex = new RegExp(''
-        + /^\n\tType: Poll\n/.source
+        + /^\tType: Poll\n/.source
         + /(?:\tThe poll outcome is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
         + /(?:\tVoting deadline: (?<deadline>[^\n]+?)\n)?/.source
         + /\tPoll: (?<poll>[^\n]+?)\n/.source
@@ -267,8 +265,7 @@ export const buildOrganisationVerificationContent = (
     if (population && !Object.values(peopleCountBuckets).includes(population)) throw new Error("Invalid population " + population)
     if (confidence && !('' + confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
 
-    return "\n" +
-        "\t" + "Type: Organisation verification" + "\n" +
+    return "\t" + "Type: Organisation verification" + "\n" +
         "\t" + "Description: We verified the following information about an organisation." + "\n" +
         "\t" + "Name: " + name + "\n" +
         (englishName ? "\t" + "English name: " + englishName + "\n" : "") +
@@ -292,7 +289,7 @@ export const buildOrganisationVerificationContent = (
 
 export const parseOrganisationVerification = (s: string): OrganisationVerification => {
     const organisationVerificationRegex = new RegExp(''
-        + /^\n\tType: Organisation verification\n/.source
+        + /^\tType: Organisation verification\n/.source
         + /\tDescription: We verified the following information about an organisation.\n/.source
         + /\tName: (?<name>[^\n]+?)\n/.source
         + /(?:\tEnglish name: (?<englishName>[^\n]+?)\n)?/.source
@@ -345,8 +342,7 @@ export const buildPersonVerificationContent = (
         return ""
     }
     const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i, j) => [1, 2, 3].includes(j))
-    let content = "\n" +
-        "\t" + "Type: Person verification" + "\n" +
+    let content = "\t" + "Type: Person verification" + "\n" +
         "\t" + "Description: We verified the following information about a person." + "\n" +
         "\t" + "Name: " + name + "\n" +
         "\t" + "Date of birth: " + [day.replace(/$0/, ''), month, year].join(' ') + "\n" +
@@ -366,7 +362,7 @@ export const buildPersonVerificationContent = (
 
 export const parsePersonVerification = (s: string): PersonVerification => {
     const domainVerificationRegex = new RegExp(''
-        + /^\n\tType: Person verification\n/.source
+        + /^\tType: Person verification\n/.source
         + /\tDescription: We verified the following information about a person.\n/.source
         + /\tName: (?<name>[^\n]+?)\n/.source
         + /\tDate of birth: (?<dateOfBirth>[^\n]+?)\n/.source
@@ -404,8 +400,7 @@ export const parsePersonVerification = (s: string): PersonVerification => {
 }
 
 export const buildVoteContent = ({ pollHash, poll, vote }: Vote) => {
-    const content = "\n" +
-        "\t" + "Type: Vote" + "\n" +
+    const content = "\t" + "Type: Vote" + "\n" +
         "\t" + "Poll id: " + pollHash + "\n" +
         "\t" + "Poll: " + poll + "\n" +
         "\t" + "Option: " + vote + "\n" +
@@ -415,7 +410,7 @@ export const buildVoteContent = ({ pollHash, poll, vote }: Vote) => {
 
 export const parseVote = (s: string): Vote => {
     const voteRegex = new RegExp(''
-        + /^\n\tType: Vote\n/.source
+        + /^\tType: Vote\n/.source
         + /\tPoll id: (?<pollHash>[^\n]+?)\n/.source
         + /\tPoll: (?<poll>[^\n]+?)\n/.source
         + /\tOption: (?<vote>[^\n]+?)\n/.source
@@ -431,8 +426,7 @@ export const parseVote = (s: string): Vote => {
 }
 
 export const buildDisputeAuthenticityContent = ({ hash, confidence, reliabilityPolicy }: DisputeAuthenticity) => {
-    const content = "\n" +
-        "\t" + "Type: Dispute statement authenticity" + "\n" +
+    const content = "\t" + "Type: Dispute statement authenticity" + "\n" +
         "\t" + "Description: We think that the referenced statement is not authentic.\n" +
         "\t" + "Hash of referenced statement: " + hash + "\n" +
         (confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
@@ -443,7 +437,7 @@ export const buildDisputeAuthenticityContent = ({ hash, confidence, reliabilityP
 
 export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
     const disputeRegex = new RegExp(''
-        + /^\n\tType: Dispute statement authenticity\n/.source
+        + /^\tType: Dispute statement authenticity\n/.source
         + /\tDescription: We think that the referenced statement is not authentic.\n/.source
         + /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
         + /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
@@ -460,8 +454,7 @@ export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
 }
 
 export const buildDisputeContentContent = ({ hash, confidence, reliabilityPolicy }: DisputeContent) => {
-    const content = "\n" +
-        "\t" + "Type: Dispute statement content" + "\n" +
+    const content = "\t" + "Type: Dispute statement content" + "\n" +
         "\t" + "Description: We think that the content of the referenced statement is false.\n" +
         "\t" + "Hash of referenced statement: " + hash + "\n" +
         (confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
@@ -472,7 +465,7 @@ export const buildDisputeContentContent = ({ hash, confidence, reliabilityPolicy
 
 export const parseDisputeContent = (s: string): DisputeContent => {
     const disputeRegex = new RegExp(''
-        + /^\n\tType: Dispute statement content\n/.source
+        + /^\tType: Dispute statement content\n/.source
         + /\tDescription: We think that the content of the referenced statement is false.\n/.source
         + /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
         + /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
@@ -489,8 +482,7 @@ export const parseDisputeContent = (s: string): DisputeContent => {
 }
 
 export const buildResponseContent = ({ hash, response }: ResponseContent) => {
-    const content = "\n" +
-        "\t" + "Type: Response" + "\n" +
+    const content = "\t" + "Type: Response" + "\n" +
         "\t" + "Hash of referenced statement: " + hash + "\n" +
         "\t" + "Response: " + response + "\n" +
         ""
@@ -537,8 +529,7 @@ export const parsePDFSigning = (s: string): PDFSigning => {
 
 export const buildRating = ({ subjectName, subjectType, subjectReference, documentFileHash, rating, quality, comment }: Rating) => {
     if (![1, 2, 3, 4, 5].includes(rating)) throw new Error("Invalid rating: " + rating)
-    const content = "\n" +
-        "\t" + "Type: Rating" + "\n" +
+    const content = "\t" + "Type: Rating" + "\n" +
         (subjectType ? "\t" + "Subject type: " + subjectType + "\n" : "") +
         "\t" + "Subject name: " + subjectName + "\n" +
         (subjectReference ? "\t" + "URL that identifies the subject: " + subjectReference + "\n" : "") +
@@ -552,7 +543,7 @@ export const buildRating = ({ subjectName, subjectType, subjectReference, docume
 
 export const parseRating = (s: string): Rating => {
     const ratingRegex = new RegExp(''
-        + /^\n\tType: Rating\n/.source
+        + /^\tType: Rating\n/.source
         + /(?:\tSubject type: (?<subjectType>[^\n]*?)\n)?/.source
         + /\tSubject name: (?<subjectName>[^\n]*?)\n/.source
         + /(?:\tURL that identifies the subject: (?<subjectReference>[^\n]*?)\n)?/.source

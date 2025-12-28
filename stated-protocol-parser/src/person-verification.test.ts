@@ -17,7 +17,7 @@ describe('Person verification parsing', () => {
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Format version: 5
-Statement content: 
+Statement content:
 	Type: Person verification
 	Description: We verified the following information about a person.
 	Name: Barack Hossein Obama II

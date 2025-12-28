@@ -17,7 +17,8 @@ Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
 Format version: 5
-Statement content: hi
+Statement content:
+hi
 `
         const parsedStatement = parseStatement({ statement })
         expect(parsedStatement.content).toBe(`hi
@@ -29,11 +30,16 @@ Statement content: hi
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Format version: 5
-Statement content: This is our official statement.
-Translation es: Esta es nuestra declaración oficial.
-Translation ar: هذا بياننا الرسمي
-Translation zh: 这是我们的官方声明
-Translation fr: Ceci est notre déclaration officielle.
+Statement content:
+This is our official statement.
+Translation es:
+Esta es nuestra declaración oficial.
+Translation ar:
+هذا بياننا الرسمي
+Translation zh:
+这是我们的官方声明
+Translation fr:
+Ceci est notre déclaration officielle.
 `
         const parsedStatement = parseStatement({ statement })
         expect(parsedStatement.content).toBe('This is our official statement.')

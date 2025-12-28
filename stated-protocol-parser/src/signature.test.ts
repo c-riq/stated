@@ -8,7 +8,8 @@ describe('Signature Functions', () => {
 Author: Test Author
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Format version: 5
-Statement content: This is a test statement
+Statement content:
+This is a test statement
 `
 
     beforeAll(() => {
