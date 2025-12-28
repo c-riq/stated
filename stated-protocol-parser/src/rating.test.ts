@@ -13,10 +13,10 @@ const randomUnicodeString = () =>
 
 describe('Rating parsing', () => {
     test('parse basic rating', () => {
-        let rating = `Publishing domain: localhost
+        let rating = `Stated protocol version: 5
+Publishing domain: localhost
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
-Format version: 5
 Statement content:
     Type: Rating
     Subject name: AMBOSS GmbH

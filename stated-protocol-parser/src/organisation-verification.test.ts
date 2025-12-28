@@ -14,10 +14,10 @@ const randomUnicodeString = () =>
 
 describe('Organisation verification parsing', () => {
     test('parse basic organisation verification', () => {
-        let organisationVerification = `Publishing domain: rixdata.net
+        let organisationVerification = `Stated protocol version: 5
+Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 5
 Statement content:
     Type: Organisation verification
     Description: We verified the following information about an organisation.
@@ -39,10 +39,10 @@ Statement content:
     })
 
     test('parse organisation verification with translations from formatted text', () => {
-        const statement = `Publishing domain: verifier.com
+        const statement = `Stated protocol version: 5
+Publishing domain: verifier.com
 Author: Verification Authority
 Time: Thu, 15 Jun 2023 20:01:26 GMT
-Format version: 5
 Statement content:
     Type: Organisation verification
     Description: We verified the following information about an organisation.

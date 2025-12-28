@@ -13,10 +13,10 @@ const randomUnicodeString = () =>
 
 describe('Poll parsing', () => {
     test('parse poll v5', () => {
-        let poll = `Publishing domain: rixdata.net
+        let poll = `Stated protocol version: 5
+Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Thu, 17 Nov 2022 13:38:20 GMT
-Format version: 5
 Statement content:
     Type: Poll
     Voting deadline: Thu, 01 Dec 2022 13:38:26 GMT

@@ -12,11 +12,11 @@ const randomUnicodeString = () =>
 
 describe('Statement parsing', () => {
     test('parse basic statement', () => {
-        const statement = `Publishing domain: localhost
+        const statement = `Stated protocol version: 5
+Publishing domain: localhost
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
-Format version: 5
 Statement content:
 hi
 `
@@ -26,10 +26,10 @@ hi
     })
 
     test('parse statement with translations', () => {
-        const statement = `Publishing domain: example.com
+        const statement = `Stated protocol version: 5
+Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
-Format version: 5
 Statement content:
 This is our official statement.
 Translation es:

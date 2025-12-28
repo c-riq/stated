@@ -4,10 +4,10 @@ import { buildStatement, parseStatement } from './protocol'
 describe('Signature Functions', () => {
     let publicKey: string
     let privateKey: string
-    const testStatement = `Publishing domain: example.com
+    const testStatement = `Stated protocol version: 5
+Publishing domain: example.com
 Author: Test Author
 Time: Thu, 15 Jun 2023 20:01:26 GMT
-Format version: 5
 Statement content:
 This is a test statement
 `

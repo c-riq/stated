@@ -52,14 +52,14 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         ? attachments.map((attachment, index) => `Attachment ${index + 1}: ${attachment}\n`).join('')
         : '';
     
-    const statement = "Publishing domain: " + domain + "\n" +
+    const statement = "Stated protocol version: " + version + "\n" +
+        "Publishing domain: " + domain + "\n" +
         "Author: " + (author || "") + "\n" +
         (representative && representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
         "Time: " + time.toUTCString() + "\n" +
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
         attachmentLines +
-        "Format version: " + version + "\n" +
         "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
         translationLines;
     if (statement.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
@@ -110,14 +110,14 @@ export const parseStatement = ({ statement: input }: { statement: string })
     }
     
     const statementRegex = new RegExp(''
-        + /^Publishing domain: (?<domain>[^\n]+?)\n/.source
+        + /^Stated protocol version: (?<formatVersion>[^\n]+?)\n/.source
+        + /Publishing domain: (?<domain>[^\n]+?)\n/.source
         + /Author: (?<author>[^\n]+?)\n/.source
         + /(?:Authorized signing representative: (?<representative>[^\n]*?)\n)?/.source
         + /Time: (?<time>[^\n]+?)\n/.source
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
         + /(?<attachments>(?:Attachment [1-5]: [^\n]+?\n)*)/.source
-        + /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
         + /Statement content:\n(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
         + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
         + /$/.source
