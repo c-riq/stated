@@ -22,6 +22,7 @@ export type Statement = {
     supersededStatement?: string
     formatVersion?: string
     translations?: Partial<Record<SupportedLanguage, string>>
+    attachments?: string[]
 }
 
 export type CryptographicallySignedStatement = {

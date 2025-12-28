@@ -21,11 +21,19 @@ export * from './types'
 export * from './constants'
 export * from './utils'
 
-export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement, translations }: Statement) => {
+export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement, translations, attachments }: Statement) => {
     if (content.match(/\nPublishing domain: /)) throw (new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
     if (content.match(/\n\n/)) throw (new Error("Statement content must not contain two line breaks in a row, as this is used for separating statements."))
     if (typeof time !== 'object' || !time.toUTCString) throw (new Error("Time must be a Date object."))
     if (!domain) throw (new Error("Publishing domain missing."))
+    if (attachments && attachments.length > 5) throw (new Error("Maximum 5 attachments allowed."))
+    if (attachments) {
+        attachments.forEach((attachment, index) => {
+            if (!attachment.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
+                throw (new Error(`Attachment ${index + 1} must be in format 'filehash.extension'`))
+            }
+        })
+    }
     
     if (translations) {
         for (const [lang, translation] of Object.entries(translations)) {
@@ -40,12 +48,17 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
             .join('')
         : '';
     
+    const attachmentLines = attachments && attachments.length > 0
+        ? attachments.map((attachment, index) => `Attachment ${index + 1}: ${attachment}\n`).join('')
+        : '';
+    
     const statement = "Publishing domain: " + domain + "\n" +
         "Author: " + (author || "") + "\n" +
         (representative && representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
         "Time: " + time.toUTCString() + "\n" +
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
+        attachmentLines +
         "Format version: " + version + "\n" +
         "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
         translationLines;
@@ -103,6 +116,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
         + /Time: (?<time>[^\n]+?)\n/.source
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
+        + /(?<attachments>(?:Attachment [1-5]: [^\n]+?\n)*)/.source
         + /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
         + /Statement content:\n(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
         + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
@@ -112,7 +126,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
     if (!match || !match.groups) throw new Error("Invalid statement format:" + input)
     
     const { domain, author, representative, time: timeStr, tags: tagsStr, supersededStatement,
-            formatVersion, content, typedContent, type, translations: translationsStr } = match.groups
+            attachments: attachmentsStr, formatVersion, content, typedContent, type, translations: translationsStr } = match.groups
     
     const parsed = {
         domain, author, representative, timeStr, tagsStr, supersededStatement, formatVersion,
@@ -129,6 +143,15 @@ export const parseStatement = ({ statement: input }: { statement: string })
 
     const tags = parsed.tagsStr?.split(', ')
     const time = new Date(parsed.timeStr)
+    
+    let attachments: string[] | undefined = undefined
+    if (attachmentsStr && attachmentsStr.length > 0) {
+        const attachmentMatches = attachmentsStr.matchAll(/Attachment [1-5]: ([^\n]+)\n/g)
+        attachments = Array.from(attachmentMatches, match => match[1])
+        if (attachments.length > 5) {
+            throw new Error("Maximum 5 attachments allowed")
+        }
+    }
     
     let translations: Record<string, string> | undefined = undefined
     if (parsed.translationsStr && parsed.translationsStr.length > 0) {
@@ -154,6 +177,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
         content: parsed.content,
         type: parsed.type?.toLowerCase().replace(' ', '_'),
         translations: translations && Object.keys(translations).length > 0 ? translations : undefined,
+        attachments: attachments && attachments.length > 0 ? attachments : undefined,
     }
 }
 
