@@ -114,28 +114,28 @@ export const parseStatement = ({ statement: s }: { statement: string })
     const { domain, author, representative, time: timeStr, tags: tagsStr, supersededStatement,
             formatVersion, content, typedContent, type, translations: translationsStr } = match.groups
     
-    const m = {
+    const parsed = {
         domain, author, representative, timeStr, tagsStr, supersededStatement, formatVersion,
         content: content || typedContent,
         type: type ? type.toLowerCase().replace(' ', '_') : undefined,
         translationsStr
     }
-    if (!(m['timeStr'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
-    if (!m['domain']) throw new Error("Invalid statement format: domain is required")
-    if (!m['author']) throw new Error("Invalid statement format: author is required")
-    if (!m['content']) throw new Error("Invalid statement format: statement content is required")
-    if (!m['formatVersion']) throw new Error("Invalid statement format: format version is required")
-    if (m['formatVersion'] !== '5') throw new Error(`Invalid statement format: only version 5 is supported, got version ${m['formatVersion']}`)
+    if (!(parsed.timeStr.match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
+    if (!parsed.domain) throw new Error("Invalid statement format: domain is required")
+    if (!parsed.author) throw new Error("Invalid statement format: author is required")
+    if (!parsed.content) throw new Error("Invalid statement format: statement content is required")
+    if (!parsed.formatVersion) throw new Error("Invalid statement format: format version is required")
+    if (parsed.formatVersion !== '5') throw new Error(`Invalid statement format: only version 5 is supported, got version ${parsed.formatVersion}`)
 
-    const tags = m['tagsStr']?.split(', ')
-    const time = new Date(m['timeStr'])
+    const tags = parsed.tagsStr?.split(', ')
+    const time = new Date(parsed.timeStr)
     
     // Parse translations
     let translations: Record<string, string> | undefined = undefined
-    if (m['translationsStr'] && m['translationsStr'].length > 0) {
+    if (parsed.translationsStr && parsed.translationsStr.length > 0) {
         translations = {}
         // Split by translation markers to get individual translations
-        const translationParts = m['translationsStr'].split(/\nTranslation ([a-z]{2,3}):\n/).filter(part => part.length > 0)
+        const translationParts = parsed.translationsStr.split(/\nTranslation ([a-z]{2,3}):\n/).filter(part => part.length > 0)
         // Process pairs: [lang1, content1, lang2, content2, ...]
         for (let i = 0; i < translationParts.length; i += 2) {
             if (i + 1 < translationParts.length) {
@@ -148,15 +148,15 @@ export const parseStatement = ({ statement: s }: { statement: string })
     }
     
     return {
-        domain: m['domain'],
-        author: m['author'],
-        representative: m['representative'],
+        domain: parsed.domain,
+        author: parsed.author,
+        representative: parsed.representative,
         time,
         tags: (tags && tags.length > 0) ? tags : undefined,
-        supersededStatement: m['supersededStatement'],
-        formatVersion: m['formatVersion'],
-        content: m['content'],
-        type: m['type']?.toLowerCase().replace(' ', '_'),
+        supersededStatement: parsed.supersededStatement,
+        formatVersion: parsed.formatVersion,
+        content: parsed.content,
+        type: parsed.type?.toLowerCase().replace(' ', '_'),
         translations: translations && Object.keys(translations).length > 0 ? translations : undefined,
     }
 }
@@ -210,10 +210,10 @@ export const parsePoll = (s: string, version?: string): Poll => {
     const { judges, deadline, poll, option1, option2, option3, option4, option5,
             allowArbitraryVote: allowArbitraryVoteStr, whoCanVote } = match.groups
     
-    const m = { judges, deadline, poll, option1, option2, option3, option4, option5,
+    const pollData = { judges, deadline, poll, option1, option2, option3, option4, option5,
                 allowArbitraryVote: allowArbitraryVoteStr, whoCanVote }
     const whoCanVoteParsed: Partial<Poll> & { domainScopeStr?: string } = {}
-    if (m.whoCanVote) {
+    if (pollData.whoCanVote) {
         const whoCanVoteRegex = new RegExp(''
             + /^\n        Description: (?<scopeDescription>[^\n]+?)\n/.source
             + /(?:        Country scope: (?<countryScope>[^\n]+?)\n)?/.source
@@ -224,11 +224,11 @@ export const parsePoll = (s: string, version?: string): Poll => {
             + /(?:        As observed by: (?<propertyScopeObserver>[^\n]+?)\n)?/.source
             + /(?:        Link to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
             + /$/.source)
-        const m2 = m.whoCanVote.match(whoCanVoteRegex)
-        if (!m2 || !m2.groups) throw new Error("Invalid who can vote section: " + m.whoCanVote)
+        const scopeMatch = pollData.whoCanVote.match(whoCanVoteRegex)
+        if (!scopeMatch || !scopeMatch.groups) throw new Error("Invalid who can vote section: " + pollData.whoCanVote)
         
         const { scopeDescription, countryScope, cityScope, legalEntity, domainScope,
-                propertyScope, propertyScopeObserver, scopeQueryLink } = m2.groups
+                propertyScope, propertyScopeObserver, scopeQueryLink } = scopeMatch.groups
         
         whoCanVoteParsed['scopeDescription'] = scopeDescription
         whoCanVoteParsed['country'] = countryScope
@@ -239,16 +239,16 @@ export const parsePoll = (s: string, version?: string): Poll => {
         whoCanVoteParsed['requiredPropertyObserver'] = propertyScopeObserver
         whoCanVoteParsed['scopeQueryLink'] = scopeQueryLink
     }
-    const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
+    const options = [pollData.option1, pollData.option2, pollData.option3, pollData.option4, pollData.option5].filter(o => o)
     const domainScope = (whoCanVoteParsed.domainScopeStr as string | undefined)?.split(', ')
-    const allowArbitraryVote = (m.allowArbitraryVote === 'Yes' ? true :
-        (m.allowArbitraryVote === 'No' ? false : undefined))
-    const deadlineStr = m.deadline
+    const allowArbitraryVote = (pollData.allowArbitraryVote === 'Yes' ? true :
+        (pollData.allowArbitraryVote === 'No' ? false : undefined))
+    const deadlineStr = pollData.deadline
     if (deadlineStr && !deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
     return {
-        judges: m['judges'],
+        judges: pollData.judges,
         deadline: deadlineStr ? new Date(deadlineStr) : undefined,
-        poll: m['poll'],
+        poll: pollData.poll,
         options,
         allowArbitraryVote,
         country: whoCanVoteParsed['country'],
@@ -316,12 +316,12 @@ export const parseOrganisationVerification = (s: string): OrganisationVerificati
         + /(?:    Confidence: (?<confidence>[0-9.]+?))?/.source
         + /\n?$/.source
     );
-    const m = s.match(organisationVerificationRegex)
-    if (!m || !m.groups) throw new Error("Invalid organisation verification format: " + s)
+    const match = s.match(organisationVerificationRegex)
+    if (!match || !match.groups) throw new Error("Invalid organisation verification format: " + s)
     
     const { name, englishName, country, legalForm, domain, foreignDomain, department, province,
             serialNumber, city, latitude, longitude, population, pictureHash, employeeCount,
-            reliabilityPolicy, confidence } = m.groups
+            reliabilityPolicy, confidence } = match.groups
     
     return {
         name, englishName, country, legalForm, domain, foreignDomain, department, province,
@@ -378,11 +378,11 @@ export const parsePersonVerification = (s: string): PersonVerification => {
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
-    const m = s.match(domainVerificationRegex)
-    if (!m || !m.groups) throw new Error("Invalid person verification format: " + s)
+    const match = s.match(domainVerificationRegex)
+    if (!match || !match.groups) throw new Error("Invalid person verification format: " + s)
     
     const { name, dateOfBirth: dateOfBirthStr, cityOfBirth, countryOfBirth, jobTitle, employer,
-            domain, foreignDomain, picture, verificationMethod, confidence, reliabilityPolicy } = m.groups
+            domain, foreignDomain, picture, verificationMethod, confidence, reliabilityPolicy } = match.groups
     
     if (dateOfBirthStr && !dateOfBirthStr.match(birthDateFormat)) throw new Error("Invalid birth date format: " + dateOfBirthStr)
     let { d, month, y } = dateOfBirthStr.match(birthDateFormat)?.groups || {}
@@ -416,10 +416,10 @@ export const parseVote = (s: string): Vote => {
         + /    Option: (?<vote>[^\n]+?)\n/.source
         + /$/.source
     );
-    const m = s.match(voteRegex)
-    if (!m || !m.groups) throw new Error("Invalid vote format: " + s)
+    const match = s.match(voteRegex)
+    if (!match || !match.groups) throw new Error("Invalid vote format: " + s)
     
-    const { pollHash, poll, vote } = m.groups
+    const { pollHash, poll, vote } = match.groups
     return { pollHash, poll, vote }
 }
 
@@ -442,10 +442,10 @@ export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
-    const m = s.match(disputeRegex)
-    if (!m || !m.groups) throw new Error("Invalid dispute authenticity format: " + s)
+    const match = s.match(disputeRegex)
+    if (!match || !match.groups) throw new Error("Invalid dispute authenticity format: " + s)
     
-    const { hash, confidence, reliabilityPolicy } = m.groups
+    const { hash, confidence, reliabilityPolicy } = match.groups
     return {
         hash,
         confidence: confidence ? parseFloat(confidence) : undefined,
@@ -472,10 +472,10 @@ export const parseDisputeContent = (s: string): DisputeContent => {
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
-    const m = s.match(disputeRegex)
-    if (!m || !m.groups) throw new Error("Invalid dispute content format: " + s)
+    const match = s.match(disputeRegex)
+    if (!match || !match.groups) throw new Error("Invalid dispute content format: " + s)
     
-    const { hash, confidence, reliabilityPolicy } = m.groups
+    const { hash, confidence, reliabilityPolicy } = match.groups
     return {
         hash,
         confidence: confidence ? parseFloat(confidence) : undefined,
@@ -498,10 +498,10 @@ export const parseResponseContent = (s: string): ResponseContent => {
         + /    Response: (?<response>[^\n]*?)\n/.source
         + /$/.source
     );
-    const m = s.match(disputeRegex)
-    if (!m || !m.groups) throw new Error("Invalid response content format: " + s)
+    const match = s.match(disputeRegex)
+    if (!match || !match.groups) throw new Error("Invalid response content format: " + s)
     
-    const { hash, response } = m.groups
+    const { hash, response } = match.groups
     return { hash, response }
 }
 
@@ -521,10 +521,10 @@ export const parsePDFSigning = (s: string): PDFSigning => {
         + /    PDF file hash: (?<hash>[^\n]+?)\n/.source
         + /$/.source
     );
-    const m = s.match(signingRegex)
-    if (!m || !m.groups) throw new Error("Invalid PDF signing format: " + s)
+    const match = s.match(signingRegex)
+    if (!match || !match.groups) throw new Error("Invalid PDF signing format: " + s)
     
-    const { hash } = m.groups
+    const { hash } = match.groups
     return { hash }
 }
 
@@ -554,11 +554,11 @@ export const parseRating = (s: string): Rating => {
         + /(?:    Comment: (?<comment>[\s\S]+?)\n)?/.source
         + /$/.source
     );
-    const m = s.match(ratingRegex)
-    if (!m || !m.groups) throw new Error("Invalid rating format: " + s)
+    const match = s.match(ratingRegex)
+    if (!match || !match.groups) throw new Error("Invalid rating format: " + s)
     
     const { subjectType, subjectName, subjectReference, documentFileHash, quality,
-            rating: ratingStr, comment } = m.groups
+            rating: ratingStr, comment } = match.groups
     
     const rating = parseInt(ratingStr)
     if (![1, 2, 3, 4, 5].includes(rating)) throw new Error("Invalid rating: " + ratingStr)
