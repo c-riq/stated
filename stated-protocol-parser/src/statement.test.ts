@@ -56,9 +56,9 @@ Ceci est notre déclaration officielle.
 Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
-Attachments: abc123def456_-XYZ.pdf, xyz789ABC-_def.jpg, report2024_hash.docx
 Statement content:
 This statement has attached files.
+Attachments: abc123def456_-XYZ.pdf, xyz789ABC-_def.jpg, report2024_hash.docx
 `
         const parsedStatement = parseStatement({ statement })
         expect(parsedStatement.content).toBe('This statement has attached files.\n')
@@ -68,6 +68,26 @@ This statement has attached files.
             'report2024_hash.docx'
         ])
     })
+
+    test('parse statement with translations and attachments', () => {
+        const statement = `Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+This statement has translations and attachments.
+Translation es:
+Esta declaración tiene traducciones y archivos adjuntos.
+Attachments: file1.pdf, file2.jpg
+`
+        const parsedStatement = parseStatement({ statement })
+        expect(parsedStatement.content).toBe('This statement has translations and attachments.')
+        expect(parsedStatement.translations).toEqual({
+            es: 'Esta declaración tiene traducciones y archivos adjuntos.'
+        })
+        expect(parsedStatement.attachments).toEqual(['file1.pdf', 'file2.jpg'])
+    })
+
 })
 
 describe('Statement building', () => {
@@ -141,7 +161,7 @@ describe('Statement building', () => {
         const author = 'Test Author'
         const time = new Date()
         const content = 'Invalid attachment\n'
-        const attachments = ['invalid file name.pdf'] // spaces not allowed
+        const attachments = ['invalid file name.pdf']
         
         expect(() => {
             buildStatement({

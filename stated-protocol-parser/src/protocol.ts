@@ -24,6 +24,8 @@ export * from './utils'
 export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement, translations, attachments }: Statement) => {
     if (content.match(/\nPublishing domain: /)) throw (new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
     if (content.match(/\n\n/)) throw (new Error("Statement content must not contain two line breaks in a row, as this is used for separating statements."))
+    if (content.match(/\nTranslation [a-z]{2,3}:\n/)) throw (new Error("Statement content must not contain 'Translation XX:\\n' pattern, as this is reserved for translations."))
+    if (content.match(/\nAttachments: /)) throw (new Error("Statement content must not contain 'Attachments: ' on a new line, as this is reserved for file attachments."))
     if (typeof time !== 'object' || !time.toUTCString) throw (new Error("Time must be a Date object."))
     if (!domain) throw (new Error("Publishing domain missing."))
     if (attachments && attachments.length > 5) throw (new Error("Maximum 5 attachments allowed."))
@@ -48,6 +50,10 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
             .join('')
         : '';
     
+    const attachmentLines = attachments && attachments.length > 0
+        ? "Attachments: " + attachments.join(', ') + "\n"
+        : '';
+    
     const statement = "Stated protocol version: " + version + "\n" +
         "Publishing domain: " + domain + "\n" +
         "Author: " + (author || "") + "\n" +
@@ -55,9 +61,9 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         "Time: " + time.toUTCString() + "\n" +
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
-        (attachments && attachments.length > 0 ? "Attachments: " + attachments.join(', ') + "\n" : '') +
         "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
-        translationLines;
+        translationLines +
+        attachmentLines;
     if (statement.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     return statement
 }
@@ -113,9 +119,11 @@ export const parseStatement = ({ statement: input }: { statement: string })
         + /Time: (?<time>[^\n]+?)\n/.source
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
-        + /(?:Attachments: (?<attachments>[^\n]+?)\n)?/.source
-        + /Statement content:\n(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
+        + /Statement content:\n/.source
+        + /(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|Attachments: |$)|(?<content>[\s\S]+?))/.source
+        + /(?=\nTranslation [a-z]{2,3}:\n|Attachments: |$)/.source
         + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
+        + /(?:Attachments: (?<attachments>[^\n]+?)\n)?/.source
         + /$/.source
     );
     const match = statementToVerify.match(statementRegex)
@@ -238,6 +246,9 @@ export const buildOrganisationVerificationContent = (
     if (employeeCount && !Object.values(peopleCountBuckets).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
     if (population && !Object.values(peopleCountBuckets).includes(population)) throw new Error("Invalid population " + population)
     if (confidence && !('' + confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
+    if (pictureHash && !pictureHash.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
+        throw new Error("Logo must be in format 'base64hash.extension' (URL-safe base64)")
+    }
 
     return "    Type: Organisation verification\n" +
         "    Description: We verified the following information about an organisation.\n" +
@@ -277,7 +288,7 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
         + /(?:    Latitude: (?<latitude>[^\n]+?)\n)?/.source
         + /(?:    Longitude: (?<longitude>[^\n]+?)\n)?/.source
         + /(?:    Population: (?<population>[^\n]+?)\n)?/.source
-        + /(?:    Logo: (?<pictureHash>[^\n]+?)\n)?/.source
+        + /(?:    Logo: (?<pictureHash>[A-Za-z0-9_-]+\.[a-zA-Z0-9]+)\n)?/.source
         + /(?:    Employee count: (?<employeeCount>[01,+-]+?)\n)?/.source
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /(?:    Confidence: (?<confidence>[0-9.]+?))?/.source
@@ -467,6 +478,9 @@ export const parseResponseContent = (content: string): ResponseContent => {
 }
 
 export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
+    if (!hash.match(/^[A-Za-z0-9_-]+$/)) {
+        throw new Error("PDF file hash must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)")
+    }
     const content = "\n" +
         "    Type: Sign PDF\n" +
         "    Description: We hereby digitally sign the referenced PDF file.\n" +
@@ -478,7 +492,7 @@ export const parsePDFSigning = (content: string): PDFSigning => {
     const signingRegex = new RegExp(''
         + /^\n    Type: Sign PDF\n/.source
         + /    Description: We hereby digitally sign the referenced PDF file.\n/.source
-        + /    PDF file hash: (?<hash>[^\n]+?)\n/.source
+        + /    PDF file hash: (?<hash>[A-Za-z0-9_-]+)\n/.source
         + /$/.source
     );
     const match = content.match(signingRegex)

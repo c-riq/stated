@@ -141,8 +141,8 @@ describe('Organisation verification building', () => {
             foreignDomain,
             serialNumber,
             reliabilityPolicy,
-            pictureHash,
-        ] = Array.from({ length: 8 }, randomUnicodeString)
+        ] = Array.from({ length: 7 }, randomUnicodeString)
+        const pictureHash = 'abc123_-XYZ.png'
         const country = 'Germany'
         const province = 'Bayern'
         const legalForm = 'corporation'
