@@ -59,6 +59,7 @@ export type OrganisationVerification = {
     latitude?: number
     longitude?: number
     population?: string
+    publicKey?: string
 }
 
 export type withOwnDomain = {
@@ -82,6 +83,7 @@ export type PersonVerification = {
     confidence?: number
     picture?: string
     reliabilityPolicy?: string
+    publicKey?: string
 } & (withOwnDomain | withForeignDomain)
 
 export type Vote = {

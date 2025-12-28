@@ -240,7 +240,7 @@ export const parsePoll = (content: string, version?: string): Poll => {
 
 export const buildOrganisationVerificationContent = (
     { name, englishName, country, city, province, legalForm, department, domain, foreignDomain, serialNumber,
-        confidence, reliabilityPolicy, employeeCount, pictureHash, latitude, longitude, population }: OrganisationVerification) => {
+        confidence, reliabilityPolicy, employeeCount, pictureHash, latitude, longitude, population, publicKey }: OrganisationVerification) => {
     if (!name || !country || !legalForm || (!domain && !foreignDomain)) throw new Error("Missing required fields")
     if (!Object.values(legalForms).includes(legalForm)) throw new Error("Invalid legal form " + legalForm)
     if (employeeCount && !Object.values(peopleCountBuckets).includes(employeeCount)) throw new Error("Invalid employee count " + employeeCount)
@@ -248,6 +248,9 @@ export const buildOrganisationVerificationContent = (
     if (confidence && !('' + confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
     if (pictureHash && !pictureHash.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
         throw new Error("Logo must be in format 'base64hash.extension' (URL-safe base64)")
+    }
+    if (publicKey && !publicKey.match(/^[A-Za-z0-9_-]+$/)) {
+        throw new Error("Public key must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)")
     }
 
     return "    Type: Organisation verification\n" +
@@ -267,6 +270,7 @@ export const buildOrganisationVerificationContent = (
         (population ? "    Population: " + population + "\n" : "") +
         (pictureHash ? "    Logo: " + pictureHash + "\n" : "") +
         (employeeCount ? "    Employee count: " + employeeCount + "\n" : "") +
+        (publicKey ? "    Public key: " + publicKey + "\n" : "") +
         (reliabilityPolicy ? "    Reliability policy: " + reliabilityPolicy + "\n" : "") +
         (confidence ? "    Confidence: " + confidence + "\n" : "")
 }
@@ -290,6 +294,7 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
         + /(?:    Population: (?<population>[^\n]+?)\n)?/.source
         + /(?:    Logo: (?<pictureHash>[A-Za-z0-9_-]+\.[a-zA-Z0-9]+)\n)?/.source
         + /(?:    Employee count: (?<employeeCount>[01,+-]+?)\n)?/.source
+        + /(?:    Public key: (?<publicKey>[A-Za-z0-9_-]+)\n)?/.source
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /(?:    Confidence: (?<confidence>[0-9.]+?))?/.source
         + /\n?$/.source
@@ -299,14 +304,14 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     
     const { name, englishName, country, legalForm, domain, foreignDomain, department, province,
             serialNumber, city, latitude, longitude, population, pictureHash, employeeCount,
-            reliabilityPolicy, confidence } = match.groups
+            publicKey, reliabilityPolicy, confidence } = match.groups
     
     return {
         name, englishName, country, legalForm, domain, foreignDomain, department, province,
         serialNumber, city,
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
-        population, pictureHash, employeeCount, reliabilityPolicy,
+        population, pictureHash, employeeCount, publicKey, reliabilityPolicy,
         confidence: confidence ? parseFloat(confidence) : undefined,
     }
 }
@@ -314,9 +319,12 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
 export const buildPersonVerificationContent = (
     { name, countryOfBirth, cityOfBirth, ownDomain, foreignDomain,
         dateOfBirth, jobTitle, employer, verificationMethod, confidence,
-        picture, reliabilityPolicy }: PersonVerification) => {
+        picture, reliabilityPolicy, publicKey }: PersonVerification) => {
     if (!name || !countryOfBirth || !cityOfBirth || !dateOfBirth || (!ownDomain && !foreignDomain)) {
         return ""
+    }
+    if (publicKey && !publicKey.match(/^[A-Za-z0-9_-]+$/)) {
+        throw new Error("Public key must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)")
     }
     const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i, j) => [1, 2, 3].includes(j))
     let content = "    Type: Person verification\n" +
@@ -331,6 +339,7 @@ export const buildPersonVerificationContent = (
         (foreignDomain ? "    Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
         (picture ? "    Picture: " + picture + "\n" : "") +
         (verificationMethod ? "    Verification method: " + verificationMethod + "\n" : "") +
+        (publicKey ? "    Public key: " + publicKey + "\n" : "") +
         (confidence ? "    Confidence: " + confidence + "\n" : "") +
         (reliabilityPolicy ? "    Reliability policy: " + reliabilityPolicy + "\n" : "")
     return content
@@ -350,6 +359,7 @@ export const parsePersonVerification = (content: string): PersonVerification => 
         + /(?:    Foreign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
         + /(?:    Picture: (?<picture>[^\n]+?)\n)?/.source
         + /(?:    Verification method: (?<verificationMethod>[^\n]+?)\n)?/.source
+        + /(?:    Public key: (?<publicKey>[A-Za-z0-9_-]+)\n)?/.source
         + /(?:    Confidence: (?<confidence>[^\n]+?)\n)?/.source
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
@@ -358,7 +368,7 @@ export const parsePersonVerification = (content: string): PersonVerification => 
     if (!match || !match.groups) throw new Error("Invalid person verification format: " + content)
     
     const { name, dateOfBirth: dateOfBirthStr, cityOfBirth, countryOfBirth, jobTitle, employer,
-            domain, foreignDomain, picture, verificationMethod, confidence, reliabilityPolicy } = match.groups
+            domain, foreignDomain, picture, verificationMethod, publicKey, confidence, reliabilityPolicy } = match.groups
     
     if (dateOfBirthStr && !dateOfBirthStr.match(birthDateFormat)) throw new Error("Invalid birth date format: " + dateOfBirthStr)
     let { d, month, y } = dateOfBirthStr.match(birthDateFormat)?.groups || {}
@@ -369,7 +379,7 @@ export const parsePersonVerification = (content: string): PersonVerification => 
         dateOfBirth: new Date(Date.UTC(parseInt(y), monthIndex(month), parseInt(d))),
         cityOfBirth, countryOfBirth, jobTitle, employer,
         ownDomain: domain,
-        foreignDomain, picture, verificationMethod,
+        foreignDomain, picture, verificationMethod, publicKey,
         confidence: confidence ? parseFloat(confidence) : undefined,
         reliabilityPolicy
     }
