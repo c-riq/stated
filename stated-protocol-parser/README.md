@@ -14,15 +14,14 @@ npm install stated-protocol-parser
 - **Cryptographic Signatures**: Sign and verify statements using Ed25519 (Version 5)
 - **Multiple Statement Types**: Support for various statement types including:
   - Basic statements
-  - Quotations
   - Polls and votes
   - Organisation and person verifications
   - Disputes (authenticity and content)
-  - Ratings, bounties, observations, and boycotts
+  - Ratings
   - PDF signing
   - Responses
 - **Type Safety**: Full TypeScript support with comprehensive type definitions
-- **Version Support**: Handles multiple format versions (v3, v4, and v5)
+- **Version Support**: Supports version 5 format
 - **Validation**: Built-in validation for all statement formats
 - **Cross-Platform**: Works in both Node.js and browser environments
 
@@ -119,11 +118,12 @@ console.log('Signature valid:', isValid);
 #### Signed Statement Format
 
 ```
+Stated protocol version: 5
 Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
-Format version: 5
-Statement content: This is our official signed statement.
+Statement content:
+This is our official signed statement.
 ---
 Statement hash: <url-safe-base64-sha256-hash>
 Public key: <url-safe-base64-encoded-public-key>
@@ -142,10 +142,6 @@ const pollContent = buildPollContent({
   options: ['Yes', 'No', 'Need more information'],
   deadline: new Date('2024-12-31'),
   scopeDescription: 'All registered users',
-  country: undefined,
-  city: undefined,
-  legalEntity: undefined,
-  domainScope: undefined,
 });
 
 const parsed = parsePoll(pollContent);
@@ -186,13 +182,12 @@ const verification = buildPersonVerificationContent({
 ### Statement Functions
 
 - `buildStatement(params)` - Build a statement string
-- `parseStatement({ statement, allowNoVersion? })` - Parse a statement string
+- `parseStatement({ statement })` - Parse a statement string
 
 ### Content Type Functions
 
 Each content type has corresponding build and parse functions:
 
-- **Quotation**: `buildQuotationContent()`, `parseQuotation()`
 - **Poll**: `buildPollContent()`, `parsePoll()`
 - **Vote**: `buildVoteContent()`, `parseVote()`
 - **Organisation Verification**: `buildOrganisationVerificationContent()`, `parseOrganisationVerification()`
@@ -202,9 +197,6 @@ Each content type has corresponding build and parse functions:
 - **Response**: `buildResponseContent()`, `parseResponseContent()`
 - **PDF Signing**: `buildPDFSigningContent()`, `parsePDFSigning()`
 - **Rating**: `buildRating()`, `parseRating()`
-- **Bounty**: `buildBounty()`, `parseBounty()`
-- **Observation**: `buildObservation()`, `parseObservation()`
-- **Boycott**: `buildBoycott()`, `parseBoycott()`
 
 ### Constants
 
@@ -224,7 +216,6 @@ All TypeScript types are exported:
 ```typescript
 import type {
   Statement,
-  Quotation,
   Poll,
   OrganisationVerification,
   PersonVerification,
@@ -233,10 +224,7 @@ import type {
   DisputeContent,
   ResponseContent,
   PDFSigning,
-  Rating,
-  Bounty,
-  Observation,
-  Boycott
+  Rating
 } from 'stated-protocol-parser';
 ```
 
@@ -255,6 +243,8 @@ Optional fields:
 - Authorized signing representative
 - Tags
 - Superseded statement
+- Translations (multi-language support)
+- Attachments (up to 5 file references)
 
 ### Validation Rules
 
@@ -265,42 +255,7 @@ Optional fields:
 
 ## Version Support
 
-The library supports multiple format versions:
-- **Version 3**: Legacy format with different poll structure
-- **Version 4**: Standard format without signatures
-- **Version 5**: Current format with cryptographic signature support (default)
-
-Use `parsePoll(content, '3')` to parse version 3 polls.
-
-### Signature Functions (Version 5)
-
-#### Key Generation
-- `generateKeyPair()` - Generate Ed25519 key pair
-  - Node.js: Returns `{ publicKey: string, privateKey: string }` (PEM format)
-  - Browser: Returns `Promise<{ publicKey: string, privateKey: string }>` (JWK format)
-
-#### Signing
-- `signStatement(statement, privateKey)` - Sign a statement
-  - Node.js: Synchronous, returns base64 signature
-  - Browser: Async, returns `Promise<string>`
-
-- `buildSignedStatement(statement, privateKey, publicKey)` - Build signed statement wrapper
-  - Node.js: Synchronous
-  - Browser: Async, returns `Promise<string>`
-
-#### Verification
-- `verifySignature(statement, signature, publicKey)` - Verify a signature
-  - Node.js: Synchronous, returns boolean
-  - Browser: Async, returns `Promise<boolean>`
-
-- `verifySignedStatement(signedStatement)` - Verify a signed statement wrapper
-  - Node.js: Synchronous, returns boolean
-  - Browser: Async, returns `Promise<boolean>`
-
-#### Parsing
-- `parseSignedStatement(signedStatement)` - Parse signed statement wrapper
-  - Returns `SignedStatement | null`
-  - Synchronous in both environments
+The library supports version 5 format with cryptographic signature support using Ed25519.
 
 ## Error Handling
 

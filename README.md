@@ -37,10 +37,12 @@ Statements can either contain plain text messages or a strucutured message such 
 ## Statement format
 ### Plain statement example
 ```
+Stated protocol version: 5
 Publishing domain: rixdata.net
 Author: Rix Data NL B.V.
 Time: Thu, 15 Jun 2023 20:01:26 GMT
-Statement content: hello world
+Statement content:
+hello world
 ```
 This statement can also be viewed under [https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
 
