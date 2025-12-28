@@ -55,18 +55,18 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
     return statement
 }
 
-export const parseStatement = ({ statement: s }: { statement: string })
+export const parseStatement = ({ statement: input }: { statement: string })
     : Statement & { type?: string, formatVersion: string } => {
-    if (s.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
+    if (input.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     // Check for double line breaks before translations section
-    const beforeTranslations = s.split(/\nTranslation [a-z]{2,3}:\n/)[0]
+    const beforeTranslations = input.split(/\nTranslation [a-z]{2,3}:\n/)[0]
     if (beforeTranslations.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row before translations, as this is used for separating statements.")
     
     // Check if statement has signature fields
     const signatureRegex = /^([\s\S]+?)---\nStatement hash: ([A-Za-z0-9_-]+)\nPublic key: ([A-Za-z0-9_-]+)\nSignature: ([A-Za-z0-9_-]+)\nAlgorithm: ([^\n]+)\n$/
-    const signatureMatch = s.match(signatureRegex)
+    const signatureMatch = input.match(signatureRegex)
     
-    let statementToVerify = s
+    let statementToVerify = input
     let publicKey: string | undefined
     let signature: string | undefined
     
@@ -109,7 +109,7 @@ export const parseStatement = ({ statement: s }: { statement: string })
         + /$/.source
     );
     const match = statementToVerify.match(statementRegex)
-    if (!match || !match.groups) throw new Error("Invalid statement format:" + s)
+    if (!match || !match.groups) throw new Error("Invalid statement format:" + input)
     
     const { domain, author, representative, time: timeStr, tags: tagsStr, supersededStatement,
             formatVersion, content, typedContent, type, translations: translationsStr } = match.groups
@@ -189,7 +189,7 @@ export const buildPollContent = ({ country, city, legalEntity, domainScope, judg
     return content
 }
 
-export const parsePoll = (s: string, version?: string): Poll => {
+export const parsePoll = (content: string, version?: string): Poll => {
     if (version !== '5') throw new Error("Invalid version " + version)
     const pollRegex = new RegExp(''
         + /^    Type: Poll\n/.source
@@ -204,8 +204,8 @@ export const parsePoll = (s: string, version?: string): Poll => {
         + /(?:    Allow free text votes: (?<allowArbitraryVote>Yes|No)\n)?/.source
         + /(?:    Who can vote: (?<whoCanVote>\n[\s\S]+?\n))?/.source
         + /$/.source)
-    const match = s.match(pollRegex)
-    if (!match || !match.groups) throw new Error("Invalid poll format: " + s)
+    const match = content.match(pollRegex)
+    if (!match || !match.groups) throw new Error("Invalid poll format: " + content)
 
     const { judges, deadline, poll, option1, option2, option3, option4, option5,
             allowArbitraryVote: allowArbitraryVoteStr, whoCanVote } = match.groups
@@ -293,7 +293,7 @@ export const buildOrganisationVerificationContent = (
         ""
 }
 
-export const parseOrganisationVerification = (s: string): OrganisationVerification => {
+export const parseOrganisationVerification = (content: string): OrganisationVerification => {
     const organisationVerificationRegex = new RegExp(''
         + /^    Type: Organisation verification\n/.source
         + /    Description: We verified the following information about an organisation.\n/.source
@@ -316,8 +316,8 @@ export const parseOrganisationVerification = (s: string): OrganisationVerificati
         + /(?:    Confidence: (?<confidence>[0-9.]+?))?/.source
         + /\n?$/.source
     );
-    const match = s.match(organisationVerificationRegex)
-    if (!match || !match.groups) throw new Error("Invalid organisation verification format: " + s)
+    const match = content.match(organisationVerificationRegex)
+    if (!match || !match.groups) throw new Error("Invalid organisation verification format: " + content)
     
     const { name, englishName, country, legalForm, domain, foreignDomain, department, province,
             serialNumber, city, latitude, longitude, population, pictureHash, employeeCount,
@@ -360,7 +360,7 @@ export const buildPersonVerificationContent = (
     return content
 }
 
-export const parsePersonVerification = (s: string): PersonVerification => {
+export const parsePersonVerification = (content: string): PersonVerification => {
     const domainVerificationRegex = new RegExp(''
         + /^    Type: Person verification\n/.source
         + /    Description: We verified the following information about a person.\n/.source
@@ -378,8 +378,8 @@ export const parsePersonVerification = (s: string): PersonVerification => {
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
-    const match = s.match(domainVerificationRegex)
-    if (!match || !match.groups) throw new Error("Invalid person verification format: " + s)
+    const match = content.match(domainVerificationRegex)
+    if (!match || !match.groups) throw new Error("Invalid person verification format: " + content)
     
     const { name, dateOfBirth: dateOfBirthStr, cityOfBirth, countryOfBirth, jobTitle, employer,
             domain, foreignDomain, picture, verificationMethod, confidence, reliabilityPolicy } = match.groups
@@ -408,7 +408,7 @@ export const buildVoteContent = ({ pollHash, poll, vote }: Vote) => {
     return content
 }
 
-export const parseVote = (s: string): Vote => {
+export const parseVote = (content: string): Vote => {
     const voteRegex = new RegExp(''
         + /^    Type: Vote\n/.source
         + /    Poll id: (?<pollHash>[^\n]+?)\n/.source
@@ -416,8 +416,8 @@ export const parseVote = (s: string): Vote => {
         + /    Option: (?<vote>[^\n]+?)\n/.source
         + /$/.source
     );
-    const match = s.match(voteRegex)
-    if (!match || !match.groups) throw new Error("Invalid vote format: " + s)
+    const match = content.match(voteRegex)
+    if (!match || !match.groups) throw new Error("Invalid vote format: " + content)
     
     const { pollHash, poll, vote } = match.groups
     return { pollHash, poll, vote }
@@ -433,7 +433,7 @@ export const buildDisputeAuthenticityContent = ({ hash, confidence, reliabilityP
     return content
 }
 
-export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
+export const parseDisputeAuthenticity = (content: string): DisputeAuthenticity => {
     const disputeRegex = new RegExp(''
         + /^    Type: Dispute statement authenticity\n/.source
         + /    Description: We think that the referenced statement is not authentic.\n/.source
@@ -442,8 +442,8 @@ export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
-    const match = s.match(disputeRegex)
-    if (!match || !match.groups) throw new Error("Invalid dispute authenticity format: " + s)
+    const match = content.match(disputeRegex)
+    if (!match || !match.groups) throw new Error("Invalid dispute authenticity format: " + content)
     
     const { hash, confidence, reliabilityPolicy } = match.groups
     return {
@@ -463,7 +463,7 @@ export const buildDisputeContentContent = ({ hash, confidence, reliabilityPolicy
     return content
 }
 
-export const parseDisputeContent = (s: string): DisputeContent => {
+export const parseDisputeContent = (content: string): DisputeContent => {
     const disputeRegex = new RegExp(''
         + /^    Type: Dispute statement content\n/.source
         + /    Description: We think that the content of the referenced statement is false.\n/.source
@@ -472,8 +472,8 @@ export const parseDisputeContent = (s: string): DisputeContent => {
         + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
-    const match = s.match(disputeRegex)
-    if (!match || !match.groups) throw new Error("Invalid dispute content format: " + s)
+    const match = content.match(disputeRegex)
+    if (!match || !match.groups) throw new Error("Invalid dispute content format: " + content)
     
     const { hash, confidence, reliabilityPolicy } = match.groups
     return {
@@ -491,15 +491,15 @@ export const buildResponseContent = ({ hash, response }: ResponseContent) => {
     return content
 }
 
-export const parseResponseContent = (s: string): ResponseContent => {
+export const parseResponseContent = (content: string): ResponseContent => {
     const disputeRegex = new RegExp(''
         + /^\n    Type: Response\n/.source
         + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
         + /    Response: (?<response>[^\n]*?)\n/.source
         + /$/.source
     );
-    const match = s.match(disputeRegex)
-    if (!match || !match.groups) throw new Error("Invalid response content format: " + s)
+    const match = content.match(disputeRegex)
+    if (!match || !match.groups) throw new Error("Invalid response content format: " + content)
     
     const { hash, response } = match.groups
     return { hash, response }
@@ -514,15 +514,15 @@ export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
     return content
 }
 
-export const parsePDFSigning = (s: string): PDFSigning => {
+export const parsePDFSigning = (content: string): PDFSigning => {
     const signingRegex = new RegExp(''
         + /^\n    Type: Sign PDF\n/.source
         + /    Description: We hereby digitally sign the referenced PDF file.\n/.source
         + /    PDF file hash: (?<hash>[^\n]+?)\n/.source
         + /$/.source
     );
-    const match = s.match(signingRegex)
-    if (!match || !match.groups) throw new Error("Invalid PDF signing format: " + s)
+    const match = content.match(signingRegex)
+    if (!match || !match.groups) throw new Error("Invalid PDF signing format: " + content)
     
     const { hash } = match.groups
     return { hash }
@@ -542,7 +542,7 @@ export const buildRating = ({ subjectName, subjectType, subjectReference, docume
     return content
 }
 
-export const parseRating = (s: string): Rating => {
+export const parseRating = (content: string): Rating => {
     const ratingRegex = new RegExp(''
         + /^    Type: Rating\n/.source
         + /(?:    Subject type: (?<subjectType>[^\n]*?)\n)?/.source
@@ -554,8 +554,8 @@ export const parseRating = (s: string): Rating => {
         + /(?:    Comment: (?<comment>[\s\S]+?)\n)?/.source
         + /$/.source
     );
-    const match = s.match(ratingRegex)
-    if (!match || !match.groups) throw new Error("Invalid rating format: " + s)
+    const match = content.match(ratingRegex)
+    if (!match || !match.groups) throw new Error("Invalid rating format: " + content)
     
     const { subjectType, subjectName, subjectReference, documentFileHash, quality,
             rating: ratingStr, comment } = match.groups
