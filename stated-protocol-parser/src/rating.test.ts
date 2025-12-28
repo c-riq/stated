@@ -18,11 +18,11 @@ Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Format version: 5
 Statement content:
-	Type: Rating
-	Subject name: AMBOSS GmbH
-	URL that identifies the subject: amboss.com
-	Rated quality: AI safety
-	Our rating: 5/5 Stars
+    Type: Rating
+    Subject name: AMBOSS GmbH
+    URL that identifies the subject: amboss.com
+    Rated quality: AI safety
+    Our rating: 5/5 Stars
 `
         const parsedStatement = parseStatement({ statement: rating })
         const parsedRating = parseRating(parsedStatement.content)

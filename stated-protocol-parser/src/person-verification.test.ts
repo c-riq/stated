@@ -18,13 +18,13 @@ Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Format version: 5
 Statement content:
-	Type: Person verification
-	Description: We verified the following information about a person.
-	Name: Barack Hossein Obama II
-	Date of birth: 4 Aug 1961
-	City of birth: Honolulu
-	Country of birth: United States of America
-	Owner of the domain: barackobama.com
+    Type: Person verification
+    Description: We verified the following information about a person.
+    Name: Barack Hossein Obama II
+    Date of birth: 4 Aug 1961
+    City of birth: Honolulu
+    Country of birth: United States of America
+    Owner of the domain: barackobama.com
 `
         const parsedStatement = parseStatement({ statement: personVerification })
         const parsedPVerification = parsePersonVerification(parsedStatement.content)

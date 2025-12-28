@@ -104,7 +104,7 @@ export const parseStatement = ({ statement: s }: { statement: string })
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
         + /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
-        + /Statement content:\n(?:(?<typedContent>\tType: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
+        + /Statement content:\n(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
         + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
         + /$/.source
     );
@@ -162,26 +162,26 @@ export const buildPollContent = ({ country, city, legalEntity, domainScope, judg
     scopeDescription, scopeQueryLink, options, allowArbitraryVote, requiredProperty: propertyScope, requiredPropertyObserver: propertyScopeObserver }: Poll) => {
     if (!poll) throw (new Error("Poll must contain a poll question."))
     const scopeContent =
-        (scopeDescription ? "\t\t" + "Description: " + scopeDescription + "\n" : "") +
-        (country ? "\t\t" + "Country scope: " + country + "\n" : "") +
-        (city ? "\t\t" + "City scope: " + city + "\n" : "") +
-        (legalEntity ? "\t\t" + "Legal form scope: " + legalEntity + "\n" : "") +
-        (domainScope && domainScope?.length > 0 ? "\t\t" + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
-        (propertyScope ? "\t\t" + "All entities with the following property: " + propertyScope + "\n" : "") +
-        (propertyScopeObserver ? "\t\t" + "As observed by: " + propertyScopeObserver + "\n" : "") +
-        (scopeQueryLink ? "\t\t" + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "")
+        (scopeDescription ? "        " + "Description: " + scopeDescription + "\n" : "") +
+        (country ? "        " + "Country scope: " + country + "\n" : "") +
+        (city ? "        " + "City scope: " + city + "\n" : "") +
+        (legalEntity ? "        " + "Legal form scope: " + legalEntity + "\n" : "") +
+        (domainScope && domainScope?.length > 0 ? "        " + "Domain scope: " + domainScope.join(', ') + "\n" : "") +
+        (propertyScope ? "        " + "All entities with the following property: " + propertyScope + "\n" : "") +
+        (propertyScopeObserver ? "        " + "As observed by: " + propertyScopeObserver + "\n" : "") +
+        (scopeQueryLink ? "        " + "Link to query defining who can vote: " + scopeQueryLink + "\n" : "")
     if (scopeContent.length > 0 && !scopeDescription) throw (new Error("Poll must contain a description of who can vote."))
-    const content = "\t" + "Type: Poll" + "\n" +
-        (judges ? "\t" + "The poll outcome is finalized when the following nodes agree: " + judges + "\n" : "") +
-        (deadline ? "\t" + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
-        "\t" + "Poll: " + poll + "\n" +
-        (options.length > 0 && options[0] ? "\t" + "Option 1: " + options[0] + "\n" : "") +
-        (options.length > 1 && options[1] ? "\t" + "Option 2: " + options[1] + "\n" : "") +
-        (options.length > 2 && options[2] ? "\t" + "Option 3: " + options[2] + "\n" : "") +
-        (options.length > 3 && options[3] ? "\t" + "Option 4: " + options[3] + "\n" : "") +
-        (options.length > 4 && options[4] ? "\t" + "Option 5: " + options[4] + "\n" : "") +
-        ((allowArbitraryVote === true || allowArbitraryVote === false) ? ("\t" + "Allow free text votes: " + (allowArbitraryVote ? 'Yes' : 'No') + "\n") : "") +
-        (scopeContent ? "\t" + "Who can vote: \n" + scopeContent : "") +
+    const content = "    " + "Type: Poll" + "\n" +
+        (judges ? "    " + "The poll outcome is finalized when the following nodes agree: " + judges + "\n" : "") +
+        (deadline ? "    " + "Voting deadline: " + deadline.toUTCString() + "\n" : "") +
+        "    " + "Poll: " + poll + "\n" +
+        (options.length > 0 && options[0] ? "    " + "Option 1: " + options[0] + "\n" : "") +
+        (options.length > 1 && options[1] ? "    " + "Option 2: " + options[1] + "\n" : "") +
+        (options.length > 2 && options[2] ? "    " + "Option 3: " + options[2] + "\n" : "") +
+        (options.length > 3 && options[3] ? "    " + "Option 4: " + options[3] + "\n" : "") +
+        (options.length > 4 && options[4] ? "    " + "Option 5: " + options[4] + "\n" : "") +
+        ((allowArbitraryVote === true || allowArbitraryVote === false) ? ("    " + "Allow free text votes: " + (allowArbitraryVote ? 'Yes' : 'No') + "\n") : "") +
+        (scopeContent ? "    " + "Who can vote: \n" + scopeContent : "") +
         ""
     return content
 }
@@ -189,17 +189,17 @@ export const buildPollContent = ({ country, city, legalEntity, domainScope, judg
 export const parsePoll = (s: string, version?: string): Poll => {
     if (version !== '5') throw new Error("Invalid version " + version)
     const pollRegex = new RegExp(''
-        + /^\tType: Poll\n/.source
-        + /(?:\tThe poll outcome is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
-        + /(?:\tVoting deadline: (?<deadline>[^\n]+?)\n)?/.source
-        + /\tPoll: (?<poll>[^\n]+?)\n/.source
-        + /(?:\tOption 1: (?<option1>[^\n]+?)\n)?/.source
-        + /(?:\tOption 2: (?<option2>[^\n]+?)\n)?/.source
-        + /(?:\tOption 3: (?<option3>[^\n]+?)\n)?/.source
-        + /(?:\tOption 4: (?<option4>[^\n]+?)\n)?/.source
-        + /(?:\tOption 5: (?<option5>[^\n]+?)\n)?/.source
-        + /(?:\tAllow free text votes: (?<allowArbitraryVote>Yes|No)\n)?/.source
-        + /(?:\tWho can vote: (?<whoCanVote>\n[\s\S]+?\n))?/.source
+        + /^    Type: Poll\n/.source
+        + /(?:    The poll outcome is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
+        + /(?:    Voting deadline: (?<deadline>[^\n]+?)\n)?/.source
+        + /    Poll: (?<poll>[^\n]+?)\n/.source
+        + /(?:    Option 1: (?<option1>[^\n]+?)\n)?/.source
+        + /(?:    Option 2: (?<option2>[^\n]+?)\n)?/.source
+        + /(?:    Option 3: (?<option3>[^\n]+?)\n)?/.source
+        + /(?:    Option 4: (?<option4>[^\n]+?)\n)?/.source
+        + /(?:    Option 5: (?<option5>[^\n]+?)\n)?/.source
+        + /(?:    Allow free text votes: (?<allowArbitraryVote>Yes|No)\n)?/.source
+        + /(?:    Who can vote: (?<whoCanVote>\n[\s\S]+?\n))?/.source
         + /$/.source)
     let m: any = s.match(pollRegex)
     if (!m) throw new Error("Invalid poll format: " + s)
@@ -213,14 +213,14 @@ export const parsePoll = (s: string, version?: string): Poll => {
     const whoCanVoteParsed: Partial<Poll> & { domainScopeStr?: string } = {}
     if (m.whoCanVote) {
         const whoCanVoteRegex = new RegExp(''
-            + /^\n\t\tDescription: (?<scopeDescription>[^\n]+?)\n/.source
-            + /(?:\t\tCountry scope: (?<countryScope>[^\n]+?)\n)?/.source
-            + /(?:\t\tCity scope: (?<cityScope>[^\n]+?)\n)?/.source
-            + /(?:\t\tLegal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
-            + /(?:\t\tDomain scope: (?<domainScope>[^\n]+?)\n)?/.source
-            + /(?:\t\tAll entities with the following property: (?<propertyScope>[^\n]+?)\n)?/.source
-            + /(?:\t\tAs observed by: (?<propertyScopeObserver>[^\n]+?)\n)?/.source
-            + /(?:\t\tLink to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
+            + /^\n        Description: (?<scopeDescription>[^\n]+?)\n/.source
+            + /(?:        Country scope: (?<countryScope>[^\n]+?)\n)?/.source
+            + /(?:        City scope: (?<cityScope>[^\n]+?)\n)?/.source
+            + /(?:        Legal form scope: (?<legalEntity>[^\n]+?)\n)?/.source
+            + /(?:        Domain scope: (?<domainScope>[^\n]+?)\n)?/.source
+            + /(?:        All entities with the following property: (?<propertyScope>[^\n]+?)\n)?/.source
+            + /(?:        As observed by: (?<propertyScopeObserver>[^\n]+?)\n)?/.source
+            + /(?:        Link to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
             + /$/.source)
         let m2: any = m.whoCanVote.match(whoCanVoteRegex)
         if (!m2) throw new Error("Invalid who can vote section: " + m.whoCanVote)
@@ -265,49 +265,49 @@ export const buildOrganisationVerificationContent = (
     if (population && !Object.values(peopleCountBuckets).includes(population)) throw new Error("Invalid population " + population)
     if (confidence && !('' + confidence)?.match(/^[0-9.]+$/)) throw new Error("Invalid confidence " + confidence)
 
-    return "\t" + "Type: Organisation verification" + "\n" +
-        "\t" + "Description: We verified the following information about an organisation." + "\n" +
-        "\t" + "Name: " + name + "\n" +
-        (englishName ? "\t" + "English name: " + englishName + "\n" : "") +
-        "\t" + "Country: " + country + "\n" +
-        "\t" + "Legal form: " + legalForm + "\n" +
-        (domain ? "\t" + "Owner of the domain: " + domain + "\n" : "") +
-        (foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
-        (department ? "\t" + "Department using the domain: " + department + "\n" : "") +
-        (province ? "\t" + "Province or state: " + province + "\n" : "") +
-        (serialNumber ? "\t" + "Business register number: " + serialNumber + "\n" : "") +
-        (city ? "\t" + "City: " + city + "\n" : "") +
-        (latitude ? "\t" + "Latitude: " + latitude + "\n" : "") +
-        (longitude ? "\t" + "Longitude: " + longitude + "\n" : "") +
-        (population ? "\t" + "Population: " + population + "\n" : "") +
-        (pictureHash ? "\t" + "Logo: " + pictureHash + "\n" : "") +
-        (employeeCount ? "\t" + "Employee count: " + employeeCount + "\n" : "") +
-        (reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
-        (confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
+    return "    " + "Type: Organisation verification" + "\n" +
+        "    " + "Description: We verified the following information about an organisation." + "\n" +
+        "    " + "Name: " + name + "\n" +
+        (englishName ? "    " + "English name: " + englishName + "\n" : "") +
+        "    " + "Country: " + country + "\n" +
+        "    " + "Legal form: " + legalForm + "\n" +
+        (domain ? "    " + "Owner of the domain: " + domain + "\n" : "") +
+        (foreignDomain ? "    " + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
+        (department ? "    " + "Department using the domain: " + department + "\n" : "") +
+        (province ? "    " + "Province or state: " + province + "\n" : "") +
+        (serialNumber ? "    " + "Business register number: " + serialNumber + "\n" : "") +
+        (city ? "    " + "City: " + city + "\n" : "") +
+        (latitude ? "    " + "Latitude: " + latitude + "\n" : "") +
+        (longitude ? "    " + "Longitude: " + longitude + "\n" : "") +
+        (population ? "    " + "Population: " + population + "\n" : "") +
+        (pictureHash ? "    " + "Logo: " + pictureHash + "\n" : "") +
+        (employeeCount ? "    " + "Employee count: " + employeeCount + "\n" : "") +
+        (reliabilityPolicy ? "    " + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+        (confidence ? "    " + "Confidence: " + confidence + "\n" : "") +
         ""
 }
 
 export const parseOrganisationVerification = (s: string): OrganisationVerification => {
     const organisationVerificationRegex = new RegExp(''
-        + /^\tType: Organisation verification\n/.source
-        + /\tDescription: We verified the following information about an organisation.\n/.source
-        + /\tName: (?<name>[^\n]+?)\n/.source
-        + /(?:\tEnglish name: (?<englishName>[^\n]+?)\n)?/.source
-        + /\tCountry: (?<country>[^\n]+?)\n/.source
-        + /\tLegal (?:form|entity): (?<legalForm>[^\n]+?)\n/.source
-        + /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
-        + /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
-        + /(?:\tDepartment using the domain: (?<department>[^\n]+?)\n)?/.source
-        + /(?:\tProvince or state: (?<province>[^\n]+?)\n)?/.source
-        + /(?:\tBusiness register number: (?<serialNumber>[^\n]+?)\n)?/.source
-        + /(?:\tCity: (?<city>[^\n]+?)\n)?/.source
-        + /(?:\tLatitude: (?<latitude>[^\n]+?)\n)?/.source
-        + /(?:\tLongitude: (?<longitude>[^\n]+?)\n)?/.source
-        + /(?:\tPopulation: (?<population>[^\n]+?)\n)?/.source
-        + /(?:\tLogo: (?<pictureHash>[^\n]+?)\n)?/.source
-        + /(?:\tEmployee count: (?<employeeCount>[01,+-]+?)\n)?/.source
-        + /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
-        + /(?:\tConfidence: (?<confidence>[0-9.]+?))?/.source
+        + /^    Type: Organisation verification\n/.source
+        + /    Description: We verified the following information about an organisation.\n/.source
+        + /    Name: (?<name>[^\n]+?)\n/.source
+        + /(?:    English name: (?<englishName>[^\n]+?)\n)?/.source
+        + /    Country: (?<country>[^\n]+?)\n/.source
+        + /    Legal (?:form|entity): (?<legalForm>[^\n]+?)\n/.source
+        + /(?:    Owner of the domain: (?<domain>[^\n]+?)\n)?/.source
+        + /(?:    Foreign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
+        + /(?:    Department using the domain: (?<department>[^\n]+?)\n)?/.source
+        + /(?:    Province or state: (?<province>[^\n]+?)\n)?/.source
+        + /(?:    Business register number: (?<serialNumber>[^\n]+?)\n)?/.source
+        + /(?:    City: (?<city>[^\n]+?)\n)?/.source
+        + /(?:    Latitude: (?<latitude>[^\n]+?)\n)?/.source
+        + /(?:    Longitude: (?<longitude>[^\n]+?)\n)?/.source
+        + /(?:    Population: (?<population>[^\n]+?)\n)?/.source
+        + /(?:    Logo: (?<pictureHash>[^\n]+?)\n)?/.source
+        + /(?:    Employee count: (?<employeeCount>[01,+-]+?)\n)?/.source
+        + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+        + /(?:    Confidence: (?<confidence>[0-9.]+?))?/.source
         + /\n?$/.source
     );
     const m = s.match(organisationVerificationRegex)
@@ -342,40 +342,40 @@ export const buildPersonVerificationContent = (
         return ""
     }
     const [day, month, year] = dateOfBirth.toUTCString().split(' ').filter((i, j) => [1, 2, 3].includes(j))
-    let content = "\t" + "Type: Person verification" + "\n" +
-        "\t" + "Description: We verified the following information about a person." + "\n" +
-        "\t" + "Name: " + name + "\n" +
-        "\t" + "Date of birth: " + [day.replace(/$0/, ''), month, year].join(' ') + "\n" +
-        "\t" + "City of birth: " + cityOfBirth + "\n" +
-        "\t" + "Country of birth: " + countryOfBirth + "\n" +
-        (jobTitle ? "\t" + "Job title: " + jobTitle + "\n" : "") +
-        (employer ? "\t" + "Employer: " + employer + "\n" : "") +
-        (ownDomain ? "\t" + "Owner of the domain: " + ownDomain + "\n" : "") +
-        (foreignDomain ? "\t" + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
-        (picture ? "\t" + "Picture: " + picture + "\n" : "") +
-        (verificationMethod ? "\t" + "Verification method: " + verificationMethod + "\n" : "") +
-        (confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
-        (reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+    let content = "    " + "Type: Person verification" + "\n" +
+        "    " + "Description: We verified the following information about a person." + "\n" +
+        "    " + "Name: " + name + "\n" +
+        "    " + "Date of birth: " + [day.replace(/$0/, ''), month, year].join(' ') + "\n" +
+        "    " + "City of birth: " + cityOfBirth + "\n" +
+        "    " + "Country of birth: " + countryOfBirth + "\n" +
+        (jobTitle ? "    " + "Job title: " + jobTitle + "\n" : "") +
+        (employer ? "    " + "Employer: " + employer + "\n" : "") +
+        (ownDomain ? "    " + "Owner of the domain: " + ownDomain + "\n" : "") +
+        (foreignDomain ? "    " + "Foreign domain used for publishing statements: " + foreignDomain + "\n" : "") +
+        (picture ? "    " + "Picture: " + picture + "\n" : "") +
+        (verificationMethod ? "    " + "Verification method: " + verificationMethod + "\n" : "") +
+        (confidence ? "    " + "Confidence: " + confidence + "\n" : "") +
+        (reliabilityPolicy ? "    " + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
         ""
     return content
 }
 
 export const parsePersonVerification = (s: string): PersonVerification => {
     const domainVerificationRegex = new RegExp(''
-        + /^\tType: Person verification\n/.source
-        + /\tDescription: We verified the following information about a person.\n/.source
-        + /\tName: (?<name>[^\n]+?)\n/.source
-        + /\tDate of birth: (?<dateOfBirth>[^\n]+?)\n/.source
-        + /\tCity of birth: (?<cityOfBirth>[^\n]+?)\n/.source
-        + /\tCountry of birth: (?<countryOfBirth>[^\n]+?)\n/.source
-        + /(?:\tJob title: (?<jobTitle>[^\n]+?)\n)?/.source
-        + /(?:\tEmployer: (?<employer>[^\n]+?)\n)?/.source
-        + /(?:\tOwner of the domain: (?<domain>[^\n]+?)\n)?/.source
-        + /(?:\tForeign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
-        + /(?:\tPicture: (?<picture>[^\n]+?)\n)?/.source
-        + /(?:\tVerification method: (?<verificationMethod>[^\n]+?)\n)?/.source
-        + /(?:\tConfidence: (?<confidence>[^\n]+?)\n)?/.source
-        + /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+        + /^    Type: Person verification\n/.source
+        + /    Description: We verified the following information about a person.\n/.source
+        + /    Name: (?<name>[^\n]+?)\n/.source
+        + /    Date of birth: (?<dateOfBirth>[^\n]+?)\n/.source
+        + /    City of birth: (?<cityOfBirth>[^\n]+?)\n/.source
+        + /    Country of birth: (?<countryOfBirth>[^\n]+?)\n/.source
+        + /(?:    Job title: (?<jobTitle>[^\n]+?)\n)?/.source
+        + /(?:    Employer: (?<employer>[^\n]+?)\n)?/.source
+        + /(?:    Owner of the domain: (?<domain>[^\n]+?)\n)?/.source
+        + /(?:    Foreign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source
+        + /(?:    Picture: (?<picture>[^\n]+?)\n)?/.source
+        + /(?:    Verification method: (?<verificationMethod>[^\n]+?)\n)?/.source
+        + /(?:    Confidence: (?<confidence>[^\n]+?)\n)?/.source
+        + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
     const m = s.match(domainVerificationRegex)
@@ -400,20 +400,20 @@ export const parsePersonVerification = (s: string): PersonVerification => {
 }
 
 export const buildVoteContent = ({ pollHash, poll, vote }: Vote) => {
-    const content = "\t" + "Type: Vote" + "\n" +
-        "\t" + "Poll id: " + pollHash + "\n" +
-        "\t" + "Poll: " + poll + "\n" +
-        "\t" + "Option: " + vote + "\n" +
+    const content = "    " + "Type: Vote" + "\n" +
+        "    " + "Poll id: " + pollHash + "\n" +
+        "    " + "Poll: " + poll + "\n" +
+        "    " + "Option: " + vote + "\n" +
         ""
     return content
 }
 
 export const parseVote = (s: string): Vote => {
     const voteRegex = new RegExp(''
-        + /^\tType: Vote\n/.source
-        + /\tPoll id: (?<pollHash>[^\n]+?)\n/.source
-        + /\tPoll: (?<poll>[^\n]+?)\n/.source
-        + /\tOption: (?<vote>[^\n]+?)\n/.source
+        + /^    Type: Vote\n/.source
+        + /    Poll id: (?<pollHash>[^\n]+?)\n/.source
+        + /    Poll: (?<poll>[^\n]+?)\n/.source
+        + /    Option: (?<vote>[^\n]+?)\n/.source
         + /$/.source
     );
     const m = s.match(voteRegex)
@@ -426,22 +426,22 @@ export const parseVote = (s: string): Vote => {
 }
 
 export const buildDisputeAuthenticityContent = ({ hash, confidence, reliabilityPolicy }: DisputeAuthenticity) => {
-    const content = "\t" + "Type: Dispute statement authenticity" + "\n" +
-        "\t" + "Description: We think that the referenced statement is not authentic.\n" +
-        "\t" + "Hash of referenced statement: " + hash + "\n" +
-        (confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
-        (reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+    const content = "    " + "Type: Dispute statement authenticity" + "\n" +
+        "    " + "Description: We think that the referenced statement is not authentic.\n" +
+        "    " + "Hash of referenced statement: " + hash + "\n" +
+        (confidence ? "    " + "Confidence: " + confidence + "\n" : "") +
+        (reliabilityPolicy ? "    " + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
         ""
     return content
 }
 
 export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
     const disputeRegex = new RegExp(''
-        + /^\tType: Dispute statement authenticity\n/.source
-        + /\tDescription: We think that the referenced statement is not authentic.\n/.source
-        + /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
-        + /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
-        + /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+        + /^    Type: Dispute statement authenticity\n/.source
+        + /    Description: We think that the referenced statement is not authentic.\n/.source
+        + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
+        + /(?:    Confidence: (?<confidence>[^\n]*?)\n)?/.source
+        + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
     const m = s.match(disputeRegex)
@@ -454,22 +454,22 @@ export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
 }
 
 export const buildDisputeContentContent = ({ hash, confidence, reliabilityPolicy }: DisputeContent) => {
-    const content = "\t" + "Type: Dispute statement content" + "\n" +
-        "\t" + "Description: We think that the content of the referenced statement is false.\n" +
-        "\t" + "Hash of referenced statement: " + hash + "\n" +
-        (confidence ? "\t" + "Confidence: " + confidence + "\n" : "") +
-        (reliabilityPolicy ? "\t" + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
+    const content = "    " + "Type: Dispute statement content" + "\n" +
+        "    " + "Description: We think that the content of the referenced statement is false.\n" +
+        "    " + "Hash of referenced statement: " + hash + "\n" +
+        (confidence ? "    " + "Confidence: " + confidence + "\n" : "") +
+        (reliabilityPolicy ? "    " + "Reliability policy: " + reliabilityPolicy + "\n" : "") +
         ""
     return content
 }
 
 export const parseDisputeContent = (s: string): DisputeContent => {
     const disputeRegex = new RegExp(''
-        + /^\tType: Dispute statement content\n/.source
-        + /\tDescription: We think that the content of the referenced statement is false.\n/.source
-        + /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
-        + /(?:\tConfidence: (?<confidence>[^\n]*?)\n)?/.source
-        + /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
+        + /^    Type: Dispute statement content\n/.source
+        + /    Description: We think that the content of the referenced statement is false.\n/.source
+        + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
+        + /(?:    Confidence: (?<confidence>[^\n]*?)\n)?/.source
+        + /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
         + /$/.source
     );
     const m = s.match(disputeRegex)
@@ -482,18 +482,18 @@ export const parseDisputeContent = (s: string): DisputeContent => {
 }
 
 export const buildResponseContent = ({ hash, response }: ResponseContent) => {
-    const content = "\t" + "Type: Response" + "\n" +
-        "\t" + "Hash of referenced statement: " + hash + "\n" +
-        "\t" + "Response: " + response + "\n" +
+    const content = "    " + "Type: Response" + "\n" +
+        "    " + "Hash of referenced statement: " + hash + "\n" +
+        "    " + "Response: " + response + "\n" +
         ""
     return content
 }
 
 export const parseResponseContent = (s: string): ResponseContent => {
     const disputeRegex = new RegExp(''
-        + /^\n\tType: Response\n/.source
-        + /\tHash of referenced statement: (?<hash>[^\n]+?)\n/.source
-        + /\tResponse: (?<response>[^\n]*?)\n/.source
+        + /^\n    Type: Response\n/.source
+        + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
+        + /    Response: (?<response>[^\n]*?)\n/.source
         + /$/.source
     );
     const m = s.match(disputeRegex)
@@ -506,18 +506,18 @@ export const parseResponseContent = (s: string): ResponseContent => {
 
 export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
     const content = "\n" +
-        "\t" + "Type: Sign PDF" + "\n" +
-        "\t" + "Description: We hereby digitally sign the referenced PDF file.\n" +
-        "\t" + "PDF file hash: " + hash + "\n" +
+        "    " + "Type: Sign PDF" + "\n" +
+        "    " + "Description: We hereby digitally sign the referenced PDF file.\n" +
+        "    " + "PDF file hash: " + hash + "\n" +
         ""
     return content
 }
 
 export const parsePDFSigning = (s: string): PDFSigning => {
     const signingRegex = new RegExp(''
-        + /^\n\tType: Sign PDF\n/.source
-        + /\tDescription: We hereby digitally sign the referenced PDF file.\n/.source
-        + /\tPDF file hash: (?<hash>[^\n]+?)\n/.source
+        + /^\n    Type: Sign PDF\n/.source
+        + /    Description: We hereby digitally sign the referenced PDF file.\n/.source
+        + /    PDF file hash: (?<hash>[^\n]+?)\n/.source
         + /$/.source
     );
     const m = s.match(signingRegex)
@@ -529,28 +529,28 @@ export const parsePDFSigning = (s: string): PDFSigning => {
 
 export const buildRating = ({ subjectName, subjectType, subjectReference, documentFileHash, rating, quality, comment }: Rating) => {
     if (![1, 2, 3, 4, 5].includes(rating)) throw new Error("Invalid rating: " + rating)
-    const content = "\t" + "Type: Rating" + "\n" +
-        (subjectType ? "\t" + "Subject type: " + subjectType + "\n" : "") +
-        "\t" + "Subject name: " + subjectName + "\n" +
-        (subjectReference ? "\t" + "URL that identifies the subject: " + subjectReference + "\n" : "") +
-        (documentFileHash ? "\t" + "Document file hash: " + documentFileHash + "\n" : "") +
-        (quality ? "\t" + "Rated quality: " + quality + "\n" : "") +
-        "\t" + "Our rating: " + rating + "/5 Stars\n" +
-        (comment ? "\t" + "Comment: " + comment + "\n" : "") +
+    const content = "    " + "Type: Rating" + "\n" +
+        (subjectType ? "    " + "Subject type: " + subjectType + "\n" : "") +
+        "    " + "Subject name: " + subjectName + "\n" +
+        (subjectReference ? "    " + "URL that identifies the subject: " + subjectReference + "\n" : "") +
+        (documentFileHash ? "    " + "Document file hash: " + documentFileHash + "\n" : "") +
+        (quality ? "    " + "Rated quality: " + quality + "\n" : "") +
+        "    " + "Our rating: " + rating + "/5 Stars\n" +
+        (comment ? "    " + "Comment: " + comment + "\n" : "") +
         ""
     return content
 }
 
 export const parseRating = (s: string): Rating => {
     const ratingRegex = new RegExp(''
-        + /^\tType: Rating\n/.source
-        + /(?:\tSubject type: (?<subjectType>[^\n]*?)\n)?/.source
-        + /\tSubject name: (?<subjectName>[^\n]*?)\n/.source
-        + /(?:\tURL that identifies the subject: (?<subjectReference>[^\n]*?)\n)?/.source
-        + /(?:\tDocument file hash: (?<documentFileHash>[^\n]*?)\n)?/.source
-        + /(?:\tRated quality: (?<quality>[^\n]*?)\n)?/.source
-        + /\tOur rating: (?<rating>[1-5])\/5 Stars\n/.source
-        + /(?:\tComment: (?<comment>[\s\S]+?)\n)?/.source
+        + /^    Type: Rating\n/.source
+        + /(?:    Subject type: (?<subjectType>[^\n]*?)\n)?/.source
+        + /    Subject name: (?<subjectName>[^\n]*?)\n/.source
+        + /(?:    URL that identifies the subject: (?<subjectReference>[^\n]*?)\n)?/.source
+        + /(?:    Document file hash: (?<documentFileHash>[^\n]*?)\n)?/.source
+        + /(?:    Rated quality: (?<quality>[^\n]*?)\n)?/.source
+        + /    Our rating: (?<rating>[1-5])\/5 Stars\n/.source
+        + /(?:    Comment: (?<comment>[\s\S]+?)\n)?/.source
         + /$/.source
     );
     const m = s.match(ratingRegex)

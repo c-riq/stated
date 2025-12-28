@@ -19,14 +19,14 @@ Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
 Format version: 5
 Statement content:
-	Type: Organisation verification
-	Description: We verified the following information about an organisation.
-	Name: Walmart Inc.
-	Country: United States of America
-	Legal entity: corporation
-	Owner of the domain: walmart.com
-	Province or state: Arkansas
-	City: Bentonville
+    Type: Organisation verification
+    Description: We verified the following information about an organisation.
+    Name: Walmart Inc.
+    Country: United States of America
+    Legal entity: corporation
+    Owner of the domain: walmart.com
+    Province or state: Arkansas
+    City: Bentonville
 `
         const parsedStatement = parseStatement({
             statement: organisationVerification,
@@ -44,53 +44,53 @@ Author: Verification Authority
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Format version: 5
 Statement content:
-	Type: Organisation verification
-	Description: We verified the following information about an organisation.
-	Name: Example Corporation
-	English name: Example Corp
-	Country: United States
-	Legal form: corporation
-	Owner of the domain: example.com
-	Province or state: New York
-	Business register number: 12345
-	City: New York
-	Latitude: 40.7128
-	Longitude: -74.006
-	Employee count: 100-1000
-	Reliability policy: Standard verification
-	Confidence: 0.95
+    Type: Organisation verification
+    Description: We verified the following information about an organisation.
+    Name: Example Corporation
+    English name: Example Corp
+    Country: United States
+    Legal form: corporation
+    Owner of the domain: example.com
+    Province or state: New York
+    Business register number: 12345
+    City: New York
+    Latitude: 40.7128
+    Longitude: -74.006
+    Employee count: 100-1000
+    Reliability policy: Standard verification
+    Confidence: 0.95
 Translation ar:
-	النوع: التحقق من المنظمة
-	الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
-	الاسم: Example Corporation
-	الاسم الإنجليزي: Example Corp
-	البلد: United States
-	الشكل القانوني: corporation
-	مالك النطاق: example.com
-	المقاطعة أو الولاية: New York
-	رقم السجل التجاري: 12345
-	المدينة: New York
-	خط العرض: 40.7128	
+    النوع: التحقق من المنظمة
+    الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
+    الاسم: Example Corporation
+    الاسم الإنجليزي: Example Corp
+    البلد: United States
+    الشكل القانوني: corporation
+    مالك النطاق: example.com
+    المقاطعة أو الولاية: New York
+    رقم السجل التجاري: 12345
+    المدينة: New York
+    خط العرض: 40.7128
     خط الطول: -74.006
-	عدد الموظفين: 100-1000
-	سياسة الموثوقية: Standard verification
-	الثقة: 0.95
+    عدد الموظفين: 100-1000
+    سياسة الموثوقية: Standard verification
+    الثقة: 0.95
 Translation zh:
-	类型：组织验证
-	描述：我们验证了有关组织的以下信息。
-	名称：Example Corporation
-	英文名称：Example Corp
-	国家：United States
-	法律形式：corporation
-	域名所有者：example.com
-	省或州：New York
-	商业登记号：12345
-	城市：New York
-	纬度：40.7128
-	经度：-74.006
-	员工人数：100-1000
-	可靠性政策：Standard verification
-	置信度：0.95
+    类型：组织验证
+    描述：我们验证了有关组织的以下信息。
+    名称：Example Corporation
+    英文名称：Example Corp
+    国家：United States
+    法律形式：corporation
+    域名所有者：example.com
+    省或州：New York
+    商业登记号：12345
+    城市：New York
+    纬度：40.7128
+    经度：-74.006
+    员工人数：100-1000
+    可靠性政策：Standard verification
+    置信度：0.95
 `
         
         const parsed = parseStatement({ statement })
@@ -207,38 +207,38 @@ describe('Organisation verification building', () => {
             content: orgVerificationContent,
             translations: {
                 ar: `
-	النوع: التحقق من المنظمة
-	الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
-	الاسم: Example Corporation
-	الاسم الإنجليزي: Example Corp
-	البلد: United States
-	الشكل القانوني: corporation
-	مالك النطاق: example.com
-	المقاطعة أو الولاية: New York
-	رقم السجل التجاري: 12345
-	المدينة: New York
-	خط العرض: 40.7128
-	خط الطول: -74.006
-	عدد الموظفين: 100-1000
-	سياسة الموثوقية: Standard verification
-	الثقة: 0.95
+    النوع: التحقق من المنظمة
+    الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
+    الاسم: Example Corporation
+    الاسم الإنجليزي: Example Corp
+    البلد: United States
+    الشكل القانوني: corporation
+    مالك النطاق: example.com
+    المقاطعة أو الولاية: New York
+    رقم السجل التجاري: 12345
+    المدينة: New York
+    خط العرض: 40.7128
+    خط الطول: -74.006
+    عدد الموظفين: 100-1000
+    سياسة الموثوقية: Standard verification
+    الثقة: 0.95
 `,
                 zh: `
-	类型：组织验证
-	描述：我们验证了有关组织的以下信息。
-	名称：Example Corporation
-	英文名称：Example Corp
-	国家：United States
-	法律形式：corporation
-	域名所有者：example.com
-	省或州：New York
-	商业登记号：12345
-	城市：New York
-	纬度：40.7128
-	经度：-74.006
-	员工人数：100-1000
-	可靠性政策：Standard verification
-	置信度：0.95
+    类型：组织验证
+    描述：我们验证了有关组织的以下信息。
+    名称：Example Corporation
+    英文名称：Example Corp
+    国家：United States
+    法律形式：corporation
+    域名所有者：example.com
+    省或州：New York
+    商业登记号：12345
+    城市：New York
+    纬度：40.7128
+    经度：-74.006
+    员工人数：100-1000
+    可靠性政策：Standard verification
+    置信度：0.95
 `
             }
         })
@@ -246,11 +246,11 @@ describe('Organisation verification building', () => {
         const parsed = parseStatement({ statement })
         expect(parsed.type).toBe('organisation_verification')
         expect(parsed.translations?.ar).toContain('النوع: التحقق من المنظمة')
-        expect(parsed.translations?.ar).toContain('	الاسم: Example Corporation')
-        expect(parsed.translations?.ar).toContain('	البلد: United States')
+        expect(parsed.translations?.ar).toContain('    الاسم: Example Corporation')
+        expect(parsed.translations?.ar).toContain('    البلد: United States')
         expect(parsed.translations?.zh).toContain('类型：组织验证')
-        expect(parsed.translations?.zh).toContain('	名称：Example Corporation')
-        expect(parsed.translations?.zh).toContain('	国家：United States')
+        expect(parsed.translations?.zh).toContain('    名称：Example Corporation')
+        expect(parsed.translations?.zh).toContain('    国家：United States')
         
         // Verify the organisation verification content is still parseable in English
         const parsedOrg = parseOrganisationVerification(parsed.content)
