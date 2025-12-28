@@ -145,19 +145,3 @@ export type Bounty = {
     judge: string
     judgePay?: string
 }
-
-export type PollV3 = {
-    country: string | undefined
-    city: string | undefined
-    legalEntity: string | undefined
-    domainScope: string[] | undefined
-    judges?: string
-    deadline: Date
-    poll: string
-    scopeDescription?: string
-    scopeQueryLink?: string
-    scopeProperty?: string
-    propertyScopeObserver?: string
-    pollType?: string
-    options: string[]
-}

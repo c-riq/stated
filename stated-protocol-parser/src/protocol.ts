@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-concat */
 import { legalForms, UTCFormat, peopleCountBuckets } from './constants'
-import { parsePollV3 } from './v3'
 import { monthIndex, birthDateFormat, minPeopleCountToRange } from './utils'
 import { verifySignature } from './signature.node'
 import type {
@@ -17,13 +16,11 @@ import type {
     RatingSubjectTypeValue
 } from './types'
 
-const fallBackVersion = 3
 const version = 5
 
 export * from './types'
 export * from './constants'
 export * from './utils'
-export * from './v3'
 
 export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement, translations }: Statement) => {
     if (content.match(/\nPublishing domain: /)) throw (new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
@@ -154,7 +151,7 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
         time,
         tags: (tags && tags.length > 0) ? tags : undefined,
         supersededStatement: m['supersededStatement'],
-        formatVersion: m['formatVersion'] || ('' + fallBackVersion),
+        formatVersion: m['formatVersion'],
         content: m['content'],
         type: m['type']?.toLowerCase().replace(' ', '_'),
         translations: translations && Object.keys(translations).length > 0 ? translations : undefined,
@@ -191,8 +188,7 @@ export const buildPollContent = ({ country, city, legalEntity, domainScope, judg
 }
 
 export const parsePoll = (s: string, version?: string): Poll => {
-    if (version && version === '3') return parsePollV3(s)
-    if (version && version !== '4') throw new Error("Invalid version " + version)
+    if (version !== '5') throw new Error("Invalid version " + version)
     const pollRegex = new RegExp(''
         + /^\n\tType: Poll\n/.source
         + /(?:\tThe poll outcome is finalized when the following nodes agree: (?<judges>[^\n]+?)\n)?/.source
