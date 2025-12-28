@@ -16,7 +16,7 @@ describe('Statement parsing', () => {
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
-Format version: 4
+Format version: 5
 Statement content: hi
 `
         const parsedStatement = parseStatement({ statement })

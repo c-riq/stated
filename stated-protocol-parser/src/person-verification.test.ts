@@ -16,7 +16,7 @@ describe('Person verification parsing', () => {
         let personVerification = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
+Format version: 5
 Statement content: 
 	Type: Person verification
 	Description: We verified the following information about a person.

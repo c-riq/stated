@@ -16,7 +16,7 @@ describe('Rating parsing', () => {
         let rating = `Publishing domain: localhost
 Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
-Format version: 4
+Format version: 5
 Statement content: 
 	Type: Rating
 	Subject name: AMBOSS GmbH

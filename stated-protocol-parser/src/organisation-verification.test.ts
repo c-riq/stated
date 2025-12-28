@@ -17,7 +17,7 @@ describe('Organisation verification parsing', () => {
         let organisationVerification = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Sun, 04 Sep 2022 14:48:50 GMT
-Format version: 4
+Format version: 5
 Statement content: 
 	Type: Organisation verification
 	Description: We verified the following information about an organisation.

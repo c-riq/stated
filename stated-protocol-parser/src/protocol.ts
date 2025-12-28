@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-concat */
 import { legalForms, UTCFormat, peopleCountBuckets } from './constants'
-import { monthIndex, birthDateFormat, minPeopleCountToRange } from './utils'
+import { monthIndex, birthDateFormat } from './utils'
 import { verifySignature } from './signature.node'
 import type {
     Statement,
@@ -55,7 +55,7 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
     return statement
 }
 
-export const parseStatement = ({ statement: s, allowNoVersion = false }: { statement: string, allowNoVersion?: boolean })
+export const parseStatement = ({ statement: s }: { statement: string })
     : Statement & { type?: string, formatVersion: string } => {
     if (s.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     // Check for double line breaks before translations section
@@ -121,7 +121,8 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
     if (!m['domain']) throw new Error("Invalid statement format: domain is required")
     if (!m['author']) throw new Error("Invalid statement format: author is required")
     if (!m['content']) throw new Error("Invalid statement format: statement content is required")
-    if (!allowNoVersion && !m['formatVersion']) throw new Error("Invalid statement format: format version is required")
+    if (!m['formatVersion']) throw new Error("Invalid statement format: format version is required")
+    if (m['formatVersion'] !== '5') throw new Error(`Invalid statement format: only version 5 is supported, got version ${m['formatVersion']}`)
 
     const tags = m['tagsStr']?.split(', ')
     const time = new Date(m['timeStr'])

@@ -16,7 +16,7 @@ describe('Poll parsing', () => {
         let poll = `Publishing domain: rixdata.net
 Author: Example Inc.
 Time: Thu, 17 Nov 2022 13:38:20 GMT
-Format version: 4
+Format version: 5
 Statement content: 
 	Type: Poll
 	The poll outcome is finalized when the following nodes agree: rixdata.net
@@ -32,7 +32,7 @@ Statement content:
 		Link to query defining who can vote: https://stated.rixdata.net/?search_query=%09Observed%20property:%20ROR%20ID%0A%09&domain=rixdata.net&author=Rix%20Data%20NL%20B.V.
 `
         const parsedStatement = parseStatement({ statement: poll })
-        const parsedPoll = parsePoll(parsedStatement.content)
+        const parsedPoll = parsePoll(parsedStatement.content, parsedStatement.formatVersion)
         const pollTitle = parsedPoll.poll
         expect(pollTitle).toBe('Should the UK join the EU')
         expect(parsedPoll.options[0]).toBe('Yes')
@@ -70,7 +70,7 @@ describe('Poll building', () => {
             options,
             scopeDescription,
         })
-        const parsedPoll = parsePoll(pollContent)
+        const parsedPoll = parsePoll(pollContent, '5')
         expect(parsedPoll.poll).toBe(poll)
         expect(parsedPoll.country).toBe(country)
         expect(parsedPoll.legalEntity).toBe(legalEntity)
