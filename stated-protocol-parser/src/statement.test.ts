@@ -50,6 +50,24 @@ Ceci est notre déclaration officielle.
             fr: 'Ceci est notre déclaration officielle.'
         })
     })
+
+    test('parse statement with attachments', () => {
+        const statement = `Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Attachments: abc123def456_-XYZ.pdf, xyz789ABC-_def.jpg, report2024_hash.docx
+Statement content:
+This statement has attached files.
+`
+        const parsedStatement = parseStatement({ statement })
+        expect(parsedStatement.content).toBe('This statement has attached files.\n')
+        expect(parsedStatement.attachments).toEqual([
+            'abc123def456_-XYZ.pdf',
+            'xyz789ABC-_def.jpg',
+            'report2024_hash.docx'
+        ])
+    })
 })
 
 describe('Statement building', () => {
@@ -78,6 +96,64 @@ describe('Statement building', () => {
         expect(parsedStatement.supersededStatement).toBe(supersededStatement)
         expect(parsedStatement.tags?.sort()).toStrictEqual(tags.sort())
     })
+    test('build & parse statement with attachments', () => {
+        const domain = 'example.com'
+        const author = 'Test Author'
+        const time = new Date('Thu, 15 Jun 2023 20:01:26 GMT')
+        const content = 'Statement with attachments\n'
+        const attachments = ['abc123_-XYZ.pdf', 'def456-_ABC.jpg', 'xyz789_hash.docx']
+        
+        const statementContent = buildStatement({
+            domain,
+            author,
+            time,
+            content,
+            attachments,
+        })
+        
+        const parsedStatement = parseStatement({ statement: statementContent })
+        expect(parsedStatement.domain).toBe(domain)
+        expect(parsedStatement.author).toBe(author)
+        expect(parsedStatement.content).toBe(content)
+        expect(parsedStatement.attachments).toEqual(attachments)
+    })
+
+    test('reject statement with more than 5 attachments', () => {
+        const domain = 'example.com'
+        const author = 'Test Author'
+        const time = new Date()
+        const content = 'Too many attachments\n'
+        const attachments = ['hash1.pdf', 'hash2.pdf', 'hash3.pdf', 'hash4.pdf', 'hash5.pdf', 'hash6.pdf']
+        
+        expect(() => {
+            buildStatement({
+                domain,
+                author,
+                time,
+                content,
+                attachments,
+            })
+        }).toThrow('Maximum 5 attachments allowed')
+    })
+
+    test('reject attachment with invalid format', () => {
+        const domain = 'example.com'
+        const author = 'Test Author'
+        const time = new Date()
+        const content = 'Invalid attachment\n'
+        const attachments = ['invalid file name.pdf'] // spaces not allowed
+        
+        expect(() => {
+            buildStatement({
+                domain,
+                author,
+                time,
+                content,
+                attachments,
+            })
+        }).toThrow("Attachment 1 must be in format 'base64hash.extension' (URL-safe base64)")
+    })
+
 
     test('build statement with translations', () => {
         const domain = 'example.com'

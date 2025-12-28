@@ -30,7 +30,7 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
     if (attachments) {
         attachments.forEach((attachment, index) => {
             if (!attachment.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
-                throw (new Error(`Attachment ${index + 1} must be in format 'filehash.extension'`))
+                throw (new Error(`Attachment ${index + 1} must be in format 'base64hash.extension' (URL-safe base64)`))
             }
         })
     }
@@ -48,10 +48,6 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
             .join('')
         : '';
     
-    const attachmentLines = attachments && attachments.length > 0
-        ? attachments.map((attachment, index) => `Attachment ${index + 1}: ${attachment}\n`).join('')
-        : '';
-    
     const statement = "Stated protocol version: " + version + "\n" +
         "Publishing domain: " + domain + "\n" +
         "Author: " + (author || "") + "\n" +
@@ -59,7 +55,7 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         "Time: " + time.toUTCString() + "\n" +
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
-        attachmentLines +
+        (attachments && attachments.length > 0 ? "Attachments: " + attachments.join(', ') + "\n" : '') +
         "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
         translationLines;
     if (statement.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
@@ -117,7 +113,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
         + /Time: (?<time>[^\n]+?)\n/.source
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
-        + /(?<attachments>(?:Attachment [1-5]: [^\n]+?\n)*)/.source
+        + /(?:Attachments: (?<attachments>[^\n]+?)\n)?/.source
         + /Statement content:\n(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n|$)/.source
         + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
         + /$/.source
@@ -146,8 +142,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
     
     let attachments: string[] | undefined = undefined
     if (attachmentsStr && attachmentsStr.length > 0) {
-        const attachmentMatches = attachmentsStr.matchAll(/Attachment [1-5]: ([^\n]+)\n/g)
-        attachments = Array.from(attachmentMatches, match => match[1])
+        attachments = attachmentsStr.split(', ').map(a => a.trim())
         if (attachments.length > 5) {
             throw new Error("Maximum 5 attachments allowed")
         }
