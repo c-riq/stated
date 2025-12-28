@@ -7,7 +7,6 @@ export const legalForms = {
 
 export const statementTypes = {
     statement: 'statement',
-    quotation: 'quotation',
     organisationVerification: 'organisation_verification',
     personVerification: 'person_verification',
     poll: 'poll',
@@ -15,11 +14,8 @@ export const statementTypes = {
     response: 'response',
     disputeContent: 'dispute_statement_content',
     disputeAuthenticity: 'dispute_statement_authenticity',
-    boycott: 'boycott',
-    observation: 'observation',
     rating: 'rating',
     signPdf: "sign_pdf",
-    bounty: "bounty",
     unsupported: "unsupported",
 }
 

@@ -5,7 +5,6 @@ import { monthIndex, birthDateFormat, minPeopleCountToRange } from './utils'
 import { verifySignature } from './signature.node'
 import type {
     Statement,
-    Quotation,
     Poll,
     OrganisationVerification,
     PersonVerification,
@@ -15,10 +14,7 @@ import type {
     ResponseContent,
     PDFSigning,
     Rating,
-    RatingSubjectTypeValue,
-    Bounty,
-    Observation,
-    Boycott
+    RatingSubjectTypeValue
 } from './types'
 
 const fallBackVersion = 3
@@ -162,59 +158,6 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
         content: m['content'],
         type: m['type']?.toLowerCase().replace(' ', '_'),
         translations: translations && Object.keys(translations).length > 0 ? translations : undefined,
-    }
-}
-
-export const buildQuotationContent = ({ originalAuthor, authorVerification, originalTime, source,
-    quotation, paraphrasedStatement, picture, confidence }: Quotation) => {
-    if (quotation && quotation.match(/\n/)) throw (new Error("Quotation must not contain line breaks."))
-    if (!paraphrasedStatement && !quotation) throw (new Error("Quotation must contain either a quotation or a paraphrased statement."))
-    const content = "\n" +
-        "\t" + "Type: Quotation" + "\n" +
-        "\t" + "Original author: " + originalAuthor + "\n" +
-        "\t" + "Author verification: " + authorVerification + "\n" +
-        (originalTime && originalTime?.length > 0 ? "\t" + "Original publication time: " + originalTime + "\n" : "") +
-        (source && source?.length > 0 ? "\t" + "Source: " + (source || "") + "\n" : '') +
-        (picture && picture.length > 0 ? "\t" + "Picture proof: " + (picture || "") + "\n" : '') +
-        (confidence && confidence?.length > 0 ? "\t" + "Confidence: " + (confidence || "") + "\n" : '') +
-        (quotation && quotation?.length > 0 ? "\t" + "Quotation: " + (quotation || "") + "\n" : '') +
-        (paraphrasedStatement && paraphrasedStatement?.length > 0 ? "\t" + "Paraphrased statement: " +
-            (paraphrasedStatement || "").replace(/\n\t([^\t])/, '\n\t\t($1)') + "\n" : '') +
-        ""
-    return content
-}
-
-export const parseQuotation = (s: string): Quotation & { type: string | undefined } => {
-    const voteRegex = new RegExp(''
-        + /^\n\tType: Quotation\n/.source
-        + /\tOriginal author: (?<originalAuthor>[^\n]+?)\n/.source
-        + /\tAuthor verification: (?<authorVerification>[^\n]+?)\n/.source
-        + /(?:\tOriginal publication time: (?<originalTime>[^\n]+?)\n)?/.source
-        + /(?:\tSource: (?<source>[^\n]+?)\n)?/.source
-        + /(?:\tPicture proof: (?<picture>[^\n]+?)\n)?/.source
-        + /(?:\tConfidence: (?<confidence>[^\n]+?)\n)?/.source
-        + /(?:\tQuotation: (?<quotation>[^\n]+?)\n)?/.source
-        + /(?:\tParaphrased statement: (?:(?<paraphrasedTypedStatement>\n\t\tType: (?<type>[^\n]+?)\n[\s\S]+?)|(?<paraphrasedStatement>[\s\S]+?)))/.source
-        + /$/.source
-    );
-    let match = s.match(voteRegex)
-    if (!match) throw new Error("Invalid quotation format: " + s)
-    let m = {} as Quotation & { type: string | undefined }
-    m = {
-        originalAuthor: match[1], authorVerification: match[2], originalTime: match[3], source: match[4],
-        picture: match[5], confidence: match[6], quotation: match[7], paraphrasedStatement: match[8] || match[10],
-        type: match[9] ? match[9].toLowerCase().replace(' ', '_') : undefined
-    }
-    return {
-        originalAuthor: m['originalAuthor'],
-        authorVerification: m['authorVerification'],
-        originalTime: m['originalTime'],
-        source: m['source'],
-        picture: m['picture'],
-        confidence: m['confidence'],
-        quotation: m['quotation'],
-        paraphrasedStatement: (m['paraphrasedStatement']?.replace(/\n\t\t/g, "\n\t")),
-        type: m['type']?.toLowerCase().replace(' ', '_'),
     }
 }
 

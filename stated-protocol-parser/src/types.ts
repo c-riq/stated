@@ -2,7 +2,6 @@ import type { SupportedLanguage } from './constants'
 
 export type StatementTypeValue =
     | 'statement'
-    | 'quotation'
     | 'organisation_verification'
     | 'person_verification'
     | 'poll'
@@ -10,11 +9,8 @@ export type StatementTypeValue =
     | 'response'
     | 'dispute_statement_content'
     | 'dispute_statement_authenticity'
-    | 'boycott'
-    | 'observation'
     | 'rating'
     | 'sign_pdf'
-    | 'bounty'
 
 export type Statement = {
     domain: string
@@ -34,17 +30,6 @@ export type CryptographicallySignedStatement = {
     publicKey: string
     signature: string
     algorithm: string
-}
-
-export type Quotation = {
-    originalAuthor: string
-    authorVerification: string
-    originalTime?: string
-    source?: string
-    quotation?: string
-    paraphrasedStatement?: string
-    picture?: string
-    confidence?: string
 }
 
 export type Poll = {
@@ -161,18 +146,6 @@ export type Bounty = {
     judgePay?: string
 }
 
-export type Observation = {
-    description?: string
-    approach?: string
-    confidence?: number
-    reliabilityPolicy?: string
-    subject: string
-    subjectReference?: string
-    observationReference?: string
-    property: string
-    value?: string
-}
-
 export type PollV3 = {
     country: string | undefined
     city: string | undefined
@@ -187,11 +160,4 @@ export type PollV3 = {
     propertyScopeObserver?: string
     pollType?: string
     options: string[]
-}
-
-export type Boycott = {
-    description?: string
-    reliabilityPolicy?: string
-    subject: string
-    subjectReference?: string
 }
