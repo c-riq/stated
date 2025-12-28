@@ -111,17 +111,14 @@ export const parseStatement = ({ statement: s }: { statement: string })
     const match = statementToVerify.match(statementRegex)
     if (!match || !match.groups) throw new Error("Invalid statement format:" + s)
     
-    const m: Partial<Statement> & { type?: string, formatVersion: string, timeStr: string, tagsStr: string, translationsStr?: string } = {
-        domain: match.groups.domain,
-        author: match.groups.author,
-        representative: match.groups.representative,
-        timeStr: match.groups.time,
-        tagsStr: match.groups.tags,
-        supersededStatement: match.groups.supersededStatement,
-        formatVersion: match.groups.formatVersion,
-        content: match.groups.content || match.groups.typedContent,
-        type: match.groups.type ? match.groups.type.toLowerCase().replace(' ', '_') : undefined,
-        translationsStr: match.groups.translations
+    const { domain, author, representative, time: timeStr, tags: tagsStr, supersededStatement,
+            formatVersion, content, typedContent, type, translations: translationsStr } = match.groups
+    
+    const m = {
+        domain, author, representative, timeStr, tagsStr, supersededStatement, formatVersion,
+        content: content || typedContent,
+        type: type ? type.toLowerCase().replace(' ', '_') : undefined,
+        translationsStr
     }
     if (!(m['timeStr'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
     if (!m['domain']) throw new Error("Invalid statement format: domain is required")
@@ -207,21 +204,14 @@ export const parsePoll = (s: string, version?: string): Poll => {
         + /(?:    Allow free text votes: (?<allowArbitraryVote>Yes|No)\n)?/.source
         + /(?:    Who can vote: (?<whoCanVote>\n[\s\S]+?\n))?/.source
         + /$/.source)
-    let match: any = s.match(pollRegex)
+    const match = s.match(pollRegex)
     if (!match || !match.groups) throw new Error("Invalid poll format: " + s)
 
-    const m = {
-        judges: match.groups.judges,
-        deadline: match.groups.deadline,
-        poll: match.groups.poll,
-        option1: match.groups.option1,
-        option2: match.groups.option2,
-        option3: match.groups.option3,
-        option4: match.groups.option4,
-        option5: match.groups.option5,
-        allowArbitraryVote: match.groups.allowArbitraryVote,
-        whoCanVote: match.groups.whoCanVote
-    }
+    const { judges, deadline, poll, option1, option2, option3, option4, option5,
+            allowArbitraryVote: allowArbitraryVoteStr, whoCanVote } = match.groups
+    
+    const m = { judges, deadline, poll, option1, option2, option3, option4, option5,
+                allowArbitraryVote: allowArbitraryVoteStr, whoCanVote }
     const whoCanVoteParsed: Partial<Poll> & { domainScopeStr?: string } = {}
     if (m.whoCanVote) {
         const whoCanVoteRegex = new RegExp(''
@@ -234,21 +224,25 @@ export const parsePoll = (s: string, version?: string): Poll => {
             + /(?:        As observed by: (?<propertyScopeObserver>[^\n]+?)\n)?/.source
             + /(?:        Link to query defining who can vote: (?<scopeQueryLink>[^\n]+?)\n)?/.source
             + /$/.source)
-        let m2: any = m.whoCanVote.match(whoCanVoteRegex)
+        const m2 = m.whoCanVote.match(whoCanVoteRegex)
         if (!m2 || !m2.groups) throw new Error("Invalid who can vote section: " + m.whoCanVote)
-        whoCanVoteParsed['scopeDescription'] = m2.groups.scopeDescription
-        whoCanVoteParsed['country'] = m2.groups.countryScope
-        whoCanVoteParsed['city'] = m2.groups.cityScope
-        whoCanVoteParsed['legalEntity'] = m2.groups.legalEntity
-        whoCanVoteParsed['domainScopeStr'] = m2.groups.domainScope
-        whoCanVoteParsed['requiredProperty'] = m2.groups.propertyScope
-        whoCanVoteParsed['requiredPropertyObserver'] = m2.groups.propertyScopeObserver
-        whoCanVoteParsed['scopeQueryLink'] = m2.groups.scopeQueryLink
+        
+        const { scopeDescription, countryScope, cityScope, legalEntity, domainScope,
+                propertyScope, propertyScopeObserver, scopeQueryLink } = m2.groups
+        
+        whoCanVoteParsed['scopeDescription'] = scopeDescription
+        whoCanVoteParsed['country'] = countryScope
+        whoCanVoteParsed['city'] = cityScope
+        whoCanVoteParsed['legalEntity'] = legalEntity
+        whoCanVoteParsed['domainScopeStr'] = domainScope
+        whoCanVoteParsed['requiredProperty'] = propertyScope
+        whoCanVoteParsed['requiredPropertyObserver'] = propertyScopeObserver
+        whoCanVoteParsed['scopeQueryLink'] = scopeQueryLink
     }
     const options = [m.option1, m.option2, m.option3, m.option4, m.option5].filter(o => o)
     const domainScope = (whoCanVoteParsed.domainScopeStr as string | undefined)?.split(', ')
-    const allowArbitraryVote = (m['allowArbitraryVote'] === 'Yes' ? true :
-        (m['allowArbitraryVote'] === 'No' ? false : undefined))
+    const allowArbitraryVote = (m.allowArbitraryVote === 'Yes' ? true :
+        (m.allowArbitraryVote === 'No' ? false : undefined))
     const deadlineStr = m.deadline
     if (deadlineStr && !deadlineStr.match(UTCFormat)) throw new Error("Invalid poll, deadline must be in UTC: " + deadlineStr)
     return {
@@ -324,24 +318,18 @@ export const parseOrganisationVerification = (s: string): OrganisationVerificati
     );
     const m = s.match(organisationVerificationRegex)
     if (!m || !m.groups) throw new Error("Invalid organisation verification format: " + s)
+    
+    const { name, englishName, country, legalForm, domain, foreignDomain, department, province,
+            serialNumber, city, latitude, longitude, population, pictureHash, employeeCount,
+            reliabilityPolicy, confidence } = m.groups
+    
     return {
-        name: m.groups.name,
-        englishName: m.groups.englishName,
-        country: m.groups.country,
-        legalForm: m.groups.legalForm,
-        domain: m.groups.domain,
-        foreignDomain: m.groups.foreignDomain,
-        department: m.groups.department,
-        province: m.groups.province,
-        serialNumber: m.groups.serialNumber,
-        city: m.groups.city,
-        latitude: m.groups.latitude ? parseFloat(m.groups.latitude) : undefined,
-        longitude: m.groups.longitude ? parseFloat(m.groups.longitude) : undefined,
-        population: m.groups.population,
-        pictureHash: m.groups.pictureHash,
-        employeeCount: m.groups.employeeCount,
-        reliabilityPolicy: m.groups.reliabilityPolicy,
-        confidence: m.groups.confidence ? parseFloat(m.groups.confidence) : undefined,
+        name, englishName, country, legalForm, domain, foreignDomain, department, province,
+        serialNumber, city,
+        latitude: latitude ? parseFloat(latitude) : undefined,
+        longitude: longitude ? parseFloat(longitude) : undefined,
+        population, pictureHash, employeeCount, reliabilityPolicy,
+        confidence: confidence ? parseFloat(confidence) : undefined,
     }
 }
 
@@ -392,22 +380,22 @@ export const parsePersonVerification = (s: string): PersonVerification => {
     );
     const m = s.match(domainVerificationRegex)
     if (!m || !m.groups) throw new Error("Invalid person verification format: " + s)
-    if (m.groups.dateOfBirth && !m.groups.dateOfBirth.match(birthDateFormat)) throw new Error("Invalid birth date format: " + m.groups.dateOfBirth)
-    let { d, month, y } = m.groups.dateOfBirth.match(birthDateFormat)?.groups || {}
-    if (!d || !month || !y) throw new Error("Invalid birth date format: " + m.groups.dateOfBirth)
+    
+    const { name, dateOfBirth: dateOfBirthStr, cityOfBirth, countryOfBirth, jobTitle, employer,
+            domain, foreignDomain, picture, verificationMethod, confidence, reliabilityPolicy } = m.groups
+    
+    if (dateOfBirthStr && !dateOfBirthStr.match(birthDateFormat)) throw new Error("Invalid birth date format: " + dateOfBirthStr)
+    let { d, month, y } = dateOfBirthStr.match(birthDateFormat)?.groups || {}
+    if (!d || !month || !y) throw new Error("Invalid birth date format: " + dateOfBirthStr)
+    
     return {
-        name: m.groups.name,
+        name,
         dateOfBirth: new Date(Date.UTC(parseInt(y), monthIndex(month), parseInt(d))),
-        cityOfBirth: m.groups.cityOfBirth,
-        countryOfBirth: m.groups.countryOfBirth,
-        jobTitle: m.groups.jobTitle,
-        employer: m.groups.employer,
-        ownDomain: m.groups.domain,
-        foreignDomain: m.groups.foreignDomain,
-        picture: m.groups.picture,
-        verificationMethod: m.groups.verificationMethod,
-        confidence: m.groups.confidence ? parseFloat(m.groups.confidence) : undefined,
-        reliabilityPolicy: m.groups.reliabilityPolicy
+        cityOfBirth, countryOfBirth, jobTitle, employer,
+        ownDomain: domain,
+        foreignDomain, picture, verificationMethod,
+        confidence: confidence ? parseFloat(confidence) : undefined,
+        reliabilityPolicy
     }
 }
 
@@ -430,11 +418,9 @@ export const parseVote = (s: string): Vote => {
     );
     const m = s.match(voteRegex)
     if (!m || !m.groups) throw new Error("Invalid vote format: " + s)
-    return {
-        pollHash: m.groups.pollHash,
-        poll: m.groups.poll,
-        vote: m.groups.vote
-    }
+    
+    const { pollHash, poll, vote } = m.groups
+    return { pollHash, poll, vote }
 }
 
 export const buildDisputeAuthenticityContent = ({ hash, confidence, reliabilityPolicy }: DisputeAuthenticity) => {
@@ -458,10 +444,12 @@ export const parseDisputeAuthenticity = (s: string): DisputeAuthenticity => {
     );
     const m = s.match(disputeRegex)
     if (!m || !m.groups) throw new Error("Invalid dispute authenticity format: " + s)
+    
+    const { hash, confidence, reliabilityPolicy } = m.groups
     return {
-        hash: m.groups.hash,
-        confidence: m.groups.confidence ? parseFloat(m.groups.confidence) : undefined,
-        reliabilityPolicy: m.groups.reliabilityPolicy
+        hash,
+        confidence: confidence ? parseFloat(confidence) : undefined,
+        reliabilityPolicy
     }
 }
 
@@ -486,10 +474,12 @@ export const parseDisputeContent = (s: string): DisputeContent => {
     );
     const m = s.match(disputeRegex)
     if (!m || !m.groups) throw new Error("Invalid dispute content format: " + s)
+    
+    const { hash, confidence, reliabilityPolicy } = m.groups
     return {
-        hash: m.groups.hash,
-        confidence: m.groups.confidence ? parseFloat(m.groups.confidence) : undefined,
-        reliabilityPolicy: m.groups.reliabilityPolicy
+        hash,
+        confidence: confidence ? parseFloat(confidence) : undefined,
+        reliabilityPolicy
     }
 }
 
@@ -510,10 +500,9 @@ export const parseResponseContent = (s: string): ResponseContent => {
     );
     const m = s.match(disputeRegex)
     if (!m || !m.groups) throw new Error("Invalid response content format: " + s)
-    return {
-        hash: m.groups.hash,
-        response: m.groups.response
-    }
+    
+    const { hash, response } = m.groups
+    return { hash, response }
 }
 
 export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
@@ -534,9 +523,9 @@ export const parsePDFSigning = (s: string): PDFSigning => {
     );
     const m = s.match(signingRegex)
     if (!m || !m.groups) throw new Error("Invalid PDF signing format: " + s)
-    return {
-        hash: m.groups.hash
-    }
+    
+    const { hash } = m.groups
+    return { hash }
 }
 
 export const buildRating = ({ subjectName, subjectType, subjectReference, documentFileHash, rating, quality, comment }: Rating) => {
@@ -567,18 +556,23 @@ export const parseRating = (s: string): Rating => {
     );
     const m = s.match(ratingRegex)
     if (!m || !m.groups) throw new Error("Invalid rating format: " + s)
-    const rating = parseInt(m.groups.rating)
-    if (![1, 2, 3, 4, 5].includes(rating)) throw new Error("Invalid rating: " + m.groups.rating)
-    if (m.groups.subjectType && !['Organisation', 'Policy proposal', 'Regulation',
-        'Treaty draft', 'Product', 'Research publication'].includes(m.groups.subjectType)) throw new Error("Invalid subject type: " + m.groups.subjectType)
-    if (!m.groups.subjectName) throw new Error("Missing subject name")
+    
+    const { subjectType, subjectName, subjectReference, documentFileHash, quality,
+            rating: ratingStr, comment } = m.groups
+    
+    const rating = parseInt(ratingStr)
+    if (![1, 2, 3, 4, 5].includes(rating)) throw new Error("Invalid rating: " + ratingStr)
+    if (subjectType && !['Organisation', 'Policy proposal', 'Regulation',
+        'Treaty draft', 'Product', 'Research publication'].includes(subjectType)) throw new Error("Invalid subject type: " + subjectType)
+    if (!subjectName) throw new Error("Missing subject name")
+    
     return {
-        subjectType: m.groups.subjectType as RatingSubjectTypeValue,
-        subjectName: m.groups.subjectName,
-        subjectReference: m.groups.subjectReference,
-        documentFileHash: m.groups.documentFileHash,
-        quality: m.groups.quality,
+        subjectType: subjectType as RatingSubjectTypeValue,
+        subjectName,
+        subjectReference,
+        documentFileHash,
+        quality,
         rating,
-        comment: m.groups.comment
+        comment
     }
 }
