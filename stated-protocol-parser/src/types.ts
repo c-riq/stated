@@ -33,21 +33,11 @@ export type CryptographicallySignedStatement = {
 }
 
 export type Poll = {
-    country: string | undefined
-    city: string | undefined
-    legalEntity: string | undefined
-    domainScope: string[] | undefined
-    judges?: string
     deadline: Date | undefined
     poll: string
     scopeDescription?: string
-    scopeQueryLink?: string
     options: string[]
     allowArbitraryVote?: boolean
-    requiredProperty?: string
-    requiredPropertyValue?: string
-    requiredPropertyObserver?: string
-    requiredMinConfidence?: number
 }
 
 export type OrganisationVerification = {
