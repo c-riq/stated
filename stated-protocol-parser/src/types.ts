@@ -1,3 +1,5 @@
+import type { SupportedLanguage } from './constants'
+
 export type StatementTypeValue =
     | 'statement'
     | 'quotation'
@@ -23,6 +25,7 @@ export type Statement = {
     representative?: string
     supersededStatement?: string
     formatVersion?: string
+    translations?: Partial<Record<SupportedLanguage, string>>
 }
 
 export type CryptographicallySignedStatement = {

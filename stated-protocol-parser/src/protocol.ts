@@ -29,11 +29,26 @@ export * from './constants'
 export * from './utils'
 export * from './v3'
 
-export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement }: Statement) => {
+export const buildStatement = ({ domain, author, time, tags, content, representative, supersededStatement, translations }: Statement) => {
     if (content.match(/\nPublishing domain: /)) throw (new Error("Statement must not contain 'Publishing domain: ', as this marks the beginning of a new statement."))
-    if (content.match(/\n\n/)) throw (new Error("Statement must not contain two line breaks in a row, as this is used for separating statements."))
+    if (content.match(/\n\n/)) throw (new Error("Statement content must not contain two line breaks in a row, as this is used for separating statements."))
     if (typeof time !== 'object' || !time.toUTCString) throw (new Error("Time must be a Date object."))
     if (!domain) throw (new Error("Publishing domain missing."))
+    
+    // Validate translations if provided
+    if (translations) {
+        for (const [lang, translation] of Object.entries(translations)) {
+            if (translation.match(/\nPublishing domain: /)) throw (new Error(`Translation for ${lang} must not contain 'Publishing domain: '.`))
+            if (translation.match(/Translation [a-z]{2,3}: /)) throw (new Error(`Translation for ${lang} must not contain 'Translation XX: ' pattern.`))
+        }
+    }
+    
+    const translationLines = translations
+        ? Object.entries(translations)
+            .map(([lang, translation]) => `\nTranslation ${lang}: ${translation}${translation.match(/\n$/) ? '' : "\n"}`)
+            .join('')
+        : '';
+    
     const statement = "Publishing domain: " + domain + "\n" +
         "Author: " + (author || "") + "\n" +
         (representative && representative?.length > 0 ? "Authorized signing representative: " + (representative || "") + "\n" : '') +
@@ -41,7 +56,8 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
         "Format version: " + version + "\n" +
-        "Statement content: " + content + (content.match(/\n$/) ? '' : "\n");
+        "Statement content: " + content + (content.match(/\n$/) ? '' : "\n") +
+        translationLines;
     if (statement.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
     return statement
 }
@@ -49,7 +65,9 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
 export const parseStatement = ({ statement: s, allowNoVersion = false }: { statement: string, allowNoVersion?: boolean })
     : Statement & { type?: string, formatVersion: string } => {
     if (s.length > 3000) throw (new Error("Statement must not be longer than 3,000 characters."))
-    if (s.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row, as this is used for separating statements.")
+    // Check for double line breaks before translations section
+    const beforeTranslations = s.split(/\nTranslation [a-z]{2,3}: /)[0]
+    if (beforeTranslations.match(/\n\n/)) throw new Error("Statements cannot contain two line breaks in a row before translations, as this is used for separating statements.")
     
     // Check if statement has signature fields
     const signatureRegex = /^([\s\S]+?)---\nStatement hash: ([A-Za-z0-9_-]+)\nPublic key: ([A-Za-z0-9_-]+)\nSignature: ([A-Za-z0-9_-]+)\nAlgorithm: ([^\n]+)\n$/
@@ -93,15 +111,18 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
         + /(?:Format version: (?<formatVersion>[^\n]*?)\n)?/.source
-        + /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?\n$)|(?<content>[\s\S]+?\n$))/.source
+        + /Statement content: (?:(?<typedContent>\n\tType: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n?|$)|(?<content>[\s\S]+?))(?=\nTranslation [a-z]{2,3}:\n?|$)/.source
+        + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n?[\s\S]+?)*)/.source
+        + /$/.source
     );
     const match = statementToVerify.match(statementRegex)
     if (!match) throw new Error("Invalid statement format:" + s)
     
-    const m: Partial<Statement> & { type?: string, formatVersion: string, timeStr: string, tagsStr: string } = {
+    const m: Partial<Statement> & { type?: string, formatVersion: string, timeStr: string, tagsStr: string, translationsStr?: string } = {
         domain: match[1], author: match[2], representative: match[3], timeStr: match[4], tagsStr: match[5],
         supersededStatement: match[6], formatVersion: match[7], content: match[8] || match[10],
-        type: match[9] ? match[9].toLowerCase().replace(' ', '_') : undefined
+        type: match[9] ? match[9].toLowerCase().replace(' ', '_') : undefined,
+        translationsStr: match[11]
     }
     if (!(m['timeStr'].match(UTCFormat))) throw new Error("Invalid statement format: time must be in UTC")
     if (!m['domain']) throw new Error("Invalid statement format: domain is required")
@@ -111,6 +132,25 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
 
     const tags = m['tagsStr']?.split(', ')
     const time = new Date(m['timeStr'])
+    
+    // Parse translations
+    let translations: Record<string, string> | undefined = undefined
+    if (m['translationsStr'] && m['translationsStr'].length > 0) {
+        translations = {}
+        // First, split by translation markers to get individual translations
+        // Support both old format (Translation lang: content) and new format (Translation lang:\ncontent)
+        const translationParts = m['translationsStr'].split(/\nTranslation ([a-z]{2,3}):\n?/).filter(part => part.length > 0)
+        // Process pairs: [lang1, content1, lang2, content2, ...]
+        for (let i = 0; i < translationParts.length; i += 2) {
+            if (i + 1 < translationParts.length) {
+                const lang = translationParts[i]
+                // Trim leading space (from old format) and trailing newlines
+                const translation = translationParts[i + 1].replace(/^\s/, '').replace(/\n+$/, '')
+                translations[lang] = translation
+            }
+        }
+    }
+    
     return {
         domain: m['domain'],
         author: m['author'],
@@ -121,6 +161,7 @@ export const parseStatement = ({ statement: s, allowNoVersion = false }: { state
         formatVersion: m['formatVersion'] || ('' + fallBackVersion),
         content: m['content'],
         type: m['type']?.toLowerCase().replace(' ', '_'),
+        translations: translations && Object.keys(translations).length > 0 ? translations : undefined,
     }
 }
 
@@ -329,8 +370,8 @@ export const parseOrganisationVerification = (s: string): OrganisationVerificati
         + /(?:\tLogo: (?<pictureHash>[^\n]+?)\n)?/.source
         + /(?:\tEmployee count: (?<employeeCount>[01,+-]+?)\n)?/.source
         + /(?:\tReliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source
-        + /(?:\tConfidence: (?<confidence>[0-9.]+?)\n)?/.source
-        + /$/.source
+        + /(?:\tConfidence: (?<confidence>[0-9.]+?))?/.source
+        + /\n?$/.source
     );
     const m = s.match(organisationVerificationRegex)
     if (!m) throw new Error("Invalid organisation verification format: " + s)

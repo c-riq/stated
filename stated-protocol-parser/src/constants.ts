@@ -34,6 +34,16 @@ export const peopleCountBuckets = {
     "10000000": "10,000,000+",
 }
 
+export const supportedLanguages = {
+    en: 'en',
+    es: 'es',
+    ar: 'ar',
+    zh: 'zh',
+    fr: 'fr',
+} as const
+
+export type SupportedLanguage = typeof supportedLanguages[keyof typeof supportedLanguages]
+
 export const UTCFormat: RegExp = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/
 
 export const pollKeys = /(Type: |The poll outcome is finalized when the following nodes agree: |Voting deadline: |Poll: |Option 1: |Option 2: |Option 3: |Option 4: |Option 5: |Allow free text votes: |Who can vote: |Description: |Country scope: |City scope: |Legal form scope: |Domain scope: |All entities with the following property: |As observed by: |Link to query defining who can vote: )/g

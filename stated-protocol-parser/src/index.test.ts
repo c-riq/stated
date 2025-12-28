@@ -75,6 +75,249 @@ test('statement build & parse function compatibility: input=parse(build(input))'
     expect(parsedStatement.tags?.sort()).toStrictEqual(tags.sort())
 })
 
+test('statement with translations build & parse', () => {
+    const domain = 'example.com'
+    const author = 'Example Organization'
+    const content = 'This is our official statement.'
+    const time = new Date('Thu, 15 Jun 2023 20:01:26 GMT')
+    const translations = {
+        es: 'Esta es nuestra declaración oficial.',
+        ar: 'هذا بياننا الرسمي',
+        zh: '这是我们的官方声明',
+        fr: 'Ceci est notre déclaration officielle.'
+    }
+    
+    const statementContent = buildStatement({
+        domain,
+        author,
+        time,
+        content,
+        translations,
+    })
+    
+    const parsedStatement = parseStatement({ statement: statementContent })
+    expect(parsedStatement.domain).toBe(domain)
+    expect(parsedStatement.author).toBe(author)
+    expect(parsedStatement.content).toBe(content + '\n')
+    expect(parsedStatement.translations).toEqual(translations)
+})
+
+test('statement without translations still works', () => {
+    const domain = 'example.com'
+    const author = 'Example Organization'
+    const content = 'This is our official statement.'
+    const time = new Date('Thu, 15 Jun 2023 20:01:26 GMT')
+    
+    const statementContent = buildStatement({
+        domain,
+        author,
+        time,
+        content,
+    })
+    
+    const parsedStatement = parseStatement({ statement: statementContent })
+    expect(parsedStatement.domain).toBe(domain)
+    expect(parsedStatement.author).toBe(author)
+    expect(parsedStatement.content).toBe(content + '\n')
+    expect(parsedStatement.translations).toBeUndefined()
+})
+
+test('parse statement with translations', () => {
+    const statement = `Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Format version: 5
+Statement content: This is our official statement.
+Translation es: Esta es nuestra declaración oficial.
+Translation ar: هذا بياننا الرسمي
+Translation zh: 这是我们的官方声明
+Translation fr: Ceci est notre déclaration officielle.
+`
+    const parsedStatement = parseStatement({ statement })
+    expect(parsedStatement.content).toBe('This is our official statement.')
+    expect(parsedStatement.translations).toEqual({
+        es: 'Esta es nuestra declaración oficial.',
+        ar: 'هذا بياننا الرسمي',
+        zh: '这是我们的官方声明',
+        fr: 'Ceci est notre déclaration officielle.'
+    })
+})
+
+test('organisation verification with arabic and chinese translations', () => {
+    const orgVerificationContent = buildOrganisationVerificationContent({
+        name: 'Example Corporation',
+        englishName: 'Example Corp',
+        country: 'United States',
+        city: 'New York',
+        province: 'New York',
+        legalForm: 'corporation',
+        domain: 'example.com',
+        foreignDomain: '',
+        serialNumber: '12345',
+        confidence: 0.95,
+        reliabilityPolicy: 'Standard verification',
+        employeeCount: '100-1000',
+        pictureHash: undefined,
+        latitude: 40.7128,
+        longitude: -74.0060,
+        population: undefined
+    })
+    
+    const statement = buildStatement({
+        domain: 'verifier.com',
+        author: 'Verification Authority',
+        time: new Date('Thu, 15 Jun 2023 20:01:26 GMT'),
+        content: orgVerificationContent,
+        translations: {
+            ar: `
+	النوع: التحقق من المنظمة
+	الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
+	الاسم: Example Corporation
+	الاسم الإنجليزي: Example Corp
+	البلد: United States
+	الشكل القانوني: corporation
+	مالك النطاق: example.com
+	المقاطعة أو الولاية: New York
+	رقم السجل التجاري: 12345
+	المدينة: New York
+	خط العرض: 40.7128
+	خط الطول: -74.006
+	عدد الموظفين: 100-1000
+	سياسة الموثوقية: Standard verification
+	الثقة: 0.95
+`,
+            zh: `
+	类型：组织验证
+	描述：我们验证了有关组织的以下信息。
+	名称：Example Corporation
+	英文名称：Example Corp
+	国家：United States
+	法律形式：corporation
+	域名所有者：example.com
+	省或州：New York
+	商业登记号：12345
+	城市：New York
+	纬度：40.7128
+	经度：-74.006
+	员工人数：100-1000
+	可靠性政策：Standard verification
+	置信度：0.95
+`
+        }
+    })
+    
+    const parsed = parseStatement({ statement })
+    expect(parsed.type).toBe('organisation_verification')
+    expect(parsed.translations?.ar).toContain('النوع: التحقق من المنظمة')
+    expect(parsed.translations?.ar).toContain('	الاسم: Example Corporation')
+    expect(parsed.translations?.ar).toContain('	البلد: United States')
+    expect(parsed.translations?.zh).toContain('类型：组织验证')
+    expect(parsed.translations?.zh).toContain('	名称：Example Corporation')
+    expect(parsed.translations?.zh).toContain('	国家：United States')
+    
+    // Verify the organisation verification content is still parseable in English
+    const parsedOrg = parseOrganisationVerification(parsed.content)
+    expect(parsedOrg.name).toBe('Example Corporation')
+    expect(parsedOrg.englishName).toBe('Example Corp')
+    expect(parsedOrg.country).toBe('United States')
+    expect(parsedOrg.city).toBe('New York')
+    expect(parsedOrg.legalForm).toBe('corporation')
+    expect(parsedOrg.domain).toBe('example.com')
+    expect(parsedOrg.confidence).toBe(0.95)
+})
+
+test('parse organisation verification with translations from formatted text', () => {
+    const statement = `Publishing domain: verifier.com
+Author: Verification Authority
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Format version: 5
+Statement content: 
+	Type: Organisation verification
+	Description: We verified the following information about an organisation.
+	Name: Example Corporation
+	English name: Example Corp
+	Country: United States
+	Legal form: corporation
+	Owner of the domain: example.com
+	Province or state: New York
+	Business register number: 12345
+	City: New York
+	Latitude: 40.7128
+	Longitude: -74.006
+	Employee count: 100-1000
+	Reliability policy: Standard verification
+	Confidence: 0.95
+Translation ar: 
+	النوع: التحقق من المنظمة
+	الوصف: لقد تحققنا من المعلومات التالية حول المنظمة.
+	الاسم: Example Corporation
+	الاسم الإنجليزي: Example Corp
+	البلد: United States
+	الشكل القانوني: corporation
+	مالك النطاق: example.com
+	المقاطعة أو الولاية: New York
+	رقم السجل التجاري: 12345
+	المدينة: New York
+	خط العرض: 40.7128	
+    خط الطول: -74.006
+	عدد الموظفين: 100-1000
+	سياسة الموثوقية: Standard verification
+	الثقة: 0.95
+Translation zh: 
+	类型：组织验证
+	描述：我们验证了有关组织的以下信息。
+	名称：Example Corporation
+	英文名称：Example Corp
+	国家：United States
+	法律形式：corporation
+	域名所有者：example.com
+	省或州：New York
+	商业登记号：12345
+	城市：New York
+	纬度：40.7128
+	经度：-74.006
+	员工人数：100-1000
+	可靠性政策：Standard verification
+	置信度：0.95
+`
+    
+    const parsed = parseStatement({ statement })
+    
+    // Verify basic statement metadata
+    expect(parsed.domain).toBe('verifier.com')
+    expect(parsed.author).toBe('Verification Authority')
+    expect(parsed.time?.toUTCString()).toBe('Thu, 15 Jun 2023 20:01:26 GMT')
+    expect(parsed.type).toBe('organisation_verification')
+    
+    // Verify translations are parsed
+    expect(parsed.translations).toBeDefined()
+    expect(parsed.translations?.ar).toContain('النوع: التحقق من المنظمة')
+    expect(parsed.translations?.ar).toContain('الاسم: Example Corporation')
+    expect(parsed.translations?.ar).toContain('البلد: United States')
+    expect(parsed.translations?.ar).toContain('الثقة: 0.95')
+    
+    expect(parsed.translations?.zh).toContain('类型：组织验证')
+    expect(parsed.translations?.zh).toContain('名称：Example Corporation')
+    expect(parsed.translations?.zh).toContain('国家：United States')
+    expect(parsed.translations?.zh).toContain('置信度：0.95')
+    
+    // Verify the organisation verification content is parseable
+    const parsedOrg = parseOrganisationVerification(parsed.content)
+    expect(parsedOrg.name).toBe('Example Corporation')
+    expect(parsedOrg.englishName).toBe('Example Corp')
+    expect(parsedOrg.country).toBe('United States')
+    expect(parsedOrg.city).toBe('New York')
+    expect(parsedOrg.province).toBe('New York')
+    expect(parsedOrg.legalForm).toBe('corporation')
+    expect(parsedOrg.domain).toBe('example.com')
+    expect(parsedOrg.serialNumber).toBe('12345')
+    expect(parsedOrg.latitude).toBe(40.7128)
+    expect(parsedOrg.longitude).toBe(-74.006)
+    expect(parsedOrg.employeeCount).toBe('100-1000')
+    expect(parsedOrg.reliabilityPolicy).toBe('Standard verification')
+    expect(parsedOrg.confidence).toBe(0.95)
+})
+
 test('parse quotation', () => {
     let quotation = `Publishing domain: rixdata.net
 Author: Example Inc.
