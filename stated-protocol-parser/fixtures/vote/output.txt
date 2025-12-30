@@ -1,0 +1,11 @@
+Stated protocol version: 5
+Publishing domain: amsterdam.nl
+Author: City of Amsterdam
+Time: Sun, 15 Apr 2035 14:30:00 GMT
+Statement content:
+    Type: Vote
+    Poll id: Fj9NdSAamveA2dV0DCTTIwRgbPAH42ddpyLl9_V-igY
+    Poll:
+Should local governments adopt standardized carbon reporting by 2036?
+    Option:
+Yes

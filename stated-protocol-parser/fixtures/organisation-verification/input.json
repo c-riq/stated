@@ -1,0 +1,17 @@
+{
+  "domain": "transparency-watch.org",
+  "author": "International Transparency Watch",
+  "time": "2035-03-10T11:00:00.000Z",
+  "content": {
+    "type": "organisation_verification",
+    "name": "Global Anti-Corruption Alliance",
+    "country": "Switzerland",
+    "city": "Geneva",
+    "legalForm": "corporation",
+    "domain": "anticorruption-global.org",
+    "serialNumber": "CH-550-1234567",
+    "employeeCount": "10-100",
+    "confidence": 0.95,
+    "reliabilityPolicy": "https://transparency-watch.org/verification-policy"
+  }
+}

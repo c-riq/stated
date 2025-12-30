@@ -1,0 +1,13 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    Type: Rating
+    Subject type: Product
+    Subject name: Example Product
+    URL that identifies the subject: https://example.com/product
+    Rated quality: high
+    Our rating: 4/5 Stars
+    Comment:
+Excellent quality and service.

@@ -46,13 +46,15 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
     
     const translationLines = translations
         ? Object.entries(translations)
-            .map(([lang, translation]) => `\nTranslation ${lang}:\n${translation}${translation.match(/\n$/) ? '' : "\n"}`)
+            .map(([lang, translation]) => `Translation ${lang}:\n${translation}${translation.match(/\n$/) ? '' : "\n"}`)
             .join('')
         : '';
     
     const attachmentLines = attachments && attachments.length > 0
         ? "Attachments: " + attachments.join(', ') + "\n"
         : '';
+    
+    const contentWithNewline = content + (content.match(/\n$/) ? '' : "\n")
     
     const statement = "Stated protocol version: " + version + "\n" +
         "Publishing domain: " + domain + "\n" +
@@ -61,7 +63,7 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         "Time: " + time.toUTCString() + "\n" +
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
-        "Statement content:\n" + content + (content.match(/\n$/) ? '' : "\n") +
+        "Statement content:\n" + contentWithNewline +
         translationLines +
         attachmentLines;
     if (statement.length > 3000) throw new Error("Statement must not be longer than 3,000 characters.")
@@ -467,7 +469,7 @@ export const parseDisputeContent = (content: string): DisputeContent => {
 }
 
 export const buildResponseContent = ({ hash, response }: ResponseContent) => {
-    const content = "\n    Type: Response\n" +
+    const content = "    Type: Response\n" +
         "    Hash of referenced statement: " + hash + "\n" +
         "    Response:\n" + response + "\n"
     return content
@@ -475,7 +477,7 @@ export const buildResponseContent = ({ hash, response }: ResponseContent) => {
 
 export const parseResponseContent = (content: string): ResponseContent => {
     const responseRegex = new RegExp(''
-        + /^\n    Type: Response\n/.source
+        + /^    Type: Response\n/.source
         + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
         + /    Response:\n(?<response>[^\n]*?)\n/.source
         + /$/.source
@@ -491,8 +493,7 @@ export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
     if (!hash.match(/^[A-Za-z0-9_-]+$/)) {
         throw new Error("PDF file hash must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)")
     }
-    const content = "\n" +
-        "    Type: Sign PDF\n" +
+    const content = "    Type: Sign PDF\n" +
         "    Description: We hereby digitally sign the referenced PDF file.\n" +
         "    PDF file hash: " + hash + "\n"
     return content
@@ -500,7 +501,7 @@ export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
 
 export const parsePDFSigning = (content: string): PDFSigning => {
     const signingRegex = new RegExp(''
-        + /^\n    Type: Sign PDF\n/.source
+        + /^    Type: Sign PDF\n/.source
         + /    Description: We hereby digitally sign the referenced PDF file.\n/.source
         + /    PDF file hash: (?<hash>[A-Za-z0-9_-]+)\n/.source
         + /$/.source

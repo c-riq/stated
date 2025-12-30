@@ -1,0 +1,9 @@
+Stated protocol version: 5
+Publishing domain: climate-action.org
+Author: Climate Action Network
+Time: Tue, 20 Mar 2035 16:45:00 GMT
+Statement content:
+    Type: Response
+    Hash of referenced statement: 0Hk466Ra0MzMdMpQ0saTOSRd1wbtyN2KiVBlHp2DaYQ
+    Response:
+We strongly support this initiative and offer our technical expertise for implementation.

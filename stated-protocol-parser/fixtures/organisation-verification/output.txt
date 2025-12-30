@@ -1,0 +1,16 @@
+Stated protocol version: 5
+Publishing domain: transparency-watch.org
+Author: International Transparency Watch
+Time: Sat, 10 Mar 2035 11:00:00 GMT
+Statement content:
+    Type: Organisation verification
+    Description: We verified the following information about an organisation.
+    Name: Global Anti-Corruption Alliance
+    Country: Switzerland
+    Legal form: corporation
+    Owner of the domain: anticorruption-global.org
+    Business register number: CH-550-1234567
+    City: Geneva
+    Employee count: 10-100
+    Reliability policy: https://transparency-watch.org/verification-policy
+    Confidence: 0.95

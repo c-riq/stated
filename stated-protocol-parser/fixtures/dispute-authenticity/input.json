@@ -1,0 +1,11 @@
+{
+  "domain": "example.com",
+  "author": "Example Organization",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": {
+    "type": "dispute_authenticity",
+    "hash": "abc123def456",
+    "confidence": 0.85,
+    "reliabilityPolicy": "https://example.com/policy"
+  }
+}

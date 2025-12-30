@@ -198,7 +198,7 @@ describe('Statement building', () => {
         const parsedStatement = parseStatement({ statement: statementContent })
         expect(parsedStatement.domain).toBe(domain)
         expect(parsedStatement.author).toBe(author)
-        expect(parsedStatement.content).toBe(content + '\n')
+        expect(parsedStatement.content).toBe(content)
         expect(parsedStatement.translations).toEqual(translations)
     })
 
