@@ -11,32 +11,6 @@ const randomUnicodeString = () =>
         .join('')
         .replace(/[\n;>=<"''\\]/g, '')
 
-describe('Rating parsing', () => {
-    test('parse basic rating', () => {
-        let rating = `Stated protocol version: 5
-Publishing domain: localhost
-Author: chris
-Time: Tue, 18 Apr 2023 18:20:26 GMT
-Statement content:
-    Type: Rating
-    Subject name: AMBOSS GmbH
-    URL that identifies the subject: amboss.com
-    Rated quality: AI safety
-    Our rating: 5/5 Stars
-`
-        const parsedStatement = parseStatement({ statement: rating })
-        const parsedRating = parseRating(parsedStatement.content)
-        const ratingNumber = parsedRating.rating
-        expect(ratingNumber).toBe(5)
-        const subjectName = parsedRating.subjectName
-        expect(subjectName).toBe('AMBOSS GmbH')
-        const subjectReference = parsedRating.subjectReference
-        expect(subjectReference).toBe('amboss.com')
-        const quality = parsedRating.quality
-        expect(quality).toBe('AI safety')
-    })
-})
-
 describe('Rating building', () => {
     test('build & parse function compatibility: input=parse(build(input))', () => {
         const [subjectName, subjectReference, comment, quality] = Array.from(

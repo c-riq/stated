@@ -1,0 +1,25 @@
+{
+  "domain": "verifier.com",
+  "author": "Verification Authority",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": {
+    "type": "organisation_verification",
+    "name": "Example Corporation",
+    "englishName": "Example Corp",
+    "country": "United States",
+    "city": "New York",
+    "province": "New York",
+    "legalForm": "corporation",
+    "domain": "example.com",
+    "serialNumber": "12345",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "employeeCount": "100-1000",
+    "reliabilityPolicy": "Standard verification",
+    "confidence": 0.95
+  },
+  "translations": {
+    "ar": "النوع: التحقق من المنظمة\nالوصف: لقد تحققنا من المعلومات التالية حول المنظمة.\nالاسم: Example Corporation\nالاسم الإنجليزي: Example Corp\nالبلد: United States\nالشكل القانوني: corporation\nمالك النطاق: example.com\nالمقاطعة أو الولاية: New York\nرقم السجل التجاري: 12345\nالمدينة: New York\nخط العرض: 40.7128\nخط الطول: -74.006\nعدد الموظفين: 100-1000\nسياسة الموثوقية: Standard verification\nالثقة: 0.95",
+    "zh": "类型：组织验证\n描述：我们验证了有关组织的以下信息。\n名称：Example Corporation\n英文名称：Example Corp\n国家：United States\n法律形式：corporation\n域名所有者：example.com\n省或州：New York\n商业登记号：12345\n城市：New York\n纬度：40.7128\n经度：-74.006\n员工人数：100-1000\n可靠性政策：Standard verification\n置信度：0.95"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "domain": "example.com",
+  "author": "Example Organization",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": "This statement has attached files.",
+  "attachments": ["abc123def456_-XYZ.pdf", "xyz789ABC-_def.jpg", "report2024_hash.docx"]
+}
