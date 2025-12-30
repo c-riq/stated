@@ -1,0 +1,10 @@
+{
+  "domain": "example.com",
+  "author": "Example Organization",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": "This statement has translations and attachments.",
+  "translations": {
+    "es": "Esta declaración tiene traducciones y archivos adjuntos."
+  },
+  "attachments": ["file1_hash.pdf", "file2_hash.jpg"]
+}

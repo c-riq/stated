@@ -46,7 +46,11 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
     
     const translationLines = translations
         ? Object.entries(translations)
-            .map(([lang, translation]) => `Translation ${lang}:\n${translation}${translation.match(/\n$/) ? '' : "\n"}`)
+            .map(([lang, translation]) => {
+                const translationWithNewline = translation + (translation.match(/\n$/) ? '' : "\n")
+                const indentedTranslation = translationWithNewline.split('\n').map(line => line ? '    ' + line : line).join('\n')
+                return `Translation ${lang}:\n${indentedTranslation}`
+            })
             .join('')
         : '';
     
@@ -55,6 +59,11 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         : '';
     
     const contentWithNewline = content + (content.match(/\n$/) ? '' : "\n")
+    // Only indent plain content (non-typed statements). Typed statements already have indentation from build functions.
+    const isTypedContent = contentWithNewline.trim().startsWith('Type:')
+    const finalContent = isTypedContent
+        ? contentWithNewline
+        : contentWithNewline.split('\n').map(line => line ? '    ' + line : line).join('\n')
     
     const statement = "Stated protocol version: " + version + "\n" +
         "Publishing domain: " + domain + "\n" +
@@ -63,7 +72,7 @@ export const buildStatement = ({ domain, author, time, tags, content, representa
         "Time: " + time.toUTCString() + "\n" +
         (tags && tags.length > 0 ? "Tags: " + tags.join(', ') + "\n" : '') +
         (supersededStatement && supersededStatement?.length > 0 ? "Superseded statement: " + (supersededStatement || "") + "\n" : '') +
-        "Statement content:\n" + contentWithNewline +
+        "Statement content:\n" + finalContent +
         translationLines +
         attachmentLines;
     if (statement.length > 3000) throw new Error("Statement must not be longer than 3,000 characters.")
@@ -122,7 +131,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
         + /(?:Tags: (?<tags>[^\n]*?)\n)?/.source
         + /(?:Superseded statement: (?<supersededStatement>[^\n]*?)\n)?/.source
         + /Statement content:\n/.source
-        + /(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|Attachments: |$)|(?<content>[\s\S]+?))/.source
+        + /(?:(?<typedContent>    Type: (?<type>[^\n]+?)\n[\s\S]+?)(?=\nTranslation [a-z]{2,3}:\n|Attachments: |$)|(?<content>(?:    [\s\S]+?)?))/.source
         + /(?=\nTranslation [a-z]{2,3}:\n|Attachments: |$)/.source
         + /(?<translations>(?:\nTranslation [a-z]{2,3}:\n[\s\S]+?)*)/.source
         + /(?:Attachments: (?<attachments>[^\n]+?)\n)?/.source
@@ -136,7 +145,7 @@ export const parseStatement = ({ statement: input }: { statement: string })
     
     const parsed = {
         domain, author, representative, timeStr, tagsStr, supersededStatement, formatVersion,
-        content: content || typedContent,
+        content: content ? content.split('\n').map(line => line.startsWith('    ') ? line.substring(4) : line).join('\n').replace(/\n$/, '') : typedContent,
         type: type ? type.toLowerCase().replace(' ', '_') : undefined,
         translationsStr
     }
@@ -165,7 +174,12 @@ export const parseStatement = ({ statement: input }: { statement: string })
         for (let i = 0; i < translationParts.length; i += 2) {
             if (i + 1 < translationParts.length) {
                 const lang = translationParts[i]
-                const translation = translationParts[i + 1].replace(/\n+$/, '')
+                const rawTranslation = translationParts[i + 1]
+                // Strip indentation from translation content
+                const translation = rawTranslation.split('\n')
+                    .map(line => line.startsWith('    ') ? line.substring(4) : line)
+                    .join('\n')
+                    .replace(/\n$/, '')
                 translations[lang] = translation
             }
         }
@@ -390,8 +404,8 @@ export const parsePersonVerification = (content: string): PersonVerification => 
 export const buildVoteContent = ({ pollHash, poll, vote }: Vote) => {
     const content = "    Type: Vote\n" +
         "    Poll id: " + pollHash + "\n" +
-        "    Poll:\n" + poll + "\n" +
-        "    Option:\n" + vote + "\n"
+        "    Poll:\n        " + poll + "\n" +
+        "    Option:\n        " + vote + "\n"
     return content
 }
 
@@ -399,8 +413,8 @@ export const parseVote = (content: string): Vote => {
     const voteRegex = new RegExp(''
         + /^    Type: Vote\n/.source
         + /    Poll id: (?<pollHash>[^\n]+?)\n/.source
-        + /    Poll:\n(?<poll>[^\n]+?)\n/.source
-        + /    Option:\n(?<vote>[^\n]+?)\n/.source
+        + /    Poll:\n        (?<poll>[^\n]+?)\n/.source
+        + /    Option:\n        (?<vote>[^\n]+?)\n/.source
         + /$/.source
     );
     const match = content.match(voteRegex)
@@ -471,7 +485,7 @@ export const parseDisputeContent = (content: string): DisputeContent => {
 export const buildResponseContent = ({ hash, response }: ResponseContent) => {
     const content = "    Type: Response\n" +
         "    Hash of referenced statement: " + hash + "\n" +
-        "    Response:\n" + response + "\n"
+        "    Response:\n        " + response + "\n"
     return content
 }
 
@@ -479,7 +493,7 @@ export const parseResponseContent = (content: string): ResponseContent => {
     const responseRegex = new RegExp(''
         + /^    Type: Response\n/.source
         + /    Hash of referenced statement: (?<hash>[^\n]+?)\n/.source
-        + /    Response:\n(?<response>[^\n]*?)\n/.source
+        + /    Response:\n        (?<response>[^\n]*?)\n/.source
         + /$/.source
     );
     const match = content.match(responseRegex)
@@ -522,7 +536,7 @@ export const buildRating = ({ subjectName, subjectType, subjectReference, docume
         (documentFileHash ? "    Document file hash: " + documentFileHash + "\n" : "") +
         (quality ? "    Rated quality: " + quality + "\n" : "") +
         "    Our rating: " + rating + "/5 Stars\n" +
-        (comment ? "    Comment:\n" + comment + "\n" : "")
+        (comment ? "    Comment:\n        " + comment + "\n" : "")
     return content
 }
 
@@ -535,7 +549,7 @@ export const parseRating = (content: string): Rating => {
         + /(?:    Document file hash: (?<documentFileHash>[^\n]*?)\n)?/.source
         + /(?:    Rated quality: (?<quality>[^\n]*?)\n)?/.source
         + /    Our rating: (?<rating>[1-5])\/5 Stars\n/.source
-        + /(?:    Comment:\n(?<comment>[\s\S]+?)\n)?/.source
+        + /(?:    Comment:\n        (?<comment>[\s\S]+?)\n)?/.source
         + /$/.source
     );
     const match = content.match(ratingRegex)

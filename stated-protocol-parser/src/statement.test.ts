@@ -18,11 +18,10 @@ Author: chris
 Time: Tue, 18 Apr 2023 18:20:26 GMT
 Tags: hashtag1, hashtag2
 Statement content:
-hi
+    hi
 `
         const parsedStatement = parseStatement({ statement })
-        expect(parsedStatement.content).toBe(`hi
-`)
+        expect(parsedStatement.content).toBe(`hi`)
     })
 
     test('parse statement with translations', () => {
@@ -31,15 +30,15 @@ Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Statement content:
-This is our official statement.
+    This is our official statement.
 Translation es:
-Esta es nuestra declaración oficial.
+    Esta es nuestra declaración oficial.
 Translation ar:
-هذا بياننا الرسمي
+    هذا بياننا الرسمي
 Translation zh:
-这是我们的官方声明
+    这是我们的官方声明
 Translation fr:
-Ceci est notre déclaration officielle.
+    Ceci est notre déclaration officielle.
 `
         const parsedStatement = parseStatement({ statement })
         expect(parsedStatement.content).toBe('This is our official statement.')
@@ -57,11 +56,11 @@ Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Statement content:
-This statement has attached files.
+    This statement has attached files.
 Attachments: abc123def456_-XYZ.pdf, xyz789ABC-_def.jpg, report2024_hash.docx
 `
         const parsedStatement = parseStatement({ statement })
-        expect(parsedStatement.content).toBe('This statement has attached files.\n')
+        expect(parsedStatement.content).toBe('This statement has attached files.')
         expect(parsedStatement.attachments).toEqual([
             'abc123def456_-XYZ.pdf',
             'xyz789ABC-_def.jpg',
@@ -75,9 +74,9 @@ Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Statement content:
-This statement has translations and attachments.
+    This statement has translations and attachments.
 Translation es:
-Esta declaración tiene traducciones y archivos adjuntos.
+    Esta declaración tiene traducciones y archivos adjuntos.
 Attachments: file1.pdf, file2.jpg
 `
         const parsedStatement = parseStatement({ statement })
@@ -111,7 +110,7 @@ describe('Statement building', () => {
         expect(parsedStatement.domain).toBe(domain)
         expect(parsedStatement.author).toBe(author)
         expect(parsedStatement.time?.toUTCString()).toBe(time.toUTCString())
-        expect(parsedStatement.content).toBe(contentWithTrailingNewline)
+        expect(parsedStatement.content).toBe(content)
         expect(parsedStatement.representative).toBe(representative)
         expect(parsedStatement.supersededStatement).toBe(supersededStatement)
         expect(parsedStatement.tags?.sort()).toStrictEqual(tags.sort())
@@ -120,7 +119,7 @@ describe('Statement building', () => {
         const domain = 'example.com'
         const author = 'Test Author'
         const time = new Date('Thu, 15 Jun 2023 20:01:26 GMT')
-        const content = 'Statement with attachments\n'
+        const content = 'Statement with attachments'
         const attachments = ['abc123_-XYZ.pdf', 'def456-_ABC.jpg', 'xyz789_hash.docx']
         
         const statementContent = buildStatement({
@@ -218,7 +217,7 @@ describe('Statement building', () => {
         const parsedStatement = parseStatement({ statement: statementContent })
         expect(parsedStatement.domain).toBe(domain)
         expect(parsedStatement.author).toBe(author)
-        expect(parsedStatement.content).toBe(content + '\n')
+        expect(parsedStatement.content).toBe(content)
         expect(parsedStatement.translations).toBeUndefined()
     })
 })

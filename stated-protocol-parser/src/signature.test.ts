@@ -156,7 +156,7 @@ This is a test statement
             const parsed = parseStatement({ statement: signedStatement })
             expect(parsed.domain).toBe('example.com')
             expect(parsed.author).toBe('Test Author')
-            expect(parsed.content).toBe('This is a test statement\n')
+            expect(parsed.content).toBe('This is a test statement')
         })
 
         it('should reject tampered signed statement in parseStatement', () => {
@@ -188,7 +188,7 @@ This is a test statement
             const parsed = parseStatement({ statement })
             expect(parsed.domain).toBe('example.com')
             expect(parsed.author).toBe('Test Author')
-            expect(parsed.content).toBe('This is a test statement\n')
+            expect(parsed.content).toBe('This is a test statement')
         })
     })
 })

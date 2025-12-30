@@ -6,6 +6,6 @@ Statement content:
     Type: Vote
     Poll id: Fj9NdSAamveA2dV0DCTTIwRgbPAH42ddpyLl9_V-igY
     Poll:
-Should local governments adopt standardized carbon reporting by 2036?
+        Should local governments adopt standardized carbon reporting by 2036?
     Option:
-Yes
+        Yes
