@@ -3,4 +3,4 @@
 export * from './protocol'
 export * from './hash.node'
 export * from './signature.node'
-export * from './statement-utils.node'
+export * from './utils.node'
