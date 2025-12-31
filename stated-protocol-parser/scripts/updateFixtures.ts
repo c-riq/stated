@@ -164,7 +164,7 @@ async function updateFixtures() {
 
 async function handleSignatureFixture(input: unknown, outputPath: string) {
   const keys = await generateKeyPair();
-  
+
   const inputObj = input as Record<string, unknown>;
   const statement = buildStatement({
     domain: inputObj.domain as string,
