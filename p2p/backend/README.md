@@ -1,4 +1,8 @@
 
+# P2P Implementation
+
+> **⚠️ IMPORTANT NOTICE**: This P2P implementation is currently **incompatible** with the v5 protocol format. It will be rewritten to match the v5 protocol specification. The rewrite will also migrate from PostgreSQL to a simpler database such as SQLite.
+
 ## Local development
 
 ```sh
