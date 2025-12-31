@@ -1,0 +1,11 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Test fixtures
+fixtures
+
+# Package files
+package-lock.json

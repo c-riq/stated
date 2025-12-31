@@ -18,6 +18,11 @@
     "build:cjs": "tsc",
     "build:esm": "tsc -p tsconfig.esm.json",
     "test": "tsx --test 'src/**/*.test.ts'",
+    "lint": "eslint 'src/**/*.ts' 'scripts/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' 'scripts/**/*.ts' --fix",
+    "format": "prettier --write 'src/**/*.ts' 'scripts/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'scripts/**/*.ts'",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "update-fixtures": "tsx scripts/updateFixtures.ts"
   },
@@ -34,6 +39,10 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.27",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
     "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },

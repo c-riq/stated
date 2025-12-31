@@ -14,6 +14,12 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: ./stated-protocol-parser
+      - name: Run linter
+        run: npm run lint
+        working-directory: ./stated-protocol-parser
+      - name: Check formatting
+        run: npm run format:check
+        working-directory: ./stated-protocol-parser
       - name: Run tests
         run: npm test
         working-directory: ./stated-protocol-parser
