@@ -22,6 +22,7 @@
     "lint:fix": "eslint 'src/**/*.ts' 'scripts/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts' 'scripts/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts' 'scripts/**/*.ts'",
+    "fix": "npm run format && npm run lint:fix",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "update-fixtures": "tsx scripts/updateFixtures.ts"
