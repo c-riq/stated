@@ -314,18 +314,44 @@ input[type="text"]:focus {
 
 /* Signature */
 .statement-signature {
-    background: #f0f9f4;
-    border: 2px solid #4caf50;
     border-radius: 6px;
     padding: 15px;
     margin-top: 15px;
 }
 
-.statement-signature h4 {
+.signature-valid {
+    background: #f0f9f4;
+    border: 2px solid #4caf50;
+}
+
+.signature-valid h4 {
     color: #2e7d32;
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 10px;
+}
+
+.signature-invalid {
+    background: #fff5f5;
+    border: 2px solid #d32f2f;
+}
+
+.signature-invalid h4 {
+    color: #d32f2f;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.signature-warning {
+    background: #ffebee;
+    border-left: 4px solid #d32f2f;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    color: #c62828;
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .signature-info {

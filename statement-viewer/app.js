@@ -1,8 +1,8 @@
 // Statement Viewer Application
 // Fetches and displays statements from static text files following the Stated protocol v5
 
-// Note: For browser usage, we use a simplified parser.
-// The full stated-protocol-parser library is used in Node.js (generate-samples.cjs)
+// Import stated-protocol-parser library
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib } from './lib/index.js';
 
 class StatementViewer {
     constructor() {
@@ -117,16 +117,25 @@ class StatementViewer {
     }
 
     parseStatementsFile(text) {
-        // Split by double newline to separate statements
-        const statementTexts = text.split('\n\n').filter(s => s.trim());
-        
-        if (statementTexts.length === 0) {
-            this.showError('No statements found in the file');
-            return;
-        }
+        try {
+            // Use the library's parseStatementsFile function to properly split statements
+            const statementTexts = parseStatementsFileLib(text);
+            
+            if (statementTexts.length === 0) {
+                this.showError('No statements found in the file');
+                return;
+            }
 
-        this.statements = statementTexts.map(statementText => this.parseStatement(statementText));
-        this.renderStatements();
+            this.statements = statementTexts.map(statementText => this.parseStatement(statementText));
+            
+            // Verify signatures for all statements
+            this.verifyAllSignatures().then(() => {
+                this.renderStatements();
+            });
+        } catch (error) {
+            this.showError(`Error parsing statements file: ${error.message}`);
+            console.error('Parse error:', error);
+        }
     }
 
     parseStatement(text) {
@@ -225,6 +234,65 @@ class StatementViewer {
         }
 
         return statement;
+    }
+
+    async verifyAllSignatures() {
+        const verificationPromises = this.statements.map(async (statement) => {
+            if (statement.signature) {
+                try {
+                    console.log('Verifying statement with signature:', {
+                        hash: statement.signature.hash,
+                        publicKey: statement.signature.publicKey,
+                        algorithm: statement.signature.algorithm,
+                        rawLength: statement.raw.length
+                    });
+                    
+                    // Use parseSignedStatement to properly parse and verify
+                    const parsed = parseSignedStatement(statement.raw);
+                    
+                    if (!parsed) {
+                        // Parsing failed (hash mismatch or invalid format)
+                        statement.signatureVerified = false;
+                        statement.hashMatches = false;
+                        console.error('Failed to parse signed statement. Raw text:', statement.raw.substring(0, 200));
+                        return;
+                    }
+                    
+                    console.log('Successfully parsed signed statement:', {
+                        statementHash: parsed.statementHash,
+                        publicKey: parsed.publicKey,
+                        algorithm: parsed.algorithm
+                    });
+                    
+                    // Hash validation passed (done by parseSignedStatement)
+                    statement.hashMatches = true;
+                    
+                    // Now verify the cryptographic signature
+                    const signatureValid = await verifySignature(
+                        parsed.statement,
+                        parsed.signature,
+                        parsed.publicKey
+                    );
+                    
+                    statement.signatureVerified = signatureValid;
+                    
+                    console.log('Signature verification result:', signatureValid);
+                    
+                    if (!signatureValid) {
+                        console.error('Signature verification failed for statement:', {
+                            hash: parsed.statementHash,
+                            publicKey: parsed.publicKey
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error verifying signature:', error);
+                    statement.signatureVerified = false;
+                    statement.hashMatches = false;
+                }
+            }
+        });
+        
+        await Promise.all(verificationPromises);
     }
 
     renderStatements() {
@@ -338,11 +406,29 @@ class StatementViewer {
         // Signature information
         if (statement.signature) {
             const signatureBox = document.createElement('div');
-            signatureBox.className = 'statement-signature';
             
-            const title = document.createElement('h4');
-            title.textContent = '✓ Cryptographically Signed';
-            signatureBox.appendChild(title);
+            if (statement.signatureVerified) {
+                signatureBox.className = 'statement-signature signature-valid';
+                
+                const title = document.createElement('h4');
+                title.textContent = '✓ Cryptographically Signed & Verified';
+                signatureBox.appendChild(title);
+            } else {
+                signatureBox.className = 'statement-signature signature-invalid';
+                
+                const title = document.createElement('h4');
+                title.textContent = '✗ Signature Verification Failed';
+                signatureBox.appendChild(title);
+                
+                const warning = document.createElement('div');
+                warning.className = 'signature-warning';
+                if (!statement.hashMatches) {
+                    warning.textContent = 'Warning: Statement hash does not match. The content may have been tampered with.';
+                } else {
+                    warning.textContent = 'Warning: Signature is invalid. This statement may not be authentic.';
+                }
+                signatureBox.appendChild(warning);
+            }
 
             const info = document.createElement('div');
             info.className = 'signature-info';
