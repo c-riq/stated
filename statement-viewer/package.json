@@ -1,0 +1,20 @@
+{
+  "name": "statement-viewer",
+  "version": "1.0.0",
+  "description": "Static web application for viewing Stated protocol statements",
+  "scripts": {
+    "start": "node server.cjs",
+    "generate-samples": "node generate-samples.cjs"
+  },
+  "keywords": [
+    "stated",
+    "protocol",
+    "statements",
+    "viewer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "stated-protocol-parser": "file:../stated-protocol-parser"
+  }
+}

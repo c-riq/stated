@@ -1,0 +1,263 @@
+const { writeFile, mkdir } = require('fs/promises');
+const { join } = require('path');
+const {
+    buildStatement,
+    buildPollContent,
+    buildOrganisationVerificationContent,
+    buildVoteContent,
+    buildSignedStatement,
+    generateKeyPair,
+    sha256,
+} = require('stated-protocol-parser');
+
+// __dirname is available in CommonJS
+
+const WELL_KNOWN_DIR = join(__dirname, '.well-known');
+const STATEMENTS_DIR = join(WELL_KNOWN_DIR, 'statements');
+const ATTACHMENTS_DIR = join(STATEMENTS_DIR, 'attachments');
+
+async function ensureDirectories() {
+    await mkdir(WELL_KNOWN_DIR, { recursive: true });
+    await mkdir(STATEMENTS_DIR, { recursive: true });
+    await mkdir(ATTACHMENTS_DIR, { recursive: true });
+}
+
+async function createAttachment(filename, content) {
+    const hash = sha256(content);
+    const ext = filename.split('.').pop();
+    const attachmentFilename = `${hash}.${ext}`;
+    const attachmentPath = join(ATTACHMENTS_DIR, attachmentFilename);
+    await writeFile(attachmentPath, content);
+    return attachmentFilename;
+}
+
+async function generateSampleStatements() {
+    console.log('Generating sample statements...');
+
+    const statements = [];
+    const statementFiles = [];
+
+    // Generate key pair for signed statements
+    const { publicKey, privateKey } = await generateKeyPair();
+
+    // 1. Plain statement with signature
+    const statement1 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-01-15T10:00:00Z'),
+        tags: ['announcement', 'update'],
+        content: 'We are pleased to announce our new sustainability initiative.',
+    });
+    const signedStatement1 = await buildSignedStatement(statement1, privateKey, publicKey);
+    statements.push(signedStatement1);
+
+    // 2. Poll statement
+    const pollContent = buildPollContent({
+        poll: 'Should we implement a 4-day work week?',
+        options: ['Yes', 'No', 'Need more discussion'],
+        deadline: new Date('2024-12-31T23:59:59Z'),
+        scopeDescription: 'All employees',
+        allowArbitraryVote: false,
+    });
+    const statement2 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-02-01T14:30:00Z'),
+        tags: ['poll', 'hr'],
+        content: pollContent,
+    });
+    statements.push(statement2);
+
+    // 3. Organisation verification
+    const orgVerification = buildOrganisationVerificationContent({
+        name: 'Tech Innovations Inc.',
+        englishName: 'Tech Innovations Inc.',
+        country: 'United States',
+        city: 'San Francisco',
+        province: 'California',
+        legalForm: 'corporation',
+        domain: 'techinnovations.example',
+        serialNumber: '123456789',
+        employeeCount: '100-1000',
+        confidence: '0.95',
+    });
+    const statement3 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-03-10T09:15:00Z'),
+        tags: ['verification', 'partner'],
+        content: orgVerification,
+    });
+    statements.push(statement3);
+
+    // 4. Statement with translations
+    const statement4 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-04-05T16:45:00Z'),
+        tags: ['multilingual', 'announcement'],
+        content: 'We are expanding our services to new markets.',
+        translations: {
+            es: 'Estamos expandiendo nuestros servicios a nuevos mercados.',
+            fr: 'Nous étendons nos services à de nouveaux marchés.',
+            de: 'Wir erweitern unsere Dienstleistungen auf neue Märkte.',
+        },
+    });
+    statements.push(statement4);
+
+    // 5. Create sample PDF attachment
+    const pdfContent = `%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+>>
+>>
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(Sample Document) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000317 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+410
+%%EOF`;
+
+    const pdfAttachment = await createAttachment('sample.pdf', pdfContent);
+
+    // 6. Create sample image attachment (simple PNG)
+    const pngContent = Buffer.from(
+        '89504e470d0a1a0a0000000d494844520000001000000010080200000090916836000000017352474200aece1ce90000000467414d410000b18f0bfc6105000000097048597300000ec300000ec301c76fa8640000001e49444154384f63fcffff3f032580818989898989898989898989898989010057f80c8f3f3f3f3f0000000049454e44ae426082',
+        'hex'
+    );
+    const pngAttachment = await createAttachment('logo.png', pngContent);
+
+    // 7. Statement with attachments
+    const statement5 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-05-20T11:20:00Z'),
+        tags: ['report', 'documentation'],
+        content: 'Please find our quarterly report and company logo attached.',
+        attachments: [pdfAttachment, pngAttachment],
+    });
+    const signedStatement5 = await buildSignedStatement(statement5, privateKey, publicKey);
+    statements.push(signedStatement5);
+
+    // 8. Vote statement
+    const voteContent = buildVoteContent({
+        pollHash: 'abc123def456',
+        poll: 'Should we implement a 4-day work week?',
+        vote: 'Yes',
+    });
+    const statement6 = buildStatement({
+        domain: 'employee.example.com',
+        author: 'John Doe',
+        time: new Date('2024-02-15T10:30:00Z'),
+        tags: ['vote'],
+        content: voteContent,
+    });
+    statements.push(statement6);
+
+    // 9. Statement superseding another
+    const statement7 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-06-01T08:00:00Z'),
+        tags: ['correction', 'update'],
+        content: 'Correction: Our sustainability initiative will launch in Q3, not Q2 as previously stated.',
+        supersededStatement: sha256(statement1),
+    });
+    statements.push(statement7);
+
+    // 10. Recent statement
+    const statement8 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date(),
+        tags: ['news', 'announcement'],
+        content: 'We are excited to share our latest achievements and milestones with the community.',
+    });
+    const signedStatement8 = await buildSignedStatement(statement8, privateKey, publicKey);
+    statements.push(signedStatement8);
+
+    // Write individual statement files
+    for (const statement of statements) {
+        const hash = sha256(statement);
+        const filename = `${hash}.txt`;
+        const filepath = join(STATEMENTS_DIR, filename);
+        await writeFile(filepath, statement);
+        statementFiles.push(filename);
+        console.log(`Created: ${filename}`);
+    }
+
+    // Write statements.txt (all statements concatenated)
+    const allStatements = statements.join('\n\n');
+    await writeFile(join(WELL_KNOWN_DIR, 'statements.txt'), allStatements);
+    console.log('Created: statements.txt');
+
+    // Write index.txt
+    await writeFile(join(STATEMENTS_DIR, 'index.txt'), statementFiles.join('\n'));
+    console.log('Created: statements/index.txt');
+
+    // Write attachments index.txt
+    const attachmentFiles = [pdfAttachment, pngAttachment];
+    await writeFile(join(ATTACHMENTS_DIR, 'index.txt'), attachmentFiles.join('\n'));
+    console.log('Created: statements/attachments/index.txt');
+
+    console.log('\n✓ Sample data generated successfully!');
+    console.log(`\nGenerated ${statements.length} statements with ${attachmentFiles.length} attachments`);
+    console.log('\nTo view the statements:');
+    console.log('1. Run: npm start');
+    console.log('2. Open: http://localhost:3033/?baseUrl=http://localhost:3033/.well-known/statements/');
+}
+
+// Run the generator
+ensureDirectories()
+    .then(() => generateSampleStatements())
+    .catch((error) => {
+        console.error('Error generating samples:', error);
+        process.exit(1);
+    });
