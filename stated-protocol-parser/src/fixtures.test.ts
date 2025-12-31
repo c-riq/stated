@@ -16,6 +16,7 @@ import {
   buildPDFSigningContent,
   buildRating,
 } from './protocol';
+import { verifySignedStatement } from './signature';
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -157,11 +158,16 @@ describe('Fixture Validation', () => {
         return;
       }
 
-      it('output.txt should match built statement from input.json', () => {
+      it('output.txt should match built statement from input.json', async () => {
         const input = JSON.parse(fs.readFileSync(inputPath, 'utf-8'));
         const expectedOutput = fs.readFileSync(outputPath, 'utf-8');
 
-        // Build content
+        if (input.signature) {
+          const isValid = await verifySignedStatement(expectedOutput);
+          assert.strictEqual(isValid, true);
+          return;
+        }
+
         let content: string;
         if (typeof input.content === 'string') {
           content = input.content;

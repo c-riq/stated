@@ -12,10 +12,11 @@ import {
   buildPDFSigningContent,
   buildRating,
 } from '../src/protocol';
+import { generateKeyPair, buildSignedStatement } from '../src/signature';
 
 const fixturesDir = path.join(process.cwd(), 'fixtures');
 
-function updateFixtures() {
+async function updateFixtures() {
   const fixtureDirs = fs
     .readdirSync(fixturesDir, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
@@ -33,7 +34,11 @@ function updateFixtures() {
     try {
       const input = JSON.parse(fs.readFileSync(inputPath, 'utf-8'));
 
-      // Build content based on type
+      if (input.signature) {
+        await handleSignatureFixture(input, outputPath);
+        continue;
+      }
+
       let content: string;
       if (typeof input.content === 'string') {
         content = input.content;
@@ -138,7 +143,6 @@ function updateFixtures() {
         throw new Error('Invalid input: content must be string or object');
       }
 
-      // Build statement
       const statement = buildStatement({
         domain: input.domain,
         author: input.author,
@@ -151,13 +155,35 @@ function updateFixtures() {
         attachments: input.attachments,
       });
 
-      // Write output
       fs.writeFileSync(outputPath, statement, 'utf-8');
-      // Successfully updated fixture
     } catch (error) {
-      // Error processing fixture
+      // Skip on error
     }
   }
 }
 
-updateFixtures();
+async function handleSignatureFixture(input: unknown, outputPath: string) {
+  const keys = await generateKeyPair();
+  
+  const inputObj = input as Record<string, unknown>;
+  const statement = buildStatement({
+    domain: inputObj.domain as string,
+    author: inputObj.author as string,
+    time: new Date(inputObj.time as string),
+    tags: inputObj.tags as string[] | undefined,
+    content: inputObj.content as string,
+    representative: inputObj.representative as string | undefined,
+    supersededStatement: inputObj.supersededStatement as string | undefined,
+    translations: inputObj.translations as Record<string, string> | undefined,
+    attachments: inputObj.attachments as string[] | undefined,
+  });
+
+  const signedStatement = await buildSignedStatement(statement, keys.privateKey, keys.publicKey);
+  fs.writeFileSync(outputPath, signedStatement, 'utf-8');
+}
+
+async function main() {
+  await updateFixtures();
+}
+
+main();
