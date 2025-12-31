@@ -5,10 +5,10 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    line-height: 1.6;
-    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
 }
 
 .container {
@@ -17,32 +17,35 @@ body {
     padding: 20px;
 }
 
+/* Header */
 header {
-    text-align: center;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0072BC 0%, #003366 100%);
     color: white;
-    border-radius: 10px;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 8px;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
-    font-size: 2.5em;
+    font-size: 2.5rem;
+    font-weight: 700;
     margin-bottom: 10px;
 }
 
 .subtitle {
-    font-size: 1.1em;
-    opacity: 0.9;
+    font-size: 1.1rem;
+    opacity: 0.95;
+    font-weight: 400;
 }
 
+/* Main sections */
 main {
     background: white;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 30px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
 }
 
 section {
@@ -54,70 +57,79 @@ section:last-child {
 }
 
 h2 {
-    color: #667eea;
+    color: #003366;
+    font-size: 1.8rem;
+    font-weight: 700;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 3px solid #0072BC;
 }
 
+/* Form elements */
 .form-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
     margin-bottom: 20px;
-    flex-wrap: wrap;
 }
 
-.form-group label {
+label {
+    display: block;
     font-weight: 600;
-    min-width: 200px;
+    color: #003366;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
 }
 
-.form-group input {
-    flex: 1;
-    min-width: 300px;
-    padding: 10px 15px;
+input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
     border: 2px solid #e0e0e0;
-    border-radius: 5px;
-    font-size: 1em;
-    transition: border-color 0.3s;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
 }
 
-.form-group input:focus {
+input[type="text"]:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #0072BC;
 }
 
+/* Buttons */
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #0072BC;
     color: white;
     border: none;
-    padding: 10px 25px;
-    border-radius: 5px;
-    font-size: 1em;
+    padding: 12px 30px;
+    font-size: 1rem;
     font-weight: 600;
+    border-radius: 6px;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    margin-top: 10px;
 }
 
 .btn-primary:hover {
+    background: #005a94;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 8px rgba(0, 114, 188, 0.3);
 }
 
 .btn-primary:active {
     transform: translateY(0);
 }
 
+/* Info box */
 .info-box {
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 15px 20px;
-    border-radius: 5px;
+    background: #f0f7fc;
+    border-left: 4px solid #0072BC;
+    padding: 20px;
+    border-radius: 6px;
+    margin-top: 20px;
 }
 
 .info-box p {
     margin-bottom: 10px;
+    color: #003366;
     font-weight: 600;
 }
 
@@ -127,26 +139,20 @@ h2 {
 }
 
 .info-box li {
-    padding: 5px 0;
-    padding-left: 20px;
-    position: relative;
-}
-
-.info-box li:before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: #667eea;
+    padding: 8px 0;
+    color: #555;
 }
 
 .info-box code {
-    background: #e9ecef;
-    padding: 2px 6px;
-    border-radius: 3px;
+    background: white;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-family: 'Courier New', monospace;
-    font-size: 0.9em;
+    color: #0072BC;
+    font-size: 0.9rem;
 }
 
+/* Loading spinner */
 .loading {
     text-align: center;
     padding: 40px;
@@ -154,7 +160,7 @@ h2 {
 
 .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border-top: 4px solid #0072BC;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -167,39 +173,51 @@ h2 {
     100% { transform: rotate(360deg); }
 }
 
-.error-message {
-    background: #fee;
-    border-left: 4px solid #f44;
-    padding: 15px 20px;
-    border-radius: 5px;
-    color: #c33;
-    margin-bottom: 20px;
+.loading p {
+    color: #003366;
+    font-weight: 500;
 }
 
+/* Error message */
+.error-message {
+    background: #fee;
+    border-left: 4px solid #c00;
+    color: #c00;
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* Statements list */
 .statements-list {
     display: grid;
     gap: 20px;
 }
 
+/* Statement card */
 .statement-card {
+    background: white;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    padding: 20px;
-    transition: box-shadow 0.3s, border-color 0.3s;
+    padding: 25px;
+    transition: all 0.3s ease;
 }
 
 .statement-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: #667eea;
+    border-color: #0072BC;
+    box-shadow: 0 4px 12px rgba(0, 114, 188, 0.15);
+    transform: translateY(-2px);
 }
 
+/* Statement header */
 .statement-header {
     display: flex;
     justify-content: space-between;
-    align-items: start;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .statement-meta {
@@ -207,72 +225,75 @@ h2 {
 }
 
 .statement-domain {
-    font-size: 1.2em;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: #667eea;
+    color: #0072BC;
     margin-bottom: 5px;
 }
 
 .statement-author {
-    font-size: 1em;
-    color: #666;
-    margin-bottom: 5px;
+    font-size: 1rem;
+    color: #003366;
+    font-weight: 600;
+    margin-bottom: 3px;
 }
 
 .statement-time {
-    font-size: 0.9em;
-    color: #999;
+    font-size: 0.9rem;
+    color: #666;
 }
 
 .statement-type {
-    background: #667eea;
+    background: #0072BC;
     color: white;
-    padding: 5px 12px;
+    padding: 6px 16px;
     border-radius: 20px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
     font-weight: 600;
     white-space: nowrap;
 }
 
+/* Statement content */
 .statement-content {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 5px;
-    margin-top: 15px;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
     white-space: pre-wrap;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-    line-height: 1.5;
-    overflow-x: auto;
+    word-wrap: break-word;
 }
 
+/* Tags */
 .statement-tags {
-    margin-top: 15px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    margin-bottom: 15px;
 }
 
 .tag {
-    background: #e9ecef;
-    color: #495057;
-    padding: 4px 10px;
+    background: #f0f7fc;
+    color: #0072BC;
+    padding: 5px 12px;
     border-radius: 15px;
-    font-size: 0.85em;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid #d0e7f7;
 }
 
+/* Attachments */
 .statement-attachments {
-    margin-top: 15px;
+    background: #f9f9f9;
     padding: 15px;
-    background: #f0f8ff;
-    border-left: 4px solid #667eea;
-    border-radius: 5px;
+    border-radius: 6px;
+    margin-bottom: 15px;
 }
 
 .statement-attachments h4 {
-    color: #667eea;
+    color: #003366;
+    font-size: 1rem;
+    font-weight: 600;
     margin-bottom: 10px;
-    font-size: 0.95em;
 }
 
 .attachment-item {
@@ -280,68 +301,69 @@ h2 {
 }
 
 .attachment-link {
-    color: #667eea;
+    color: #0072BC;
     text-decoration: none;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-    word-break: break-all;
-    display: inline-block;
-    padding: 4px 8px;
-    background: white;
-    border-radius: 3px;
-    transition: background 0.2s;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .attachment-link:hover {
-    background: #e9ecef;
+    color: #005a94;
     text-decoration: underline;
 }
 
+/* Signature */
 .statement-signature {
-    margin-top: 15px;
+    background: #f0f9f4;
+    border: 2px solid #4caf50;
+    border-radius: 6px;
     padding: 15px;
-    background: #e8f5e9;
-    border-left: 4px solid #4caf50;
-    border-radius: 5px;
+    margin-top: 15px;
 }
 
 .statement-signature h4 {
     color: #2e7d32;
+    font-size: 1rem;
+    font-weight: 600;
     margin-bottom: 10px;
-    font-size: 0.95em;
 }
 
 .signature-info {
-    font-family: 'Courier New', monospace;
-    font-size: 0.85em;
+    font-size: 0.9rem;
     color: #555;
 }
 
 .signature-info div {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     word-break: break-all;
 }
 
 .signature-info strong {
-    color: #2e7d32;
-}
-
-footer {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-}
-
-footer a {
-    color: #667eea;
-    text-decoration: none;
+    color: #003366;
     font-weight: 600;
 }
 
+/* Footer */
+footer {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: #0072BC;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
 footer a:hover {
+    color: #005a94;
     text-decoration: underline;
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -352,27 +374,45 @@ footer a:hover {
     }
 
     header h1 {
-        font-size: 2em;
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
     }
 
     main {
         padding: 20px;
     }
 
-    .form-group {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .form-group label {
-        min-width: auto;
-    }
-
-    .form-group input {
-        min-width: auto;
+    h2 {
+        font-size: 1.5rem;
     }
 
     .statement-header {
         flex-direction: column;
+    }
+
+    .statement-type {
+        margin-top: 10px;
+        align-self: flex-start;
+    }
+
+    .statement-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        width: 100%;
     }
 }
