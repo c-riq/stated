@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import {
     parseStatement,
     parsePoll,
@@ -12,7 +14,7 @@ const randomUnicodeString = () =>
         .replace(/[\n;>=<"''\\]/g, '')
 
 describe('Poll building', () => {
-    test('build & parse function compatibility: input=parse(build(input))', () => {
+    it('build & parse function compatibility: input=parse(build(input))', () => {
         const [poll, scopeDescription] =
             Array.from({ length: 2 }, randomUnicodeString)
         const options = Array.from({ length: 2 }, randomUnicodeString)
@@ -24,10 +26,10 @@ describe('Poll building', () => {
             scopeDescription,
         })
         const parsedPoll = parsePoll(pollContent, '5')
-        expect(parsedPoll.poll).toBe(poll)
-        expect(parsedPoll.scopeDescription).toBe(scopeDescription)
-        expect(parsedPoll.deadline?.toUTCString()).toBe(deadline.toUTCString())
-        expect(parsedPoll.options[0]).toEqual(options[0])
-        expect(parsedPoll.options[1]).toEqual(options[1])
+        assert.strictEqual(parsedPoll.poll, poll)
+        assert.strictEqual(parsedPoll.scopeDescription, scopeDescription)
+        assert.strictEqual(parsedPoll.deadline?.toUTCString(), deadline.toUTCString())
+        assert.strictEqual(parsedPoll.options[0], options[0])
+        assert.strictEqual(parsedPoll.options[1], options[1])
     })
 })

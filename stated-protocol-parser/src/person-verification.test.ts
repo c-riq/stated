@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import {
     parseStatement,
     parsePersonVerification,
@@ -12,7 +14,7 @@ const randomUnicodeString = () =>
         .replace(/[\n;>=<"''\\]/g, '')
 
 describe('Person verification building', () => {
-    test('build & parse function compatibility: input=parse(build(input))', () => {
+    it('build & parse function compatibility: input=parse(build(input))', () => {
         const [
             name,
             ownDomain,
@@ -45,19 +47,19 @@ describe('Person verification building', () => {
         const parsedVerification = parsePersonVerification(
             personVerificationContent
         )
-        expect(parsedVerification.name).toBe(name)
-        expect(parsedVerification.ownDomain).toBe(ownDomain)
-        expect(parsedVerification.foreignDomain).toBe(foreignDomain)
-        expect(parsedVerification.dateOfBirth.toUTCString()).toBe(
+        assert.strictEqual(parsedVerification.name, name)
+        assert.strictEqual(parsedVerification.ownDomain, ownDomain)
+        assert.strictEqual(parsedVerification.foreignDomain, foreignDomain)
+        assert.strictEqual(parsedVerification.dateOfBirth.toUTCString(),
             dateOfBirth.toUTCString()
         )
-        expect(parsedVerification.jobTitle).toBe(jobTitle)
-        expect(parsedVerification.employer).toBe(employer)
-        expect(parsedVerification.verificationMethod).toBe(verificationMethod)
-        expect(parsedVerification.confidence).toBe(confidence)
-        expect(parsedVerification.picture).toBe(picture)
-        expect(parsedVerification.reliabilityPolicy).toBe(reliabilityPolicy)
-        expect(parsedVerification.countryOfBirth).toBe(countryOfBirth)
-        expect(parsedVerification.cityOfBirth).toBe(cityOfBirth)
+        assert.strictEqual(parsedVerification.jobTitle, jobTitle)
+        assert.strictEqual(parsedVerification.employer, employer)
+        assert.strictEqual(parsedVerification.verificationMethod, verificationMethod)
+        assert.strictEqual(parsedVerification.confidence, confidence)
+        assert.strictEqual(parsedVerification.picture, picture)
+        assert.strictEqual(parsedVerification.reliabilityPolicy, reliabilityPolicy)
+        assert.strictEqual(parsedVerification.countryOfBirth, countryOfBirth)
+        assert.strictEqual(parsedVerification.cityOfBirth, cityOfBirth)
     })
 })

@@ -1,7 +1,9 @@
 /**
- * Browser-compatible hash utilities using Web Crypto API
- * Async operations for client-side use
+ * Universal hash utilities using @noble/hashes
+ * Works in both browser and Node.js environments
  */
+
+import { sha256 as nobleSha256 } from '@noble/hashes/sha2.js';
 
 /**
  * Compute SHA-256 hash of a string and return it as URL-safe base64
@@ -9,7 +11,7 @@
  * @param input - The string or buffer to hash
  * @returns URL-safe base64 encoded hash
  */
-export const sha256 = async (input: string | Uint8Array): Promise<string> => {
+export const sha256 = (input: string | Uint8Array): string => {
     let data: Uint8Array;
     
     if (typeof input === 'string') {
@@ -19,12 +21,11 @@ export const sha256 = async (input: string | Uint8Array): Promise<string> => {
         data = input;
     }
     
-    // Use Web Crypto API (available in both modern browsers and Node.js 15+)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    // Use @noble/hashes for consistent cross-platform hashing
+    const hashArray = nobleSha256(data);
     
     // Convert to base64
-    const base64 = btoa(String.fromCharCode(...hashArray));
+    const base64 = bytesToBase64(hashArray);
     
     // Make URL-safe: remove padding and replace + with - and / with _
     const urlSafe = base64.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -38,8 +39,8 @@ export const sha256 = async (input: string | Uint8Array): Promise<string> => {
  * @param hash - The expected hash
  * @returns True if the hash matches
  */
-export const verify = async (content: string | Uint8Array, hash: string): Promise<boolean> => {
-    const computed = await sha256(content);
+export const verify = (content: string | Uint8Array, hash: string): boolean => {
+    const computed = sha256(content);
     return computed === hash;
 }
 
@@ -62,4 +63,37 @@ export const fromUrlSafeBase64 = (urlSafe: string): string => {
  */
 export const toUrlSafeBase64 = (base64: string): string => {
     return base64.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+/**
+ * Convert bytes to base64 string
+ * @param bytes - Uint8Array to convert
+ * @returns Base64 string
+ */
+function bytesToBase64(bytes: Uint8Array): string {
+    // Use btoa if available (browser), otherwise use Buffer (Node.js)
+    if (typeof btoa !== 'undefined') {
+        return btoa(String.fromCharCode(...Array.from(bytes)));
+    } else {
+        return Buffer.from(bytes).toString('base64');
+    }
+}
+
+/**
+ * Convert base64 string to bytes
+ * @param base64 - Base64 string to convert
+ * @returns Uint8Array
+ */
+export function base64ToBytes(base64: string): Uint8Array {
+    // Use atob if available (browser), otherwise use Buffer (Node.js)
+    if (typeof atob !== 'undefined') {
+        const binaryString = atob(base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    } else {
+        return new Uint8Array(Buffer.from(base64, 'base64'));
+    }
 }

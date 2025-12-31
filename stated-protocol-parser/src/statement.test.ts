@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import {
     parseStatement,
     buildStatement
@@ -12,7 +14,7 @@ const randomUnicodeString = () =>
 
 
 describe('Statement building', () => {
-    test('build & parse function compatibility: input=parse(build(input))', () => {
+    it('build & parse function compatibility: input=parse(build(input))', () => {
         const [domain, author, representative, content, supersededStatement] =
             Array.from({ length: 5 }, randomUnicodeString)
         const tags = Array.from({ length: 4 }, randomUnicodeString)
@@ -29,15 +31,15 @@ describe('Statement building', () => {
             tags,
         })
         const parsedStatement = parseStatement({ statement: statementContent })
-        expect(parsedStatement.domain).toBe(domain)
-        expect(parsedStatement.author).toBe(author)
-        expect(parsedStatement.time?.toUTCString()).toBe(time.toUTCString())
-        expect(parsedStatement.content).toBe(content)
-        expect(parsedStatement.representative).toBe(representative)
-        expect(parsedStatement.supersededStatement).toBe(supersededStatement)
-        expect(parsedStatement.tags?.sort()).toStrictEqual(tags.sort())
+        assert.strictEqual(parsedStatement.domain, domain)
+        assert.strictEqual(parsedStatement.author, author)
+        assert.strictEqual(parsedStatement.time?.toUTCString(), time.toUTCString())
+        assert.strictEqual(parsedStatement.content, content)
+        assert.strictEqual(parsedStatement.representative, representative)
+        assert.strictEqual(parsedStatement.supersededStatement, supersededStatement)
+        assert.deepStrictEqual(parsedStatement.tags?.sort(), tags.sort())
     })
-    test('build & parse statement with attachments', () => {
+    it('build & parse statement with attachments', () => {
         const domain = 'example.com'
         const author = 'Test Author'
         const time = new Date('Thu, 15 Jun 2023 20:01:26 GMT')
@@ -53,20 +55,20 @@ describe('Statement building', () => {
         })
         
         const parsedStatement = parseStatement({ statement: statementContent })
-        expect(parsedStatement.domain).toBe(domain)
-        expect(parsedStatement.author).toBe(author)
-        expect(parsedStatement.content).toBe(content)
-        expect(parsedStatement.attachments).toEqual(attachments)
+        assert.strictEqual(parsedStatement.domain, domain)
+        assert.strictEqual(parsedStatement.author, author)
+        assert.strictEqual(parsedStatement.content, content)
+        assert.deepStrictEqual(parsedStatement.attachments, attachments)
     })
 
-    test('reject statement with more than 5 attachments', () => {
+    it('reject statement with more than 5 attachments', () => {
         const domain = 'example.com'
         const author = 'Test Author'
         const time = new Date()
         const content = 'Too many attachments\n'
         const attachments = ['hash1.pdf', 'hash2.pdf', 'hash3.pdf', 'hash4.pdf', 'hash5.pdf', 'hash6.pdf']
         
-        expect(() => {
+        assert.throws(() => {
             buildStatement({
                 domain,
                 author,
@@ -74,17 +76,17 @@ describe('Statement building', () => {
                 content,
                 attachments,
             })
-        }).toThrow('Maximum 5 attachments allowed')
+        }, /Maximum 5 attachments allowed/)
     })
 
-    test('reject attachment with invalid format', () => {
+    it('reject attachment with invalid format', () => {
         const domain = 'example.com'
         const author = 'Test Author'
         const time = new Date()
         const content = 'Invalid attachment\n'
         const attachments = ['invalid file name.pdf']
         
-        expect(() => {
+        assert.throws(() => {
             buildStatement({
                 domain,
                 author,
@@ -92,7 +94,7 @@ describe('Statement building', () => {
                 content,
                 attachments,
             })
-        }).toThrow("Attachment 1 must be in format 'base64hash.extension' (URL-safe base64)")
+        }, /Attachment 1 must be in format 'base64hash.extension' \(URL-safe base64\)/)
     })
 
 

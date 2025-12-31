@@ -1,4 +1,6 @@
-import { sha256, verify, fromUrlSafeBase64, toUrlSafeBase64 } from './hash.node';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { sha256, verify, fromUrlSafeBase64, toUrlSafeBase64 } from './hash';
 
 describe('Hash utilities', () => {
     describe('sha256', () => {
@@ -7,37 +9,37 @@ describe('Hash utilities', () => {
             const hash = sha256(input);
             
             // Verify it's URL-safe (no +, /, or =)
-            expect(hash).not.toContain('+');
-            expect(hash).not.toContain('/');
-            expect(hash).not.toContain('=');
+            assert.ok(!hash.includes('+'));
+            assert.ok(!hash.includes('/'));
+            assert.ok(!hash.includes('='));
             
             // Verify consistent output
             const hash2 = sha256(input);
-            expect(hash).toBe(hash2);
+            assert.strictEqual(hash, hash2);
         });
 
         it('should produce correct hash for known input', () => {
             const input = 'hello world';
             const expectedHash = 'uU0nuZNNPgilLlLX2n2r-sSE7-N6U4DukIj3rOLvzek';
             const hash = sha256(input);
-            expect(hash).toBe(expectedHash);
+            assert.strictEqual(hash, expectedHash);
         });
 
         it('should handle empty string', () => {
             const hash = sha256('');
-            expect(hash).toBeTruthy();
-            expect(typeof hash).toBe('string');
+            assert.ok(hash);
+            assert.strictEqual(typeof hash, 'string');
         });
 
         it('should handle unicode characters', () => {
             const input = '你好世界 🌍';
             const hash = sha256(input);
-            expect(hash).toBeTruthy();
-            expect(typeof hash).toBe('string');
+            assert.ok(hash);
+            assert.strictEqual(typeof hash, 'string');
             
             // Verify consistency
             const hash2 = sha256(input);
-            expect(hash).toBe(hash2);
+            assert.strictEqual(hash, hash2);
         });
 
         it('should handle Buffer input', () => {
@@ -46,20 +48,20 @@ describe('Hash utilities', () => {
             
             // Should produce same hash as string input
             const stringHash = sha256('hello world');
-            expect(hash).toBe(stringHash);
+            assert.strictEqual(hash, stringHash);
         });
 
         it('should produce different hashes for different inputs', () => {
             const hash1 = sha256('hello');
             const hash2 = sha256('world');
-            expect(hash1).not.toBe(hash2);
+            assert.notStrictEqual(hash1, hash2);
         });
 
         it('should produce 43-character URL-safe base64 string', () => {
             const hash = sha256('test');
             // SHA-256 produces 256 bits = 32 bytes
             // Base64 encoding: 32 bytes * 4/3 = 42.67, rounded up = 43 chars (without padding)
-            expect(hash.length).toBe(43);
+            assert.strictEqual(hash.length, 43);
         });
     });
 
@@ -68,14 +70,14 @@ describe('Hash utilities', () => {
             const content = 'hello world';
             const hash = sha256(content);
             const isValid = verify(content, hash);
-            expect(isValid).toBe(true);
+            assert.strictEqual(isValid, true);
         });
 
         it('should reject incorrect hash', () => {
             const content = 'hello world';
             const wrongHash = 'incorrect_hash_value_here_1234567890';
             const isValid = verify(content, wrongHash);
-            expect(isValid).toBe(false);
+            assert.strictEqual(isValid, false);
         });
 
         it('should reject hash for different content', () => {
@@ -83,14 +85,14 @@ describe('Hash utilities', () => {
             const content2 = 'goodbye world';
             const hash1 = sha256(content1);
             const isValid = verify(content2, hash1);
-            expect(isValid).toBe(false);
+            assert.strictEqual(isValid, false);
         });
 
         it('should work with Buffer', () => {
             const data = Buffer.from('test data');
             const hash = sha256(data);
             const isValid = verify(data, hash);
-            expect(isValid).toBe(true);
+            assert.strictEqual(isValid, true);
         });
     });
 
@@ -101,10 +103,10 @@ describe('Hash utilities', () => {
             const standard = fromUrlSafeBase64(urlSafe);
             
             // Should replace - with + and _ with /
-            expect(standard).toContain('+');
-            expect(standard).toContain('/');
+            assert.ok(standard.includes('+'));
+            assert.ok(standard.includes('/'));
             // Should add padding
-            expect(standard.endsWith('=')).toBe(true);
+            assert.strictEqual(standard.endsWith('='), true);
         });
 
         it('should add correct padding', () => {
@@ -119,14 +121,14 @@ describe('Hash utilities', () => {
             testCases.forEach(({ input, expectedPadding }) => {
                 const result = fromUrlSafeBase64(input);
                 const paddingCount = (result.match(/=/g) || []).length;
-                expect(paddingCount).toBe(expectedPadding);
+                assert.strictEqual(paddingCount, expectedPadding);
             });
         });
 
         it('should handle strings without special characters', () => {
             const input = 'abcdefghijklmnop';
             const result = fromUrlSafeBase64(input);
-            expect(result).toBeTruthy();
+            assert.ok(result);
         });
     });
 
@@ -136,19 +138,19 @@ describe('Hash utilities', () => {
             const urlSafe = toUrlSafeBase64(standard);
             
             // Should not contain standard base64 special characters
-            expect(urlSafe).not.toContain('+');
-            expect(urlSafe).not.toContain('/');
-            expect(urlSafe).not.toContain('=');
+            assert.ok(!urlSafe.includes('+'));
+            assert.ok(!urlSafe.includes('/'));
+            assert.ok(!urlSafe.includes('='));
             
             // Should contain URL-safe replacements
-            expect(urlSafe).toContain('-');
+            assert.ok(urlSafe.includes('-'));
         });
 
         it('should remove padding', () => {
             const withPadding = 'abc=';
             const result = toUrlSafeBase64(withPadding);
-            expect(result).not.toContain('=');
-            expect(result).toBe('abc');
+            assert.ok(!result.includes('='));
+            assert.strictEqual(result, 'abc');
         });
 
         it('should be reversible with fromUrlSafeBase64', () => {
@@ -158,7 +160,7 @@ describe('Hash utilities', () => {
             const restored = fromUrlSafeBase64(urlSafe);
             
             // Should restore to equivalent base64 (padding might differ slightly)
-            expect(restored.replace(/=+$/, '')).toBe(original.replace(/=+$/, ''));
+            assert.strictEqual(restored.replace(/=+$/, ''), original.replace(/=+$/, ''));
         });
     });
 
@@ -171,7 +173,7 @@ describe('Hash utilities', () => {
             const standard = fromUrlSafeBase64(hash);
             const backToUrlSafe = toUrlSafeBase64(standard);
             
-            expect(backToUrlSafe).toBe(hash);
+            assert.strictEqual(backToUrlSafe, hash);
         });
 
         it('should verify hash after conversion', () => {
@@ -184,7 +186,7 @@ describe('Hash utilities', () => {
             
             // Should still verify
             const isValid = verify(content, urlSafe);
-            expect(isValid).toBe(true);
+            assert.strictEqual(isValid, true);
         });
     });
 
@@ -192,26 +194,26 @@ describe('Hash utilities', () => {
         it('should handle very long strings', () => {
             const longString = 'a'.repeat(10000);
             const hash = sha256(longString);
-            expect(hash).toBeTruthy();
-            expect(hash.length).toBe(43);
+            assert.ok(hash);
+            assert.strictEqual(hash.length, 43);
         });
 
         it('should handle special characters', () => {
             const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
             const hash = sha256(special);
-            expect(hash).toBeTruthy();
+            assert.ok(hash);
             
             const isValid = verify(special, hash);
-            expect(isValid).toBe(true);
+            assert.strictEqual(isValid, true);
         });
 
         it('should handle newlines and whitespace', () => {
             const withNewlines = 'line1\nline2\r\nline3\ttab';
             const hash = sha256(withNewlines);
-            expect(hash).toBeTruthy();
+            assert.ok(hash);
             
             const isValid = verify(withNewlines, hash);
-            expect(isValid).toBe(true);
+            assert.strictEqual(isValid, true);
         });
     });
 });

@@ -1,6 +1,7 @@
 import { legalForms, UTCFormat, peopleCountBuckets } from './constants'
 import { monthIndex, birthDateFormat } from './utils'
-import { verifySignature } from './signature.node'
+import { verifySignature } from './signature'
+import { sha256 } from './hash'
 import type {
     Statement,
     Poll,
@@ -110,7 +111,6 @@ export const parseStatement = ({ statement: input }: { statement: string })
             throw new Error("Unsupported signature algorithm: " + algorithm)
         }
         
-        const { sha256 } = require('./hash.node')
         const computedHash = sha256(statementToVerify)
         if (computedHash !== statementHash) {
             throw new Error("Statement hash mismatch")

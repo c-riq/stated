@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import {
     parseStatement,
     parseOrganisationVerification,
@@ -13,7 +15,7 @@ const randomUnicodeString = () =>
         .replace(/[\n;>=<"''\\]/g, '')
 
 describe('Organisation verification building', () => {
-    test('build & parse function compatibility: input=parse(build(input))', () => {
+    it('build & parse function compatibility: input=parse(build(input))', () => {
         const [
             name,
             englishName,
@@ -46,19 +48,19 @@ describe('Organisation verification building', () => {
         })
         const parsedVerification =
             parseOrganisationVerification(verificationContent)
-        expect(parsedVerification.name).toBe(name)
-        expect(parsedVerification.englishName).toBe(englishName)
-        expect(parsedVerification.country).toBe(country)
-        expect(parsedVerification.city).toBe(city)
-        expect(parsedVerification.province).toBe(province)
-        expect(parsedVerification.legalForm).toBe(legalForm)
-        expect(parsedVerification.domain).toBe(domain)
-        expect(parsedVerification.foreignDomain).toBe(foreignDomain)
-        expect(parsedVerification.serialNumber).toBe(serialNumber)
-        expect(parsedVerification.confidence).toBe(confidence)
-        expect(parsedVerification.pictureHash).toBe(pictureHash)
-        expect(parsedVerification.reliabilityPolicy).toBe(reliabilityPolicy)
-        expect(parsedVerification.employeeCount).toBe(employeeCount)
+        assert.strictEqual(parsedVerification.name, name)
+        assert.strictEqual(parsedVerification.englishName, englishName)
+        assert.strictEqual(parsedVerification.country, country)
+        assert.strictEqual(parsedVerification.city, city)
+        assert.strictEqual(parsedVerification.province, province)
+        assert.strictEqual(parsedVerification.legalForm, legalForm)
+        assert.strictEqual(parsedVerification.domain, domain)
+        assert.strictEqual(parsedVerification.foreignDomain, foreignDomain)
+        assert.strictEqual(parsedVerification.serialNumber, serialNumber)
+        assert.strictEqual(parsedVerification.confidence, confidence)
+        assert.strictEqual(parsedVerification.pictureHash, pictureHash)
+        assert.strictEqual(parsedVerification.reliabilityPolicy, reliabilityPolicy)
+        assert.strictEqual(parsedVerification.employeeCount, employeeCount)
     })
 
 })

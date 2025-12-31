@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { buildStatement } from './protocol'
 import {
     generateFileHash,
@@ -10,7 +12,7 @@ import {
     parseStatementsFile,
     generateStatementFilename,
     generateAttachmentFilename
-} from './utils.node'
+} from './utils'
 
 describe('Statement Utils', () => {
     const testContent = 'test content'
@@ -19,38 +21,38 @@ describe('Statement Utils', () => {
     describe('File Hash Functions', () => {
         it('should generate file hash', () => {
             const hash = generateFileHash(testFileContent)
-            expect(hash).toBeTruthy()
-            expect(typeof hash).toBe('string')
+            assert.ok(hash)
+            assert.strictEqual(typeof hash, 'string')
         })
 
         it('should validate file hash', () => {
             const hash = generateFileHash(testFileContent)
-            expect(validateFileHash(testFileContent, hash)).toBe(true)
-            expect(validateFileHash(testFileContent, 'invalid-hash')).toBe(false)
+            assert.strictEqual(validateFileHash(testFileContent, hash), true)
+            assert.strictEqual(validateFileHash(testFileContent, 'invalid-hash'), false)
         })
 
         it('should generate attachment filename', () => {
             const filename = generateAttachmentFilename(testFileContent, 'pdf')
-            expect(filename).toMatch(/^[A-Za-z0-9_-]+\.pdf$/)
+            assert.ok(/^[A-Za-z0-9_-]+\.pdf$/.test(filename))
         })
 
         it('should handle extension with dot', () => {
             const filename = generateAttachmentFilename(testFileContent, '.jpg')
-            expect(filename).toMatch(/^[A-Za-z0-9_-]+\.jpg$/)
+            assert.ok(/^[A-Za-z0-9_-]+\.jpg$/.test(filename))
         })
     })
 
     describe('Statement Content Hash Functions', () => {
         it('should generate statement content hash', () => {
             const hash = generateStatementContentHash(testContent)
-            expect(hash).toBeTruthy()
-            expect(typeof hash).toBe('string')
+            assert.ok(hash)
+            assert.strictEqual(typeof hash, 'string')
         })
 
         it('should validate statement content hash', () => {
             const hash = generateStatementContentHash(testContent)
-            expect(validateStatementContentHash(testContent, hash)).toBe(true)
-            expect(validateStatementContentHash(testContent, 'invalid-hash')).toBe(false)
+            assert.strictEqual(validateStatementContentHash(testContent, hash), true)
+            assert.strictEqual(validateStatementContentHash(testContent, 'invalid-hash'), false)
         })
     })
 
@@ -64,19 +66,19 @@ describe('Statement Utils', () => {
 
         it('should generate statement hash', () => {
             const hash = generateStatementHash(statement)
-            expect(hash).toBeTruthy()
-            expect(typeof hash).toBe('string')
+            assert.ok(hash)
+            assert.strictEqual(typeof hash, 'string')
         })
 
         it('should validate statement hash', () => {
             const hash = generateStatementHash(statement)
-            expect(validateStatementHash(statement, hash)).toBe(true)
-            expect(validateStatementHash(statement, 'invalid-hash')).toBe(false)
+            assert.strictEqual(validateStatementHash(statement, hash), true)
+            assert.strictEqual(validateStatementHash(statement, 'invalid-hash'), false)
         })
 
         it('should generate statement filename', () => {
             const filename = generateStatementFilename(statement)
-            expect(filename).toMatch(/^[A-Za-z0-9_-]+\.txt$/)
+            assert.ok(/^[A-Za-z0-9_-]+\.txt$/.test(filename))
         })
 
         it('should exclude signature fields from hash', () => {
@@ -88,7 +90,7 @@ describe('Statement Utils', () => {
             
             const hash = generateStatementHash(signedStatement)
             const hashWithoutSignature = generateStatementHash(statement)
-            expect(hash).toBe(hashWithoutSignature)
+            assert.strictEqual(hash, hashWithoutSignature)
         })
     })
 
@@ -109,28 +111,28 @@ describe('Statement Utils', () => {
 
         it('should generate statements file', () => {
             const statementsFile = generateStatementsFile([statement1, statement2])
-            expect(statementsFile).toContain(statement1)
-            expect(statementsFile).toContain(statement2)
-            expect(statementsFile).toContain('\n\n')
+            assert.ok(statementsFile.includes(statement1))
+            assert.ok(statementsFile.includes(statement2))
+            assert.ok(statementsFile.includes('\n\n'))
         })
 
         it('should parse statements file', () => {
             const statementsFile = generateStatementsFile([statement1, statement2])
             const parsed = parseStatementsFile(statementsFile)
-            expect(parsed).toHaveLength(2)
-            expect(parsed[0]).toBe(statement1)
-            expect(parsed[1]).toBe(statement2)
+            assert.strictEqual(parsed.length, 2)
+            assert.strictEqual(parsed[0], statement1)
+            assert.strictEqual(parsed[1], statement2)
         })
 
         it('should throw error for invalid statement in file', () => {
             const invalidFile = 'Invalid statement\n\nAnother invalid statement'
-            expect(() => parseStatementsFile(invalidFile)).toThrow()
+            assert.throws(() => parseStatementsFile(invalidFile))
         })
 
         it('should filter empty statements', () => {
             const fileWithEmpty = statement1 + '\n\n\n\n' + statement2
             const parsed = parseStatementsFile(fileWithEmpty)
-            expect(parsed).toHaveLength(2)
+            assert.strictEqual(parsed.length, 2)
         })
     })
 })

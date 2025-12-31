@@ -1,5 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 import {
     buildStatement,
     parseStatement,
@@ -22,6 +25,10 @@ import {
     buildRating,
     parseRating
 } from './protocol';
+
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const fixturesDir = path.join(__dirname, '../fixtures');
 
@@ -131,9 +138,9 @@ describe('Fixture Validation', () => {
     const fixtureDirs = getFixtureDirs();
 
     if (fixtureDirs.length === 0) {
-        test('no fixtures found', () => {
+        it('no fixtures found', () => {
             console.warn('No fixture directories found in', fixturesDir);
-            expect(true).toBe(true);
+            assert.ok(true);
         });
         return;
     }
@@ -144,20 +151,20 @@ describe('Fixture Validation', () => {
             const outputPath = path.join(fixturesDir, dir, 'output.txt');
 
             if (!fs.existsSync(inputPath)) {
-                test('should have input.json', () => {
-                    fail(`Missing input.json in ${dir}`);
+                it('should have input.json', () => {
+                    assert.fail(`Missing input.json in ${dir}`);
                 });
                 return;
             }
 
             if (!fs.existsSync(outputPath)) {
-                test('should have output.txt', () => {
-                    fail(`Missing output.txt in ${dir}`);
+                it('should have output.txt', () => {
+                    assert.fail(`Missing output.txt in ${dir}`);
                 });
                 return;
             }
 
-            test('output.txt should match built statement from input.json', () => {
+            it('output.txt should match built statement from input.json', () => {
                 const input = JSON.parse(fs.readFileSync(inputPath, 'utf-8'));
                 const expectedOutput = fs.readFileSync(outputPath, 'utf-8');
 
@@ -182,47 +189,47 @@ describe('Fixture Validation', () => {
                     attachments: input.attachments
                 });
 
-                expect(builtStatement).toBe(expectedOutput);
+                assert.strictEqual(builtStatement, expectedOutput);
             });
 
-            test('output.txt should not contain double newlines', () => {
+            it('output.txt should not contain double newlines', () => {
                 const output = fs.readFileSync(outputPath, 'utf-8');
-                expect(output).not.toMatch(/\n\n/);
+                assert.ok(!/\n\n/.test(output));
             });
 
-            test('output.txt should be parseable', () => {
+            it('output.txt should be parseable', () => {
                 const output = fs.readFileSync(outputPath, 'utf-8');
                 const parsed = parseStatement({ statement: output });
                 
-                expect(parsed.domain).toBeTruthy();
-                expect(parsed.author).toBeTruthy();
-                expect(parsed.content).toBeTruthy();
-                expect(parsed.formatVersion).toBe('5');
+                assert.ok(parsed.domain);
+                assert.ok(parsed.author);
+                assert.ok(parsed.content);
+                assert.strictEqual(parsed.formatVersion, '5');
             });
 
-            test('round-trip: parse(output.txt) should match input.json structure', () => {
+            it('round-trip: parse(output.txt) should match input.json structure', () => {
                 const input = JSON.parse(fs.readFileSync(inputPath, 'utf-8'));
                 const output = fs.readFileSync(outputPath, 'utf-8');
                 const parsed = parseStatement({ statement: output });
 
-                expect(parsed.domain).toBe(input.domain);
-                expect(parsed.author).toBe(input.author);
-                expect(new Date(parsed.time).toISOString()).toBe(new Date(input.time).toISOString());
+                assert.strictEqual(parsed.domain, input.domain);
+                assert.strictEqual(parsed.author, input.author);
+                assert.strictEqual(new Date(parsed.time).toISOString(), new Date(input.time).toISOString());
                 
                 if (input.tags) {
-                    expect(parsed.tags).toEqual(input.tags);
+                    assert.deepStrictEqual(parsed.tags, input.tags);
                 }
                 if (input.representative) {
-                    expect(parsed.representative).toBe(input.representative);
+                    assert.strictEqual(parsed.representative, input.representative);
                 }
                 if (input.supersededStatement) {
-                    expect(parsed.supersededStatement).toBe(input.supersededStatement);
+                    assert.strictEqual(parsed.supersededStatement, input.supersededStatement);
                 }
                 if (input.attachments) {
-                    expect(parsed.attachments).toEqual(input.attachments);
+                    assert.deepStrictEqual(parsed.attachments, input.attachments);
                 }
                 if (input.translations) {
-                    expect(parsed.translations).toEqual(input.translations);
+                    assert.deepStrictEqual(parsed.translations, input.translations);
                 }
             });
         });
