@@ -7,49 +7,36 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <h1>Stated</h1>
+            <div class="url-config">
+                <input
+                    type="text"
+                    id="baseUrl"
+                    placeholder="https://example.com/.well-known/statements/"
+                    value=""
+                >
+                <button id="loadStatements" class="btn-load">↻</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <header>
-            <h1>Statement Viewer</h1>
-            <p class="subtitle">View and verify statements published using the Stated protocol</p>
-        </header>
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading statements...</p>
+        </div>
+        <div id="error" class="error-message" style="display: none;"></div>
+        <div id="statementsList" class="statements-list"></div>
+    </div>
 
-        <main>
-            <section class="config-section">
-                <h2>Configuration</h2>
-                <div class="form-group">
-                    <label for="baseUrl">Base URL for statements:</label>
-                    <input
-                        type="text"
-                        id="baseUrl"
-                        placeholder="https://example.com/.well-known/statements/"
-                        value="http://localhost:3033/.well-known/statements/"
-                    >
-                    <button id="loadStatements" class="btn-primary">Load Statements</button>
-                </div>
-                <div class="info-box">
-                    <p><strong>Expected file structure:</strong></p>
-                    <ul>
-                        <li><code>/.well-known/statements.txt</code> - All statements concatenated</li>
-                        <li><code>/.well-known/statements/index.txt</code> - List of statement files</li>
-                        <li><code>/.well-known/statements/&lt;hash&gt;.txt</code> - Individual statements</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section class="statements-section">
-                <h2>Statements</h2>
-                <div id="loading" class="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Loading statements...</p>
-                </div>
-                <div id="error" class="error-message" style="display: none;"></div>
-                <div id="statementsList" class="statements-list"></div>
-            </section>
-        </main>
-
-        <footer>
-            <p>Powered by <a href="https://github.com/c-riq/stated" target="_blank">Stated Protocol</a> v5</p>
-        </footer>
+    <!-- Statement Detail Modal -->
+    <div id="statementModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div id="modalBody"></div>
+        </div>
     </div>
 
     <script type="module" src="app.js"></script>

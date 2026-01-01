@@ -11,6 +11,7 @@ class StatementViewer {
         this.peerStatements = [];
         this.statementsByHash = new Map();
         this.responsesByHash = new Map();
+        this.expandedStatements = new Set();
         this.init();
     }
 
@@ -18,11 +19,28 @@ class StatementViewer {
         // Set up event listeners
         document.getElementById('loadStatements').addEventListener('click', () => this.loadStatements());
         
-        // Load from URL parameter if present
+        // Modal close
+        const modal = document.getElementById('statementModal');
+        const closeBtn = document.querySelector('.modal-close');
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // Auto-load from current origin or URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const baseUrl = urlParams.get('baseUrl');
         if (baseUrl) {
             document.getElementById('baseUrl').value = baseUrl;
+            this.loadStatements();
+        } else {
+            // Auto-load from current origin
+            const defaultUrl = `${window.location.origin}/.well-known/statements/`;
+            document.getElementById('baseUrl').value = defaultUrl;
             this.loadStatements();
         }
     }
@@ -53,6 +71,12 @@ class StatementViewer {
         if (!this.baseUrl.endsWith('/')) {
             this.baseUrl += '/';
         }
+
+        // Clear all data to prevent duplication
+        this.statements = [];
+        this.peerStatements = [];
+        this.statementsByHash.clear();
+        this.responsesByHash.clear();
 
         this.showLoading(true);
         this.showError(null);
@@ -450,40 +474,34 @@ class StatementViewer {
         const card = document.createElement('div');
         card.className = 'statement-card';
 
-        // Header with meta information
+        // Compact header
         const header = document.createElement('div');
         header.className = 'statement-header';
 
-        const meta = document.createElement('div');
-        meta.className = 'statement-meta';
+        const authorInfo = document.createElement('div');
+        authorInfo.className = 'author-info';
+        
+        const authorName = document.createElement('div');
+        authorName.className = 'author-name';
+        authorName.textContent = statement.author || statement.domain || 'Unknown';
+        authorInfo.appendChild(authorName);
+        
+        const domainTime = document.createElement('div');
+        domainTime.className = 'domain-time';
+        const domain = statement.domain || 'Unknown domain';
+        const timeAgo = this.getTimeAgo(new Date(statement.time));
+        domainTime.textContent = `@${domain} · ${timeAgo}`;
+        authorInfo.appendChild(domainTime);
+        
+        header.appendChild(authorInfo);
 
-        const domain = document.createElement('div');
-        domain.className = 'statement-domain';
-        domain.textContent = statement.domain || 'Unknown domain';
-        meta.appendChild(domain);
-
-        if (statement.author) {
-            const author = document.createElement('div');
-            author.className = 'statement-author';
-            author.textContent = statement.author;
-            meta.appendChild(author);
-        }
-
-        if (statement.time) {
-            const time = document.createElement('div');
-            time.className = 'statement-time';
-            time.textContent = new Date(statement.time).toLocaleString();
-            meta.appendChild(time);
-        }
-
-        header.appendChild(meta);
-
-        // Type badge
-        if (statement.type) {
-            const typeBadge = document.createElement('div');
-            typeBadge.className = 'statement-type';
-            typeBadge.textContent = statement.type;
-            header.appendChild(typeBadge);
+        // Verification badge
+        if (statement.signature) {
+            const verifyBadge = document.createElement('div');
+            verifyBadge.className = statement.signatureVerified ? 'verify-badge verified' : 'verify-badge unverified';
+            verifyBadge.textContent = statement.signatureVerified ? '✓' : '✗';
+            verifyBadge.title = statement.signatureVerified ? 'Verified signature' : 'Invalid signature';
+            header.appendChild(verifyBadge);
         }
 
         card.appendChild(header);
@@ -494,20 +512,7 @@ class StatementViewer {
         content.textContent = statement.content;
         card.appendChild(content);
 
-        // Tags
-        if (statement.tags && statement.tags.length > 0) {
-            const tagsContainer = document.createElement('div');
-            tagsContainer.className = 'statement-tags';
-            statement.tags.forEach(tag => {
-                const tagElement = document.createElement('span');
-                tagElement.className = 'tag';
-                tagElement.textContent = tag;
-                tagsContainer.appendChild(tagElement);
-            });
-            card.appendChild(tagsContainer);
-        }
-
-        // Attachments
+        // Attachments (images and PDFs)
         if (statement.attachments && statement.attachments.length > 0) {
             const attachmentsContainer = document.createElement('div');
             attachmentsContainer.className = 'statement-attachments';
@@ -517,7 +522,6 @@ class StatementViewer {
                 const extension = attachment.split('.').pop().toLowerCase();
                 
                 if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-                    // Display images inline
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'attachment-image-container';
                     
@@ -527,15 +531,14 @@ class StatementViewer {
                     img.className = 'attachment-image';
                     img.loading = 'lazy';
                     
-                    // Add click to open in new tab
-                    img.addEventListener('click', () => {
+                    img.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         window.open(attachmentUrl, '_blank');
                     });
                     
                     imageContainer.appendChild(img);
                     attachmentsContainer.appendChild(imageContainer);
                 } else if (extension === 'pdf') {
-                    // Embed PDF viewer
                     const pdfContainer = document.createElement('div');
                     pdfContainer.className = 'attachment-pdf-container';
                     
@@ -551,73 +554,90 @@ class StatementViewer {
                     
                     pdfContainer.appendChild(pdfEmbed);
                     
-                    // Add download link
                     const downloadLink = document.createElement('a');
                     downloadLink.href = attachmentUrl;
                     downloadLink.download = attachment;
                     downloadLink.className = 'attachment-download-link';
                     downloadLink.textContent = '⬇ Download PDF';
                     downloadLink.target = '_blank';
+                    downloadLink.addEventListener('click', (e) => e.stopPropagation());
                     pdfContainer.appendChild(downloadLink);
                     
                     attachmentsContainer.appendChild(pdfContainer);
-                } else {
-                    // Other file types - show as link
-                    const attachmentLink = document.createElement('a');
-                    attachmentLink.href = attachmentUrl;
-                    attachmentLink.textContent = attachment;
-                    attachmentLink.target = '_blank';
-                    attachmentLink.className = 'attachment-link';
-                    
-                    const attachmentItem = document.createElement('div');
-                    attachmentItem.className = 'attachment-item';
-                    attachmentItem.appendChild(attachmentLink);
-                    attachmentsContainer.appendChild(attachmentItem);
                 }
             });
             
             card.appendChild(attachmentsContainer);
         }
 
-        // Signature information
-        if (statement.signature) {
-            const signatureBox = document.createElement('div');
-            
-            if (statement.signatureVerified) {
-                signatureBox.className = 'statement-signature signature-valid';
-                
-                const title = document.createElement('h4');
-                title.textContent = '✓ Cryptographically Signed & Verified';
-                signatureBox.appendChild(title);
-            } else {
-                signatureBox.className = 'statement-signature signature-invalid';
-                
-                const title = document.createElement('h4');
-                title.textContent = '✗ Signature Verification Failed';
-                signatureBox.appendChild(title);
-                
-                const warning = document.createElement('div');
-                warning.className = 'signature-warning';
-                if (!statement.hashMatches) {
-                    warning.textContent = 'Warning: Statement hash does not match. The content may have been tampered with.';
-                } else {
-                    warning.textContent = 'Warning: Signature is invalid. This statement may not be authentic.';
-                }
-                signatureBox.appendChild(warning);
-            }
-
-            const info = document.createElement('div');
-            info.className = 'signature-info';
-            info.innerHTML = `
-                <div><strong>Algorithm:</strong> ${this.escapeHtml(statement.signature.algorithm)}</div>
-                <div><strong>Public Key:</strong> ${this.escapeHtml(statement.signature.publicKey)}</div>
-                <div><strong>Statement Hash:</strong> ${this.escapeHtml(statement.signature.hash)}</div>
-            `;
-            signatureBox.appendChild(info);
-            card.appendChild(signatureBox);
-        }
+        // Action bar
+        const actionBar = document.createElement('div');
+        actionBar.className = 'action-bar';
+        
+        const detailsBtn = document.createElement('button');
+        detailsBtn.className = 'action-btn';
+        detailsBtn.textContent = 'Details';
+        detailsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showStatementDetails(statement);
+        });
+        actionBar.appendChild(detailsBtn);
+        
+        card.appendChild(actionBar);
 
         return card;
+    }
+
+    showStatementDetails(statement) {
+        const modal = document.getElementById('statementModal');
+        const modalBody = document.getElementById('modalBody');
+        
+        modalBody.innerHTML = `
+            <h2>Statement Details</h2>
+            
+            <div class="detail-section">
+                <h3>Metadata</h3>
+                <table class="detail-table">
+                    <tr><td><strong>Domain:</strong></td><td>${this.escapeHtml(statement.domain || 'N/A')}</td></tr>
+                    <tr><td><strong>Author:</strong></td><td>${this.escapeHtml(statement.author || 'N/A')}</td></tr>
+                    <tr><td><strong>Time:</strong></td><td>${statement.time ? new Date(statement.time).toLocaleString() : 'N/A'}</td></tr>
+                    <tr><td><strong>Protocol Version:</strong></td><td>${this.escapeHtml(statement.formatVersion || 'N/A')}</td></tr>
+                    ${statement.tags && statement.tags.length > 0 ? `<tr><td><strong>Tags:</strong></td><td>${statement.tags.map(t => this.escapeHtml(t)).join(', ')}</td></tr>` : ''}
+                    ${statement.supersededStatement ? `<tr><td><strong>Supersedes:</strong></td><td>${this.escapeHtml(statement.supersededStatement)}</td></tr>` : ''}
+                </table>
+            </div>
+
+            ${statement.signature ? `
+            <div class="detail-section">
+                <h3>Signature ${statement.signatureVerified ? '✓ Verified' : '✗ Invalid'}</h3>
+                <table class="detail-table">
+                    <tr><td><strong>Algorithm:</strong></td><td>${this.escapeHtml(statement.signature.algorithm)}</td></tr>
+                    <tr><td><strong>Public Key:</strong></td><td class="monospace">${this.escapeHtml(statement.signature.publicKey)}</td></tr>
+                    <tr><td><strong>Statement Hash:</strong></td><td class="monospace">${this.escapeHtml(statement.signature.hash)}</td></tr>
+                    <tr><td><strong>Signature:</strong></td><td class="monospace">${this.escapeHtml(statement.signature.signature)}</td></tr>
+                </table>
+                ${!statement.signatureVerified ? '<p class="warning-text">⚠️ This signature could not be verified. The statement may have been tampered with.</p>' : ''}
+            </div>
+            ` : ''}
+
+            <div class="detail-section">
+                <h3>Raw Statement</h3>
+                <pre class="raw-statement">${this.escapeHtml(statement.raw)}</pre>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+    }
+
+    getTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        
+        if (seconds < 60) return `${seconds}s`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
+        
+        return date.toLocaleDateString();
     }
 
     createResponsesContainer(responses) {
