@@ -588,6 +588,12 @@ class StatementViewer {
         // Prevent body scrolling when modal is open
         document.body.classList.add('modal-open');
         
+        // Calculate statement hash
+        const statementHash = sha256(statement.raw);
+        
+        // Construct raw file URL
+        const rawFileUrl = `${this.baseUrl}${statementHash}.txt`;
+        
         modalBody.innerHTML = `
             <h2>Statement Details</h2>
             
@@ -598,6 +604,8 @@ class StatementViewer {
                     <tr><td><strong>Author:</strong></td><td>${this.escapeHtml(statement.author || 'N/A')}</td></tr>
                     <tr><td><strong>Time:</strong></td><td>${statement.time ? new Date(statement.time).toLocaleString() : 'N/A'}</td></tr>
                     <tr><td><strong>Protocol Version:</strong></td><td>${this.escapeHtml(statement.formatVersion || 'N/A')}</td></tr>
+                    <tr><td><strong>Statement Hash:</strong></td><td class="monospace">${this.escapeHtml(statementHash)}</td></tr>
+                    <tr><td><strong>Raw File:</strong></td><td><a href="${this.escapeHtml(rawFileUrl)}" target="_blank" rel="noopener noreferrer">${this.escapeHtml(statementHash)}.txt</a></td></tr>
                     ${statement.tags && statement.tags.length > 0 ? `<tr><td><strong>Tags:</strong></td><td>${statement.tags.map(t => this.escapeHtml(t)).join(', ')}</td></tr>` : ''}
                     ${statement.supersededStatement ? `<tr><td><strong>Supersedes:</strong></td><td>${this.escapeHtml(statement.supersededStatement)}</td></tr>` : ''}
                 </table>
