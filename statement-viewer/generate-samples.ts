@@ -1,6 +1,8 @@
-const { writeFile, mkdir, readFile } = require('fs/promises');
-const { join } = require('path');
-const {
+import { writeFile, mkdir, readFile } from 'fs/promises';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import {
     buildStatement,
     buildPollContent,
     buildOrganisationVerificationContent,
@@ -9,23 +11,38 @@ const {
     buildSignedStatement,
     generateKeyPair,
     sha256,
-} = require('stated-protocol-parser');
+} from 'stated-protocol-parser';
 
-// __dirname is available in CommonJS
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const WELL_KNOWN_DIR = join(__dirname, '.well-known');
+// Go up one level from dist to project root
+const PROJECT_ROOT = join(__dirname, '..');
+const WELL_KNOWN_DIR = join(PROJECT_ROOT, '.well-known');
 const STATEMENTS_DIR = join(WELL_KNOWN_DIR, 'statements');
 const ATTACHMENTS_DIR = join(STATEMENTS_DIR, 'attachments');
 const PEERS_DIR = join(STATEMENTS_DIR, 'peers');
 
-async function ensureDirectories() {
+interface PeerDirectories {
+    peerDir: string;
+    peerStatementsDir: string;
+    peerAttachmentsDir: string;
+}
+
+interface PeerInfo {
+    domain: string;
+    author: string;
+    response: string;
+}
+
+async function ensureDirectories(): Promise<void> {
     await mkdir(WELL_KNOWN_DIR, { recursive: true });
     await mkdir(STATEMENTS_DIR, { recursive: true });
     await mkdir(ATTACHMENTS_DIR, { recursive: true });
     await mkdir(PEERS_DIR, { recursive: true });
 }
 
-async function ensurePeerDirectories(peerDomain) {
+async function ensurePeerDirectories(peerDomain: string): Promise<PeerDirectories> {
     const peerDir = join(PEERS_DIR, peerDomain);
     const peerStatementsDir = join(peerDir, 'statements');
     const peerAttachmentsDir = join(peerStatementsDir, 'attachments');
@@ -35,7 +52,7 @@ async function ensurePeerDirectories(peerDomain) {
     return { peerDir, peerStatementsDir, peerAttachmentsDir };
 }
 
-async function createAttachment(filename, content) {
+async function createAttachment(filename: string, content: Buffer): Promise<string> {
     const hash = sha256(content);
     const ext = filename.split('.').pop();
     const attachmentFilename = `${hash}.${ext}`;
@@ -44,12 +61,12 @@ async function createAttachment(filename, content) {
     return attachmentFilename;
 }
 
-async function generateSampleStatements() {
+async function generateSampleStatements(): Promise<void> {
     console.log('Generating sample statements...');
 
-    const statements = [];
-    const statementFiles = [];
-    const attachmentFiles = [];
+    const statements: string[] = [];
+    const statementFiles: string[] = [];
+    const attachmentFiles: string[] = [];
 
     // Generate key pair for signed statements
     const { publicKey, privateKey } = await generateKeyPair();
@@ -94,9 +111,10 @@ async function generateSampleStatements() {
         province: 'California',
         legalForm: 'corporation',
         domain: 'techinnovations.example',
+        foreignDomain: 'example.com',
         serialNumber: '123456789',
         employeeCount: '100-1000',
-        confidence: '0.95',
+        confidence: 0.95,
     });
     const statement3 = buildStatement({
         domain: 'example.com',
@@ -246,7 +264,7 @@ async function generateSampleStatements() {
     });
     const signedStatement10 = await buildSignedStatement(statement10, privateKey, publicKey);
     // Deliberately corrupt the signature by changing one character
-    const corruptedStatement10 = signedStatement10.replace(/Signature: ([A-Za-z0-9_-]+)/, (match, sig) => {
+    const corruptedStatement10 = signedStatement10.replace(/Signature: ([A-Za-z0-9_-]+)/, (match: string, sig: string) => {
         // Change the first character of the signature
         const corruptedSig = 'X' + sig.substring(1);
         return `Signature: ${corruptedSig}`;
@@ -287,10 +305,10 @@ async function generateSampleStatements() {
     console.log('2. Open: http://localhost:3033/?baseUrl=http://localhost:3033/.well-known/statements/');
 }
 
-async function generatePeerReplications(referencedStatement) {
+async function generatePeerReplications(referencedStatement: string): Promise<void> {
     console.log('\nGenerating peer replication data...');
     
-    const peers = [
+    const peers: PeerInfo[] = [
         {
             domain: 'partner-org.example',
             author: 'Partner Organization',
@@ -303,7 +321,7 @@ async function generatePeerReplications(referencedStatement) {
         },
     ];
 
-    const peerDomains = [];
+    const peerDomains: string[] = [];
     const statementHash = sha256(referencedStatement);
 
     for (const peer of peers) {
@@ -366,7 +384,7 @@ async function generatePeerReplications(referencedStatement) {
 // Run the generator
 ensureDirectories()
     .then(() => generateSampleStatements())
-    .catch((error) => {
+    .catch((error: Error) => {
         console.error('Error generating samples:', error);
         process.exit(1);
     });

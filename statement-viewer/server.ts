@@ -1,10 +1,18 @@
-const { createServer } = require('http');
-const { readFile } = require('fs/promises');
-const { extname, join } = require('path');
+import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { readFile } from 'fs/promises';
+import { extname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Go up one level from dist to project root
+const PROJECT_ROOT = join(__dirname, '..');
 
 const PORT = 3033;
 
-const MIME_TYPES = {
+const MIME_TYPES: Record<string, string> = {
     '.html': 'text/html',
     '.css': 'text/css',
     '.js': 'application/javascript',
@@ -17,7 +25,7 @@ const MIME_TYPES = {
     '.svg': 'image/svg+xml',
 };
 
-const server = createServer(async (req, res) => {
+const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -29,7 +37,7 @@ const server = createServer(async (req, res) => {
         return;
     }
 
-    let filePath = req.url === '/' ? '/index.html' : req.url;
+    let filePath = req.url === '/' ? '/index.html' : req.url || '/index.html';
     
     // Remove query string
     const queryIndex = filePath.indexOf('?');
@@ -37,7 +45,7 @@ const server = createServer(async (req, res) => {
         filePath = filePath.substring(0, queryIndex);
     }
 
-    const fullPath = join(__dirname, filePath);
+    const fullPath = join(PROJECT_ROOT, filePath);
     const ext = extname(filePath);
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -45,7 +53,7 @@ const server = createServer(async (req, res) => {
         const content = await readFile(fullPath);
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(content);
-    } catch (error) {
+    } catch (error: any) {
         if (error.code === 'ENOENT') {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
             res.end('404 Not Found');
