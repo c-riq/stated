@@ -179,6 +179,23 @@ async function generateSampleStatements() {
     const signedStatement9 = await buildSignedStatement(statement9, privateKey, publicKey);
     statements.push(signedStatement9);
 
+    // 10. Statement with deliberately corrupted signature (for demonstration)
+    const statement10 = buildStatement({
+        domain: 'suspicious-domain.example',
+        author: 'Suspicious Actor',
+        time: new Date('2024-06-15T16:00:00Z'),
+        tags: ['security', 'demonstration'],
+        content: 'This statement has a tampered signature to demonstrate signature verification failure.',
+    });
+    const signedStatement10 = await buildSignedStatement(statement10, privateKey, publicKey);
+    // Deliberately corrupt the signature by changing one character
+    const corruptedStatement10 = signedStatement10.replace(/Signature: ([A-Za-z0-9_-]+)/, (match, sig) => {
+        // Change the first character of the signature
+        const corruptedSig = 'X' + sig.substring(1);
+        return `Signature: ${corruptedSig}`;
+    });
+    statements.push(corruptedStatement10);
+
     // Write individual statement files
     for (const statement of statements) {
         const hash = sha256(statement);
