@@ -81,6 +81,9 @@ async function generateSampleStatements() {
         content: pollContent,
     });
     statements.push(statement2);
+    
+    // Calculate the poll statement hash for use in vote
+    const pollStatementHash = sha256(statement2);
 
     // 3. Organisation verification
     const orgVerification = buildOrganisationVerificationContent({
@@ -153,9 +156,9 @@ async function generateSampleStatements() {
     const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
     statements.push(signedStatement6);
 
-    // 7. Vote statement
+    // 7. Vote statement - using actual poll hash
     const voteContent = buildVoteContent({
-        pollHash: 'abc123def456',
+        pollHash: pollStatementHash,
         poll: 'Should we implement a 4-day work week?',
         vote: 'Yes',
     });
@@ -167,6 +170,49 @@ async function generateSampleStatements() {
         content: voteContent,
     });
     statements.push(statement7);
+    
+    // 7b. Additional vote statements for the same poll
+    const voteContent2 = buildVoteContent({
+        pollHash: pollStatementHash,
+        poll: 'Should we implement a 4-day work week?',
+        vote: 'Yes',
+    });
+    const statement7b = buildStatement({
+        domain: 'employee2.example.com',
+        author: 'Jane Smith',
+        time: new Date('2024-02-16T09:15:00Z'),
+        tags: ['vote'],
+        content: voteContent2,
+    });
+    statements.push(statement7b);
+    
+    const voteContent3 = buildVoteContent({
+        pollHash: pollStatementHash,
+        poll: 'Should we implement a 4-day work week?',
+        vote: 'No',
+    });
+    const statement7c = buildStatement({
+        domain: 'employee3.example.com',
+        author: 'Bob Johnson',
+        time: new Date('2024-02-17T14:20:00Z'),
+        tags: ['vote'],
+        content: voteContent3,
+    });
+    statements.push(statement7c);
+    
+    const voteContent4 = buildVoteContent({
+        pollHash: pollStatementHash,
+        poll: 'Should we implement a 4-day work week?',
+        vote: 'Need more discussion',
+    });
+    const statement7d = buildStatement({
+        domain: 'employee4.example.com',
+        author: 'Alice Williams',
+        time: new Date('2024-02-18T11:45:00Z'),
+        tags: ['vote'],
+        content: voteContent4,
+    });
+    statements.push(statement7d);
 
     // 8. Statement superseding another
     const statement8 = buildStatement({

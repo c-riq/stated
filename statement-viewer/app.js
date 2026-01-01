@@ -11,6 +11,7 @@ class StatementViewer {
         this.peerStatements = [];
         this.statementsByHash = new Map();
         this.responsesByHash = new Map();
+        this.votesByPollHash = new Map();
         this.expandedStatements = new Set();
         this.init();
     }
@@ -77,6 +78,7 @@ class StatementViewer {
         this.peerStatements = [];
         this.statementsByHash.clear();
         this.responsesByHash.clear();
+        this.votesByPollHash.clear();
 
         this.showLoading(true);
         this.showError(null);
@@ -170,6 +172,9 @@ class StatementViewer {
                     const hash = sha256(stmt.raw);
                     this.statementsByHash.set(hash, stmt);
                 });
+                
+                // Build votes map
+                this.buildVotesMap();
                 
                 // Verify signatures for all statements
                 this.verifyAllSignatures().then(() => {
@@ -327,7 +332,10 @@ class StatementViewer {
             // Build response map
             this.buildResponseMap();
             
-            // Re-render to show responses
+            // Build votes map (in case votes came from peers)
+            this.buildVotesMap();
+            
+            // Re-render to show responses and votes
             this.renderStatements();
         } catch (error) {
             console.error('Error loading peer statements:', error);
@@ -350,6 +358,32 @@ class StatementViewer {
         });
         
         console.log(`Built response map with ${this.responsesByHash.size} referenced statements`);
+    }
+
+    buildVotesMap() {
+        this.votesByPollHash.clear();
+        
+        // Check both main statements and peer statements for votes
+        const allStatements = [...this.statements, ...this.peerStatements];
+        
+        allStatements.forEach(stmt => {
+            // Check if this is a vote statement
+            const voteMatch = stmt.content.match(/Type: Vote\s+Hash of poll statement: ([^\s]+)\s+Poll: ([^\n]+)\s+Vote: ([^\n]+)/);
+            if (voteMatch) {
+                const pollHash = voteMatch[1];
+                const vote = voteMatch[3];
+                
+                if (!this.votesByPollHash.has(pollHash)) {
+                    this.votesByPollHash.set(pollHash, []);
+                }
+                this.votesByPollHash.get(pollHash).push({
+                    statement: stmt,
+                    vote: vote
+                });
+            }
+        });
+        
+        console.log(`Built votes map with ${this.votesByPollHash.size} polls having votes`);
     }
 
     async verifyPeerSignatures() {
@@ -460,8 +494,18 @@ class StatementViewer {
             const card = this.createStatementCard(statement);
             container.appendChild(card);
             
-            // Add responses if any
             const statementHash = sha256(statement.raw);
+            
+            // Add votes if this is a poll
+            if (statement.type === 'poll') {
+                const votes = this.votesByPollHash.get(statementHash);
+                if (votes && votes.length > 0) {
+                    const votesContainer = this.createVotesContainer(statement, votes);
+                    container.appendChild(votesContainer);
+                }
+            }
+            
+            // Add responses if any
             const responses = this.responsesByHash.get(statementHash);
             if (responses && responses.length > 0) {
                 const responsesContainer = this.createResponsesContainer(responses);
@@ -660,6 +704,170 @@ class StatementViewer {
             const responseCard = this.createResponseCard(response);
             container.appendChild(responseCard);
         });
+        
+        return container;
+    }
+
+    createVotesContainer(pollStatement, votes) {
+        const container = document.createElement('div');
+        container.className = 'votes-container';
+        
+        // Parse poll to get options
+        const pollMatch = pollStatement.content.match(/Poll: ([^\n]+)/);
+        const pollQuestion = pollMatch ? pollMatch[1] : 'Unknown poll';
+        
+        // Extract options from poll content
+        const options = [];
+        for (let i = 1; i <= 5; i++) {
+            const optionMatch = pollStatement.content.match(new RegExp('Option ' + i + ': ([^\\n]+)'));
+            if (optionMatch) {
+                options.push(optionMatch[1]);
+            }
+        }
+        
+        // Count votes by option
+        const voteCounts = {};
+        votes.forEach(({ vote }) => {
+            voteCounts[vote] = (voteCounts[vote] || 0) + 1;
+        });
+        
+        const totalVotes = votes.length;
+        
+        const header = document.createElement('div');
+        header.className = 'votes-header';
+        header.textContent = `${totalVotes} Vote${totalVotes !== 1 ? 's' : ''}`;
+        container.appendChild(header);
+        
+        // Create vote results display
+        const resultsContainer = document.createElement('div');
+        resultsContainer.className = 'votes-results';
+        
+        // Display results for each option
+        options.forEach(option => {
+            const count = voteCounts[option] || 0;
+            const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+            
+            const resultRow = document.createElement('div');
+            resultRow.className = 'vote-result-row';
+            
+            const optionLabel = document.createElement('div');
+            optionLabel.className = 'vote-option-label';
+            optionLabel.textContent = option;
+            resultRow.appendChild(optionLabel);
+            
+            const barContainer = document.createElement('div');
+            barContainer.className = 'vote-bar-container';
+            
+            const bar = document.createElement('div');
+            bar.className = 'vote-bar';
+            bar.style.width = `${percentage}%`;
+            barContainer.appendChild(bar);
+            
+            const countLabel = document.createElement('div');
+            countLabel.className = 'vote-count-label';
+            countLabel.textContent = `${count} (${percentage}%)`;
+            barContainer.appendChild(countLabel);
+            
+            resultRow.appendChild(barContainer);
+            resultsContainer.appendChild(resultRow);
+        });
+        
+        // Handle votes for options not in the original list (if allowArbitraryVote was true)
+        Object.keys(voteCounts).forEach(vote => {
+            if (!options.includes(vote)) {
+                const count = voteCounts[vote];
+                const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                
+                const resultRow = document.createElement('div');
+                resultRow.className = 'vote-result-row';
+                
+                const optionLabel = document.createElement('div');
+                optionLabel.className = 'vote-option-label';
+                optionLabel.textContent = `${vote} (other)`;
+                resultRow.appendChild(optionLabel);
+                
+                const barContainer = document.createElement('div');
+                barContainer.className = 'vote-bar-container';
+                
+                const bar = document.createElement('div');
+                bar.className = 'vote-bar';
+                bar.style.width = `${percentage}%`;
+                barContainer.appendChild(bar);
+                
+                const countLabel = document.createElement('div');
+                countLabel.className = 'vote-count-label';
+                countLabel.textContent = `${count} (${percentage}%)`;
+                barContainer.appendChild(countLabel);
+                
+                resultRow.appendChild(barContainer);
+                resultsContainer.appendChild(resultRow);
+            }
+        });
+        
+        container.appendChild(resultsContainer);
+        
+        // Show individual votes (collapsed by default)
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'votes-toggle-btn';
+        toggleBtn.textContent = 'Show individual votes';
+        
+        const votesListContainer = document.createElement('div');
+        votesListContainer.className = 'votes-list-container';
+        votesListContainer.style.display = 'none';
+        
+        // Sort votes by time
+        const sortedVotes = [...votes].sort((a, b) => {
+            const timeA = new Date(a.statement.time);
+            const timeB = new Date(b.statement.time);
+            return timeA - timeB;
+        });
+        
+        sortedVotes.forEach(({ statement, vote }) => {
+            const voteCard = document.createElement('div');
+            voteCard.className = 'vote-card';
+            
+            const voteHeader = document.createElement('div');
+            voteHeader.className = 'vote-header';
+            
+            const voterInfo = document.createElement('div');
+            voterInfo.className = 'voter-info';
+            voterInfo.textContent = `${statement.author || statement.domain} voted: ${vote}`;
+            voteHeader.appendChild(voterInfo);
+            
+            const voteTime = document.createElement('div');
+            voteTime.className = 'vote-time';
+            voteTime.textContent = new Date(statement.time).toLocaleString();
+            voteHeader.appendChild(voteTime);
+            
+            voteCard.appendChild(voteHeader);
+            
+            // Signature indicator
+            if (statement.signature) {
+                const signatureIndicator = document.createElement('span');
+                signatureIndicator.className = statement.signatureVerified
+                    ? 'vote-signature-indicator verified'
+                    : 'vote-signature-indicator unverified';
+                signatureIndicator.textContent = statement.signatureVerified
+                    ? '✓ Verified'
+                    : '✗ Invalid';
+                voteCard.appendChild(signatureIndicator);
+            }
+            
+            votesListContainer.appendChild(voteCard);
+        });
+        
+        toggleBtn.addEventListener('click', () => {
+            if (votesListContainer.style.display === 'none') {
+                votesListContainer.style.display = 'block';
+                toggleBtn.textContent = 'Hide individual votes';
+            } else {
+                votesListContainer.style.display = 'none';
+                toggleBtn.textContent = 'Show individual votes';
+            }
+        });
+        
+        container.appendChild(toggleBtn);
+        container.appendChild(votesListContainer);
         
         return container;
     }
