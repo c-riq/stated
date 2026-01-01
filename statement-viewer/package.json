@@ -4,7 +4,8 @@
   "description": "Static web application for viewing Stated protocol statements",
   "scripts": {
     "start": "node server.cjs",
-    "generate-samples": "node generate-samples.cjs"
+    "generate-samples": "node generate-samples.cjs",
+    "update-lib": "cd ../stated-protocol-parser && npm run build && cd ../statement-viewer && rm -rf lib && mkdir -p lib && cp ../stated-protocol-parser/dist/esm/index.js lib/ && cp ../stated-protocol-parser/dist/esm/index.js.map lib/ && cp ../stated-protocol-parser/dist/esm/index.d.ts lib/"
   },
   "keywords": [
     "stated",
