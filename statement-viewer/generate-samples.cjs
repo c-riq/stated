@@ -1,4 +1,4 @@
-const { writeFile, mkdir } = require('fs/promises');
+const { writeFile, mkdir, readFile } = require('fs/promises');
 const { join } = require('path');
 const {
     buildStatement,
@@ -49,6 +49,7 @@ async function generateSampleStatements() {
 
     const statements = [];
     const statementFiles = [];
+    const attachmentFiles = [];
 
     // Generate key pair for signed statements
     const { publicKey, privateKey } = await generateKeyPair();
@@ -118,26 +119,36 @@ async function generateSampleStatements() {
     });
     statements.push(statement4);
 
-    // 5. Statement with 2 images
+    // 5. Statement with 2 images - read and hash the actual files
+    const image1Content = await readFile(join(ATTACHMENTS_DIR, 'image1.png'));
+    const image2Content = await readFile(join(ATTACHMENTS_DIR, 'image2.png'));
+    const image1Filename = await createAttachment('image1.png', image1Content);
+    const image2Filename = await createAttachment('image2.png', image2Content);
+    attachmentFiles.push(image1Filename, image2Filename);
+    
     const statement5 = buildStatement({
         domain: 'example.com',
         author: 'Example Organization',
         time: new Date('2024-05-20T11:20:00Z'),
         tags: ['photos', 'event'],
         content: 'Check out these amazing photos from our recent company event!',
-        attachments: ['image1.png', 'image2.png'],
+        attachments: [image1Filename, image2Filename],
     });
     const signedStatement5 = await buildSignedStatement(statement5, privateKey, publicKey);
     statements.push(signedStatement5);
 
-    // 6. Statement with PDF document
+    // 6. Statement with PDF document - read and hash the actual file
+    const pdfContent = await readFile(join(ATTACHMENTS_DIR, 'document.pdf'));
+    const pdfFilename = await createAttachment('document.pdf', pdfContent);
+    attachmentFiles.push(pdfFilename);
+    
     const statement6 = buildStatement({
         domain: 'example.com',
         author: 'Example Organization',
         time: new Date('2024-05-21T14:30:00Z'),
         tags: ['report', 'documentation'],
         content: 'Our comprehensive annual report is now available. Please review the attached document for detailed financial information and strategic insights.',
-        attachments: ['document.pdf'],
+        attachments: [pdfFilename],
     });
     const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
     statements.push(signedStatement6);
@@ -216,7 +227,6 @@ async function generateSampleStatements() {
     console.log('Created: statements/index.txt');
 
     // Write attachments index.txt
-    const attachmentFiles = ['image1.png', 'image2.png', 'document.pdf'];
     await writeFile(join(ATTACHMENTS_DIR, 'index.txt'), attachmentFiles.join('\n'));
     console.log('Created: statements/attachments/index.txt');
 
