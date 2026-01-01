@@ -73,28 +73,28 @@ async function generateSampleStatements(): Promise<void> {
 
     // 1. Plain statement with signature
     const statement1 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-01-15T10:00:00Z'),
-        tags: ['announcement', 'update'],
-        content: 'We are pleased to announce our new sustainability initiative.',
+        tags: ['announcement', 'treaty'],
+        content: 'We are pleased to announce the initiation of multilateral treaty negotiations on digital cooperation frameworks.',
     });
     const signedStatement1 = await buildSignedStatement(statement1, privateKey, publicKey);
     statements.push(signedStatement1);
 
     // 2. Poll statement
     const pollContent = buildPollContent({
-        poll: 'Should we implement a 4-day work week?',
-        options: ['Yes', 'No', 'Need more discussion'],
+        poll: 'Should the treaty include provisions for cross-border data protection?',
+        options: ['Yes, with strict enforcement', 'Yes, with flexible implementation', 'No', 'Requires further study'],
         deadline: new Date('2024-12-31T23:59:59Z'),
-        scopeDescription: 'All employees',
+        scopeDescription: 'All participating foreign ministries',
         allowArbitraryVote: false,
     });
     const statement2 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-02-01T14:30:00Z'),
-        tags: ['poll', 'hr'],
+        tags: ['poll', 'treaty-negotiation'],
         content: pollContent,
     });
     statements.push(statement2);
@@ -104,38 +104,38 @@ async function generateSampleStatements(): Promise<void> {
 
     // 3. Organisation verification
     const orgVerification = buildOrganisationVerificationContent({
-        name: 'Tech Innovations Inc.',
-        englishName: 'Tech Innovations Inc.',
-        country: 'United States',
-        city: 'San Francisco',
-        province: 'California',
-        legalForm: 'corporation',
-        domain: 'techinnovations.example',
-        foreignDomain: 'example.com',
-        serialNumber: '123456789',
-        employeeCount: '100-1000',
-        confidence: 0.95,
+        name: 'Ministry of Foreign Affairs of Pacifica',
+        englishName: 'Ministry of Foreign Affairs of Pacifica',
+        country: 'Pacifica',
+        city: 'Port Azure',
+        province: 'Central District',
+        legalForm: 'foreign affairs ministry',
+        domain: 'foreign.pacifica.gov',
+        foreignDomain: 'foreign.atlantea.gov',
+        serialNumber: 'GOV-PAC-2024-001',
+        employeeCount: '1000-10,000',
+        confidence: 0.98,
     });
     const statement3 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-03-10T09:15:00Z'),
-        tags: ['verification', 'partner'],
+        tags: ['verification', 'diplomatic-relations'],
         content: orgVerification,
     });
     statements.push(statement3);
 
     // 4. Statement with translations
     const statement4 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-04-05T16:45:00Z'),
-        tags: ['multilingual', 'announcement'],
-        content: 'We are expanding our services to new markets.',
+        tags: ['multilingual', 'treaty-announcement'],
+        content: 'We welcome all nations to participate in the digital cooperation treaty negotiations.',
         translations: {
-            es: 'Estamos expandiendo nuestros servicios a nuevos mercados.',
-            fr: 'Nous étendons nos services à de nouveaux marchés.',
-            de: 'Wir erweitern unsere Dienstleistungen auf neue Märkte.',
+            es: 'Damos la bienvenida a todas las naciones a participar en las negociaciones del tratado de cooperación digital.',
+            fr: 'Nous accueillons toutes les nations pour participer aux négociations du traité de coopération numérique.',
+            de: 'Wir heißen alle Nationen willkommen, an den Verhandlungen über den Vertrag zur digitalen Zusammenarbeit teilzunehmen.',
         },
     });
     statements.push(statement4);
@@ -148,11 +148,11 @@ async function generateSampleStatements(): Promise<void> {
     attachmentFiles.push(image1Filename, image2Filename);
     
     const statement5 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-05-20T11:20:00Z'),
-        tags: ['photos', 'event'],
-        content: 'Check out these amazing photos from our recent company event!',
+        tags: ['visual-content', 'global-coordination'],
+        content: 'Proposed visual designs for the global coordination website. These mockups demonstrate the user interface for treaty monitoring and diplomatic collaboration.',
         attachments: [image1Filename, image2Filename],
     });
     const signedStatement5 = await buildSignedStatement(statement5, privateKey, publicKey);
@@ -164,11 +164,11 @@ async function generateSampleStatements(): Promise<void> {
     attachmentFiles.push(pdfFilename);
     
     const statement6 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-05-21T14:30:00Z'),
-        tags: ['report', 'documentation'],
-        content: 'Our comprehensive annual report is now available. Please review the attached document for detailed financial information and strategic insights.',
+        tags: ['publication', 'digital-diplomacy'],
+        content: 'We are pleased to share our comprehensive publication on digital diplomacy practices. This document explores innovative approaches to international relations in the digital age and provides insights for modern diplomatic engagement.',
         attachments: [pdfFilename],
     });
     const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
@@ -177,14 +177,14 @@ async function generateSampleStatements(): Promise<void> {
     // 7. Vote statement - using actual poll hash
     const voteContent = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should we implement a 4-day work week?',
-        vote: 'Yes',
+        poll: 'Should the treaty include provisions for cross-border data protection?',
+        vote: 'Yes, with strict enforcement',
     });
     const statement7 = buildStatement({
-        domain: 'employee.example.com',
-        author: 'John Doe',
+        domain: 'foreign.pacifica.gov',
+        author: 'Ministry of Foreign Affairs of Pacifica',
         time: new Date('2024-02-15T10:30:00Z'),
-        tags: ['vote'],
+        tags: ['vote', 'treaty-position'],
         content: voteContent,
     });
     statements.push(statement7);
@@ -192,75 +192,75 @@ async function generateSampleStatements(): Promise<void> {
     // 7b. Additional vote statements for the same poll
     const voteContent2 = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should we implement a 4-day work week?',
-        vote: 'Yes',
+        poll: 'Should the treaty include provisions for cross-border data protection?',
+        vote: 'Yes, with flexible implementation',
     });
     const statement7b = buildStatement({
-        domain: 'employee2.example.com',
-        author: 'Jane Smith',
+        domain: 'foreign.nordica.gov',
+        author: 'Ministry of Foreign Affairs of Nordica',
         time: new Date('2024-02-16T09:15:00Z'),
-        tags: ['vote'],
+        tags: ['vote', 'treaty-position'],
         content: voteContent2,
     });
     statements.push(statement7b);
     
     const voteContent3 = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should we implement a 4-day work week?',
-        vote: 'No',
+        poll: 'Should the treaty include provisions for cross-border data protection?',
+        vote: 'Requires further study',
     });
     const statement7c = buildStatement({
-        domain: 'employee3.example.com',
-        author: 'Bob Johnson',
+        domain: 'foreign.australis.gov',
+        author: 'Ministry of Foreign Affairs of Australis',
         time: new Date('2024-02-17T14:20:00Z'),
-        tags: ['vote'],
+        tags: ['vote', 'treaty-position'],
         content: voteContent3,
     });
     statements.push(statement7c);
     
     const voteContent4 = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should we implement a 4-day work week?',
-        vote: 'Need more discussion',
+        poll: 'Should the treaty include provisions for cross-border data protection?',
+        vote: 'Yes, with strict enforcement',
     });
     const statement7d = buildStatement({
-        domain: 'employee4.example.com',
-        author: 'Alice Williams',
+        domain: 'foreign.meridia.gov',
+        author: 'Ministry of Foreign Affairs of Meridia',
         time: new Date('2024-02-18T11:45:00Z'),
-        tags: ['vote'],
+        tags: ['vote', 'treaty-position'],
         content: voteContent4,
     });
     statements.push(statement7d);
 
     // 8. Statement superseding another
     const statement8 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date('2024-06-01T08:00:00Z'),
-        tags: ['correction', 'update'],
-        content: 'Correction: Our sustainability initiative will launch in Q3, not Q2 as previously stated.',
+        tags: ['correction', 'treaty-update'],
+        content: 'Correction: The multilateral treaty negotiations will commence in Q3, not Q2 as previously announced. This adjustment allows for more comprehensive preparatory consultations.',
         supersededStatement: sha256(statement1),
     });
     statements.push(statement8);
 
     // 9. Recent statement
     const statement9 = buildStatement({
-        domain: 'example.com',
-        author: 'Example Organization',
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
         time: new Date(),
-        tags: ['news', 'announcement'],
-        content: 'We are excited to share our latest achievements and milestones with the community.',
+        tags: ['news', 'diplomatic-progress'],
+        content: 'We are pleased to report significant progress in the treaty negotiations. Five nations have now formally committed to the digital cooperation framework, marking a milestone in international diplomatic collaboration.',
     });
     const signedStatement9 = await buildSignedStatement(statement9, privateKey, publicKey);
     statements.push(signedStatement9);
 
     // 10. Statement with deliberately corrupted signature (for demonstration)
     const statement10 = buildStatement({
-        domain: 'suspicious-domain.example',
-        author: 'Suspicious Actor',
+        domain: 'foreign.unverified.gov',
+        author: 'Unverified Ministry',
         time: new Date('2024-06-15T16:00:00Z'),
         tags: ['security', 'demonstration'],
-        content: 'This statement has a tampered signature to demonstrate signature verification failure.',
+        content: 'This statement has a tampered signature to demonstrate signature verification failure in diplomatic communications.',
     });
     const signedStatement10 = await buildSignedStatement(statement10, privateKey, publicKey);
     // Deliberately corrupt the signature by changing one character
@@ -310,14 +310,14 @@ async function generatePeerReplications(referencedStatement: string): Promise<vo
     
     const peers: PeerInfo[] = [
         {
-            domain: 'partner-org.example',
-            author: 'Partner Organization',
-            response: 'We fully support this sustainability initiative and will collaborate on implementation.',
+            domain: 'foreign.pacifica.gov',
+            author: 'Ministry of Foreign Affairs of Pacifica',
+            response: 'We fully support the digital cooperation treaty initiative and commit to active participation in all negotiation phases.',
         },
         {
-            domain: 'community-group.example',
-            author: 'Community Environmental Group',
-            response: 'This is an excellent step forward. We look forward to seeing the concrete actions.',
+            domain: 'foreign.nordica.gov',
+            author: 'Ministry of Foreign Affairs of Nordica',
+            response: 'This is an excellent diplomatic initiative. We look forward to contributing our expertise in digital governance frameworks.',
         },
     ];
 
@@ -343,7 +343,7 @@ async function generatePeerReplications(referencedStatement: string): Promise<vo
             domain: peer.domain,
             author: peer.author,
             time: new Date('2024-01-16T14:30:00Z'),
-            tags: ['response', 'sustainability'],
+            tags: ['response', 'treaty-support'],
             content: responseContent,
         });
 
