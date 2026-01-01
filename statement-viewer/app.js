@@ -581,7 +581,7 @@ class StatementViewer {
         return card;
     }
 
-    showStatementDetails(statement) {
+    async showStatementDetails(statement) {
         const modal = document.getElementById('statementModal');
         const modalBody = document.getElementById('modalBody');
         
@@ -593,6 +593,43 @@ class StatementViewer {
         
         // Construct raw file URL
         const rawFileUrl = `${this.baseUrl}${statementHash}.txt`;
+        
+        // Get the statement from the hash map to ensure we have the verified version
+        const verifiedStatement = this.statementsByHash.get(statementHash) || statement;
+        
+        // Try to parse signature from raw statement
+        let signatureInfo = null;
+        let signatureVerified = verifiedStatement.signatureVerified;
+        let hashMatches = verifiedStatement.hashMatches;
+        
+        try {
+            const parsed = parseSignedStatement(statement.raw);
+            if (parsed) {
+                signatureInfo = {
+                    algorithm: parsed.algorithm,
+                    publicKey: parsed.publicKey,
+                    hash: parsed.statementHash,
+                    signature: parsed.signature
+                };
+                
+                // Hash validation passed (parseSignedStatement succeeded)
+                hashMatches = true;
+                
+                // Verify signature if not already verified
+                if (signatureVerified === undefined) {
+                    signatureVerified = await verifySignature(
+                        parsed.statement,
+                        parsed.signature,
+                        parsed.publicKey
+                    );
+                }
+            }
+        } catch (error) {
+            console.log('[showStatementDetails] No signature found or parsing failed:', error.message);
+            if (signatureInfo) {
+                hashMatches = false;
+            }
+        }
         
         modalBody.innerHTML = `
             <h2>Statement Details</h2>
@@ -611,16 +648,50 @@ class StatementViewer {
                 </table>
             </div>
 
-            ${statement.signature ? `
+            ${signatureInfo ? `
             <div class="detail-section">
-                <h3>Signature ${statement.signatureVerified ? '✓ Verified' : '✗ Invalid'}</h3>
+                <h3>Signature Validation</h3>
                 <table class="detail-table">
-                    <tr><td><strong>Algorithm:</strong></td><td>${this.escapeHtml(statement.signature.algorithm)}</td></tr>
-                    <tr><td><strong>Public Key:</strong></td><td class="monospace">${this.escapeHtml(statement.signature.publicKey)}</td></tr>
-                    <tr><td><strong>Statement Hash:</strong></td><td class="monospace">${this.escapeHtml(statement.signature.hash)}</td></tr>
-                    <tr><td><strong>Signature:</strong></td><td class="monospace">${this.escapeHtml(statement.signature.signature)}</td></tr>
+                    <tr>
+                        <td><strong>Hash Match:</strong></td>
+                        <td>${hashMatches === true ? '<span style="color: #0072BC;">✓ Valid</span>' : hashMatches === false ? '<span style="color: #dc2626;">✗ Invalid</span>' : '<span style="color: #666;">⏳ Verifying...</span>'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Signature Verification:</strong></td>
+                        <td>${signatureVerified === true ? '<span style="color: #0072BC;">✓ Verified</span>' : signatureVerified === false ? '<span style="color: #dc2626;">✗ Failed</span>' : '<span style="color: #666;">⏳ Verifying...</span>'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Overall Status:</strong></td>
+                        <td><strong>${signatureVerified === true && hashMatches === true ? '<span style="color: #0072BC;">✓ VALID</span>' : signatureVerified === false || hashMatches === false ? '<span style="color: #dc2626;">✗ INVALID</span>' : '<span style="color: #666;">⏳ VERIFYING...</span>'}</strong></td>
+                    </tr>
+                    <tr><td colspan="2" style="height: 12px;"></td></tr>
+                    <tr><td><strong>Algorithm:</strong></td><td>${this.escapeHtml(signatureInfo.algorithm)}</td></tr>
+                    <tr><td><strong>Public Key:</strong></td><td class="monospace">${this.escapeHtml(signatureInfo.publicKey)}</td></tr>
+                    <tr><td><strong>Statement Hash:</strong></td><td class="monospace">${this.escapeHtml(signatureInfo.hash)}</td></tr>
+                    <tr><td><strong>Signature:</strong></td><td class="monospace">${this.escapeHtml(signatureInfo.signature)}</td></tr>
                 </table>
-                ${!statement.signatureVerified ? '<p class="warning-text">⚠️ This signature could not be verified. The statement may have been tampered with.</p>' : ''}
+                ${signatureVerified === false || hashMatches === false ? `
+                    <p class="warning-text">
+                        <strong>⚠️ Signature Validation Failed</strong><br>
+                        ${hashMatches === false ? '• The statement hash does not match the signed hash. The content may have been modified.<br>' : ''}
+                        ${signatureVerified === false ? '• The cryptographic signature verification failed. The signature may be invalid or the public key may not match.<br>' : ''}
+                        This statement should not be trusted.
+                    </p>
+                ` : signatureVerified === true && hashMatches === true ? `
+                    <div style="margin-top: 12px; padding: 12px; background: #e6f2ff; border: 1px solid #0072BC; border-radius: 8px;">
+                        <p style="margin: 0; color: #003366; font-size: 0.875rem;">
+                            <strong>✓ Signature Valid</strong><br>
+                            This statement has been cryptographically verified and can be trusted.
+                        </p>
+                    </div>
+                ` : `
+                    <div style="margin-top: 12px; padding: 12px; background: #f9f9f9; border: 1px solid #d0d0d0; border-radius: 8px;">
+                        <p style="margin: 0; color: #666; font-size: 0.875rem;">
+                            <strong>⏳ Verification In Progress</strong><br>
+                            The signature is being verified...
+                        </p>
+                    </div>
+                `}
             </div>
             ` : ''}
 
