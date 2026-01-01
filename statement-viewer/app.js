@@ -2,7 +2,7 @@
 // Fetches and displays statements from static text files following the Stated protocol v5
 
 // Import stated-protocol-parser library
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib } from './lib/index.js';
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parsePoll, parseStatement as parseStatementLib } from './lib/index.js';
 
 class StatementViewer {
     constructor() {
@@ -160,7 +160,13 @@ class StatementViewer {
                 return [];
             }
 
-            const statements = statementTexts.map(statementText => this.parseStatement(statementText));
+            const statements = statementTexts.map(statementText => {
+                const parsed = parseStatementLib({ statement: statementText });
+                return {
+                    raw: statementText,
+                    ...parsed
+                };
+            });
             
             if (isPeer) {
                 return statements;
@@ -188,104 +194,6 @@ class StatementViewer {
             console.error('Parse error:', error);
             return [];
         }
-    }
-
-    parseStatement(text) {
-        const statement = {
-            raw: text,
-            formatVersion: null,
-            domain: null,
-            author: null,
-            representative: null,
-            time: null,
-            tags: [],
-            supersededStatement: null,
-            content: null,
-            type: null,
-            translations: {},
-            attachments: [],
-            signature: null
-        };
-
-        // Check for signature block
-        const signatureMatch = text.match(/---\nStatement hash: ([^\n]+)\nPublic key: ([^\n]+)\nSignature: ([^\n]+)\nAlgorithm: ([^\n]+)\n?$/);
-        if (signatureMatch) {
-            statement.signature = {
-                hash: signatureMatch[1],
-                publicKey: signatureMatch[2],
-                signature: signatureMatch[3],
-                algorithm: signatureMatch[4]
-            };
-            // Remove signature block from text for parsing
-            text = text.substring(0, signatureMatch.index);
-        }
-
-        const lines = text.split('\n');
-        let i = 0;
-        let inContent = false;
-        let inTranslation = false;
-        let currentTranslationLang = null;
-        let contentLines = [];
-        let translationLines = [];
-
-        while (i < lines.length) {
-            const line = lines[i];
-
-            if (line.startsWith('Stated protocol version: ')) {
-                statement.formatVersion = line.substring('Stated protocol version: '.length);
-            } else if (line.startsWith('Publishing domain: ')) {
-                statement.domain = line.substring('Publishing domain: '.length);
-            } else if (line.startsWith('Author: ')) {
-                statement.author = line.substring('Author: '.length);
-            } else if (line.startsWith('Authorized signing representative: ')) {
-                statement.representative = line.substring('Authorized signing representative: '.length);
-            } else if (line.startsWith('Time: ')) {
-                statement.time = line.substring('Time: '.length);
-            } else if (line.startsWith('Tags: ')) {
-                statement.tags = line.substring('Tags: '.length).split(', ').map(t => t.trim());
-            } else if (line.startsWith('Superseded statement: ')) {
-                statement.supersededStatement = line.substring('Superseded statement: '.length);
-            } else if (line === 'Statement content:') {
-                inContent = true;
-            } else if (line.match(/^Translation ([a-z]{2,3}):$/)) {
-                inContent = false;
-                inTranslation = true;
-                if (currentTranslationLang && translationLines.length > 0) {
-                    statement.translations[currentTranslationLang] = translationLines.join('\n');
-                }
-                currentTranslationLang = line.match(/^Translation ([a-z]{2,3}):$/)[1];
-                translationLines = [];
-            } else if (line.startsWith('Attachments: ')) {
-                inContent = false;
-                inTranslation = false;
-                statement.attachments = line.substring('Attachments: '.length).split(', ').map(a => a.trim());
-            } else if (inTranslation) {
-                // Remove 4-space indentation from translation lines
-                const unindented = line.startsWith('    ') ? line.substring(4) : line;
-                translationLines.push(unindented);
-            } else if (inContent) {
-                // Remove 4-space indentation from content lines
-                const unindented = line.startsWith('    ') ? line.substring(4) : line;
-                contentLines.push(unindented);
-            }
-
-            i++;
-        }
-
-        // Save last translation if any
-        if (currentTranslationLang && translationLines.length > 0) {
-            statement.translations[currentTranslationLang] = translationLines.join('\n');
-        }
-
-        statement.content = contentLines.join('\n').trim();
-
-        // Detect statement type from content
-        const typeMatch = statement.content.match(/^Type: (.+)$/m);
-        if (typeMatch) {
-            statement.type = typeMatch[1];
-        }
-
-        return statement;
     }
 
     async loadPeerStatements() {
@@ -366,24 +274,37 @@ class StatementViewer {
         // Check both main statements and peer statements for votes
         const allStatements = [...this.statements, ...this.peerStatements];
         
+        console.log(`[buildVotesMap] Checking ${allStatements.length} statements for votes`);
+        
         allStatements.forEach(stmt => {
             // Check if this is a vote statement
-            const voteMatch = stmt.content.match(/Type: Vote\s+Hash of poll statement: ([^\s]+)\s+Poll: ([^\n]+)\s+Vote: ([^\n]+)/);
-            if (voteMatch) {
-                const pollHash = voteMatch[1];
-                const vote = voteMatch[3];
-                
-                if (!this.votesByPollHash.has(pollHash)) {
-                    this.votesByPollHash.set(pollHash, []);
+            if (stmt.type && stmt.type.toLowerCase() === 'vote') {
+                try {
+                    // Parse the vote data from the content using the library's parseVote
+                    const voteData = parseVote(stmt.content);
+                    const pollHash = voteData.pollHash;
+                    const vote = voteData.vote;
+                    
+                    console.log(`[buildVotesMap] Found vote: "${vote}" for poll hash: ${pollHash}`);
+                    
+                    if (!this.votesByPollHash.has(pollHash)) {
+                        this.votesByPollHash.set(pollHash, []);
+                    }
+                    this.votesByPollHash.get(pollHash).push({
+                        statement: stmt,
+                        vote: vote,
+                        voteData: voteData
+                    });
+                } catch (error) {
+                    console.error(`[buildVotesMap] Failed to parse vote:`, error);
                 }
-                this.votesByPollHash.get(pollHash).push({
-                    statement: stmt,
-                    vote: vote
-                });
             }
         });
         
-        console.log(`Built votes map with ${this.votesByPollHash.size} polls having votes`);
+        console.log(`[buildVotesMap] Built votes map with ${this.votesByPollHash.size} polls having votes`);
+        this.votesByPollHash.forEach((votes, pollHash) => {
+            console.log(`[buildVotesMap] Poll ${pollHash}: ${votes.length} votes`);
+        });
     }
 
     async verifyPeerSignatures() {
@@ -483,6 +404,21 @@ class StatementViewer {
             return;
         }
 
+        // Build a set of vote statement hashes that are aggregated into polls
+        const aggregatedVoteHashes = new Set();
+        this.statements.forEach(statement => {
+            if (statement.type && statement.type.toLowerCase() === 'poll') {
+                const statementHash = sha256(statement.raw);
+                const votes = this.votesByPollHash.get(statementHash);
+                if (votes && votes.length > 0) {
+                    votes.forEach(({ statement: voteStatement }) => {
+                        const voteHash = sha256(voteStatement.raw);
+                        aggregatedVoteHashes.add(voteHash);
+                    });
+                }
+            }
+        });
+
         // Sort statements by time (newest first)
         const sortedStatements = [...this.statements].sort((a, b) => {
             const timeA = new Date(a.time);
@@ -491,15 +427,26 @@ class StatementViewer {
         });
 
         sortedStatements.forEach(statement => {
+            const statementHash = sha256(statement.raw);
+            
+            // Skip vote statements that are aggregated into polls
+            if (statement.type && statement.type.toLowerCase() === 'vote' && aggregatedVoteHashes.has(statementHash)) {
+                console.log(`[renderStatements] Skipping aggregated vote statement: ${statementHash}`);
+                return;
+            }
+            
             const card = this.createStatementCard(statement);
             container.appendChild(card);
             
-            const statementHash = sha256(statement.raw);
+            console.log(`[renderStatements] Statement type: ${statement.type}, hash: ${statementHash}`);
             
             // Add votes if this is a poll
-            if (statement.type === 'poll') {
+            if (statement.type && statement.type.toLowerCase() === 'poll') {
+                console.log(`[renderStatements] This is a poll statement, checking for votes...`);
                 const votes = this.votesByPollHash.get(statementHash);
+                console.log(`[renderStatements] Found ${votes ? votes.length : 0} votes for this poll`);
                 if (votes && votes.length > 0) {
+                    console.log(`[renderStatements] Creating votes container with ${votes.length} votes`);
                     const votesContainer = this.createVotesContainer(statement, votes);
                     container.appendChild(votesContainer);
                 }
@@ -712,17 +659,16 @@ class StatementViewer {
         const container = document.createElement('div');
         container.className = 'votes-container';
         
-        // Parse poll to get options
-        const pollMatch = pollStatement.content.match(/Poll: ([^\n]+)/);
-        const pollQuestion = pollMatch ? pollMatch[1] : 'Unknown poll';
+        // Parse the poll data from the content using the library's parsePoll
+        let pollQuestion = 'Unknown poll';
+        let options = [];
         
-        // Extract options from poll content
-        const options = [];
-        for (let i = 1; i <= 5; i++) {
-            const optionMatch = pollStatement.content.match(new RegExp('Option ' + i + ': ([^\\n]+)'));
-            if (optionMatch) {
-                options.push(optionMatch[1]);
-            }
+        try {
+            const pollData = parsePoll(pollStatement.content, pollStatement.formatVersion);
+            pollQuestion = pollData.poll;
+            options = pollData.options || [];
+        } catch (error) {
+            console.error('[createVotesContainer] Failed to parse poll:', error);
         }
         
         // Count votes by option
@@ -841,6 +787,10 @@ class StatementViewer {
             
             voteCard.appendChild(voteHeader);
             
+            // Action bar with signature indicator and details button
+            const voteActionBar = document.createElement('div');
+            voteActionBar.className = 'response-action-bar';
+            
             // Signature indicator
             if (statement.signature) {
                 const signatureIndicator = document.createElement('span');
@@ -850,8 +800,19 @@ class StatementViewer {
                 signatureIndicator.textContent = statement.signatureVerified
                     ? '✓ Verified'
                     : '✗ Invalid';
-                voteCard.appendChild(signatureIndicator);
+                voteActionBar.appendChild(signatureIndicator);
             }
+            
+            // Details button
+            const detailsBtn = document.createElement('button');
+            detailsBtn.className = 'response-details-btn';
+            detailsBtn.textContent = 'Details';
+            detailsBtn.addEventListener('click', () => {
+                this.showStatementDetails(statement);
+            });
+            voteActionBar.appendChild(detailsBtn);
+            
+            voteCard.appendChild(voteActionBar);
             
             votesListContainer.appendChild(voteCard);
         });

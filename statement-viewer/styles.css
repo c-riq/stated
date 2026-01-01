@@ -549,6 +549,7 @@ body {
     .detail-table td:first-child {
         width: 120px;
     }
+}
 
 /* Votes container */
 .votes-container {
@@ -689,5 +690,4 @@ body {
 .vote-signature-indicator.unverified {
     background: #fee;
     color: #dc2626;
-}
 }
