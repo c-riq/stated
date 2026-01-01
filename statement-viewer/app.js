@@ -716,17 +716,33 @@ class StatementViewer {
         content.textContent = responseText;
         card.appendChild(content);
         
-        // Signature indicator for responses
+        // Action bar for responses
+        const actionBar = document.createElement('div');
+        actionBar.className = 'response-action-bar';
+        
+        // Signature indicator
         if (statement.signature) {
-            const signatureIndicator = document.createElement('div');
+            const signatureIndicator = document.createElement('span');
             signatureIndicator.className = statement.signatureVerified
                 ? 'response-signature-indicator verified'
                 : 'response-signature-indicator unverified';
             signatureIndicator.textContent = statement.signatureVerified
-                ? '✓ Signed & Verified'
-                : '✗ Signature Invalid';
-            card.appendChild(signatureIndicator);
+                ? '✓ Verified'
+                : '✗ Invalid';
+            actionBar.appendChild(signatureIndicator);
         }
+        
+        // Details button
+        const detailsBtn = document.createElement('button');
+        detailsBtn.className = 'response-details-btn';
+        detailsBtn.textContent = 'Details';
+        detailsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showStatementDetails(statement);
+        });
+        actionBar.appendChild(detailsBtn);
+        
+        card.appendChild(actionBar);
         
         return card;
     }

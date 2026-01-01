@@ -364,22 +364,48 @@ body {
     margin-bottom: 8px;
 }
 
+.response-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
 .response-signature-indicator {
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 4px 8px;
+    padding: 3px 8px;
     border-radius: 12px;
     display: inline-block;
 }
 
 .response-signature-indicator.verified {
-    background: #0072BC;
-    color: white;
+    background: #e6f2ff;
+    color: #0072BC;
 }
 
 .response-signature-indicator.unverified {
-    background: #dc2626;
-    color: white;
+    background: #fee;
+    color: #dc2626;
+}
+
+.response-details-btn {
+    background: transparent;
+    border: 1px solid #d0d0d0;
+    color: #666;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.response-details-btn:hover {
+    background: #f0f0f0;
+    color: #0072BC;
+    border-color: #0072BC;
 }
 
 /* Modal */
