@@ -15,6 +15,16 @@ export interface ParsedStatement {
     hashMatches?: boolean;
     isPeer?: boolean;
     peerDomain?: string;
+    publicKey?: string;
+}
+
+export interface Identity {
+    domain: string;
+    author: string;
+    publicKey?: string;
+    profilePicture?: string;
+    verificationStatement?: ParsedStatement;
+    isSelfVerified: boolean;
 }
 
 export interface VoteEntry {

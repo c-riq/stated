@@ -151,9 +151,30 @@ body.modal-open {
 /* Statement header */
 .statement-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 8px;
+    gap: 12px;
+}
+
+/* Profile picture */
+.profile-picture {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #e0e0e0;
+}
+
+/* Identity verified badge */
+.identity-verified-badge {
+    display: inline-block;
+    margin-left: 4px;
+    color: #0072BC;
+    font-size: 0.875rem;
+    font-weight: bold;
+    vertical-align: middle;
+}
 }
 
 .author-info {

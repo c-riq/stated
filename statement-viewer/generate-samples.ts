@@ -22,6 +22,7 @@ const WELL_KNOWN_DIR = join(PROJECT_ROOT, '.well-known');
 const STATEMENTS_DIR = join(WELL_KNOWN_DIR, 'statements');
 const ATTACHMENTS_DIR = join(STATEMENTS_DIR, 'attachments');
 const PEERS_DIR = join(STATEMENTS_DIR, 'peers');
+const MEDIA_DIR = join(PROJECT_ROOT, 'media');
 
 interface PeerDirectories {
     peerDir: string;
@@ -33,6 +34,17 @@ interface PeerInfo {
     domain: string;
     author: string;
     response: string;
+}
+
+interface MinistryInfo {
+    domain: string;
+    author: string;
+    country: string;
+    city: string;
+    province: string;
+    profileImage: string;
+    publicKey?: string;
+    privateKey?: string;
 }
 
 async function ensureDirectories(): Promise<void> {
@@ -68,8 +80,102 @@ async function generateSampleStatements(): Promise<void> {
     const statementFiles: string[] = [];
     const attachmentFiles: string[] = [];
 
-    // Generate key pair for signed statements
-    const { publicKey, privateKey } = await generateKeyPair();
+    // Define all ministries with their information
+    const ministries: MinistryInfo[] = [
+        {
+            domain: 'foreign.atlantea.gov',
+            author: 'Ministry of Foreign Affairs of Atlantea',
+            country: 'Atlantea',
+            city: 'New Atlantis',
+            province: 'Capital District',
+            profileImage: 'profile1.jpg',
+        },
+        {
+            domain: 'foreign.pacifica.gov',
+            author: 'Ministry of Foreign Affairs of Pacifica',
+            country: 'Pacifica',
+            city: 'Port Azure',
+            province: 'Central District',
+            profileImage: 'profile2.jpg',
+        },
+        {
+            domain: 'foreign.nordica.gov',
+            author: 'Ministry of Foreign Affairs of Nordica',
+            country: 'Nordica',
+            city: 'Frostholm',
+            province: 'Northern Territory',
+            profileImage: 'profile3.jpg',
+        },
+        {
+            domain: 'foreign.australis.gov',
+            author: 'Ministry of Foreign Affairs of Australis',
+            country: 'Australis',
+            city: 'Southern Bay',
+            province: 'Coastal Region',
+            profileImage: 'profile4.jpg',
+        },
+        {
+            domain: 'foreign.meridia.gov',
+            author: 'Ministry of Foreign Affairs of Meridia',
+            country: 'Meridia',
+            city: 'Sunhaven',
+            province: 'Eastern Province',
+            profileImage: 'profile5.jpg',
+        },
+    ];
+
+    // Generate key pairs for each ministry
+    for (const ministry of ministries) {
+        const { publicKey, privateKey } = await generateKeyPair();
+        ministry.publicKey = publicKey;
+        ministry.privateKey = privateKey;
+    }
+
+    // Get the first ministry (Atlantea) for initial statements
+    const atlantea = ministries[0];
+    const { publicKey, privateKey } = { publicKey: atlantea.publicKey!, privateKey: atlantea.privateKey! };
+
+    // 0. Self-verification statements for each ministry with profile pictures
+    console.log('\nGenerating ministry self-verification statements...');
+    for (const ministry of ministries) {
+        // Read and create profile picture attachment
+        const profileContent = await readFile(join(MEDIA_DIR, ministry.profileImage));
+        const profileFilename = await createAttachment(ministry.profileImage, profileContent);
+        attachmentFiles.push(profileFilename);
+
+        // Create self-verification statement with pictureHash
+        const selfVerification = buildOrganisationVerificationContent({
+            name: ministry.author,
+            englishName: ministry.author,
+            country: ministry.country,
+            city: ministry.city,
+            province: ministry.province,
+            legalForm: 'foreign affairs ministry',
+            domain: ministry.domain,
+            foreignDomain: ministry.domain,
+            serialNumber: `GOV-${ministry.country.toUpperCase().substring(0, 3)}-2024-001`,
+            employeeCount: '1000-10,000',
+            confidence: 1.0,
+            publicKey: ministry.publicKey,
+            pictureHash: profileFilename,
+        });
+
+        const verificationStatement = buildStatement({
+            domain: ministry.domain,
+            author: ministry.author,
+            time: new Date('2024-01-01T08:00:00Z'),
+            tags: ['self-verification', 'ministry-profile'],
+            content: selfVerification,
+        });
+
+        const signedVerification = await buildSignedStatement(
+            verificationStatement,
+            ministry.privateKey!,
+            ministry.publicKey!
+        );
+        statements.push(signedVerification);
+        console.log(`Created self-verification for ${ministry.domain}`);
+    }
 
     // 1. Plain statement with signature
     const statement1 = buildStatement({
@@ -102,7 +208,8 @@ async function generateSampleStatements(): Promise<void> {
     // Calculate the poll statement hash for use in vote
     const pollStatementHash = sha256(statement2);
 
-    // 3. Organisation verification
+    // 3. Organisation verification (Atlantea verifying Pacifica)
+    const pacificaMinistry = ministries.find(m => m.domain === 'foreign.pacifica.gov')!;
     const orgVerification = buildOrganisationVerificationContent({
         name: 'Ministry of Foreign Affairs of Pacifica',
         englishName: 'Ministry of Foreign Affairs of Pacifica',
@@ -115,6 +222,7 @@ async function generateSampleStatements(): Promise<void> {
         serialNumber: 'GOV-PAC-2024-001',
         employeeCount: '1000-10,000',
         confidence: 0.98,
+        publicKey: pacificaMinistry.publicKey,
     });
     const statement3 = buildStatement({
         domain: 'foreign.atlantea.gov',
@@ -141,8 +249,8 @@ async function generateSampleStatements(): Promise<void> {
     statements.push(statement4);
 
     // 5. Statement with 2 images - read and hash the actual files
-    const image1Content = await readFile(join(ATTACHMENTS_DIR, 'image1.png'));
-    const image2Content = await readFile(join(ATTACHMENTS_DIR, 'image2.png'));
+    const image1Content = await readFile(join(MEDIA_DIR, 'image1.png'));
+    const image2Content = await readFile(join(MEDIA_DIR, 'image2.png'));
     const image1Filename = await createAttachment('image1.png', image1Content);
     const image2Filename = await createAttachment('image2.png', image2Content);
     attachmentFiles.push(image1Filename, image2Filename);
@@ -159,7 +267,7 @@ async function generateSampleStatements(): Promise<void> {
     statements.push(signedStatement5);
 
     // 6. Statement with PDF document - read and hash the actual file
-    const pdfContent = await readFile(join(ATTACHMENTS_DIR, 'document.pdf'));
+    const pdfContent = await readFile(join(MEDIA_DIR, 'document.pdf'));
     const pdfFilename = await createAttachment('document.pdf', pdfContent);
     attachmentFiles.push(pdfFilename);
     
@@ -174,63 +282,71 @@ async function generateSampleStatements(): Promise<void> {
     const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
     statements.push(signedStatement6);
 
-    // 7. Vote statement - using actual poll hash
+    // 7. Vote statement - using actual poll hash (with Pacifica's key)
+    const pacifica = ministries.find(m => m.domain === 'foreign.pacifica.gov')!;
     const voteContent = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Yes, with strict enforcement',
     });
     const statement7 = buildStatement({
-        domain: 'foreign.pacifica.gov',
-        author: 'Ministry of Foreign Affairs of Pacifica',
+        domain: pacifica.domain,
+        author: pacifica.author,
         time: new Date('2024-02-15T10:30:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent,
     });
-    statements.push(statement7);
+    const signedStatement7 = await buildSignedStatement(statement7, pacifica.privateKey!, pacifica.publicKey!);
+    statements.push(signedStatement7);
     
-    // 7b. Additional vote statements for the same poll
+    // 7b. Additional vote statements for the same poll (with Nordica's key)
+    const nordica = ministries.find(m => m.domain === 'foreign.nordica.gov')!;
     const voteContent2 = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Yes, with flexible implementation',
     });
     const statement7b = buildStatement({
-        domain: 'foreign.nordica.gov',
-        author: 'Ministry of Foreign Affairs of Nordica',
+        domain: nordica.domain,
+        author: nordica.author,
         time: new Date('2024-02-16T09:15:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent2,
     });
-    statements.push(statement7b);
+    const signedStatement7b = await buildSignedStatement(statement7b, nordica.privateKey!, nordica.publicKey!);
+    statements.push(signedStatement7b);
     
+    const australis = ministries.find(m => m.domain === 'foreign.australis.gov')!;
     const voteContent3 = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Requires further study',
     });
     const statement7c = buildStatement({
-        domain: 'foreign.australis.gov',
-        author: 'Ministry of Foreign Affairs of Australis',
+        domain: australis.domain,
+        author: australis.author,
         time: new Date('2024-02-17T14:20:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent3,
     });
-    statements.push(statement7c);
+    const signedStatement7c = await buildSignedStatement(statement7c, australis.privateKey!, australis.publicKey!);
+    statements.push(signedStatement7c);
     
+    const meridia = ministries.find(m => m.domain === 'foreign.meridia.gov')!;
     const voteContent4 = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Yes, with strict enforcement',
     });
     const statement7d = buildStatement({
-        domain: 'foreign.meridia.gov',
-        author: 'Ministry of Foreign Affairs of Meridia',
+        domain: meridia.domain,
+        author: meridia.author,
         time: new Date('2024-02-18T11:45:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent4,
     });
-    statements.push(statement7d);
+    const signedStatement7d = await buildSignedStatement(statement7d, meridia.privateKey!, meridia.publicKey!);
+    statements.push(signedStatement7d);
 
     // 8. Statement superseding another
     const statement8 = buildStatement({
@@ -299,6 +415,7 @@ async function generateSampleStatements(): Promise<void> {
 
     console.log('\n✓ Sample data generated successfully!');
     console.log(`\nGenerated ${statements.length} statements with ${attachmentFiles.length} attachments`);
+    console.log(`Generated ${ministries.length} ministry self-verifications with profile pictures`);
     console.log('Generated 2 peer domains with response statements');
     console.log('\nTo view the statements:');
     console.log('1. Run: npm start');

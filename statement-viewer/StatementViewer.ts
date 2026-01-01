@@ -1,5 +1,5 @@
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent } from './lib/index.js';
-import { ParsedStatement, VoteEntry } from './types.js';
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification } from './lib/index.js';
+import { ParsedStatement, VoteEntry, Identity } from './types.js';
 import { sortStatementsByTime } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, renderStatementDetails } from './renderers.js';
 
@@ -11,6 +11,7 @@ export class StatementViewer {
     private responsesByHash: Map<string, ParsedStatement[]>;
     private votesByPollHash: Map<string, VoteEntry[]>;
     private expandedStatements: Set<string>;
+    private identities: Map<string, Identity>;
 
     constructor() {
         this.baseUrl = '';
@@ -20,6 +21,7 @@ export class StatementViewer {
         this.responsesByHash = new Map();
         this.votesByPollHash = new Map();
         this.expandedStatements = new Set();
+        this.identities = new Map();
         this.init();
     }
 
@@ -97,6 +99,7 @@ export class StatementViewer {
         this.statementsByHash.clear();
         this.responsesByHash.clear();
         this.votesByPollHash.clear();
+        this.identities.clear();
 
         this.showLoading(true);
         this.showError(null);
@@ -195,9 +198,11 @@ export class StatementViewer {
                     this.statementsByHash.set(hash, stmt);
                 });
                 
+                this.buildIdentityRegistry();
                 this.buildVotesMap();
                 
                 this.verifyAllSignatures().then(() => {
+                    this.linkSignaturesToIdentities();
                     this.renderStatements();
                 });
             }
@@ -297,6 +302,72 @@ export class StatementViewer {
             }
         });
     }
+    private buildIdentityRegistry(): void {
+        this.identities.clear();
+        
+        this.statements.forEach((stmt: ParsedStatement) => {
+            if (stmt.type && stmt.type.toLowerCase() === 'organisation_verification') {
+                try {
+                    const verification = parseOrganisationVerification(stmt.content);
+                    
+                    // Check if this is a self-verification (domain === foreignDomain)
+                    const isSelfVerified = verification.domain === verification.foreignDomain;
+                    
+                    if (isSelfVerified && verification.domain) {
+                        const identity: Identity = {
+                            domain: verification.domain,
+                            author: verification.name,
+                            publicKey: verification.publicKey,
+                            profilePicture: verification.pictureHash,
+                            verificationStatement: stmt,
+                            isSelfVerified: true
+                        };
+                        
+                        this.identities.set(verification.domain, identity);
+                    }
+                } catch (error: any) {
+                    console.error('Error parsing organisation verification:', error);
+                }
+            }
+        });
+    }
+
+    private linkSignaturesToIdentities(): void {
+        this.statements.forEach((stmt: ParsedStatement) => {
+            if (stmt.signature && stmt.domain) {
+                try {
+                    const parsed = parseSignedStatement(stmt.raw);
+                    if (parsed) {
+                        stmt.publicKey = parsed.publicKey;
+                        
+                        // Check if this public key matches a known identity
+                        const identity = this.identities.get(stmt.domain);
+                        if (identity && identity.publicKey === parsed.publicKey) {
+                            // Signature matches the established identity
+                            stmt.signatureVerified = stmt.signatureVerified && true;
+                        }
+                    }
+                } catch (error: any) {
+                    console.error('Error linking signature to identity:', error);
+                }
+            }
+        });
+        
+        // Also link peer statements
+        this.peerStatements.forEach((stmt: ParsedStatement) => {
+            if (stmt.signature && stmt.domain) {
+                try {
+                    const parsed = parseSignedStatement(stmt.raw);
+                    if (parsed) {
+                        stmt.publicKey = parsed.publicKey;
+                    }
+                } catch (error: any) {
+                    console.error('Error linking peer signature to identity:', error);
+                }
+            }
+        });
+    }
+
 
     private async verifyPeerSignatures(): Promise<void> {
         const verificationPromises = this.peerStatements.map(async (statement) => {
@@ -393,13 +464,14 @@ export class StatementViewer {
                 return;
             }
             
-            const card = createStatementCard(statement, this.baseUrl, (stmt) => this.showStatementDetails(stmt));
+            const identity = statement.domain ? this.identities.get(statement.domain) : undefined;
+            const card = createStatementCard(statement, this.baseUrl, identity, (stmt) => this.showStatementDetails(stmt));
             container.appendChild(card);
             
             if (statement.type && statement.type.toLowerCase() === 'poll') {
                 const votes = this.votesByPollHash.get(statementHash);
                 if (votes && votes.length > 0) {
-                    const votesContainer = createVotesContainer(statement, votes, (stmt) => this.showStatementDetails(stmt));
+                    const votesContainer = createVotesContainer(statement, votes, this.identities, (stmt) => this.showStatementDetails(stmt));
                     container.appendChild(votesContainer);
                 }
             }

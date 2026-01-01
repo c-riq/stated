@@ -1,13 +1,25 @@
 import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent } from './lib/index.js';
-import { ParsedStatement, VoteEntry, SignatureInfo } from './types.js';
+import { ParsedStatement, VoteEntry, SignatureInfo, Identity } from './types.js';
 import { getTimeAgo, escapeHtml } from './utils.js';
 
-export function createStatementCard(statement: ParsedStatement, baseUrl: string, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
     const card = document.createElement('div');
     card.className = 'statement-card';
 
     const header = document.createElement('div');
     header.className = 'statement-header';
+
+    // Add profile picture if available
+    if (identity && identity.profilePicture) {
+        const profilePic = document.createElement('img');
+        profilePic.src = baseUrl + 'attachments/' + identity.profilePicture;
+        profilePic.alt = identity.author;
+        profilePic.className = 'profile-picture';
+        profilePic.onerror = () => {
+            profilePic.style.display = 'none';
+        };
+        header.appendChild(profilePic);
+    }
 
     const authorInfo = document.createElement('div');
     authorInfo.className = 'author-info';
@@ -15,6 +27,16 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     const authorName = document.createElement('div');
     authorName.className = 'author-name';
     authorName.textContent = statement.author || statement.domain || 'Unknown';
+    
+    // Add verified badge next to name if identity is established
+    if (identity && identity.isSelfVerified && statement.publicKey === identity.publicKey) {
+        const verifiedBadge = document.createElement('span');
+        verifiedBadge.className = 'identity-verified-badge';
+        verifiedBadge.textContent = '✓';
+        verifiedBadge.title = 'Verified identity with established public key';
+        authorName.appendChild(verifiedBadge);
+    }
+    
     authorInfo.appendChild(authorName);
     
     const domainTime = document.createElement('div');
@@ -245,7 +267,7 @@ export function createResponsesContainer(responses: ParsedStatement[], onShowDet
     return container;
 }
 
-export function createVotesContainer(pollStatement: ParsedStatement, votes: VoteEntry[], onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+export function createVotesContainer(pollStatement: ParsedStatement, votes: VoteEntry[], identities: Map<string, Identity>, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
     const container = document.createElement('div');
     container.className = 'votes-container';
     
