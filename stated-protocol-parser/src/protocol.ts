@@ -15,6 +15,7 @@ import type {
   Rating,
   RatingSubjectTypeValue,
 } from './types';
+import { isLegalForm, isPeopleCountBucket, isRatingValue } from './types';
 
 const version = 5;
 
@@ -485,6 +486,10 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     confidence,
   } = match.groups;
 
+  if (!isLegalForm(legalForm)) {
+    throw new Error('Invalid legal form after validation: ' + legalForm);
+  }
+  
   return {
     name,
     englishName,
@@ -498,9 +503,9 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     city,
     latitude: latitude ? parseFloat(latitude) : undefined,
     longitude: longitude ? parseFloat(longitude) : undefined,
-    population,
+    population: population && isPeopleCountBucket(population) ? population : undefined,
     pictureHash,
-    employeeCount,
+    employeeCount: employeeCount && isPeopleCountBucket(employeeCount) ? employeeCount : undefined,
     publicKey,
     reliabilityPolicy,
     confidence: confidence ? parseFloat(confidence) : undefined,
@@ -850,6 +855,10 @@ export const parseRating = (content: string): Rating => {
     throw new Error('Invalid subject type: ' + subjectType);
   if (!subjectName) throw new Error('Missing subject name');
 
+  if (!isRatingValue(rating)) {
+    throw new Error('Invalid rating after validation: ' + rating);
+  }
+  
   return {
     subjectType: subjectType as RatingSubjectTypeValue,
     subjectName,

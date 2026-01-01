@@ -1,5 +1,34 @@
 import type { SupportedLanguage } from './constants';
 
+export type LegalForm =
+  | 'local government'
+  | 'state government'
+  | 'foreign affairs ministry'
+  | 'corporation';
+
+export type PeopleCountBucket =
+  | '0-10'
+  | '10-100'
+  | '100-1000'
+  | '1000-10,000'
+  | '10,000-100,000'
+  | '100,000+'
+  | '1,000,000+'
+  | '10,000,000+';
+
+// Type guards
+export function isLegalForm(value: string): value is LegalForm {
+  return ['local government', 'state government', 'foreign affairs ministry', 'corporation'].includes(value);
+}
+
+export function isPeopleCountBucket(value: string): value is PeopleCountBucket {
+  return ['0-10', '10-100', '100-1000', '1000-10,000', '10,000-100,000', '100,000+', '1,000,000+', '10,000,000+'].includes(value);
+}
+
+export function isRatingValue(value: number): value is RatingValue {
+  return [1, 2, 3, 4, 5].includes(value);
+}
+
 export type StatementTypeValue =
   | 'statement'
   | 'organisation_verification'
@@ -47,18 +76,18 @@ export type OrganisationVerification = {
   country: string;
   city: string;
   province: string;
-  legalForm: string;
+  legalForm: LegalForm;
   department?: string;
   domain: string;
   foreignDomain: string;
   serialNumber: string;
   confidence?: number;
   reliabilityPolicy?: string;
-  employeeCount?: string;
+  employeeCount?: PeopleCountBucket;
   pictureHash?: string;
   latitude?: number;
   longitude?: number;
-  population?: string;
+  population?: PeopleCountBucket;
   publicKey?: string;
 };
 
@@ -121,12 +150,14 @@ export type RatingSubjectTypeValue =
   | 'Regulation'
   | 'Product';
 
+export type RatingValue = 1 | 2 | 3 | 4 | 5;
+
 export type Rating = {
   subjectType?: RatingSubjectTypeValue;
   subjectName: string;
   subjectReference?: string;
   documentFileHash?: string;
-  rating: number;
+  rating: RatingValue;
   quality?: string;
   comment?: string;
 };
