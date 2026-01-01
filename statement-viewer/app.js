@@ -25,10 +25,12 @@ class StatementViewer {
         const closeBtn = document.querySelector('.modal-close');
         closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         });
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
         });
         
@@ -582,6 +584,9 @@ class StatementViewer {
     showStatementDetails(statement) {
         const modal = document.getElementById('statementModal');
         const modalBody = document.getElementById('modalBody');
+        
+        // Prevent body scrolling when modal is open
+        document.body.classList.add('modal-open');
         
         modalBody.innerHTML = `
             <h2>Statement Details</h2>
