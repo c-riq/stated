@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -5,9 +7,9 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    background-color: #15202b;
-    color: #e7e9ea;
+    font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
     line-height: 1.5;
 }
 
@@ -15,9 +17,10 @@ body {
 .top-bar {
     position: sticky;
     top: 0;
-    background: rgba(21, 32, 43, 0.95);
+    background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid #38444d;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     z-index: 1000;
 }
 
@@ -33,7 +36,7 @@ body {
 .top-bar h1 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1d9bf0;
+    color: #0072BC;
     flex-shrink: 0;
 }
 
@@ -46,10 +49,10 @@ body {
 .url-config input[type="text"] {
     flex: 1;
     padding: 6px 12px;
-    background: #253341;
-    border: 1px solid #38444d;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
     border-radius: 20px;
-    color: #e7e9ea;
+    color: #333;
     font-size: 0.875rem;
     font-family: inherit;
     transition: all 0.2s;
@@ -57,12 +60,12 @@ body {
 
 .url-config input[type="text"]:focus {
     outline: none;
-    border-color: #1d9bf0;
-    background: #1e2732;
+    border-color: #0072BC;
+    background: #ffffff;
 }
 
 .btn-load {
-    background: #1d9bf0;
+    background: #0072BC;
     color: white;
     border: none;
     width: 36px;
@@ -77,7 +80,7 @@ body {
 }
 
 .btn-load:hover {
-    background: #1a8cd8;
+    background: #005a94;
 }
 
 .container {
@@ -93,8 +96,8 @@ body {
 }
 
 .spinner {
-    border: 3px solid #38444d;
-    border-top: 3px solid #1d9bf0;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #0072BC;
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -108,15 +111,15 @@ body {
 }
 
 .loading p {
-    color: #8b98a5;
+    color: #666;
     font-size: 0.9rem;
 }
 
 /* Error message */
 .error-message {
-    background: #2c1a1a;
-    border: 1px solid #5a2828;
-    color: #f4aab9;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #c53030;
     padding: 12px 16px;
     border-radius: 8px;
     margin: 16px;
@@ -131,14 +134,14 @@ body {
 
 /* Statement card */
 .statement-card {
-    background: #15202b;
-    border-bottom: 1px solid #38444d;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
     padding: 12px 16px;
     transition: background 0.2s;
 }
 
 .statement-card:hover {
-    background: #1e2732;
+    background: #f9f9f9;
 }
 
 /* Statement header */
@@ -156,12 +159,12 @@ body {
 .author-name {
     font-size: 0.9375rem;
     font-weight: 700;
-    color: #e7e9ea;
+    color: #003366;
 }
 
 .domain-time {
     font-size: 0.9375rem;
-    color: #8b98a5;
+    color: #666;
 }
 
 .verify-badge {
@@ -177,18 +180,18 @@ body {
 }
 
 .verify-badge.verified {
-    background: #1d9bf0;
+    background: #0072BC;
     color: white;
 }
 
 .verify-badge.unverified {
-    background: #f4212e;
+    background: #dc2626;
     color: white;
 }
 
 /* Statement content */
 .statement-content {
-    color: #e7e9ea;
+    color: #333;
     font-size: 0.9375rem;
     line-height: 1.5;
     margin-bottom: 12px;
@@ -204,9 +207,10 @@ body {
 /* Image attachments */
 .attachment-image-container {
     margin: 12px 0;
-    border-radius: 16px;
+    border-radius: 8px;
     overflow: hidden;
-    border: 1px solid #38444d;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .attachment-image {
@@ -224,18 +228,20 @@ body {
 /* PDF attachments */
 .attachment-pdf-container {
     margin: 12px 0;
-    border: 1px solid #38444d;
-    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     overflow: hidden;
-    background: #192734;
+    background: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .attachment-pdf-title {
-    background: #253341;
+    background: #ffffff;
     padding: 12px 16px;
-    border-bottom: 1px solid #38444d;
-    color: #e7e9ea;
+    border-bottom: 1px solid #e0e0e0;
+    color: #003366;
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .attachment-pdf-embed {
@@ -249,7 +255,7 @@ body {
     display: block;
     text-align: center;
     padding: 12px;
-    background: #1d9bf0;
+    background: #0072BC;
     color: white;
     text-decoration: none;
     font-weight: 600;
@@ -257,7 +263,7 @@ body {
 }
 
 .attachment-download-link:hover {
-    background: #1a8cd8;
+    background: #005a94;
 }
 
 /* Action bar */
@@ -270,7 +276,7 @@ body {
 .action-btn {
     background: transparent;
     border: none;
-    color: #8b98a5;
+    color: #666;
     font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
@@ -280,22 +286,22 @@ body {
 }
 
 .action-btn:hover {
-    background: #1e2732;
-    color: #1d9bf0;
+    background: #f0f0f0;
+    color: #0072BC;
 }
 
 /* Responses container */
 .responses-container {
-    background: #192734;
-    border-left: 2px solid #1d9bf0;
-    border-bottom: 1px solid #38444d;
+    background: #f9f9f9;
+    border-left: 3px solid #0072BC;
+    border-bottom: 1px solid #e0e0e0;
     padding: 12px 16px 12px 24px;
 }
 
 .responses-header {
     font-size: 0.8125rem;
     font-weight: 700;
-    color: #8b98a5;
+    color: #666;
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -303,9 +309,9 @@ body {
 
 /* Response card */
 .response-card {
-    background: #15202b;
-    border: 1px solid #38444d;
-    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     padding: 12px;
     margin-bottom: 8px;
 }
@@ -328,21 +334,21 @@ body {
 .response-domain {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #e7e9ea;
+    color: #003366;
 }
 
 .response-author {
     font-size: 0.8125rem;
-    color: #8b98a5;
+    color: #666;
 }
 
 .response-time {
     font-size: 0.8125rem;
-    color: #8b98a5;
+    color: #666;
 }
 
 .peer-badge {
-    background: #5b7083;
+    background: #003366;
     color: white;
     padding: 2px 8px;
     border-radius: 12px;
@@ -352,7 +358,7 @@ body {
 }
 
 .response-content {
-    color: #e7e9ea;
+    color: #333;
     font-size: 0.875rem;
     line-height: 1.5;
     margin-bottom: 8px;
@@ -367,12 +373,12 @@ body {
 }
 
 .response-signature-indicator.verified {
-    background: #1d4ed8;
+    background: #0072BC;
     color: white;
 }
 
 .response-signature-indicator.unverified {
-    background: #991b1b;
+    background: #dc2626;
     color: white;
 }
 
@@ -385,24 +391,25 @@ body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-    background-color: #15202b;
+    background-color: #ffffff;
     margin: 5% auto;
     padding: 24px;
-    border: 1px solid #38444d;
-    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     width: 90%;
     max-width: 700px;
     max-height: 80vh;
     overflow-y: auto;
-    color: #e7e9ea;
+    color: #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-close {
-    color: #8b98a5;
+    color: #666;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -412,20 +419,22 @@ body {
 
 .modal-close:hover,
 .modal-close:focus {
-    color: #e7e9ea;
+    color: #003366;
 }
 
 .modal-content h2 {
-    color: #e7e9ea;
+    color: #003366;
     margin-bottom: 20px;
     font-size: 1.5rem;
+    font-weight: 700;
 }
 
 .modal-content h3 {
-    color: #1d9bf0;
+    color: #0072BC;
     margin-top: 20px;
     margin-bottom: 12px;
     font-size: 1.125rem;
+    font-weight: 700;
 }
 
 .detail-section {
@@ -439,17 +448,18 @@ body {
 
 .detail-table td {
     padding: 8px 12px;
-    border-bottom: 1px solid #38444d;
+    border-bottom: 1px solid #e0e0e0;
     font-size: 0.875rem;
 }
 
 .detail-table td:first-child {
     width: 180px;
-    color: #8b98a5;
+    color: #666;
+    font-weight: 600;
 }
 
 .detail-table td:last-child {
-    color: #e7e9ea;
+    color: #333;
 }
 
 .monospace {
@@ -459,8 +469,9 @@ body {
 }
 
 .warning-text {
-    color: #f4212e;
-    background: #2c1a1a;
+    color: #c53030;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
     padding: 12px;
     border-radius: 8px;
     margin-top: 12px;
@@ -468,15 +479,15 @@ body {
 }
 
 .raw-statement {
-    background: #192734;
-    border: 1px solid #38444d;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 16px;
     overflow-x: auto;
     font-family: 'Courier New', monospace;
     font-size: 0.8125rem;
     line-height: 1.5;
-    color: #8b98a5;
+    color: #666;
     white-space: pre-wrap;
     word-wrap: break-word;
 }
