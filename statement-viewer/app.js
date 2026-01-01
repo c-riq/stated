@@ -1,8 +1,4 @@
-// Statement Viewer Application
-// Fetches and displays statements from static text files following the Stated protocol v5
-
-// Import stated-protocol-parser library
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parsePoll, parseStatement as parseStatementLib } from './lib/index.js';
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parsePoll, parseStatement as parseStatementLib, parseResponseContent } from './lib/index.js';
 
 class StatementViewer {
     constructor() {
@@ -17,10 +13,8 @@ class StatementViewer {
     }
 
     init() {
-        // Set up event listeners
         document.getElementById('loadStatements').addEventListener('click', () => this.loadStatements());
         
-        // Modal close
         const modal = document.getElementById('statementModal');
         const closeBtn = document.querySelector('.modal-close');
         closeBtn.addEventListener('click', () => {
@@ -34,7 +28,6 @@ class StatementViewer {
             }
         });
         
-        // Auto-load from current origin or URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const baseUrl = urlParams.get('baseUrl');
         if (baseUrl) {
@@ -70,12 +63,10 @@ class StatementViewer {
             return;
         }
 
-        // Ensure baseUrl ends with /
         if (!this.baseUrl.endsWith('/')) {
             this.baseUrl += '/';
         }
 
-        // Clear all data to prevent duplication
         this.statements = [];
         this.peerStatements = [];
         this.statementsByHash.clear();
@@ -99,7 +90,6 @@ class StatementViewer {
                 await this.loadFromIndex();
             }
             
-            // Load peer statements
             await this.loadPeerStatements();
         } catch (error) {
             this.showError(`Error loading statements: ${error.message}`);
@@ -125,7 +115,6 @@ class StatementViewer {
                 return;
             }
 
-            // Load each statement file
             const statements = [];
             for (const filename of filenames) {
                 try {
@@ -193,7 +182,6 @@ class StatementViewer {
             if (!isPeer) {
                 this.showError(`Error parsing statements file: ${error.message}`);
             }
-            console.error('Parse error:', error);
             return [];
         }
     }
@@ -204,14 +192,11 @@ class StatementViewer {
             const response = await fetch(peersIndexUrl);
             
             if (!response.ok) {
-                console.log('No peer statements found (peers/index.txt not available)');
                 return;
             }
 
             const indexText = await response.text();
             const peerDomains = indexText.split('\n').filter(line => line.trim());
-
-            console.log(`Found ${peerDomains.length} peer domains`);
 
             for (const peerDomain of peerDomains) {
                 try {
@@ -229,23 +214,15 @@ class StatementViewer {
                         });
                         
                         this.peerStatements.push(...peerStatements);
-                        console.log(`Loaded ${peerStatements.length} statements from peer ${peerDomain}`);
                     }
                 } catch (error) {
                     console.error(`Error loading peer ${peerDomain}:`, error);
                 }
             }
 
-            // Verify signatures for peer statements
             await this.verifyPeerSignatures();
-            
-            // Build response map
             this.buildResponseMap();
-            
-            // Build votes map (in case votes came from peers)
             this.buildVotesMap();
-            
-            // Re-render to show responses and votes
             this.renderStatements();
         } catch (error) {
             console.error('Error loading peer statements:', error);
@@ -256,18 +233,19 @@ class StatementViewer {
         this.responsesByHash.clear();
         
         this.peerStatements.forEach(stmt => {
-            // Check if this is a response statement
-            const responseMatch = stmt.content.match(/Type: Response\s+Hash of referenced statement: ([^\s]+)/);
-            if (responseMatch) {
-                const referencedHash = responseMatch[1];
-                if (!this.responsesByHash.has(referencedHash)) {
-                    this.responsesByHash.set(referencedHash, []);
+            if (stmt.type && stmt.type.toLowerCase() === 'response') {
+                try {
+                    const responseData = parseResponseContent(stmt.content);
+                    const referencedHash = responseData.hash;
+                    if (!this.responsesByHash.has(referencedHash)) {
+                        this.responsesByHash.set(referencedHash, []);
+                    }
+                    this.responsesByHash.get(referencedHash).push(stmt);
+                } catch (error) {
+                    console.error('Error parsing response:', error);
                 }
-                this.responsesByHash.get(referencedHash).push(stmt);
             }
         });
-        
-        console.log(`Built response map with ${this.responsesByHash.size} referenced statements`);
     }
 
     buildVotesMap() {
@@ -275,8 +253,6 @@ class StatementViewer {
         
         // Check both main statements and peer statements for votes
         const allStatements = [...this.statements, ...this.peerStatements];
-        
-        console.log(`[buildVotesMap] Checking ${allStatements.length} statements for votes`);
         
         allStatements.forEach(stmt => {
             // Check if this is a vote statement
@@ -287,8 +263,6 @@ class StatementViewer {
                     const pollHash = voteData.pollHash;
                     const vote = voteData.vote;
                     
-                    console.log(`[buildVotesMap] Found vote: "${vote}" for poll hash: ${pollHash}`);
-                    
                     if (!this.votesByPollHash.has(pollHash)) {
                         this.votesByPollHash.set(pollHash, []);
                     }
@@ -298,14 +272,9 @@ class StatementViewer {
                         voteData: voteData
                     });
                 } catch (error) {
-                    console.error(`[buildVotesMap] Failed to parse vote:`, error);
+                    console.error('Error parsing vote:', error);
                 }
             }
-        });
-        
-        console.log(`[buildVotesMap] Built votes map with ${this.votesByPollHash.size} polls having votes`);
-        this.votesByPollHash.forEach((votes, pollHash) => {
-            console.log(`[buildVotesMap] Poll ${pollHash}: ${votes.length} votes`);
         });
     }
 
@@ -342,13 +311,6 @@ class StatementViewer {
         const verificationPromises = this.statements.map(async (statement) => {
             if (statement.signature) {
                 try {
-                    console.log('Verifying statement with signature:', {
-                        hash: statement.signature.hash,
-                        publicKey: statement.signature.publicKey,
-                        algorithm: statement.signature.algorithm,
-                        rawLength: statement.raw.length
-                    });
-                    
                     // Use parseSignedStatement to properly parse and verify
                     const parsed = parseSignedStatement(statement.raw);
                     
@@ -356,20 +318,11 @@ class StatementViewer {
                         // Parsing failed (hash mismatch or invalid format)
                         statement.signatureVerified = false;
                         statement.hashMatches = false;
-                        console.error('Failed to parse signed statement. Raw text:', statement.raw.substring(0, 200));
                         return;
                     }
                     
-                    console.log('Successfully parsed signed statement:', {
-                        statementHash: parsed.statementHash,
-                        publicKey: parsed.publicKey,
-                        algorithm: parsed.algorithm
-                    });
-                    
-                    // Hash validation passed (done by parseSignedStatement)
                     statement.hashMatches = true;
                     
-                    // Now verify the cryptographic signature
                     const signatureValid = await verifySignature(
                         parsed.statement,
                         parsed.signature,
@@ -377,15 +330,6 @@ class StatementViewer {
                     );
                     
                     statement.signatureVerified = signatureValid;
-                    
-                    console.log('Signature verification result:', signatureValid);
-                    
-                    if (!signatureValid) {
-                        console.error('Signature verification failed for statement:', {
-                            hash: parsed.statementHash,
-                            publicKey: parsed.publicKey
-                        });
-                    }
                 } catch (error) {
                     console.error('Error verifying signature:', error);
                     statement.signatureVerified = false;
@@ -433,22 +377,16 @@ class StatementViewer {
             
             // Skip vote statements that are aggregated into polls
             if (statement.type && statement.type.toLowerCase() === 'vote' && aggregatedVoteHashes.has(statementHash)) {
-                console.log(`[renderStatements] Skipping aggregated vote statement: ${statementHash}`);
                 return;
             }
             
             const card = this.createStatementCard(statement);
             container.appendChild(card);
             
-            console.log(`[renderStatements] Statement type: ${statement.type}, hash: ${statementHash}`);
-            
             // Add votes if this is a poll
             if (statement.type && statement.type.toLowerCase() === 'poll') {
-                console.log(`[renderStatements] This is a poll statement, checking for votes...`);
                 const votes = this.votesByPollHash.get(statementHash);
-                console.log(`[renderStatements] Found ${votes ? votes.length : 0} votes for this poll`);
                 if (votes && votes.length > 0) {
-                    console.log(`[renderStatements] Creating votes container with ${votes.length} votes`);
                     const votesContainer = this.createVotesContainer(statement, votes);
                     container.appendChild(votesContainer);
                 }
@@ -625,7 +563,6 @@ class StatementViewer {
                 }
             }
         } catch (error) {
-            console.log('[showStatementDetails] No signature found or parsing failed:', error.message);
             if (signatureInfo) {
                 hashMatches = false;
             }
@@ -654,15 +591,15 @@ class StatementViewer {
                 <table class="detail-table">
                     <tr>
                         <td><strong>Hash Match:</strong></td>
-                        <td>${hashMatches === true ? '<span style="color: #0072BC;">✓ Valid</span>' : hashMatches === false ? '<span style="color: #dc2626;">✗ Invalid</span>' : '<span style="color: #666;">⏳ Verifying...</span>'}</td>
+                        <td>${hashMatches === true ? '<span style="color: #0072BC;">Valid</span>' : hashMatches === false ? '<span style="color: #dc2626;">Invalid</span>' : '<span style="color: #666;">Verifying...</span>'}</td>
                     </tr>
                     <tr>
                         <td><strong>Signature Verification:</strong></td>
-                        <td>${signatureVerified === true ? '<span style="color: #0072BC;">✓ Verified</span>' : signatureVerified === false ? '<span style="color: #dc2626;">✗ Failed</span>' : '<span style="color: #666;">⏳ Verifying...</span>'}</td>
+                        <td>${signatureVerified === true ? '<span style="color: #0072BC;">Verified</span>' : signatureVerified === false ? '<span style="color: #dc2626;">Failed</span>' : '<span style="color: #666;">Verifying...</span>'}</td>
                     </tr>
                     <tr>
                         <td><strong>Overall Status:</strong></td>
-                        <td><strong>${signatureVerified === true && hashMatches === true ? '<span style="color: #0072BC;">✓ VALID</span>' : signatureVerified === false || hashMatches === false ? '<span style="color: #dc2626;">✗ INVALID</span>' : '<span style="color: #666;">⏳ VERIFYING...</span>'}</strong></td>
+                        <td><strong>${signatureVerified === true && hashMatches === true ? '<span style="color: #0072BC;">VALID</span>' : signatureVerified === false || hashMatches === false ? '<span style="color: #dc2626;">INVALID</span>' : '<span style="color: #666;">VERIFYING...</span>'}</strong></td>
                     </tr>
                     <tr><td colspan="2" style="height: 12px;"></td></tr>
                     <tr><td><strong>Algorithm:</strong></td><td>${this.escapeHtml(signatureInfo.algorithm)}</td></tr>
@@ -752,7 +689,7 @@ class StatementViewer {
             pollQuestion = pollData.poll;
             options = pollData.options || [];
         } catch (error) {
-            console.error('[createVotesContainer] Failed to parse poll:', error);
+            console.error('Error parsing poll:', error);
         }
         
         // Count votes by option
@@ -960,9 +897,13 @@ class StatementViewer {
         
         card.appendChild(header);
         
-        // Extract response text from content
-        const responseMatch = statement.content.match(/Response:\s+(.+)/s);
-        const responseText = responseMatch ? responseMatch[1].trim() : statement.content;
+        let responseText = statement.content;
+        try {
+            const responseData = parseResponseContent(statement.content);
+            responseText = responseData.response;
+        } catch (error) {
+            console.error('Error parsing response text:', error);
+        }
         
         const content = document.createElement('div');
         content.className = 'response-content';
@@ -980,8 +921,8 @@ class StatementViewer {
                 ? 'response-signature-indicator verified'
                 : 'response-signature-indicator unverified';
             signatureIndicator.textContent = statement.signatureVerified
-                ? '✓ Verified'
-                : '✗ Invalid';
+                ? 'Verified'
+                : 'Invalid';
             actionBar.appendChild(signatureIndicator);
         }
         
