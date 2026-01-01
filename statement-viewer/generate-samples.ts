@@ -281,6 +281,22 @@ async function generateSampleStatements(): Promise<void> {
     });
     const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
     statements.push(signedStatement6);
+    // 6b. Statement with video - read and hash the actual file
+    const videoContent = await readFile(join(MEDIA_DIR, 'video.mp4'));
+    const videoFilename = await createAttachment('video.mp4', videoContent);
+    attachmentFiles.push(videoFilename);
+    
+    const statement6b = buildStatement({
+        domain: 'foreign.atlantea.gov',
+        author: 'Ministry of Foreign Affairs of Atlantea',
+        time: new Date('2024-05-22T10:00:00Z'),
+        tags: ['video', 'announcement', 'digital-cooperation'],
+        content: 'Watch our video message on the importance of international digital cooperation. This presentation outlines our vision for collaborative frameworks in the digital age and highlights key initiatives for cross-border data governance.',
+        attachments: [videoFilename],
+    });
+    const signedStatement6b = await buildSignedStatement(statement6b, privateKey, publicKey);
+    statements.push(signedStatement6b);
+
 
     // 7. Vote statement - using actual poll hash (with Pacifica's key)
     const pacifica = ministries.find(m => m.domain === 'foreign.pacifica.gov')!;

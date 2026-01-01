@@ -115,6 +115,18 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
                 pdfContainer.appendChild(downloadLink);
                 
                 attachmentsContainer.appendChild(pdfContainer);
+            } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'attachment-video-container';
+                
+                const video = document.createElement('video');
+                video.src = attachmentUrl;
+                video.className = 'attachment-video';
+                video.controls = true;
+                video.preload = 'metadata';
+                
+                videoContainer.appendChild(video);
+                attachmentsContainer.appendChild(videoContainer);
             }
         });
         

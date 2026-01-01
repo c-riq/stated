@@ -291,6 +291,22 @@ body.modal-open {
     background: #005a94;
 }
 
+/* Video attachments */
+.attachment-video-container {
+    margin: 12px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.attachment-video {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 500px;
+}
+
 /* Action bar */
 .action-bar {
     display: flex;
