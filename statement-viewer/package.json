@@ -14,7 +14,7 @@
     "viewer"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "stated-protocol-parser": "file:../stated-protocol-parser"
   }

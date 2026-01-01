@@ -76,9 +76,20 @@ The viewer expects statements to be published following the Stated protocol stan
 ├── statements/
 │   ├── index.txt                           # List of all statement files
 │   ├── <urlsafe_b64_statement_hash>.txt    # Individual statement files
-│   └── attachments/
-│       ├── index.txt                       # List of all attachment files
-│       └── <urlsafe_b64_contents_hash>.<ext>    # Attachment files
+│   ├── attachments/
+│   │   ├── index.txt                       # List of all attachment files
+│   │   └── <urlsafe_b64_contents_hash>.<ext>    # Attachment files
+│   └── peers/
+│       ├── index.txt                       # List of all peer domains
+│       └── <peer_domain>/
+│           ├── metadata.json               # Sync metadata for this peer
+│           ├── statements.txt              # All statements from peer
+│           └── statements/
+│               ├── index.txt               # List of statement files
+│               ├── <urlsafe_b64_statement_hash>.txt    # Individual statements
+│               └── attachments/
+│                   ├── index.txt           # List of attachments
+│                   └── <urlsafe_b64_contents_hash>.<ext>  # Attachment files
 ```
 
 ### Loading Behavior
@@ -150,7 +161,7 @@ Edit `app.js` to customize behavior:
 
 ## Sample Data
 
-The included `generate-samples.js` script creates:
+The included `generate-samples.cjs` script creates:
 - 10 diverse sample statements including:
   - Plain statements with cryptographic signatures
   - Polls with voting options
@@ -160,6 +171,10 @@ The included `generate-samples.js` script creates:
   - Vote statements
   - Statement superseding (corrections)
 - 2 sample attachments (PDF document and PNG image)
+- 2 peer domains with response statements:
+  - `partner-org.example` - Response supporting the sustainability initiative
+  - `community-group.example` - Response from community environmental group
+- Peer replication structure with metadata.json files tracking sync status
 - Proper file structure following the Stated protocol standard
 
 ## Browser Compatibility

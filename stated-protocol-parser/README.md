@@ -288,6 +288,26 @@ All statement files should be published under the `/.well-known/` directory:
 │       └── <urlsafe_b64_contents_hash>.<ext>    # Attachment files
 ```
 
+### Peer Replication Structure
+
+For peer-to-peer replication of statements from other domains, use the following directory structure under `/.well-known/statements/peers/`:
+
+```
+/.well-known/statements/
+├── peers/
+│   ├── index.txt                                    # List of all peer domains
+│   └── <peer_domain>/
+│       ├── metadata.json                            # Sync metadata for this peer
+│       ├── statements.txt                           # All statements from peer
+│       ├── statements/
+│       │   ├── index.txt                           # List of statement files
+│       │   ├── <urlsafe_b64_statement_hash>.txt    # Individual statements
+│       │   └── attachments/
+│       │       ├── index.txt                       # List of attachments
+│       │       └── <urlsafe_b64_contents_hash>.<ext>  # Attachment files
+```
+
+
 ### File Specifications
 
 #### `/.well-known/statements.txt`

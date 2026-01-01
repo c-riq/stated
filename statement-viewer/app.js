@@ -8,6 +8,9 @@ class StatementViewer {
     constructor() {
         this.baseUrl = '';
         this.statements = [];
+        this.peerStatements = [];
+        this.statementsByHash = new Map();
+        this.responsesByHash = new Map();
         this.init();
     }
 
@@ -67,6 +70,9 @@ class StatementViewer {
                 // Fall back to loading individual statements from index.txt
                 await this.loadFromIndex();
             }
+            
+            // Load peer statements
+            await this.loadPeerStatements();
         } catch (error) {
             this.showError(`Error loading statements: ${error.message}`);
         } finally {
@@ -116,25 +122,42 @@ class StatementViewer {
         }
     }
 
-    parseStatementsFile(text) {
+    parseStatementsFile(text, isPeer = false) {
         try {
             // Use the library's parseStatementsFile function to properly split statements
             const statementTexts = parseStatementsFileLib(text);
             
             if (statementTexts.length === 0) {
-                this.showError('No statements found in the file');
-                return;
+                if (!isPeer) {
+                    this.showError('No statements found in the file');
+                }
+                return [];
             }
 
-            this.statements = statementTexts.map(statementText => this.parseStatement(statementText));
+            const statements = statementTexts.map(statementText => this.parseStatement(statementText));
             
-            // Verify signatures for all statements
-            this.verifyAllSignatures().then(() => {
-                this.renderStatements();
-            });
+            if (isPeer) {
+                return statements;
+            } else {
+                this.statements = statements;
+                
+                // Build hash map for main statements
+                this.statements.forEach(stmt => {
+                    const hash = sha256(stmt.raw);
+                    this.statementsByHash.set(hash, stmt);
+                });
+                
+                // Verify signatures for all statements
+                this.verifyAllSignatures().then(() => {
+                    this.renderStatements();
+                });
+            }
         } catch (error) {
-            this.showError(`Error parsing statements file: ${error.message}`);
+            if (!isPeer) {
+                this.showError(`Error parsing statements file: ${error.message}`);
+            }
             console.error('Parse error:', error);
+            return [];
         }
     }
 
@@ -236,6 +259,104 @@ class StatementViewer {
         return statement;
     }
 
+    async loadPeerStatements() {
+        try {
+            const peersIndexUrl = this.baseUrl + 'peers/index.txt';
+            const response = await fetch(peersIndexUrl);
+            
+            if (!response.ok) {
+                console.log('No peer statements found (peers/index.txt not available)');
+                return;
+            }
+
+            const indexText = await response.text();
+            const peerDomains = indexText.split('\n').filter(line => line.trim());
+
+            console.log(`Found ${peerDomains.length} peer domains`);
+
+            for (const peerDomain of peerDomains) {
+                try {
+                    const peerStatementsUrl = this.baseUrl + `peers/${peerDomain}/statements.txt`;
+                    const peerResponse = await fetch(peerStatementsUrl);
+                    
+                    if (peerResponse.ok) {
+                        const peerText = await peerResponse.text();
+                        const peerStatements = this.parseStatementsFile(peerText, true);
+                        
+                        // Mark statements as from peer
+                        peerStatements.forEach(stmt => {
+                            stmt.isPeer = true;
+                            stmt.peerDomain = peerDomain;
+                        });
+                        
+                        this.peerStatements.push(...peerStatements);
+                        console.log(`Loaded ${peerStatements.length} statements from peer ${peerDomain}`);
+                    }
+                } catch (error) {
+                    console.error(`Error loading peer ${peerDomain}:`, error);
+                }
+            }
+
+            // Verify signatures for peer statements
+            await this.verifyPeerSignatures();
+            
+            // Build response map
+            this.buildResponseMap();
+            
+            // Re-render to show responses
+            this.renderStatements();
+        } catch (error) {
+            console.error('Error loading peer statements:', error);
+        }
+    }
+
+    buildResponseMap() {
+        this.responsesByHash.clear();
+        
+        this.peerStatements.forEach(stmt => {
+            // Check if this is a response statement
+            const responseMatch = stmt.content.match(/Type: Response\s+Hash of referenced statement: ([^\s]+)/);
+            if (responseMatch) {
+                const referencedHash = responseMatch[1];
+                if (!this.responsesByHash.has(referencedHash)) {
+                    this.responsesByHash.set(referencedHash, []);
+                }
+                this.responsesByHash.get(referencedHash).push(stmt);
+            }
+        });
+        
+        console.log(`Built response map with ${this.responsesByHash.size} referenced statements`);
+    }
+
+    async verifyPeerSignatures() {
+        const verificationPromises = this.peerStatements.map(async (statement) => {
+            if (statement.signature) {
+                try {
+                    const parsed = parseSignedStatement(statement.raw);
+                    if (!parsed) {
+                        statement.signatureVerified = false;
+                        statement.hashMatches = false;
+                        return;
+                    }
+                    
+                    statement.hashMatches = true;
+                    const signatureValid = await verifySignature(
+                        parsed.statement,
+                        parsed.signature,
+                        parsed.publicKey
+                    );
+                    statement.signatureVerified = signatureValid;
+                } catch (error) {
+                    console.error('Error verifying peer signature:', error);
+                    statement.signatureVerified = false;
+                    statement.hashMatches = false;
+                }
+            }
+        });
+        
+        await Promise.all(verificationPromises);
+    }
+
     async verifyAllSignatures() {
         const verificationPromises = this.statements.map(async (statement) => {
             if (statement.signature) {
@@ -314,6 +435,14 @@ class StatementViewer {
         sortedStatements.forEach(statement => {
             const card = this.createStatementCard(statement);
             container.appendChild(card);
+            
+            // Add responses if any
+            const statementHash = sha256(statement.raw);
+            const responses = this.responsesByHash.get(statementHash);
+            if (responses && responses.length > 0) {
+                const responsesContainer = this.createResponsesContainer(responses);
+                container.appendChild(responsesContainer);
+            }
         });
     }
 
@@ -441,6 +570,97 @@ class StatementViewer {
             card.appendChild(signatureBox);
         }
 
+        return card;
+    }
+
+    createResponsesContainer(responses) {
+        const container = document.createElement('div');
+        container.className = 'responses-container';
+        
+        const header = document.createElement('div');
+        header.className = 'responses-header';
+        header.textContent = `${responses.length} Response${responses.length > 1 ? 's' : ''}`;
+        container.appendChild(header);
+        
+        // Sort responses by time
+        const sortedResponses = [...responses].sort((a, b) => {
+            const timeA = new Date(a.time);
+            const timeB = new Date(b.time);
+            return timeA - timeB;
+        });
+        
+        sortedResponses.forEach(response => {
+            const responseCard = this.createResponseCard(response);
+            container.appendChild(responseCard);
+        });
+        
+        return container;
+    }
+
+    createResponseCard(statement) {
+        const card = document.createElement('div');
+        card.className = 'response-card';
+        
+        // Header with meta information
+        const header = document.createElement('div');
+        header.className = 'response-header';
+        
+        const meta = document.createElement('div');
+        meta.className = 'response-meta';
+        
+        const domain = document.createElement('div');
+        domain.className = 'response-domain';
+        domain.textContent = statement.domain || 'Unknown domain';
+        meta.appendChild(domain);
+        
+        if (statement.author) {
+            const author = document.createElement('div');
+            author.className = 'response-author';
+            author.textContent = statement.author;
+            meta.appendChild(author);
+        }
+        
+        if (statement.time) {
+            const time = document.createElement('div');
+            time.className = 'response-time';
+            time.textContent = new Date(statement.time).toLocaleString();
+            meta.appendChild(time);
+        }
+        
+        header.appendChild(meta);
+        
+        // Peer badge
+        if (statement.isPeer) {
+            const peerBadge = document.createElement('div');
+            peerBadge.className = 'peer-badge';
+            peerBadge.textContent = 'Peer';
+            peerBadge.title = `From peer domain: ${statement.peerDomain}`;
+            header.appendChild(peerBadge);
+        }
+        
+        card.appendChild(header);
+        
+        // Extract response text from content
+        const responseMatch = statement.content.match(/Response:\s+(.+)/s);
+        const responseText = responseMatch ? responseMatch[1].trim() : statement.content;
+        
+        const content = document.createElement('div');
+        content.className = 'response-content';
+        content.textContent = responseText;
+        card.appendChild(content);
+        
+        // Signature indicator for responses
+        if (statement.signature) {
+            const signatureIndicator = document.createElement('div');
+            signatureIndicator.className = statement.signatureVerified
+                ? 'response-signature-indicator verified'
+                : 'response-signature-indicator unverified';
+            signatureIndicator.textContent = statement.signatureVerified
+                ? '✓ Signed & Verified'
+                : '✗ Signature Invalid';
+            card.appendChild(signatureIndicator);
+        }
+        
         return card;
     }
 

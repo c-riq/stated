@@ -5,6 +5,7 @@ const {
     buildPollContent,
     buildOrganisationVerificationContent,
     buildVoteContent,
+    buildResponseContent,
     buildSignedStatement,
     generateKeyPair,
     sha256,
@@ -15,11 +16,23 @@ const {
 const WELL_KNOWN_DIR = join(__dirname, '.well-known');
 const STATEMENTS_DIR = join(WELL_KNOWN_DIR, 'statements');
 const ATTACHMENTS_DIR = join(STATEMENTS_DIR, 'attachments');
+const PEERS_DIR = join(STATEMENTS_DIR, 'peers');
 
 async function ensureDirectories() {
     await mkdir(WELL_KNOWN_DIR, { recursive: true });
     await mkdir(STATEMENTS_DIR, { recursive: true });
     await mkdir(ATTACHMENTS_DIR, { recursive: true });
+    await mkdir(PEERS_DIR, { recursive: true });
+}
+
+async function ensurePeerDirectories(peerDomain) {
+    const peerDir = join(PEERS_DIR, peerDomain);
+    const peerStatementsDir = join(peerDir, 'statements');
+    const peerAttachmentsDir = join(peerStatementsDir, 'attachments');
+    await mkdir(peerDir, { recursive: true });
+    await mkdir(peerStatementsDir, { recursive: true });
+    await mkdir(peerAttachmentsDir, { recursive: true });
+    return { peerDir, peerStatementsDir, peerAttachmentsDir };
 }
 
 async function createAttachment(filename, content) {
@@ -247,11 +260,91 @@ startxref
     await writeFile(join(ATTACHMENTS_DIR, 'index.txt'), attachmentFiles.join('\n'));
     console.log('Created: statements/attachments/index.txt');
 
+    // Generate peer replication data
+    await generatePeerReplications(signedStatement1);
+
     console.log('\n✓ Sample data generated successfully!');
     console.log(`\nGenerated ${statements.length} statements with ${attachmentFiles.length} attachments`);
+    console.log('Generated 2 peer domains with response statements');
     console.log('\nTo view the statements:');
     console.log('1. Run: npm start');
     console.log('2. Open: http://localhost:3033/?baseUrl=http://localhost:3033/.well-known/statements/');
+}
+
+async function generatePeerReplications(referencedStatement) {
+    console.log('\nGenerating peer replication data...');
+    
+    const peers = [
+        {
+            domain: 'partner-org.example',
+            author: 'Partner Organization',
+            response: 'We fully support this sustainability initiative and will collaborate on implementation.',
+        },
+        {
+            domain: 'community-group.example',
+            author: 'Community Environmental Group',
+            response: 'This is an excellent step forward. We look forward to seeing the concrete actions.',
+        },
+    ];
+
+    const peerDomains = [];
+    const statementHash = sha256(referencedStatement);
+
+    for (const peer of peers) {
+        peerDomains.push(peer.domain);
+        
+        // Create peer directories
+        const { peerDir, peerStatementsDir, peerAttachmentsDir } = await ensurePeerDirectories(peer.domain);
+
+        // Generate key pair for this peer
+        const { publicKey, privateKey } = await generateKeyPair();
+
+        // Create response statement
+        const responseContent = buildResponseContent({
+            hash: statementHash,
+            response: peer.response,
+        });
+
+        const responseStatement = buildStatement({
+            domain: peer.domain,
+            author: peer.author,
+            time: new Date('2024-01-16T14:30:00Z'),
+            tags: ['response', 'sustainability'],
+            content: responseContent,
+        });
+
+        const signedResponseStatement = await buildSignedStatement(responseStatement, privateKey, publicKey);
+
+        // Write peer's statements.txt
+        await writeFile(join(peerDir, 'statements.txt'), signedResponseStatement);
+        console.log(`Created: statements/peers/${peer.domain}/statements.txt`);
+
+        // Write individual statement file
+        const hash = sha256(signedResponseStatement);
+        const filename = `${hash}.txt`;
+        await writeFile(join(peerStatementsDir, filename), signedResponseStatement);
+        console.log(`Created: statements/peers/${peer.domain}/statements/${filename}`);
+
+        // Write peer's statements index
+        await writeFile(join(peerStatementsDir, 'index.txt'), filename);
+        console.log(`Created: statements/peers/${peer.domain}/statements/index.txt`);
+
+        // Write peer's attachments index (empty for now)
+        await writeFile(join(peerAttachmentsDir, 'index.txt'), '');
+        console.log(`Created: statements/peers/${peer.domain}/statements/attachments/index.txt`);
+
+        // Write metadata.json
+        const metadata = {
+            lastSyncedTime: new Date().toISOString(),
+            peerDomain: peer.domain,
+        };
+        await writeFile(join(peerDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
+        console.log(`Created: statements/peers/${peer.domain}/metadata.json`);
+    }
+
+    // Write peers index.txt
+    await writeFile(join(PEERS_DIR, 'index.txt'), peerDomains.join('\n'));
+    console.log('Created: statements/peers/index.txt');
 }
 
 // Run the generator

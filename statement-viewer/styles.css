@@ -369,6 +369,114 @@ input[type="text"]:focus {
     font-weight: 600;
 }
 
+/* Responses container */
+.responses-container {
+    background: #f8f9fa;
+    border-left: 4px solid #0072BC;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    margin-left: 40px;
+}
+
+.responses-header {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+/* Response card */
+.response-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.response-card:last-child {
+    margin-bottom: 0;
+}
+
+.response-card:hover {
+    border-color: #0072BC;
+    box-shadow: 0 2px 8px rgba(0, 114, 188, 0.1);
+}
+
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.response-meta {
+    flex: 1;
+}
+
+.response-domain {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0072BC;
+    margin-bottom: 3px;
+}
+
+.response-author {
+    font-size: 0.9rem;
+    color: #003366;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.response-time {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.peer-badge {
+    background: #6c757d;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.response-content {
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.response-signature-indicator {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.response-signature-indicator.verified {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.response-signature-indicator.unverified {
+    background: #ffebee;
+    color: #c62828;
+}
+
 /* Footer */
 footer {
     text-align: center;
@@ -426,6 +534,20 @@ footer a:hover {
 
     .statement-card {
         padding: 20px;
+    }
+
+    .responses-container {
+        margin-left: 20px;
+        padding: 15px;
+    }
+
+    .response-header {
+        flex-direction: column;
+    }
+
+    .peer-badge {
+        margin-top: 8px;
+        align-self: flex-start;
     }
 }
 
