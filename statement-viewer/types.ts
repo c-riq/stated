@@ -1,0 +1,37 @@
+export interface ParsedStatement {
+    raw: string;
+    domain?: string;
+    author?: string;
+    time?: string;
+    tags?: string[];
+    content: string;
+    type?: string;
+    signature?: string;
+    formatVersion?: string;
+    attachments?: string[];
+    supersededStatement?: string;
+    translations?: Record<string, string>;
+    signatureVerified?: boolean;
+    hashMatches?: boolean;
+    isPeer?: boolean;
+    peerDomain?: string;
+}
+
+export interface VoteEntry {
+    statement: ParsedStatement;
+    vote: string;
+    voteData: any;
+}
+
+export interface SignatureInfo {
+    algorithm: string;
+    publicKey: string;
+    hash: string;
+    signature: string;
+}
+
+export interface StatementMaps {
+    statementsByHash: Map<string, ParsedStatement>;
+    responsesByHash: Map<string, ParsedStatement[]>;
+    votesByPollHash: Map<string, VoteEntry[]>;
+}
