@@ -332,9 +332,22 @@ Statement content:
 Second statement content
 ```
 
-#### `/.well-known/statements/<urlsafe_b64_statement_hash>.txt`
+#### `/.well-known/statements/<urlsafe_b64_signed_statement_hash>.txt`
 
-Individual statement files named using the URL-safe base64-encoded SHA-256 hash of the statement content.
+Individual statement files named using the URL-safe base64-encoded SHA-256 hash of the complete file content.
+
+**Important Hash Terminology:**
+
+For signed statements, there are three distinct hash values:
+
+1. **Statement content hash**: Hash of only the content field (the actual message text)
+2. **Statement hash**: Hash of the complete unsigned statement (all fields: domain, author, time, content, etc., but excluding the signature block)
+3. **Signed statement hash**: Hash of the complete signed statement (unsigned statement + signature block)
+
+**Usage:**
+- **Filename**: Uses the **signed statement hash** (hash of entire file content)
+- **Signature block "Statement hash" field**: Contains the **statement hash** (hash of unsigned statement, used for cryptographic verification)
+- **Response references**: Use the **signed statement hash** to reference which statement is being responded to
 
 **Naming Convention:**
 - Hash the complete statement text using SHA-256

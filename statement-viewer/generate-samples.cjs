@@ -118,104 +118,47 @@ async function generateSampleStatements() {
     });
     statements.push(statement4);
 
-    // 5. Create sample PDF attachment
-    const pdfContent = `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/Resources <<
-/Font <<
-/F1 <<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica
->>
->>
->>
-/MediaBox [0 0 612 792]
-/Contents 4 0 R
->>
-endobj
-4 0 obj
-<<
-/Length 44
->>
-stream
-BT
-/F1 12 Tf
-100 700 Td
-(Sample Document) Tj
-ET
-endstream
-endobj
-xref
-0 5
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000317 00000 n 
-trailer
-<<
-/Size 5
-/Root 1 0 R
->>
-startxref
-410
-%%EOF`;
-
-    const pdfAttachment = await createAttachment('sample.pdf', pdfContent);
-
-    // 6. Create sample image attachment (simple PNG)
-    const pngContent = Buffer.from(
-        '89504e470d0a1a0a0000000d494844520000001000000010080200000090916836000000017352474200aece1ce90000000467414d410000b18f0bfc6105000000097048597300000ec300000ec301c76fa8640000001e49444154384f63fcffff3f032580818989898989898989898989898989010057f80c8f3f3f3f3f0000000049454e44ae426082',
-        'hex'
-    );
-    const pngAttachment = await createAttachment('logo.png', pngContent);
-
-    // 7. Statement with attachments
+    // 5. Statement with 2 images
     const statement5 = buildStatement({
         domain: 'example.com',
         author: 'Example Organization',
         time: new Date('2024-05-20T11:20:00Z'),
-        tags: ['report', 'documentation'],
-        content: 'Please find our quarterly report and company logo attached.',
-        attachments: [pdfAttachment, pngAttachment],
+        tags: ['photos', 'event'],
+        content: 'Check out these amazing photos from our recent company event!',
+        attachments: ['image1.png', 'image2.png'],
     });
     const signedStatement5 = await buildSignedStatement(statement5, privateKey, publicKey);
     statements.push(signedStatement5);
 
-    // 8. Vote statement
+    // 6. Statement with PDF document
+    const statement6 = buildStatement({
+        domain: 'example.com',
+        author: 'Example Organization',
+        time: new Date('2024-05-21T14:30:00Z'),
+        tags: ['report', 'documentation'],
+        content: 'Our comprehensive annual report is now available. Please review the attached document for detailed financial information and strategic insights.',
+        attachments: ['document.pdf'],
+    });
+    const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
+    statements.push(signedStatement6);
+
+    // 7. Vote statement
     const voteContent = buildVoteContent({
         pollHash: 'abc123def456',
         poll: 'Should we implement a 4-day work week?',
         vote: 'Yes',
     });
-    const statement6 = buildStatement({
+    const statement7 = buildStatement({
         domain: 'employee.example.com',
         author: 'John Doe',
         time: new Date('2024-02-15T10:30:00Z'),
         tags: ['vote'],
         content: voteContent,
     });
-    statements.push(statement6);
+    statements.push(statement7);
 
-    // 9. Statement superseding another
-    const statement7 = buildStatement({
+    // 8. Statement superseding another
+    const statement8 = buildStatement({
         domain: 'example.com',
         author: 'Example Organization',
         time: new Date('2024-06-01T08:00:00Z'),
@@ -223,18 +166,18 @@ startxref
         content: 'Correction: Our sustainability initiative will launch in Q3, not Q2 as previously stated.',
         supersededStatement: sha256(statement1),
     });
-    statements.push(statement7);
+    statements.push(statement8);
 
-    // 10. Recent statement
-    const statement8 = buildStatement({
+    // 9. Recent statement
+    const statement9 = buildStatement({
         domain: 'example.com',
         author: 'Example Organization',
         time: new Date(),
         tags: ['news', 'announcement'],
         content: 'We are excited to share our latest achievements and milestones with the community.',
     });
-    const signedStatement8 = await buildSignedStatement(statement8, privateKey, publicKey);
-    statements.push(signedStatement8);
+    const signedStatement9 = await buildSignedStatement(statement9, privateKey, publicKey);
+    statements.push(signedStatement9);
 
     // Write individual statement files
     for (const statement of statements) {
@@ -256,7 +199,7 @@ startxref
     console.log('Created: statements/index.txt');
 
     // Write attachments index.txt
-    const attachmentFiles = [pdfAttachment, pngAttachment];
+    const attachmentFiles = ['image1.png', 'image2.png', 'document.pdf'];
     await writeFile(join(ATTACHMENTS_DIR, 'index.txt'), attachmentFiles.join('\n'));
     console.log('Created: statements/attachments/index.txt');
 

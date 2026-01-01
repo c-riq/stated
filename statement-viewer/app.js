@@ -512,21 +512,68 @@ class StatementViewer {
             const attachmentsContainer = document.createElement('div');
             attachmentsContainer.className = 'statement-attachments';
             
-            const attachmentsTitle = document.createElement('h4');
-            attachmentsTitle.textContent = 'Attachments';
-            attachmentsContainer.appendChild(attachmentsTitle);
-            
             statement.attachments.forEach(attachment => {
-                const attachmentLink = document.createElement('a');
-                attachmentLink.href = this.baseUrl + 'attachments/' + attachment;
-                attachmentLink.textContent = attachment;
-                attachmentLink.target = '_blank';
-                attachmentLink.className = 'attachment-link';
+                const attachmentUrl = this.baseUrl + 'attachments/' + attachment;
+                const extension = attachment.split('.').pop().toLowerCase();
                 
-                const attachmentItem = document.createElement('div');
-                attachmentItem.className = 'attachment-item';
-                attachmentItem.appendChild(attachmentLink);
-                attachmentsContainer.appendChild(attachmentItem);
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+                    // Display images inline
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'attachment-image-container';
+                    
+                    const img = document.createElement('img');
+                    img.src = attachmentUrl;
+                    img.alt = attachment;
+                    img.className = 'attachment-image';
+                    img.loading = 'lazy';
+                    
+                    // Add click to open in new tab
+                    img.addEventListener('click', () => {
+                        window.open(attachmentUrl, '_blank');
+                    });
+                    
+                    imageContainer.appendChild(img);
+                    attachmentsContainer.appendChild(imageContainer);
+                } else if (extension === 'pdf') {
+                    // Embed PDF viewer
+                    const pdfContainer = document.createElement('div');
+                    pdfContainer.className = 'attachment-pdf-container';
+                    
+                    const pdfTitle = document.createElement('div');
+                    pdfTitle.className = 'attachment-pdf-title';
+                    pdfTitle.innerHTML = `📄 <strong>${this.escapeHtml(attachment)}</strong>`;
+                    pdfContainer.appendChild(pdfTitle);
+                    
+                    const pdfEmbed = document.createElement('iframe');
+                    pdfEmbed.src = attachmentUrl;
+                    pdfEmbed.className = 'attachment-pdf-embed';
+                    pdfEmbed.title = attachment;
+                    
+                    pdfContainer.appendChild(pdfEmbed);
+                    
+                    // Add download link
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = attachmentUrl;
+                    downloadLink.download = attachment;
+                    downloadLink.className = 'attachment-download-link';
+                    downloadLink.textContent = '⬇ Download PDF';
+                    downloadLink.target = '_blank';
+                    pdfContainer.appendChild(downloadLink);
+                    
+                    attachmentsContainer.appendChild(pdfContainer);
+                } else {
+                    // Other file types - show as link
+                    const attachmentLink = document.createElement('a');
+                    attachmentLink.href = attachmentUrl;
+                    attachmentLink.textContent = attachment;
+                    attachmentLink.target = '_blank';
+                    attachmentLink.className = 'attachment-link';
+                    
+                    const attachmentItem = document.createElement('div');
+                    attachmentItem.className = 'attachment-item';
+                    attachmentItem.appendChild(attachmentLink);
+                    attachmentsContainer.appendChild(attachmentItem);
+                }
             });
             
             card.appendChild(attachmentsContainer);

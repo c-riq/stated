@@ -283,9 +283,6 @@ input[type="text"]:focus {
 
 /* Attachments */
 .statement-attachments {
-    background: #f9f9f9;
-    padding: 15px;
-    border-radius: 6px;
     margin-bottom: 15px;
 }
 
@@ -298,6 +295,9 @@ input[type="text"]:focus {
 
 .attachment-item {
     margin-bottom: 8px;
+    background: #f9f9f9;
+    padding: 10px 15px;
+    border-radius: 6px;
 }
 
 .attachment-link {
@@ -310,6 +310,66 @@ input[type="text"]:focus {
 .attachment-link:hover {
     color: #005a94;
     text-decoration: underline;
+}
+
+/* Image attachments */
+.attachment-image-container {
+    margin: 15px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: #f9f9f9;
+}
+
+.attachment-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.attachment-image:hover {
+    transform: scale(1.02);
+}
+
+/* PDF attachments */
+.attachment-pdf-container {
+    margin: 15px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.attachment-pdf-title {
+    background: #f9f9f9;
+    padding: 12px 15px;
+    border-bottom: 2px solid #e0e0e0;
+    color: #003366;
+    font-size: 0.95rem;
+}
+
+.attachment-pdf-embed {
+    width: 100%;
+    height: 600px;
+    border: none;
+    display: block;
+}
+
+.attachment-download-link {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: #0072BC;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.attachment-download-link:hover {
+    background: #005a94;
 }
 
 /* Signature */
@@ -548,6 +608,10 @@ footer a:hover {
     .peer-badge {
         margin-top: 8px;
         align-self: flex-start;
+    }
+
+    .attachment-pdf-embed {
+        height: 400px;
     }
 }
 
