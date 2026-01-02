@@ -1,5 +1,4 @@
 import express, { Request, Response, NextFunction } from 'express';
-import serveIndex from 'serve-index';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -24,15 +23,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-app.use('/.well-known', serveIndex(join(PROJECT_ROOT, '.well-known'), {
-    icons: true,
-    view: 'details'
-}));
-
 app.use(express.static(PROJECT_ROOT));
 
 app.listen(PORT, () => {
     console.log(`Statement Viewer server running at http://localhost:${PORT}/`);
     console.log(`View statements at: http://localhost:${PORT}/?baseUrl=http://localhost:${PORT}/.well-known/statements/`);
-    console.log(`Browse files at: http://localhost:${PORT}/.well-known/`);
+    console.log(`Browse files at: http://localhost:${PORT}/browser.html`);
 });

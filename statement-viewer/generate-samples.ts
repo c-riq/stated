@@ -429,12 +429,22 @@ async function generateSampleStatements(): Promise<void> {
     await writeFile(join(WELL_KNOWN_DIR, 'statements.txt'), allStatements);
     console.log('Created: statements.txt');
 
-    // Write index.txt
-    await writeFile(join(STATEMENTS_DIR, 'index.txt'), statementFiles.join('\n'));
+    // Write statements/index.txt with files and directories
+    const statementsIndexContent = [
+        'attachments/',
+        'peers/',
+        'index.txt',
+        ...statementFiles
+    ].join('\n');
+    await writeFile(join(STATEMENTS_DIR, 'index.txt'), statementsIndexContent);
     console.log('Created: statements/index.txt');
 
     // Write attachments index.txt
-    await writeFile(join(ATTACHMENTS_DIR, 'index.txt'), attachmentFiles.join('\n'));
+    const attachmentsIndexContent = [
+        'index.txt',
+        ...attachmentFiles
+    ].join('\n');
+    await writeFile(join(ATTACHMENTS_DIR, 'index.txt'), attachmentsIndexContent);
     console.log('Created: statements/attachments/index.txt');
 
     // Generate peer replication data
@@ -503,12 +513,18 @@ async function generatePeerReplications(referencedStatement: string): Promise<vo
         await writeFile(join(peerStatementsDir, filename), signedResponseStatement);
         console.log(`Created: statements/peers/${peer.domain}/statements/${filename}`);
 
-        // Write peer's statements index
-        await writeFile(join(peerStatementsDir, 'index.txt'), filename);
+        // Write peer's statements index with files and directories
+        const peerStatementsIndexContent = [
+            'attachments/',
+            'index.txt',
+            filename
+        ].join('\n');
+        await writeFile(join(peerStatementsDir, 'index.txt'), peerStatementsIndexContent);
         console.log(`Created: statements/peers/${peer.domain}/statements/index.txt`);
 
-        // Write peer's attachments index (empty for now)
-        await writeFile(join(peerAttachmentsDir, 'index.txt'), '');
+        // Write peer's attachments index
+        const peerAttachmentsIndexContent = 'index.txt';
+        await writeFile(join(peerAttachmentsDir, 'index.txt'), peerAttachmentsIndexContent);
         console.log(`Created: statements/peers/${peer.domain}/statements/attachments/index.txt`);
 
         // Write metadata.json
@@ -518,10 +534,23 @@ async function generatePeerReplications(referencedStatement: string): Promise<vo
         };
         await writeFile(join(peerDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
         console.log(`Created: statements/peers/${peer.domain}/metadata.json`);
+
+        // Write peer directory index with files and directories
+        const peerDirIndexContent = [
+            'statements/',
+            'metadata.json',
+            'statements.txt'
+        ].join('\n');
+        await writeFile(join(peerDir, 'index.txt'), peerDirIndexContent);
+        console.log(`Created: statements/peers/${peer.domain}/index.txt`);
     }
 
-    // Write peers index.txt
-    await writeFile(join(PEERS_DIR, 'index.txt'), peerDomains.join('\n'));
+    // Write peers index.txt with all peer directories
+    const peersIndexContent = [
+        'index.txt',
+        ...peerDomains.map(domain => `${domain}/`)
+    ].join('\n');
+    await writeFile(join(PEERS_DIR, 'index.txt'), peersIndexContent);
     console.log('Created: statements/peers/index.txt');
 }
 
