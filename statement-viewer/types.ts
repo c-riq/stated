@@ -33,6 +33,12 @@ export interface VoteEntry {
     voteData: any;
 }
 
+export interface PDFSignatureEntry {
+    statement: ParsedStatement;
+    pdfHash: string;
+    signatureData: any;
+}
+
 export interface SignatureInfo {
     algorithm: string;
     publicKey: string;

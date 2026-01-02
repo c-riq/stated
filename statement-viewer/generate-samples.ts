@@ -9,6 +9,7 @@ import {
     buildVoteContent,
     buildResponseContent,
     buildSignedStatement,
+    buildPDFSigningContent,
     generateKeyPair,
     sha256,
     generateStatementsFile,
@@ -310,6 +311,73 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement6b = await buildSignedStatement(statement6b, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedStatement6b);
 
+    // 6c. Treaty PDF signing statements from all countries (NO statement with attachment)
+    const treatyPdfContent = await readFile(join(MEDIA_DIR, 'treaty.pdf'));
+    const treatyPdfFilename = await createAttachment(paths.attachmentsDir, 'treaty.pdf', treatyPdfContent);
+    attachmentFiles.push(treatyPdfFilename);
+    
+    // Extract just the hash part (without extension) for PDF signing
+    const treatyPdfHash = treatyPdfFilename.split('.')[0];
+    
+    // All countries sign the treaty PDF directly (no separate statement with attachment)
+    const pdfSigningContent = buildPDFSigningContent({
+        hash: treatyPdfHash,
+    });
+    
+    // Country A signs (publisher)
+    const pdfSignStatement1 = buildStatement({
+        domain: countryA.domain,
+        author: countryA.author,
+        time: new Date('2024-05-23T10:00:00Z'),
+        tags: ['treaty-signature', 'pdf-signing'],
+        content: pdfSigningContent,
+    });
+    const signedPdfSign1 = await buildSignedStatement(pdfSignStatement1, countryA.privateKey!, countryA.publicKey!);
+    statements.push(signedPdfSign1);
+    
+    // Country B signs
+    const pdfSignStatement2 = buildStatement({
+        domain: countryB.domain,
+        author: countryB.author,
+        time: new Date('2024-05-24T11:30:00Z'),
+        tags: ['treaty-signature', 'pdf-signing'],
+        content: pdfSigningContent,
+    });
+    const signedPdfSign2 = await buildSignedStatement(pdfSignStatement2, countryB.privateKey!, countryB.publicKey!);
+    statements.push(signedPdfSign2);
+    
+    // Country C signs
+    const pdfSignStatement3 = buildStatement({
+        domain: countryC.domain,
+        author: countryC.author,
+        time: new Date('2024-05-25T14:15:00Z'),
+        tags: ['treaty-signature', 'pdf-signing'],
+        content: pdfSigningContent,
+    });
+    const signedPdfSign3 = await buildSignedStatement(pdfSignStatement3, countryC.privateKey!, countryC.publicKey!);
+    statements.push(signedPdfSign3);
+    
+    // Country D signs
+    const pdfSignStatement4 = buildStatement({
+        domain: countryD.domain,
+        author: countryD.author,
+        time: new Date('2024-05-26T09:45:00Z'),
+        tags: ['treaty-signature', 'pdf-signing'],
+        content: pdfSigningContent,
+    });
+    const signedPdfSign4 = await buildSignedStatement(pdfSignStatement4, countryD.privateKey!, countryD.publicKey!);
+    statements.push(signedPdfSign4);
+    
+    // Country E signs
+    const pdfSignStatement5 = buildStatement({
+        domain: countryE.domain,
+        author: countryE.author,
+        time: new Date('2024-05-27T16:20:00Z'),
+        tags: ['treaty-signature', 'pdf-signing'],
+        content: pdfSigningContent,
+    });
+    const signedPdfSign5 = await buildSignedStatement(pdfSignStatement5, countryE.privateKey!, countryE.publicKey!);
+    statements.push(signedPdfSign5);
 
     // 7. Vote statement - using actual poll hash (with Country B's key)
     const voteContent = buildVoteContent({

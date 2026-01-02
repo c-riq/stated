@@ -1,7 +1,7 @@
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification } from './lib/index.js';
-import { ParsedStatement, VoteEntry, Identity } from './types.js';
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning } from './lib/index.js';
+import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry } from './types.js';
 import { sortStatementsByTime } from './utils.js';
-import { createStatementCard, createVotesContainer, createResponsesContainer, renderStatementDetails } from './renderers.js';
+import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, renderStatementDetails } from './renderers.js';
 
 export class StatementViewer {
     private baseUrl: string;
@@ -10,6 +10,7 @@ export class StatementViewer {
     private statementsByHash: Map<string, ParsedStatement>;
     private responsesByHash: Map<string, ParsedStatement[]>;
     private votesByPollHash: Map<string, VoteEntry[]>;
+    private signaturesByPdfHash: Map<string, PDFSignatureEntry[]>;
     private expandedStatements: Set<string>;
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
@@ -21,6 +22,7 @@ export class StatementViewer {
         this.statementsByHash = new Map();
         this.responsesByHash = new Map();
         this.votesByPollHash = new Map();
+        this.signaturesByPdfHash = new Map();
         this.expandedStatements = new Set();
         this.identities = new Map();
         this.showHostOnly = false;
@@ -117,6 +119,7 @@ export class StatementViewer {
         this.statementsByHash.clear();
         this.responsesByHash.clear();
         this.votesByPollHash.clear();
+        this.signaturesByPdfHash.clear();
         this.identities.clear();
 
         this.showLoading(true);
@@ -218,6 +221,7 @@ export class StatementViewer {
                 
                 this.buildIdentityRegistry();
                 this.buildVotesMap();
+                this.buildPdfSignaturesMap();
                 
                 this.verifyAllSignatures().then(() => {
                     this.linkSignaturesToIdentities();
@@ -273,6 +277,7 @@ export class StatementViewer {
             this.buildIdentityRegistry(); // Rebuild identity registry to include peer self-verifications
             this.buildResponseMap();
             this.buildVotesMap();
+            this.buildPdfSignaturesMap();
             this.renderStatements();
         } catch (error: any) {
             console.error('Error loading peer statements:', error);
@@ -324,6 +329,40 @@ export class StatementViewer {
             }
         });
     }
+    
+    private buildPdfSignaturesMap(): void {
+        this.signaturesByPdfHash.clear();
+        
+        const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
+        console.log('[PDF Signatures] Total statements:', allStatements.length);
+        
+        allStatements.forEach((stmt: ParsedStatement) => {
+            if (stmt.type && stmt.type.toLowerCase() === 'sign_pdf') {
+                console.log('[PDF Signatures] Found PDF signing statement:', stmt.domain, stmt.type);
+                try {
+                    const pdfSigningData = parsePDFSigning(stmt.content);
+                    const pdfHash = pdfSigningData.hash;
+                    console.log('[PDF Signatures] PDF hash:', pdfHash);
+                    
+                    if (!this.signaturesByPdfHash.has(pdfHash)) {
+                        this.signaturesByPdfHash.set(pdfHash, []);
+                    }
+                    this.signaturesByPdfHash.get(pdfHash)!.push({
+                        statement: stmt,
+                        pdfHash: pdfHash,
+                        signatureData: pdfSigningData
+                    });
+                } catch (error: any) {
+                    console.error('Error parsing PDF signing:', error);
+                }
+            }
+        });
+        console.log('[PDF Signatures] Total PDF hashes with signatures:', this.signaturesByPdfHash.size);
+        this.signaturesByPdfHash.forEach((sigs, hash) => {
+            console.log(`[PDF Signatures] PDF ${hash}: ${sigs.length} signatures`);
+        });
+    }
+
     private buildIdentityRegistry(): void {
         this.identities.clear();
         
@@ -475,6 +514,8 @@ export class StatementViewer {
         }
 
         const aggregatedVoteHashes = new Set<string>();
+        const aggregatedPdfSignatureHashes = new Set<string>();
+        
         allStatements.forEach((statement: ParsedStatement) => {
             if (statement.type && statement.type.toLowerCase() === 'poll') {
                 const statementHash = sha256(statement.raw);
@@ -486,6 +527,26 @@ export class StatementViewer {
                     });
                 }
             }
+            
+            // Track PDF signing statements - only the first one will render the PDF with all signatures
+            if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
+                try {
+                    const pdfSigningData = parsePDFSigning(statement.content);
+                    const pdfHash = pdfSigningData.hash;
+                    const signatures = this.signaturesByPdfHash.get(pdfHash);
+                    if (signatures && signatures.length > 0) {
+                        // Mark all but the first signature as aggregated (to hide them)
+                        signatures.forEach(({ statement: sigStatement }, index) => {
+                            if (index > 0) {
+                                const sigHash = sha256(sigStatement.raw);
+                                aggregatedPdfSignatureHashes.add(sigHash);
+                            }
+                        });
+                    }
+                } catch (error: any) {
+                    console.error('Error processing PDF signing for aggregation:', error);
+                }
+            }
         });
 
         const sortedStatements = sortStatementsByTime(allStatements);
@@ -494,6 +555,10 @@ export class StatementViewer {
             const statementHash = sha256(statement.raw);
             
             if (statement.type && statement.type.toLowerCase() === 'vote' && aggregatedVoteHashes.has(statementHash)) {
+                return;
+            }
+            
+            if (statement.type && statement.type.toLowerCase() === 'sign_pdf' && aggregatedPdfSignatureHashes.has(statementHash)) {
                 return;
             }
             
@@ -513,6 +578,40 @@ export class StatementViewer {
                         const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt));
                         container.appendChild(votesContainer);
                     }
+                }
+            }
+            
+            // Show PDF with signatures if this is a PDF signing statement (first one for each PDF)
+            if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
+                console.log('[Render] Found PDF signing statement to render:', statement.domain);
+                try {
+                    const pdfSigningData = parsePDFSigning(statement.content);
+                    const pdfHash = pdfSigningData.hash;
+                    console.log('[Render] PDF hash:', pdfHash);
+                    const signatures = this.signaturesByPdfHash.get(pdfHash);
+                    console.log('[Render] Signatures found:', signatures?.length || 0);
+                    if (signatures && signatures.length > 0) {
+                        // Filter signatures if showHostOnly is enabled
+                        const filteredSignatures = this.showHostOnly
+                            ? signatures.filter(({ statement: sigStatement }) => !sigStatement.isPeer)
+                            : signatures;
+                        
+                        console.log('[Render] Filtered signatures:', filteredSignatures.length);
+                        if (filteredSignatures.length > 0) {
+                            console.log('[Render] Creating PDF signatures container');
+                            const signaturesContainer = createPdfSignaturesContainer(
+                                pdfHash,
+                                filteredSignatures,
+                                this.baseUrl,
+                                this.identities,
+                                (stmt) => this.showStatementDetails(stmt)
+                            );
+                            container.appendChild(signaturesContainer);
+                            console.log('[Render] PDF signatures container appended');
+                        }
+                    }
+                } catch (error: any) {
+                    console.error('Error rendering PDF signatures:', error);
                 }
             }
             

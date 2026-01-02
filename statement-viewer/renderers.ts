@@ -1,5 +1,5 @@
 import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent } from './lib/index.js';
-import { ParsedStatement, VoteEntry, SignatureInfo, Identity } from './types.js';
+import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
 export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
@@ -521,6 +521,118 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     
     container.appendChild(toggleBtn);
     container.appendChild(votesListContainer);
+    
+    return container;
+}
+
+export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSignatureEntry[], baseUrl: string, identities: Map<string, Identity>, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+    const container = document.createElement('div');
+    container.className = 'pdf-signatures-container';
+    
+    // Render the PDF first
+    const pdfFilename = `${pdfHash}.pdf`;
+    const pdfUrl = `${baseUrl}attachments/${pdfFilename}`;
+    
+    const pdfContainer = document.createElement('div');
+    pdfContainer.className = 'pdf-embed-container';
+    
+    const pdfEmbed = document.createElement('iframe');
+    pdfEmbed.src = pdfUrl;
+    pdfEmbed.className = 'pdf-embed';
+    pdfEmbed.title = pdfFilename;
+    pdfContainer.appendChild(pdfEmbed);
+    
+    const downloadLink = document.createElement('a');
+    downloadLink.href = pdfUrl;
+    downloadLink.download = pdfFilename;
+    downloadLink.className = 'pdf-download-link';
+    downloadLink.textContent = '⬇ Download PDF';
+    downloadLink.target = '_blank';
+    downloadLink.addEventListener('click', (e: MouseEvent) => e.stopPropagation());
+    pdfContainer.appendChild(downloadLink);
+    
+    container.appendChild(pdfContainer);
+    
+    // Then show signatures
+    const header = document.createElement('div');
+    header.className = 'pdf-signatures-header';
+    header.textContent = `${signatures.length} Signature${signatures.length > 1 ? 's' : ''}`;
+    container.appendChild(header);
+    
+    const signaturesGrid = document.createElement('div');
+    signaturesGrid.className = 'pdf-signatures-grid';
+    
+    signatures.forEach(({ statement }: PDFSignatureEntry) => {
+        const signatureCard = document.createElement('div');
+        signatureCard.className = 'pdf-signature-card';
+        
+        const identity = statement.domain ? identities.get(statement.domain) : undefined;
+        
+        // Add profile picture if available (smaller size)
+        if (identity && identity.profilePicture) {
+            const profilePic = document.createElement('img');
+            const profilePicPath = identity.verificationStatement?.isPeer && identity.verificationStatement?.peerDomain
+                ? `${baseUrl}peers/${identity.verificationStatement.peerDomain}/statements/attachments/${identity.profilePicture}`
+                : `${baseUrl}attachments/${identity.profilePicture}`;
+            profilePic.src = profilePicPath;
+            profilePic.alt = identity.author;
+            profilePic.className = 'pdf-signature-profile-picture';
+            profilePic.onerror = () => {
+                profilePic.style.display = 'none';
+            };
+            signatureCard.appendChild(profilePic);
+        }
+        
+        const signerInfo = document.createElement('div');
+        signerInfo.className = 'pdf-signature-info';
+        
+        const signerName = document.createElement('span');
+        signerName.className = 'pdf-signature-name';
+        signerName.textContent = statement.author || statement.domain || 'Unknown';
+        
+        // Add verified badge if identity is established
+        if (identity && identity.isSelfVerified && statement.publicKey === identity.publicKey) {
+            const verifiedBadge = document.createElement('span');
+            verifiedBadge.className = 'identity-verified-badge';
+            verifiedBadge.textContent = '✓';
+            verifiedBadge.title = 'Verified identity with established public key';
+            verifiedBadge.style.marginLeft = '4px';
+            signerName.appendChild(verifiedBadge);
+        }
+        
+        signerInfo.appendChild(signerName);
+        
+        const signerDomain = document.createElement('span');
+        signerDomain.className = 'pdf-signature-domain';
+        signerDomain.textContent = `@${statement.domain || 'unknown'}`;
+        signerInfo.appendChild(signerDomain);
+        
+        const signatureTime = document.createElement('span');
+        signatureTime.className = 'pdf-signature-time';
+        signatureTime.textContent = statement.time ? new Date(statement.time).toLocaleDateString() : '';
+        signerInfo.appendChild(signatureTime);
+        
+        signatureCard.appendChild(signerInfo);
+        
+        // Add signature verification indicator
+        if (statement.signature) {
+            const verifyIndicator = document.createElement('div');
+            verifyIndicator.className = statement.signatureVerified
+                ? 'pdf-signature-verify verified'
+                : 'pdf-signature-verify unverified';
+            verifyIndicator.textContent = statement.signatureVerified ? '✓' : '✗';
+            verifyIndicator.title = statement.signatureVerified ? 'Verified signature' : 'Invalid signature';
+            signatureCard.appendChild(verifyIndicator);
+        }
+        
+        signatureCard.addEventListener('click', () => {
+            onShowDetails(statement);
+        });
+        
+        signaturesGrid.appendChild(signatureCard);
+    });
+    
+    container.appendChild(signaturesGrid);
     
     return container;
 }
