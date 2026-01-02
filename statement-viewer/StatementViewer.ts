@@ -28,11 +28,39 @@ export class StatementViewer {
     }
 
     private init(): void {
-        const loadButton = document.getElementById('loadStatements');
-        if (loadButton) {
-            loadButton.addEventListener('click', () => this.loadStatements());
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        const openMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.add('open');
+                menuOverlay.classList.add('active');
+            }
+        };
+        
+        const closeMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
+        };
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', openMenu);
         }
         
+        if (menuClose) {
+            menuClose.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+        
+        // Filter checkbox
         const showHostOnlyCheckbox = document.getElementById('showHostOnly') as HTMLInputElement;
         if (showHostOnlyCheckbox) {
             showHostOnlyCheckbox.addEventListener('change', () => {
@@ -41,6 +69,7 @@ export class StatementViewer {
             });
         }
         
+        // Modal functionality
         const modal = document.getElementById('statementModal');
         const closeBtn = document.querySelector('.modal-close');
         if (closeBtn && modal) {
@@ -57,18 +86,8 @@ export class StatementViewer {
             }
         });
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const baseUrl = urlParams.get('baseUrl');
-        const baseUrlInput = document.getElementById('baseUrl') as HTMLInputElement;
-        
-        if (baseUrl && baseUrlInput) {
-            baseUrlInput.value = baseUrl;
-            this.loadStatements();
-        } else if (baseUrlInput) {
-            const defaultUrl = `${window.location.origin}/.well-known/statements/`;
-            baseUrlInput.value = defaultUrl;
-            this.loadStatements();
-        }
+        // Always load from host domain
+        this.loadStatements();
     }
 
     private showLoading(show: boolean): void {
@@ -90,19 +109,8 @@ export class StatementViewer {
     }
 
     private async loadStatements(): Promise<void> {
-        const baseUrlInput = document.getElementById('baseUrl') as HTMLInputElement;
-        if (!baseUrlInput) return;
-        
-        this.baseUrl = baseUrlInput.value.trim();
-        
-        if (!this.baseUrl) {
-            this.showError('Please enter a base URL');
-            return;
-        }
-
-        if (!this.baseUrl.endsWith('/')) {
-            this.baseUrl += '/';
-        }
+        // Always use host domain
+        this.baseUrl = `${window.location.origin}/.well-known/statements/`;
 
         this.statements = [];
         this.peerStatements = [];

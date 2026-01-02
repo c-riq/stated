@@ -114,10 +114,27 @@
 <body>
     <div class="top-bar">
         <div class="top-bar-content">
-            <h1>Stated</h1>
-            <a href="/" class="back-link">← Back to Statements</a>
+            <h1>globalcoordination.org<span class="subtitle">Statement File Browser</span></h1>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
         </div>
     </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">←</span>
+                    <span>Back to Statements</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <div class="browser-container">
         <div class="breadcrumb" id="breadcrumb"></div>
@@ -130,6 +147,39 @@
     </div>
 
     <script type="module">
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        const openMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.add('open');
+                menuOverlay.classList.add('active');
+            }
+        };
+        
+        const closeMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
+        };
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', openMenu);
+        }
+        
+        if (menuClose) {
+            menuClose.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+
+        // File browser functionality
         const basePath = '/.well-known/';
         
         function getCurrentPath() {

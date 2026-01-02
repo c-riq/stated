@@ -9,25 +9,34 @@
 <body>
     <div class="top-bar">
         <div class="top-bar-content">
-            <h1>Stated</h1>
-            <div class="url-config">
-                <input
-                    type="text"
-                    id="baseUrl"
-                    placeholder="https://example.com/.well-known/statements/"
-                    value=""
-                >
-                <button id="loadStatements" class="btn-load">↻</button>
-            </div>
-            <div class="filter-options">
-                <label class="filter-label">
+            <h1>globalcoordination.org<span class="subtitle">Statement Viewer</span></h1>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+        </div>
+    </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Filter</h3>
+                <label class="menu-checkbox">
                     <input type="checkbox" id="showHostOnly" />
                     <span>Host domain only</span>
                 </label>
             </div>
-            <a href="/browser.html" class="file-browser-link" target="_blank" title="Browse files">📁</a>
+            <div class="menu-section">
+                <h3>Tools</h3>
+                <a href="/browser.html" class="menu-link" target="_blank">
+                    <span class="menu-icon">📁</span>
+                    <span>File Browser</span>
+                </a>
+            </div>
         </div>
-    </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <div class="container">
         <div id="loading" class="loading" style="display: none;">
