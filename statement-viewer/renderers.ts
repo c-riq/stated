@@ -6,13 +6,22 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     const card = document.createElement('div');
     card.className = 'statement-card';
 
-    const header = document.createElement('div');
-    header.className = 'statement-header';
-
     // Determine the correct base path for attachments
     const attachmentBasePath = statement.isPeer && statement.peerDomain
         ? `${baseUrl}peers/${statement.peerDomain}/statements/attachments/`
         : `${baseUrl}attachments/`;
+
+    // Add signature verification badge at top right if present
+    if (statement.signature) {
+        const verifyBadge = document.createElement('div');
+        verifyBadge.className = statement.signatureVerified ? 'verify-badge verified' : 'verify-badge unverified';
+        verifyBadge.textContent = statement.signatureVerified ? '✓' : '✗';
+        verifyBadge.title = statement.signatureVerified ? 'Verified signature' : 'Invalid signature';
+        card.appendChild(verifyBadge);
+    }
+
+    const header = document.createElement('div');
+    header.className = 'statement-header';
 
     // Add profile picture if available
     if (identity && identity.profilePicture) {
@@ -67,14 +76,6 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     authorInfo.appendChild(domainTime);
     
     header.appendChild(authorInfo);
-
-    if (statement.signature) {
-        const verifyBadge = document.createElement('div');
-        verifyBadge.className = statement.signatureVerified ? 'verify-badge verified' : 'verify-badge unverified';
-        verifyBadge.textContent = statement.signatureVerified ? '✓' : '✗';
-        verifyBadge.title = statement.signatureVerified ? 'Verified signature' : 'Invalid signature';
-        header.appendChild(verifyBadge);
-    }
 
     card.appendChild(header);
 
