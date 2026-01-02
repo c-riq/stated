@@ -1,4 +1,5 @@
 import { ParsedStatement } from './types.js';
+import { pollKeys, organisationVerificationKeys, personVerificationKeys, voteKeys, disputeAuthenticityKeys, disputeContentKeys, responseKeys, PDFSigningKeys, ratingKeys } from './lib/index.js';
 
 export function getTimeAgo(date: Date): string {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -23,4 +24,32 @@ export function sortStatementsByTime(statements: ParsedStatement[], ascending: b
         const timeB = new Date(b.time || 0);
         return ascending ? timeA.getTime() - timeB.getTime() : timeB.getTime() - timeA.getTime();
     });
+}
+
+export function styleTypedStatementContent(content: string): string {
+    if (!content.trim().startsWith('Type:')) {
+        return escapeHtml(content);
+    }
+
+    const allRegexes = [
+        pollKeys,
+        organisationVerificationKeys,
+        personVerificationKeys,
+        voteKeys,
+        disputeAuthenticityKeys,
+        disputeContentKeys,
+        responseKeys,
+        PDFSigningKeys,
+        ratingKeys
+    ];
+
+    let styledContent = escapeHtml(content);
+    
+    allRegexes.forEach(regex => {
+        styledContent = styledContent.replace(regex, (match) => {
+            return `<span class="statement-keyword">${match}</span>`;
+        });
+    });
+
+    return styledContent;
 }

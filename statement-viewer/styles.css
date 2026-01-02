@@ -224,6 +224,11 @@ body.modal-open {
     word-wrap: break-word;
 }
 
+.statement-keyword {
+    color: #0072BC;
+    font-weight: 600;
+}
+
 /* Attachments */
 .statement-attachments {
     margin-bottom: 12px;

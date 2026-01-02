@@ -1,6 +1,6 @@
 import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent } from './lib/index.js';
 import { ParsedStatement, VoteEntry, SignatureInfo, Identity } from './types.js';
-import { getTimeAgo, escapeHtml } from './utils.js';
+import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
 export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
     const card = document.createElement('div');
@@ -60,7 +60,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
 
     const content = document.createElement('div');
     content.className = 'statement-content';
-    content.textContent = statement.content;
+    content.innerHTML = styleTypedStatementContent(statement.content);
     card.appendChild(content);
 
     if (statement.attachments && statement.attachments.length > 0) {
@@ -498,7 +498,7 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     
     const content = document.createElement('div');
     content.className = 'response-content';
-    content.textContent = responseText;
+    content.innerHTML = styleTypedStatementContent(responseText);
     card.appendChild(content);
     
     const actionBar = document.createElement('div');
