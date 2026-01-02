@@ -331,10 +331,11 @@ export class StatementViewer {
                 try {
                     const verification = parseOrganisationVerification(stmt.content);
                     
-                    // Check if this is a self-verification (domain === foreignDomain)
-                    const isSelfVerified = verification.domain === verification.foreignDomain;
+                    // Check if this is a self-verification: the statement's publishing domain
+                    // must match the domain being verified
+                    const isSelfVerified = verification.domain && stmt.domain === verification.domain;
                     
-                    if (isSelfVerified && verification.domain) {
+                    if (isSelfVerified) {
                         const identity: Identity = {
                             domain: verification.domain,
                             author: verification.name,
@@ -526,9 +527,16 @@ export class StatementViewer {
         
         document.body.classList.add('modal-open');
         
-        const html = await renderStatementDetails(statement, this.baseUrl, this.statementsByHash);
+        const html = await renderStatementDetails(statement, this.baseUrl, this.statementsByHash, this.identities);
         modalBody.innerHTML = html;
         
         modal.style.display = 'block';
+    }
+    
+    public showStatementByHash(hash: string): void {
+        const statement = this.statementsByHash.get(hash);
+        if (statement) {
+            this.showStatementDetails(statement);
+        }
     }
 }

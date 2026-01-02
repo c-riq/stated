@@ -166,7 +166,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     return card;
 }
 
-export async function renderStatementDetails(statement: ParsedStatement, baseUrl: string, statementsByHash: Map<string, ParsedStatement>): Promise<string> {
+export async function renderStatementDetails(statement: ParsedStatement, baseUrl: string, statementsByHash: Map<string, ParsedStatement>, identities?: Map<string, Identity>): Promise<string> {
     const statementHash = sha256(statement.raw);
     
     // Determine the correct path for the raw file
@@ -179,6 +179,7 @@ export async function renderStatementDetails(statement: ParsedStatement, baseUrl
     let signatureInfo: SignatureInfo | null = null;
     let signatureVerified: boolean | undefined = verifiedStatement.signatureVerified;
     let hashMatches: boolean | undefined = verifiedStatement.hashMatches;
+    let matchedIdentity: Identity | undefined = undefined;
     
     try {
         const parsed = parseSignedStatement(statement.raw);
@@ -198,6 +199,14 @@ export async function renderStatementDetails(statement: ParsedStatement, baseUrl
                     parsed.signature,
                     parsed.publicKey
                 );
+            }
+            
+            // Check if the public key matches a known identity
+            if (identities && statement.domain) {
+                const identity = identities.get(statement.domain);
+                if (identity && identity.publicKey === parsed.publicKey) {
+                    matchedIdentity = identity;
+                }
             }
         }
     } catch (error: any) {
@@ -225,45 +234,49 @@ export async function renderStatementDetails(statement: ParsedStatement, baseUrl
 
         ${signatureInfo ? `
         <div class="detail-section">
-            <h3>Signature Validation</h3>
+            <h3>Signature Information</h3>
             <table class="detail-table">
                 <tr>
-                    <td><strong>Hash Match:</strong></td>
-                    <td>${hashMatches === true ? '<span style="color: #0072BC;">Valid</span>' : hashMatches === false ? '<span style="color: #dc2626;">Invalid</span>' : '<span style="color: #666;">Verifying...</span>'}</td>
-                </tr>
-                <tr>
                     <td><strong>Signature Verification:</strong></td>
-                    <td>${signatureVerified === true ? '<span style="color: #0072BC;">Verified</span>' : signatureVerified === false ? '<span style="color: #dc2626;">Failed</span>' : '<span style="color: #666;">Verifying...</span>'}</td>
+                    <td>${signatureVerified === true ? '<span style="color: #0072BC;">Valid</span>' : signatureVerified === false ? '<span style="color: #dc2626;">Invalid</span>' : '<span style="color: #666;">Verifying...</span>'}</td>
                 </tr>
-                <tr>
-                    <td><strong>Overall Status:</strong></td>
-                    <td><strong>${signatureVerified === true && hashMatches === true ? '<span style="color: #0072BC;">VALID</span>' : signatureVerified === false || hashMatches === false ? '<span style="color: #dc2626;">INVALID</span>' : '<span style="color: #666;">VERIFYING...</span>'}</strong></td>
-                </tr>
-                <tr><td colspan="2" style="height: 12px;"></td></tr>
                 <tr><td><strong>Algorithm:</strong></td><td>${escapeHtml(signatureInfo.algorithm)}</td></tr>
                 <tr><td><strong>Public Key:</strong></td><td class="monospace">${escapeHtml(signatureInfo.publicKey)}</td></tr>
+                <tr>
+                    <td><strong>Key Association:</strong></td>
+                    <td>
+                        ${matchedIdentity ? `
+                            <span style="color: #0072BC;">Key is associated with a verified identity</span>
+                            ${matchedIdentity.verificationStatement ? `
+                            <br><a href="#" onclick="event.preventDefault(); window.viewVerificationStatement('${sha256(matchedIdentity.verificationStatement.raw)}');" style="color: #0072BC; text-decoration: underline;">View verification statement</a>
+                            ` : ''}
+                        ` : `
+                            <span style="color: #666;">Key owner not known</span>
+                            <br><span style="font-size: 0.875rem; color: #666;">This public key has not been associated with a verified identity.</span>
+                        `}
+                    </td>
+                </tr>
                 <tr><td><strong>Statement Hash:</strong></td><td class="monospace">${escapeHtml(signatureInfo.hash)}</td></tr>
                 <tr><td><strong>Signature:</strong></td><td class="monospace">${escapeHtml(signatureInfo.signature)}</td></tr>
             </table>
-            ${signatureVerified === false || hashMatches === false ? `
-                <p class="warning-text">
-                    <strong>⚠️ Signature Validation Failed</strong><br>
-                    ${hashMatches === false ? '• The statement hash does not match the signed hash. The content may have been modified.<br>' : ''}
-                    ${signatureVerified === false ? '• The cryptographic signature verification failed. The signature may be invalid or the public key may not match.<br>' : ''}
-                    This statement should not be trusted.
-                </p>
-            ` : signatureVerified === true && hashMatches === true ? `
+            ${signatureVerified === false ? `
+                <div style="margin-top: 12px; padding: 12px; background: #fff3f3; border: 1px solid #dc2626; border-radius: 8px;">
+                    <p style="margin: 0; color: #991b1b; font-size: 0.875rem;">
+                        <strong>Signature verification failed</strong><br>
+                        The cryptographic signature is invalid.
+                    </p>
+                </div>
+            ` : signatureVerified === true ? `
                 <div style="margin-top: 12px; padding: 12px; background: #e6f2ff; border: 1px solid #0072BC; border-radius: 8px;">
                     <p style="margin: 0; color: #003366; font-size: 0.875rem;">
-                        <strong>✓ Signature Valid</strong><br>
-                        This statement has been cryptographically verified and can be trusted.
+                        <strong>Signature is cryptographically valid</strong><br>
+                        The signature matches the public key and statement content.
                     </p>
                 </div>
             ` : `
                 <div style="margin-top: 12px; padding: 12px; background: #f9f9f9; border: 1px solid #d0d0d0; border-radius: 8px;">
                     <p style="margin: 0; color: #666; font-size: 0.875rem;">
-                        <strong>⏳ Verification In Progress</strong><br>
-                        The signature is being verified...
+                        Verifying signature...
                     </p>
                 </div>
             `}

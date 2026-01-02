@@ -115,31 +115,31 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
             domain: 'mofa.country-a.com',
             author: 'Ministry of Foreign Affairs of Country A',
             country: 'Country A',
-            profileImage: 'profile1.jpg',
+            profileImage: 'profile1.png',
         },
         {
             domain: 'mofa.country-b.com',
             author: 'Ministry of Foreign Affairs of Country B',
             country: 'Country B',
-            profileImage: 'profile2.jpg',
+            profileImage: 'profile2.png',
         },
         {
             domain: 'mofa.country-c.com',
             author: 'Ministry of Foreign Affairs of Country C',
             country: 'Country C',
-            profileImage: 'profile3.jpg',
+            profileImage: 'profile3.png',
         },
         {
             domain: 'mofa.country-d.com',
             author: 'Ministry of Foreign Affairs of Country D',
             country: 'Country D',
-            profileImage: 'profile4.jpg',
+            profileImage: 'profile4.png',
         },
         {
             domain: 'mofa.country-e.com',
             author: 'Ministry of Foreign Affairs of Country E',
             country: 'Country E',
-            profileImage: 'profile5.jpg',
+            profileImage: 'profile5.png',
         },
     ];
 
