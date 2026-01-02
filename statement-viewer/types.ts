@@ -10,6 +10,7 @@ export interface ParsedStatement {
     formatVersion?: string;
     attachments?: string[];
     supersededStatement?: string;
+    supersededBy?: ParsedStatement;
     translations?: Record<string, string>;
     signatureVerified?: boolean;
     hashMatches?: boolean;

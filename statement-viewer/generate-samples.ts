@@ -441,16 +441,17 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement7d = await buildSignedStatement(statement7d, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedStatement7d);
 
-    // 8. Statement superseding another
+    // 8. Statement superseding another - must reference the SIGNED statement hash
     const statement8 = buildStatement({
         domain: 'mofa.country-a.com',
         author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-06-01T08:00:00Z'),
         tags: ['correction', 'treaty-update'],
         content: 'Correction: The multilateral treaty negotiations will commence in Q3, not Q2 as previously announced. This adjustment allows for more comprehensive preparatory consultations.',
-        supersededStatement: sha256(statement1),
+        supersededStatement: sha256(signedStatement1),
     });
-    statements.push(statement8);
+    const signedStatement8 = await buildSignedStatement(statement8, privateKey, publicKey);
+    statements.push(signedStatement8);
 
     // 9. Recent statement
     const statement9 = buildStatement({

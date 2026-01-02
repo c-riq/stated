@@ -352,6 +352,36 @@ body.modal-open {
 
 .verify-badge.unverified {
     background: #dc2626;
+/* Superseded indicator */
+.superseded-indicator {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.superseded-indicator:hover {
+    background-color: #ffe69c;
+    border-color: #ffb300;
+}
+
+.superseded-icon {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.superseded-text {
+    font-size: 0.875rem;
+    color: #856404;
+    font-weight: 500;
+}
+
     color: white;
 }
 

@@ -222,6 +222,7 @@ export class StatementViewer {
                 this.buildIdentityRegistry();
                 this.buildVotesMap();
                 this.buildPdfSignaturesMap();
+                this.buildSupersedingMap();
                 
                 this.verifyAllSignatures().then(() => {
                     this.linkSignaturesToIdentities();
@@ -278,6 +279,7 @@ export class StatementViewer {
             this.buildResponseMap();
             this.buildVotesMap();
             this.buildPdfSignaturesMap();
+            this.buildSupersedingMap();
             this.renderStatements();
         } catch (error: any) {
             console.error('Error loading peer statements:', error);
@@ -362,6 +364,24 @@ export class StatementViewer {
             console.log(`[PDF Signatures] PDF ${hash}: ${sigs.length} signatures`);
         });
     }
+    private buildSupersedingMap(): void {
+        const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
+        
+        // Build a map of superseded hash -> superseding statement
+        allStatements.forEach((stmt: ParsedStatement) => {
+            if (stmt.supersededStatement) {
+                // Find the superseded statement
+                const supersededStmt = this.statementsByHash.get(stmt.supersededStatement);
+                if (supersededStmt) {
+                    // Only mark as superseded if same author and domain
+                    if (supersededStmt.author === stmt.author && supersededStmt.domain === stmt.domain) {
+                        supersededStmt.supersededBy = stmt;
+                    }
+                }
+            }
+        });
+    }
+    
 
     private buildIdentityRegistry(): void {
         this.identities.clear();

@@ -11,4 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
             viewerInstance.showStatementByHash(hash);
         }
     };
+    
+    // Make the viewer instance globally accessible for superseding statement links
+    (window as any).viewSupersedingStatement = (hash: string) => {
+        if (viewerInstance) {
+            viewerInstance.showStatementByHash(hash);
+        }
+    };
 });

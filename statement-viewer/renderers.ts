@@ -78,6 +78,21 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
 
     card.appendChild(header);
 
+    // Add superseded indicator if this statement was superseded
+    if (statement.supersededBy) {
+        const supersededIndicator = document.createElement('div');
+        supersededIndicator.className = 'superseded-indicator';
+        supersededIndicator.innerHTML = `
+            <span class="superseded-icon">⚠️</span>
+            <span class="superseded-text">This statement was superseded by a newer version</span>
+        `;
+        supersededIndicator.addEventListener('click', (e: MouseEvent) => {
+            e.stopPropagation();
+            onShowDetails(statement.supersededBy!);
+        });
+        card.appendChild(supersededIndicator);
+    }
+
     const content = document.createElement('div');
     content.className = 'statement-content';
     content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
@@ -232,7 +247,8 @@ export async function renderStatementDetails(statement: ParsedStatement, baseUrl
                 <tr><td><strong>Statement Hash:</strong></td><td class="monospace">${escapeHtml(statementHash)}</td></tr>
                 <tr><td><strong>Raw File:</strong></td><td><a href="${escapeHtml(rawFileUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(statementHash)}.txt</a></td></tr>
                 ${statement.tags && statement.tags.length > 0 ? `<tr><td><strong>Tags:</strong></td><td>${statement.tags.map(t => escapeHtml(t)).join(', ')}</td></tr>` : ''}
-                ${statement.supersededStatement ? `<tr><td><strong>Supersedes:</strong></td><td>${escapeHtml(statement.supersededStatement)}</td></tr>` : ''}
+                ${statement.supersededStatement ? `<tr><td><strong>Supersedes:</strong></td><td class="monospace">${escapeHtml(statement.supersededStatement)}</td></tr>` : ''}
+                ${statement.supersededBy ? `<tr><td><strong>Superseded By:</strong></td><td><a href="#" onclick="event.preventDefault(); window.viewSupersedingStatement('${sha256(statement.supersededBy.raw)}');" style="color: #0072BC; text-decoration: underline;">View newer version</a></td></tr>` : ''}
             </table>
         </div>
 
