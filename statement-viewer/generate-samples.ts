@@ -13,6 +13,8 @@ import {
     sha256,
     generateStatementsFile,
     parseStatementsFile,
+    parseStatement,
+    parseOrganisationVerification,
 } from 'stated-protocol-parser';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -150,8 +152,12 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         ministry.privateKey = privateKey;
     }
 
-    // Get the first ministry (Country A) for initial statements
+    // Get references to all ministries for use in statements
     const countryA = ministries[0];
+    const countryB = ministries[1];
+    const countryC = ministries[2];
+    const countryD = ministries[3];
+    const countryE = ministries[4];
     const { publicKey, privateKey } = { publicKey: countryA.publicKey!, privateKey: countryA.privateKey! };
 
     console.log('\nGenerating ministry self-verification statements...');
@@ -200,25 +206,26 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement1 = await buildSignedStatement(statement1, privateKey, publicKey);
     statements.push(signedStatement1);
 
-    // 2. Poll statement
+    // 2. Poll statement (from Country C)
     const pollContent = buildPollContent({
-        poll: 'Should the treaty include provisions for cross-border data protection?',
-        options: ['Yes, with strict enforcement', 'Yes, with flexible implementation', 'No', 'Requires further study'],
+        poll: 'Should the AI Safety Treaty include an upper limit on model size?',
+        options: ['Yes', 'No'],
         deadline: new Date('2024-12-31T23:59:59Z'),
         scopeDescription: 'All participating foreign ministries',
         allowArbitraryVote: false,
     });
     const statement2 = buildStatement({
-        domain: 'mofa.country-a.com',
-        author: 'Ministry of Foreign Affairs of Country A',
+        domain: countryC.domain,
+        author: countryC.author,
         time: new Date('2024-02-01T14:30:00Z'),
         tags: ['poll', 'treaty-negotiation'],
         content: pollContent,
     });
-    statements.push(statement2);
+    const signedStatement2 = await buildSignedStatement(statement2, countryC.privateKey!, countryC.publicKey!);
+    statements.push(signedStatement2);
     
-    // Calculate the poll statement hash for use in vote
-    const pollStatementHash = sha256(statement2);
+    // Calculate the poll statement hash for use in vote (use the signed version)
+    const pollStatementHash = sha256(signedStatement2);
 
     const countryBMinistry = ministries.find(m => m.domain === 'mofa.country-b.com')!;
     const orgVerification = buildOrganisationVerificationContent({
@@ -238,20 +245,21 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     });
     statements.push(statement3);
 
-    // 4. Statement with translations
+    // 4. Statement with translations (from Country B)
     const statement4 = buildStatement({
-        domain: 'mofa.country-a.com',
-        author: 'Ministry of Foreign Affairs of Country A',
+        domain: countryB.domain,
+        author: countryB.author,
         time: new Date('2024-04-05T16:45:00Z'),
         tags: ['multilingual', 'treaty-announcement'],
-        content: 'We welcome all nations to participate in the digital cooperation treaty negotiations.',
+        content: 'We welcome all nations to participate in the AI safety treaty negotiations.',
         translations: {
-            es: 'Damos la bienvenida a todas las naciones a participar en las negociaciones del tratado de cooperación digital.',
-            fr: 'Nous accueillons toutes les nations pour participer aux négociations du traité de coopération numérique.',
-            de: 'Wir heißen alle Nationen willkommen, an den Verhandlungen über den Vertrag zur digitalen Zusammenarbeit teilzunehmen.',
+            es: 'Damos la bienvenida a todas las naciones a participar en las negociaciones del tratado de seguridad de IA.',
+            fr: 'Nous accueillons toutes les nations pour participer aux négociations du traité de sécurité de l\'IA.',
+            de: 'Wir heißen alle Nationen willkommen, an den Verhandlungen über den KI-Sicherheitsvertrag teilzunehmen.',
         },
     });
-    statements.push(statement4);
+    const signedStatement4 = await buildSignedStatement(statement4, countryB.privateKey!, countryB.publicKey!);
+    statements.push(signedStatement4);
 
     // 5. Statement with 2 images - read and hash the actual files
     const image1Content = await readFile(join(MEDIA_DIR, 'image1.png'));
@@ -286,29 +294,28 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     });
     const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
     statements.push(signedStatement6);
-    // 6b. Statement with video - read and hash the actual file
+    // 6b. Statement with video (from Country E)
     const videoContent = await readFile(join(MEDIA_DIR, 'video.mp4'));
     const videoFilename = await createAttachment(paths.attachmentsDir, 'video.mp4', videoContent);
     attachmentFiles.push(videoFilename);
     
     const statement6b = buildStatement({
-        domain: 'mofa.country-a.com',
-        author: 'Ministry of Foreign Affairs of Country A',
+        domain: countryE.domain,
+        author: countryE.author,
         time: new Date('2024-05-22T10:00:00Z'),
-        tags: ['video', 'announcement', 'digital-cooperation'],
-        content: 'Watch our video message on the importance of international digital cooperation. This presentation outlines our vision for collaborative frameworks in the digital age and highlights key initiatives for cross-border data governance.',
+        tags: ['video', 'announcement', 'ai-safety'],
+        content: 'Watch our video message on the importance of international AI safety cooperation. This presentation outlines our vision for collaborative frameworks in AI governance and highlights key initiatives for responsible AI development.',
         attachments: [videoFilename],
     });
-    const signedStatement6b = await buildSignedStatement(statement6b, privateKey, publicKey);
+    const signedStatement6b = await buildSignedStatement(statement6b, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedStatement6b);
 
 
     // 7. Vote statement - using actual poll hash (with Country B's key)
-    const countryB = ministries.find(m => m.domain === 'mofa.country-b.com')!;
     const voteContent = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should the treaty include provisions for cross-border data protection?',
-        vote: 'Yes, with strict enforcement',
+        poll: 'Should the AI Safety Treaty include an upper limit on model size?',
+        vote: 'Yes',
     });
     const statement7 = buildStatement({
         domain: countryB.domain,
@@ -321,11 +328,10 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     statements.push(signedStatement7);
     
     // 7b. Additional vote statements for the same poll (with Country C's key)
-    const countryC = ministries.find(m => m.domain === 'mofa.country-c.com')!;
     const voteContent2 = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should the treaty include provisions for cross-border data protection?',
-        vote: 'Yes, with flexible implementation',
+        poll: 'Should the AI Safety Treaty include an upper limit on model size?',
+        vote: 'Yes',
     });
     const statement7b = buildStatement({
         domain: countryC.domain,
@@ -337,11 +343,10 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement7b = await buildSignedStatement(statement7b, countryC.privateKey!, countryC.publicKey!);
     statements.push(signedStatement7b);
     
-    const countryD = ministries.find(m => m.domain === 'mofa.country-d.com')!;
     const voteContent3 = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should the treaty include provisions for cross-border data protection?',
-        vote: 'Requires further study',
+        poll: 'Should the AI Safety Treaty include an upper limit on model size?',
+        vote: 'No',
     });
     const statement7c = buildStatement({
         domain: countryD.domain,
@@ -353,11 +358,10 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement7c = await buildSignedStatement(statement7c, countryD.privateKey!, countryD.publicKey!);
     statements.push(signedStatement7c);
     
-    const countryE = ministries.find(m => m.domain === 'mofa.country-e.com')!;
     const voteContent4 = buildVoteContent({
         pollHash: pollStatementHash,
-        poll: 'Should the treaty include provisions for cross-border data protection?',
-        vote: 'Yes, with strict enforcement',
+        poll: 'Should the AI Safety Treaty include an upper limit on model size?',
+        vote: 'Yes',
     });
     const statement7d = buildStatement({
         domain: countryE.domain,
@@ -590,16 +594,38 @@ async function writePeerStatements(
     peersDir: string,
     peerDomain: string,
     statements: string[],
-    statementFiles: string[]
+    statementFiles: string[],
+    sourceAttachmentsDir: string
 ): Promise<void> {
     // Filter statements for this peer domain
     const peerStatements: string[] = [];
     const peerStatementFiles: string[] = [];
+    const peerAttachmentFiles: Set<string> = new Set();
     
     for (let i = 0; i < statements.length; i++) {
         if (statements[i].includes(`Publishing domain: ${peerDomain}`)) {
             peerStatements.push(statements[i]);
             peerStatementFiles.push(statementFiles[i]);
+            
+            // Parse statement to extract attachments using library functions
+            try {
+                const parsed = parseStatement({ statement: statements[i] });
+                
+                // Add regular attachments
+                if (parsed.attachments && Array.isArray(parsed.attachments)) {
+                    parsed.attachments.forEach(att => peerAttachmentFiles.add(att));
+                }
+                
+                // Add profile picture from organisation verification
+                if (parsed.type === 'organisation_verification' && parsed.content) {
+                    const orgVerification = parseOrganisationVerification(parsed.content);
+                    if (orgVerification.pictureHash) {
+                        peerAttachmentFiles.add(orgVerification.pictureHash);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error parsing statement for attachments: ${error}`);
+            }
         }
     }
 
@@ -609,6 +635,18 @@ async function writePeerStatements(
 
     // Create peer directories
     const { peerDir, peerStatementsDir, peerAttachmentsDir } = await ensurePeerDirectories(peersDir, peerDomain);
+
+    // Copy attachments to peer's attachments directory
+    for (const attachmentFile of Array.from(peerAttachmentFiles)) {
+        try {
+            const sourcePath = join(sourceAttachmentsDir, attachmentFile);
+            const destPath = join(peerAttachmentsDir, attachmentFile);
+            const content = await readFile(sourcePath);
+            await writeFile(destPath, content);
+        } catch (error) {
+            console.error(`Warning: Could not copy attachment ${attachmentFile} for peer ${peerDomain}`);
+        }
+    }
 
     // Write peer's statements.txt
     await writeFile(join(peerDir, 'statements.txt'), generateStatementsFile(peerStatements));
@@ -628,7 +666,10 @@ async function writePeerStatements(
     await writeFile(join(peerStatementsDir, 'index.txt'), peerStatementsIndexContent);
 
     // Write peer's attachments index
-    const peerAttachmentsIndexContent = 'index.txt';
+    const peerAttachmentsIndexContent = [
+        'index.txt',
+        ...Array.from(peerAttachmentFiles)
+    ].join('\n');
     await writeFile(join(peerAttachmentsDir, 'index.txt'), peerAttachmentsIndexContent);
 
     // Write metadata.json
@@ -688,10 +729,10 @@ async function generateBothDeployments(): Promise<void> {
     );
     
     // Write other countries' statements to peers directories
-    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-b.com', statements, statementFiles);
-    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-c.com', statements, statementFiles);
-    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-d.com', statements, statementFiles);
-    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-e.com', statements, statementFiles);
+    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-b.com', statements, statementFiles, countryAPaths.attachmentsDir);
+    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-c.com', statements, statementFiles, countryAPaths.attachmentsDir);
+    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-d.com', statements, statementFiles, countryAPaths.attachmentsDir);
+    await writePeerStatements(countryAPaths.peersDir, 'mofa.country-e.com', statements, statementFiles, countryAPaths.attachmentsDir);
     
     // Add response statement from Country B
     const countryBPeers: PeerInfo[] = [
@@ -733,10 +774,10 @@ async function generateBothDeployments(): Promise<void> {
     );
     
     // Write other countries' statements to peers directories
-    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-a.com', statements, statementFiles);
-    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-c.com', statements, statementFiles);
-    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-d.com', statements, statementFiles);
-    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-e.com', statements, statementFiles);
+    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-a.com', statements, statementFiles, countryBPaths.attachmentsDir);
+    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-c.com', statements, statementFiles, countryBPaths.attachmentsDir);
+    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-d.com', statements, statementFiles, countryBPaths.attachmentsDir);
+    await writePeerStatements(countryBPaths.peersDir, 'mofa.country-e.com', statements, statementFiles, countryBPaths.attachmentsDir);
     
     // Add response statement from Country A
     const countryAPeers: PeerInfo[] = [

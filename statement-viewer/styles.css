@@ -758,6 +758,9 @@ body.modal-open {
 
 .vote-result-row {
     margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .vote-result-row:last-child {
@@ -769,6 +772,31 @@ body.modal-open {
     font-weight: 600;
     color: #003366;
     margin-bottom: 6px;
+}
+
+/* Voter profile pictures container */
+.vote-voters-container {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.voter-profile-picture {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0072BC;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.voter-profile-picture:hover {
+    transform: scale(1.1);
+    border-color: #005a94;
 }
 
 .vote-bar-container {

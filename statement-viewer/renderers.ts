@@ -17,7 +17,11 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     // Add profile picture if available
     if (identity && identity.profilePicture) {
         const profilePic = document.createElement('img');
-        profilePic.src = baseUrl + 'attachments/' + identity.profilePicture;
+        // Use peer path if identity is from a peer domain
+        const profilePicPath = identity.verificationStatement?.isPeer && identity.verificationStatement?.peerDomain
+            ? `${baseUrl}peers/${identity.verificationStatement.peerDomain}/statements/attachments/${identity.profilePicture}`
+            : `${baseUrl}attachments/${identity.profilePicture}`;
+        profilePic.src = profilePicPath;
         profilePic.alt = identity.author;
         profilePic.className = 'profile-picture';
         profilePic.onerror = () => {
@@ -329,8 +333,14 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     }
     
     const voteCounts: Record<string, number> = {};
-    votes.forEach(({ vote }: VoteEntry) => {
+    const votesByOption: Record<string, VoteEntry[]> = {};
+    votes.forEach((voteEntry: VoteEntry) => {
+        const vote = voteEntry.vote;
         voteCounts[vote] = (voteCounts[vote] || 0) + 1;
+        if (!votesByOption[vote]) {
+            votesByOption[vote] = [];
+        }
+        votesByOption[vote].push(voteEntry);
     });
     
     const totalVotes = votes.length;
@@ -342,6 +352,9 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     
     const resultsContainer = document.createElement('div');
     resultsContainer.className = 'votes-results';
+    
+    // Determine base URL for attachments from the poll statement
+    const baseUrl = window.location.origin + '/.well-known/statements/';
     
     options.forEach((option: string) => {
         const count = voteCounts[option] || 0;
@@ -369,6 +382,37 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
         barContainer.appendChild(countLabel);
         
         resultRow.appendChild(barContainer);
+        
+        // Add voter profile pictures
+        const votersForOption = votesByOption[option] || [];
+        if (votersForOption.length > 0) {
+            const votersContainer = document.createElement('div');
+            votersContainer.className = 'vote-voters-container';
+            
+            votersForOption.forEach(({ statement }: VoteEntry) => {
+                const identity = statement.domain ? identities.get(statement.domain) : undefined;
+                if (identity && identity.profilePicture) {
+                    const voterPic = document.createElement('img');
+                    // Use peer path if identity is from a peer domain
+                    const profilePicPath = identity.verificationStatement?.isPeer && identity.verificationStatement?.peerDomain
+                        ? `${baseUrl}peers/${identity.verificationStatement.peerDomain}/statements/attachments/${identity.profilePicture}`
+                        : `${baseUrl}attachments/${identity.profilePicture}`;
+                    voterPic.src = profilePicPath;
+                    voterPic.alt = identity.author;
+                    voterPic.className = 'voter-profile-picture';
+                    voterPic.title = identity.author;
+                    voterPic.onerror = () => {
+                        voterPic.style.display = 'none';
+                    };
+                    votersContainer.appendChild(voterPic);
+                }
+            });
+            
+            if (votersContainer.children.length > 0) {
+                resultRow.appendChild(votersContainer);
+            }
+        }
+        
         resultsContainer.appendChild(resultRow);
     });
     

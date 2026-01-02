@@ -270,6 +270,7 @@ export class StatementViewer {
             }
 
             await this.verifyPeerSignatures();
+            this.buildIdentityRegistry(); // Rebuild identity registry to include peer self-verifications
             this.buildResponseMap();
             this.buildVotesMap();
             this.renderStatements();
@@ -326,7 +327,10 @@ export class StatementViewer {
     private buildIdentityRegistry(): void {
         this.identities.clear();
         
-        this.statements.forEach((stmt: ParsedStatement) => {
+        // Process both host statements and peer statements for self-verifications
+        const allStatements = [...this.statements, ...this.peerStatements];
+        
+        allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'organisation_verification') {
                 try {
                     const verification = parseOrganisationVerification(stmt.content);
@@ -458,13 +462,20 @@ export class StatementViewer {
         
         container.innerHTML = '';
 
-        if (this.statements.length === 0) {
+        // Combine host and peer statements
+        let allStatements = [...this.statements];
+        
+        if (!this.showHostOnly) {
+            allStatements = [...allStatements, ...this.peerStatements];
+        }
+
+        if (allStatements.length === 0) {
             container.innerHTML = '<p>No statements to display</p>';
             return;
         }
 
         const aggregatedVoteHashes = new Set<string>();
-        this.statements.forEach((statement: ParsedStatement) => {
+        allStatements.forEach((statement: ParsedStatement) => {
             if (statement.type && statement.type.toLowerCase() === 'poll') {
                 const statementHash = sha256(statement.raw);
                 const votes = this.votesByPollHash.get(statementHash);
@@ -477,7 +488,7 @@ export class StatementViewer {
             }
         });
 
-        const sortedStatements = sortStatementsByTime(this.statements);
+        const sortedStatements = sortStatementsByTime(allStatements);
 
         sortedStatements.forEach((statement: ParsedStatement) => {
             const statementHash = sha256(statement.raw);
