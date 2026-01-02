@@ -19,10 +19,14 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "stated-protocol-parser": "file:../stated-protocol-parser"
+    "stated-protocol-parser": "file:../stated-protocol-parser",
+    "express": "^4.18.2",
+    "serve-index": "^1.9.1"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
-    "@types/node": "^20.10.0"
+    "@types/node": "^20.10.0",
+    "@types/express": "^4.17.21",
+    "@types/serve-index": "^1.9.4"
   }
 }

@@ -37,6 +37,18 @@ body.modal-open {
     gap: 16px;
 }
 
+.file-browser-link {
+    font-size: 1.5rem;
+    text-decoration: none;
+    color: #0072BC;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.file-browser-link:hover {
+    transform: scale(1.1);
+}
+
 .top-bar h1 {
     font-size: 1.25rem;
     font-weight: 700;
