@@ -94,43 +94,43 @@ async function generateSampleStatements(): Promise<void> {
     // Define all ministries with their information
     const ministries: MinistryInfo[] = [
         {
-            domain: 'foreign.atlantea.gov',
-            author: 'Ministry of Foreign Affairs of Atlantea',
-            country: 'Atlantea',
-            city: 'New Atlantis',
-            province: 'Capital District',
+            domain: 'mofa.country-a.com',
+            author: 'Ministry of Foreign Affairs of Country A',
+            country: 'Country A',
+            city: 'Capital City A',
+            province: 'Central Province',
             profileImage: 'profile1.jpg',
         },
         {
-            domain: 'foreign.pacifica.gov',
-            author: 'Ministry of Foreign Affairs of Pacifica',
-            country: 'Pacifica',
-            city: 'Port Azure',
-            province: 'Central District',
+            domain: 'mofa.country-b.com',
+            author: 'Ministry of Foreign Affairs of Country B',
+            country: 'Country B',
+            city: 'Capital City B',
+            province: 'Central Province',
             profileImage: 'profile2.jpg',
         },
         {
-            domain: 'foreign.nordica.gov',
-            author: 'Ministry of Foreign Affairs of Nordica',
-            country: 'Nordica',
-            city: 'Frostholm',
-            province: 'Northern Territory',
+            domain: 'mofa.country-c.com',
+            author: 'Ministry of Foreign Affairs of Country C',
+            country: 'Country C',
+            city: 'Capital City C',
+            province: 'Central Province',
             profileImage: 'profile3.jpg',
         },
         {
-            domain: 'foreign.australis.gov',
-            author: 'Ministry of Foreign Affairs of Australis',
-            country: 'Australis',
-            city: 'Southern Bay',
-            province: 'Coastal Region',
+            domain: 'mofa.country-d.com',
+            author: 'Ministry of Foreign Affairs of Country D',
+            country: 'Country D',
+            city: 'Capital City D',
+            province: 'Central Province',
             profileImage: 'profile4.jpg',
         },
         {
-            domain: 'foreign.meridia.gov',
-            author: 'Ministry of Foreign Affairs of Meridia',
-            country: 'Meridia',
-            city: 'Sunhaven',
-            province: 'Eastern Province',
+            domain: 'mofa.country-e.com',
+            author: 'Ministry of Foreign Affairs of Country E',
+            country: 'Country E',
+            city: 'Capital City E',
+            province: 'Central Province',
             profileImage: 'profile5.jpg',
         },
     ];
@@ -142,9 +142,9 @@ async function generateSampleStatements(): Promise<void> {
         ministry.privateKey = privateKey;
     }
 
-    // Get the first ministry (Atlantea) for initial statements
-    const atlantea = ministries[0];
-    const { publicKey, privateKey } = { publicKey: atlantea.publicKey!, privateKey: atlantea.privateKey! };
+    // Get the first ministry (Country A) for initial statements
+    const countryA = ministries[0];
+    const { publicKey, privateKey } = { publicKey: countryA.publicKey!, privateKey: countryA.privateKey! };
 
     // 0. Self-verification statements for each ministry with profile pictures
     console.log('\nGenerating ministry self-verification statements...');
@@ -190,8 +190,8 @@ async function generateSampleStatements(): Promise<void> {
 
     // 1. Plain statement with signature
     const statement1 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-01-15T10:00:00Z'),
         tags: ['announcement', 'treaty'],
         content: 'We are pleased to announce the initiation of multilateral treaty negotiations on digital cooperation frameworks.',
@@ -208,8 +208,8 @@ async function generateSampleStatements(): Promise<void> {
         allowArbitraryVote: false,
     });
     const statement2 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-02-01T14:30:00Z'),
         tags: ['poll', 'treaty-negotiation'],
         content: pollContent,
@@ -219,25 +219,25 @@ async function generateSampleStatements(): Promise<void> {
     // Calculate the poll statement hash for use in vote
     const pollStatementHash = sha256(statement2);
 
-    // 3. Organisation verification (Atlantea verifying Pacifica)
-    const pacificaMinistry = ministries.find(m => m.domain === 'foreign.pacifica.gov')!;
+    // 3. Organisation verification (Country A verifying Country B)
+    const countryBMinistry = ministries.find(m => m.domain === 'mofa.country-b.com')!;
     const orgVerification = buildOrganisationVerificationContent({
-        name: 'Ministry of Foreign Affairs of Pacifica',
-        englishName: 'Ministry of Foreign Affairs of Pacifica',
-        country: 'Pacifica',
-        city: 'Port Azure',
-        province: 'Central District',
+        name: 'Ministry of Foreign Affairs of Country B',
+        englishName: 'Ministry of Foreign Affairs of Country B',
+        country: 'Country B',
+        city: 'Capital City B',
+        province: 'Central Province',
         legalForm: 'foreign affairs ministry',
-        domain: 'foreign.pacifica.gov',
-        foreignDomain: 'foreign.atlantea.gov',
-        serialNumber: 'GOV-PAC-2024-001',
+        domain: 'mofa.country-b.com',
+        foreignDomain: 'mofa.country-a.com',
+        serialNumber: 'GOV-B-2024-001',
         employeeCount: '1000-10,000',
         confidence: 0.98,
-        publicKey: pacificaMinistry.publicKey,
+        publicKey: countryBMinistry.publicKey,
     });
     const statement3 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-03-10T09:15:00Z'),
         tags: ['verification', 'diplomatic-relations'],
         content: orgVerification,
@@ -246,8 +246,8 @@ async function generateSampleStatements(): Promise<void> {
 
     // 4. Statement with translations
     const statement4 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-04-05T16:45:00Z'),
         tags: ['multilingual', 'treaty-announcement'],
         content: 'We welcome all nations to participate in the digital cooperation treaty negotiations.',
@@ -267,8 +267,8 @@ async function generateSampleStatements(): Promise<void> {
     attachmentFiles.push(image1Filename, image2Filename);
     
     const statement5 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-05-20T11:20:00Z'),
         tags: ['visual-content', 'global-coordination'],
         content: 'Proposed visual designs for the global coordination website. These mockups demonstrate the user interface for treaty monitoring and diplomatic collaboration.',
@@ -283,8 +283,8 @@ async function generateSampleStatements(): Promise<void> {
     attachmentFiles.push(pdfFilename);
     
     const statement6 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-05-21T14:30:00Z'),
         tags: ['publication', 'digital-diplomacy'],
         content: 'We are pleased to share our comprehensive publication on digital diplomacy practices. This document explores innovative approaches to international relations in the digital age and provides insights for modern diplomatic engagement.',
@@ -298,8 +298,8 @@ async function generateSampleStatements(): Promise<void> {
     attachmentFiles.push(videoFilename);
     
     const statement6b = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-05-22T10:00:00Z'),
         tags: ['video', 'announcement', 'digital-cooperation'],
         content: 'Watch our video message on the importance of international digital cooperation. This presentation outlines our vision for collaborative frameworks in the digital age and highlights key initiatives for cross-border data governance.',
@@ -309,76 +309,76 @@ async function generateSampleStatements(): Promise<void> {
     statements.push(signedStatement6b);
 
 
-    // 7. Vote statement - using actual poll hash (with Pacifica's key)
-    const pacifica = ministries.find(m => m.domain === 'foreign.pacifica.gov')!;
+    // 7. Vote statement - using actual poll hash (with Country B's key)
+    const countryB = ministries.find(m => m.domain === 'mofa.country-b.com')!;
     const voteContent = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Yes, with strict enforcement',
     });
     const statement7 = buildStatement({
-        domain: pacifica.domain,
-        author: pacifica.author,
+        domain: countryB.domain,
+        author: countryB.author,
         time: new Date('2024-02-15T10:30:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent,
     });
-    const signedStatement7 = await buildSignedStatement(statement7, pacifica.privateKey!, pacifica.publicKey!);
+    const signedStatement7 = await buildSignedStatement(statement7, countryB.privateKey!, countryB.publicKey!);
     statements.push(signedStatement7);
     
-    // 7b. Additional vote statements for the same poll (with Nordica's key)
-    const nordica = ministries.find(m => m.domain === 'foreign.nordica.gov')!;
+    // 7b. Additional vote statements for the same poll (with Country C's key)
+    const countryC = ministries.find(m => m.domain === 'mofa.country-c.com')!;
     const voteContent2 = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Yes, with flexible implementation',
     });
     const statement7b = buildStatement({
-        domain: nordica.domain,
-        author: nordica.author,
+        domain: countryC.domain,
+        author: countryC.author,
         time: new Date('2024-02-16T09:15:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent2,
     });
-    const signedStatement7b = await buildSignedStatement(statement7b, nordica.privateKey!, nordica.publicKey!);
+    const signedStatement7b = await buildSignedStatement(statement7b, countryC.privateKey!, countryC.publicKey!);
     statements.push(signedStatement7b);
     
-    const australis = ministries.find(m => m.domain === 'foreign.australis.gov')!;
+    const countryD = ministries.find(m => m.domain === 'mofa.country-d.com')!;
     const voteContent3 = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Requires further study',
     });
     const statement7c = buildStatement({
-        domain: australis.domain,
-        author: australis.author,
+        domain: countryD.domain,
+        author: countryD.author,
         time: new Date('2024-02-17T14:20:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent3,
     });
-    const signedStatement7c = await buildSignedStatement(statement7c, australis.privateKey!, australis.publicKey!);
+    const signedStatement7c = await buildSignedStatement(statement7c, countryD.privateKey!, countryD.publicKey!);
     statements.push(signedStatement7c);
     
-    const meridia = ministries.find(m => m.domain === 'foreign.meridia.gov')!;
+    const countryE = ministries.find(m => m.domain === 'mofa.country-e.com')!;
     const voteContent4 = buildVoteContent({
         pollHash: pollStatementHash,
         poll: 'Should the treaty include provisions for cross-border data protection?',
         vote: 'Yes, with strict enforcement',
     });
     const statement7d = buildStatement({
-        domain: meridia.domain,
-        author: meridia.author,
+        domain: countryE.domain,
+        author: countryE.author,
         time: new Date('2024-02-18T11:45:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent4,
     });
-    const signedStatement7d = await buildSignedStatement(statement7d, meridia.privateKey!, meridia.publicKey!);
+    const signedStatement7d = await buildSignedStatement(statement7d, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedStatement7d);
 
     // 8. Statement superseding another
     const statement8 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date('2024-06-01T08:00:00Z'),
         tags: ['correction', 'treaty-update'],
         content: 'Correction: The multilateral treaty negotiations will commence in Q3, not Q2 as previously announced. This adjustment allows for more comprehensive preparatory consultations.',
@@ -388,8 +388,8 @@ async function generateSampleStatements(): Promise<void> {
 
     // 9. Recent statement
     const statement9 = buildStatement({
-        domain: 'foreign.atlantea.gov',
-        author: 'Ministry of Foreign Affairs of Atlantea',
+        domain: 'mofa.country-a.com',
+        author: 'Ministry of Foreign Affairs of Country A',
         time: new Date(),
         tags: ['news', 'diplomatic-progress'],
         content: 'We are pleased to report significant progress in the treaty negotiations. Five nations have now formally committed to the digital cooperation framework, marking a milestone in international diplomatic collaboration.',
@@ -399,7 +399,7 @@ async function generateSampleStatements(): Promise<void> {
 
     // 10. Statement with deliberately corrupted signature (for demonstration)
     const statement10 = buildStatement({
-        domain: 'foreign.unverified.gov',
+        domain: 'mofa.unverified.com',
         author: 'Unverified Ministry',
         time: new Date('2024-06-15T16:00:00Z'),
         tags: ['security', 'demonstration'],
@@ -454,13 +454,13 @@ async function generatePeerReplications(referencedStatement: string): Promise<vo
     
     const peers: PeerInfo[] = [
         {
-            domain: 'foreign.pacifica.gov',
-            author: 'Ministry of Foreign Affairs of Pacifica',
+            domain: 'mofa.country-b.com',
+            author: 'Ministry of Foreign Affairs of Country B',
             response: 'We fully support the digital cooperation treaty initiative and commit to active participation in all negotiation phases.',
         },
         {
-            domain: 'foreign.nordica.gov',
-            author: 'Ministry of Foreign Affairs of Nordica',
+            domain: 'mofa.country-c.com',
+            author: 'Ministry of Foreign Affairs of Country C',
             response: 'This is an excellent diplomatic initiative. We look forward to contributing our expertise in digital governance frameworks.',
         },
     ];
