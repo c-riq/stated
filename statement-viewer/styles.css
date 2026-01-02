@@ -37,6 +37,18 @@ body.modal-open {
     justify-content: space-between;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
 .top-bar h1 {
     font-size: 1.125rem;
     font-weight: 700;
@@ -703,8 +715,16 @@ body.modal-open {
         padding: 8px 12px;
     }
 
+    .header-logo {
+        height: 32px;
+    }
+
     .top-bar h1 {
-        font-size: 1.125rem;
+        font-size: 1rem;
+    }
+
+    .header-left {
+        gap: 8px;
     }
 
     .url-config input[type="text"] {
