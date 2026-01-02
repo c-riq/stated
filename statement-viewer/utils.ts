@@ -26,30 +26,49 @@ export function sortStatementsByTime(statements: ParsedStatement[], ascending: b
     });
 }
 
-export function styleTypedStatementContent(content: string): string {
+export function styleTypedStatementContent(content: string, statementType?: string): string {
     if (!content.trim().startsWith('Type:')) {
         return escapeHtml(content);
     }
 
-    const allRegexes = [
-        pollKeys,
-        organisationVerificationKeys,
-        personVerificationKeys,
-        voteKeys,
-        disputeAuthenticityKeys,
-        disputeContentKeys,
-        responseKeys,
-        PDFSigningKeys,
-        ratingKeys
-    ];
-
-    let styledContent = escapeHtml(content);
+    if (!statementType) {
+        return escapeHtml(content);
+    }
     
-    allRegexes.forEach(regex => {
-        styledContent = styledContent.replace(regex, (match) => {
-            return `<span class="statement-keyword">${match}</span>`;
-        });
+    // Select the appropriate regex based on type
+    let regex;
+    const type = statementType.toLowerCase();
+    
+    if (type === 'poll') {
+        regex = pollKeys;
+    } else if (type === 'organisation_verification') {
+        regex = organisationVerificationKeys;
+    } else if (type === 'person_verification') {
+        regex = personVerificationKeys;
+    } else if (type === 'vote') {
+        regex = voteKeys;
+    } else if (type === 'dispute_statement_authenticity') {
+        regex = disputeAuthenticityKeys;
+    } else if (type === 'dispute_statement_content') {
+        regex = disputeContentKeys;
+    } else if (type === 'response') {
+        regex = responseKeys;
+    } else if (type === 'sign_pdf') {
+        regex = PDFSigningKeys;
+    } else if (type === 'rating') {
+        regex = ratingKeys;
+    } else {
+        return escapeHtml(content);
+    }
+    
+    // Apply the regex once
+    let styledContent = escapeHtml(content);
+    styledContent = styledContent.replace(regex, (match) => {
+        // Trim trailing space from the keyword
+        const trimmed = match.trimEnd();
+        const trailingSpace = match.length > trimmed.length ? ' ' : '';
+        return `<span class="statement-keyword">${trimmed}</span>${trailingSpace}`;
     });
-
+    
     return styledContent;
 }

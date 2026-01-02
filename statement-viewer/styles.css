@@ -277,7 +277,11 @@ body.modal-open {
 
 .statement-keyword {
     color: #0072BC;
-    font-weight: 600;
+    font-weight: 500;
+    background: #f0f7ff;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-right: 4px;
 }
 
 /* Attachments */

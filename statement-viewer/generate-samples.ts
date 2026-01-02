@@ -50,8 +50,6 @@ interface MinistryInfo {
     domain: string;
     author: string;
     country: string;
-    city: string;
-    province: string;
     profileImage: string;
     publicKey?: string;
     privateKey?: string;
@@ -112,46 +110,35 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statementFiles: string[] = [];
     const attachmentFiles: string[] = [];
 
-    // Define all ministries with their information
     const ministries: MinistryInfo[] = [
         {
             domain: 'mofa.country-a.com',
             author: 'Ministry of Foreign Affairs of Country A',
             country: 'Country A',
-            city: 'Capital City A',
-            province: 'Central Province',
             profileImage: 'profile1.jpg',
         },
         {
             domain: 'mofa.country-b.com',
             author: 'Ministry of Foreign Affairs of Country B',
             country: 'Country B',
-            city: 'Capital City B',
-            province: 'Central Province',
             profileImage: 'profile2.jpg',
         },
         {
             domain: 'mofa.country-c.com',
             author: 'Ministry of Foreign Affairs of Country C',
             country: 'Country C',
-            city: 'Capital City C',
-            province: 'Central Province',
             profileImage: 'profile3.jpg',
         },
         {
             domain: 'mofa.country-d.com',
             author: 'Ministry of Foreign Affairs of Country D',
             country: 'Country D',
-            city: 'Capital City D',
-            province: 'Central Province',
             profileImage: 'profile4.jpg',
         },
         {
             domain: 'mofa.country-e.com',
             author: 'Ministry of Foreign Affairs of Country E',
             country: 'Country E',
-            city: 'Capital City E',
-            province: 'Central Province',
             profileImage: 'profile5.jpg',
         },
     ];
@@ -167,7 +154,6 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const countryA = ministries[0];
     const { publicKey, privateKey } = { publicKey: countryA.publicKey!, privateKey: countryA.privateKey! };
 
-    // 0. Self-verification statements for each ministry with profile pictures
     console.log('\nGenerating ministry self-verification statements...');
     for (const ministry of ministries) {
         // Read and create profile picture attachment
@@ -178,16 +164,10 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         // Create self-verification statement with pictureHash
         const selfVerification = buildOrganisationVerificationContent({
             name: ministry.author,
-            englishName: ministry.author,
             country: ministry.country,
-            city: ministry.city,
-            province: ministry.province,
             legalForm: 'foreign affairs ministry',
             domain: ministry.domain,
-            foreignDomain: ministry.domain,
-            serialNumber: `GOV-${ministry.country.toUpperCase().substring(0, 3)}-2024-001`,
-            employeeCount: '1000-10,000',
-            confidence: 1.0,
+            confidence: 0.98,
             publicKey: ministry.publicKey,
             pictureHash: profileFilename,
         });
@@ -240,19 +220,12 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     // Calculate the poll statement hash for use in vote
     const pollStatementHash = sha256(statement2);
 
-    // 3. Organisation verification (Country A verifying Country B)
     const countryBMinistry = ministries.find(m => m.domain === 'mofa.country-b.com')!;
     const orgVerification = buildOrganisationVerificationContent({
         name: 'Ministry of Foreign Affairs of Country B',
-        englishName: 'Ministry of Foreign Affairs of Country B',
         country: 'Country B',
-        city: 'Capital City B',
-        province: 'Central Province',
         legalForm: 'foreign affairs ministry',
         domain: 'mofa.country-b.com',
-        foreignDomain: 'mofa.country-a.com',
-        serialNumber: 'GOV-B-2024-001',
-        employeeCount: '1000-10,000',
         confidence: 0.98,
         publicKey: countryBMinistry.publicKey,
     });

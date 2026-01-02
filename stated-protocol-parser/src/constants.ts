@@ -224,7 +224,7 @@ export const pollKeys =
   /(Type: |The poll outcome is finalized when the following nodes agree: |Voting deadline: |Poll: |Option 1: |Option 2: |Option 3: |Option 4: |Option 5: |Allow free text votes: |Who can vote: |Description: |Country scope: |City scope: |Legal form scope: |Domain scope: |All entities with the following property: |As observed by: |Link to query defining who can vote: )/g;
 
 export const organisationVerificationKeys =
-  /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Longitude: |Latitude: |Population: |Logo: |Employee count: |Reliability policy: |Confidence: )/g;
+  /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Longitude: |Latitude: |Population: |Logo: |Employee count: |Reliability policy: |Confidence: |Public key: )/g;
 
 export const personVerificationKeys =
   /(Type: |Description: |Name: |Date of birth: |City of birth: |Country of birth: |Job title: |Employer: |Owner of the domain: |Foreign domain used for publishing statements: |Picture: |Verification method: |Confidence: |Reliability policy: )/g;

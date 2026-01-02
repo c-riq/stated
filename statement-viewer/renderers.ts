@@ -76,7 +76,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
 
     const content = document.createElement('div');
     content.className = 'statement-content';
-    content.innerHTML = styleTypedStatementContent(statement.content);
+    content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
     card.appendChild(content);
 
     if (statement.attachments && statement.attachments.length > 0) {
@@ -519,7 +519,7 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     
     const content = document.createElement('div');
     content.className = 'response-content';
-    content.innerHTML = styleTypedStatementContent(responseText);
+    content.innerHTML = styleTypedStatementContent(responseText, statement.type);
     card.appendChild(content);
     
     const actionBar = document.createElement('div');

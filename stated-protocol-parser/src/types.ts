@@ -74,13 +74,13 @@ export type OrganisationVerification = {
   name: string;
   englishName?: string;
   country: string;
-  city: string;
-  province: string;
+  city?: string;
+  province?: string;
   legalForm: LegalForm;
   department?: string;
   domain: string;
-  foreignDomain: string;
-  serialNumber: string;
+  foreignDomain?: string;
+  serialNumber?: string;
   confidence?: number;
   reliabilityPolicy?: string;
   employeeCount?: PeopleCountBucket;
