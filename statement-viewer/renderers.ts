@@ -9,6 +9,11 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     const header = document.createElement('div');
     header.className = 'statement-header';
 
+    // Determine the correct base path for attachments
+    const attachmentBasePath = statement.isPeer && statement.peerDomain
+        ? `${baseUrl}peers/${statement.peerDomain}/statements/attachments/`
+        : `${baseUrl}attachments/`;
+
     // Add profile picture if available
     if (identity && identity.profilePicture) {
         const profilePic = document.createElement('img');
@@ -43,7 +48,18 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     domainTime.className = 'domain-time';
     const domain = statement.domain || 'Unknown domain';
     const timeAgo = getTimeAgo(new Date(statement.time || 0));
-    domainTime.textContent = `@${domain} · ${timeAgo}`;
+    
+    // Make domain clickable
+    const domainLink = document.createElement('a');
+    domainLink.href = `https://${domain}`;
+    domainLink.target = '_blank';
+    domainLink.rel = 'noopener noreferrer';
+    domainLink.textContent = `@${domain}`;
+    domainLink.className = 'domain-link';
+    domainLink.addEventListener('click', (e: MouseEvent) => e.stopPropagation());
+    
+    domainTime.appendChild(domainLink);
+    domainTime.appendChild(document.createTextNode(` · ${timeAgo}`));
     authorInfo.appendChild(domainTime);
     
     header.appendChild(authorInfo);
@@ -68,7 +84,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
         attachmentsContainer.className = 'statement-attachments';
         
         statement.attachments.forEach((attachment: string) => {
-            const attachmentUrl = baseUrl + 'attachments/' + attachment;
+            const attachmentUrl = attachmentBasePath + attachment;
             const extension = attachment.split('.').pop()?.toLowerCase();
             if (!extension) return;
             
@@ -152,7 +168,12 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
 
 export async function renderStatementDetails(statement: ParsedStatement, baseUrl: string, statementsByHash: Map<string, ParsedStatement>): Promise<string> {
     const statementHash = sha256(statement.raw);
-    const rawFileUrl = `${baseUrl}${statementHash}.txt`;
+    
+    // Determine the correct path for the raw file
+    const rawFileUrl = statement.isPeer && statement.peerDomain
+        ? `${baseUrl}peers/${statement.peerDomain}/statements/${statementHash}.txt`
+        : `${baseUrl}${statementHash}.txt`;
+    
     const verifiedStatement = statementsByHash.get(statementHash) || statement;
     
     let signatureInfo: SignatureInfo | null = null;
@@ -191,7 +212,7 @@ export async function renderStatementDetails(statement: ParsedStatement, baseUrl
         <div class="detail-section">
             <h3>Metadata</h3>
             <table class="detail-table">
-                <tr><td><strong>Domain:</strong></td><td>${escapeHtml(statement.domain || 'N/A')}</td></tr>
+                <tr><td><strong>Domain:</strong></td><td><a href="https://${escapeHtml(statement.domain || '')}" target="_blank" rel="noopener noreferrer" class="domain-link">${escapeHtml(statement.domain || 'N/A')}</a></td></tr>
                 <tr><td><strong>Author:</strong></td><td>${escapeHtml(statement.author || 'N/A')}</td></tr>
                 <tr><td><strong>Time:</strong></td><td>${statement.time ? new Date(statement.time).toLocaleString() : 'N/A'}</td></tr>
                 <tr><td><strong>Protocol Version:</strong></td><td>${escapeHtml(statement.formatVersion || 'N/A')}</td></tr>

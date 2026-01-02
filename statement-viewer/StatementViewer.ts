@@ -12,6 +12,7 @@ export class StatementViewer {
     private votesByPollHash: Map<string, VoteEntry[]>;
     private expandedStatements: Set<string>;
     private identities: Map<string, Identity>;
+    private showHostOnly: boolean;
 
     constructor() {
         this.baseUrl = '';
@@ -22,6 +23,7 @@ export class StatementViewer {
         this.votesByPollHash = new Map();
         this.expandedStatements = new Set();
         this.identities = new Map();
+        this.showHostOnly = false;
         this.init();
     }
 
@@ -29,6 +31,14 @@ export class StatementViewer {
         const loadButton = document.getElementById('loadStatements');
         if (loadButton) {
             loadButton.addEventListener('click', () => this.loadStatements());
+        }
+        
+        const showHostOnlyCheckbox = document.getElementById('showHostOnly') as HTMLInputElement;
+        if (showHostOnlyCheckbox) {
+            showHostOnlyCheckbox.addEventListener('change', () => {
+                this.showHostOnly = showHostOnlyCheckbox.checked;
+                this.renderStatements();
+            });
         }
         
         const modal = document.getElementById('statementModal');
@@ -224,7 +234,10 @@ export class StatementViewer {
             }
 
             const indexText = await response.text();
-            const peerDomains = indexText.split('\n').filter(line => line.trim());
+            const peerDomains = indexText.split('\n')
+                .map(line => line.trim())
+                .filter(line => line && line !== 'index.txt' && !line.endsWith('.txt'))
+                .map(line => line.replace(/\/$/, '')); // Remove trailing slash
 
             for (const peerDomain of peerDomains) {
                 try {
@@ -471,15 +484,29 @@ export class StatementViewer {
             if (statement.type && statement.type.toLowerCase() === 'poll') {
                 const votes = this.votesByPollHash.get(statementHash);
                 if (votes && votes.length > 0) {
-                    const votesContainer = createVotesContainer(statement, votes, this.identities, (stmt) => this.showStatementDetails(stmt));
-                    container.appendChild(votesContainer);
+                    // Filter votes if showHostOnly is enabled
+                    const filteredVotes = this.showHostOnly
+                        ? votes.filter(({ statement: voteStatement }) => !voteStatement.isPeer)
+                        : votes;
+                    
+                    if (filteredVotes.length > 0) {
+                        const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt));
+                        container.appendChild(votesContainer);
+                    }
                 }
             }
             
             const responses = this.responsesByHash.get(statementHash);
             if (responses && responses.length > 0) {
-                const responsesContainer = createResponsesContainer(responses, (stmt) => this.showStatementDetails(stmt));
-                container.appendChild(responsesContainer);
+                // Filter responses if showHostOnly is enabled
+                const filteredResponses = this.showHostOnly
+                    ? responses.filter(response => !response.isPeer)
+                    : responses;
+                
+                if (filteredResponses.length > 0) {
+                    const responsesContainer = createResponsesContainer(filteredResponses, (stmt) => this.showStatementDetails(stmt));
+                    container.appendChild(responsesContainer);
+                }
             }
         });
     }

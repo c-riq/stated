@@ -62,6 +62,34 @@ body.modal-open {
     flex: 1;
 }
 
+.filter-options {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: #666;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.filter-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #0072BC;
+}
+
+.filter-label:hover {
+    color: #0072BC;
+}
+
 .url-config input[type="text"] {
     flex: 1;
     padding: 6px 12px;
@@ -202,6 +230,17 @@ body.modal-open {
 .domain-time {
     font-size: 0.9375rem;
     color: #666;
+}
+
+.domain-link {
+    color: #0072BC;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.domain-link:hover {
+    color: #005a94;
+    text-decoration: underline;
 }
 
 .verify-badge {
