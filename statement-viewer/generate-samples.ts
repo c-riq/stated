@@ -1,4 +1,4 @@
-import { writeFile, mkdir, readFile } from 'fs/promises';
+import { writeFile, mkdir, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -47,6 +47,15 @@ interface MinistryInfo {
     privateKey?: string;
 }
 
+async function cleanOldData(): Promise<void> {
+    try {
+        await rm(WELL_KNOWN_DIR, { recursive: true, force: true });
+        console.log('Cleaned old data');
+    } catch (error) {
+        console.log('No old data to clean');
+    }
+}
+
 async function ensureDirectories(): Promise<void> {
     await mkdir(WELL_KNOWN_DIR, { recursive: true });
     await mkdir(STATEMENTS_DIR, { recursive: true });
@@ -74,6 +83,8 @@ async function createAttachment(filename: string, content: Buffer): Promise<stri
 }
 
 async function generateSampleStatements(): Promise<void> {
+    await cleanOldData();
+    await ensureDirectories();
     console.log('Generating sample statements...');
 
     const statements: string[] = [];
