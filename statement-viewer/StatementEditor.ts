@@ -1,4 +1,17 @@
-import { buildStatement, generateKeyPair, buildSignedStatement, sha256, parseStatementsFile, generateStatementsFile } from './lib/index.js';
+import {
+    buildStatement,
+    generateKeyPair,
+    buildSignedStatement,
+    buildPollContent,
+    buildVoteContent,
+    buildResponseContent,
+    buildRating,
+    buildPDFSigningContent,
+    sha256,
+    parseStatementsFile,
+    generateStatementsFile,
+    isRatingValue
+} from './lib/index.js';
 
 export interface StatementFormData {
     domain: string;
@@ -245,55 +258,76 @@ export class StatementEditor {
     }
 
     private buildTypedContent(type: string): string {
-        let content = '';
-
         switch (type) {
-            case 'poll':
+            case 'poll': {
                 const pollQuestion = (document.getElementById('pollQuestion') as HTMLInputElement)?.value.trim();
-                const pollOptions = (document.getElementById('pollOptions') as HTMLInputElement)?.value.trim();
+                const pollOptionsStr = (document.getElementById('pollOptions') as HTMLInputElement)?.value.trim();
                 const pollDeadline = (document.getElementById('pollDeadline') as HTMLInputElement)?.value;
                 const pollScope = (document.getElementById('pollScope') as HTMLInputElement)?.value.trim();
 
-                content = `Poll: ${pollQuestion}\nOptions: ${pollOptions}`;
-                if (pollDeadline) {
-                    const deadline = new Date(pollDeadline).toISOString();
-                    content += `\nDeadline: ${deadline}`;
-                }
-                if (pollScope) {
-                    content += `\nScope description: ${pollScope}`;
-                }
-                break;
+                const options = pollOptionsStr.split(',').map(opt => opt.trim());
+                
+                return buildPollContent({
+                    poll: pollQuestion,
+                    options,
+                    deadline: pollDeadline ? new Date(pollDeadline) : undefined,
+                    scopeDescription: pollScope || undefined,
+                    allowArbitraryVote: undefined
+                });
+            }
 
-            case 'vote':
+            case 'vote': {
                 const voteHash = (document.getElementById('voteHash') as HTMLInputElement)?.value.trim();
                 const votePoll = (document.getElementById('votePoll') as HTMLInputElement)?.value.trim();
                 const voteChoice = (document.getElementById('voteChoice') as HTMLInputElement)?.value.trim();
 
-                content = `Poll hash: ${voteHash}\nPoll: ${votePoll}\nVote: ${voteChoice}`;
-                break;
+                return buildVoteContent({
+                    pollHash: voteHash,
+                    poll: votePoll,
+                    vote: voteChoice
+                });
+            }
 
-            case 'response':
+            case 'response': {
                 const responseHash = (document.getElementById('responseHash') as HTMLInputElement)?.value.trim();
-                const responseContent = (document.getElementById('responseContent') as HTMLTextAreaElement)?.value.trim();
+                const responseText = (document.getElementById('responseContent') as HTMLTextAreaElement)?.value.trim();
 
-                content = `Statement hash: ${responseHash}\nResponse: ${responseContent}`;
-                break;
+                return buildResponseContent({
+                    hash: responseHash,
+                    response: responseText
+                });
+            }
 
-            case 'rating':
+            case 'rating': {
                 const ratingHash = (document.getElementById('ratingHash') as HTMLInputElement)?.value.trim();
-                const ratingValue = (document.getElementById('ratingValue') as HTMLInputElement)?.value.trim();
+                const ratingValue = parseInt((document.getElementById('ratingValue') as HTMLInputElement)?.value.trim());
 
-                content = `Statement hash: ${ratingHash}\nRating: ${ratingValue}`;
-                break;
+                if (!isRatingValue(ratingValue)) {
+                    throw new Error('Rating must be between 1 and 5');
+                }
 
-            case 'sign_pdf':
+                return buildRating({
+                    subjectName: 'Statement',
+                    subjectType: undefined,
+                    subjectReference: ratingHash,
+                    rating: ratingValue,
+                    documentFileHash: undefined,
+                    quality: undefined,
+                    comment: undefined
+                });
+            }
+
+            case 'sign_pdf': {
                 const pdfHash = (document.getElementById('pdfHash') as HTMLInputElement)?.value.trim();
 
-                content = `PDF hash: ${pdfHash}`;
-                break;
-        }
+                return buildPDFSigningContent({
+                    hash: pdfHash
+                });
+            }
 
-        return content;
+            default:
+                return '';
+        }
     }
 
     private async generateKeys(): Promise<void> {
