@@ -40,6 +40,7 @@ export class StatementEditor {
     private apiEndpoint: string = 'https://api.country-a.com/update';
     private sourceEndpoint: string = 'https://mofa.country-a.com';
     private attachmentFiles: Map<string, File> = new Map();
+    private readonly API_KEY_STORAGE_KEY = 'stated_api_key_api.country-a.com';
 
     constructor() {
         this.form = document.getElementById('statementForm') as HTMLFormElement;
@@ -99,6 +100,23 @@ export class StatementEditor {
             submitBtn.addEventListener('click', () => this.submitToAPI());
         }
 
+        // Delete API key button
+        const deleteApiKeyBtn = document.getElementById('deleteApiKey');
+        if (deleteApiKeyBtn) {
+            deleteApiKeyBtn.addEventListener('click', () => this.deleteApiKey());
+        }
+
+        // API key input - save on change
+        const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
+        if (apiKeyInput) {
+            apiKeyInput.addEventListener('input', () => {
+                const apiKey = apiKeyInput.value.trim();
+                if (apiKey) {
+                    this.saveApiKey(apiKey);
+                }
+            });
+        }
+
         // Sign statement checkbox
         const signCheckbox = document.getElementById('signStatement') as HTMLInputElement;
         if (signCheckbox) {
@@ -118,6 +136,7 @@ export class StatementEditor {
         this.toggleSigningFields();
         this.updateTypeHelp();
         this.updateTypedFields();
+        this.loadApiKey();
     }
 
     private toggleSigningFields(): void {
@@ -858,6 +877,41 @@ export class StatementEditor {
         
         attachmentsContainer.appendChild(attachmentItem);
     }
+    private saveApiKey(apiKey: string): void {
+        try {
+            localStorage.setItem(this.API_KEY_STORAGE_KEY, apiKey);
+        } catch (error) {
+            console.error('Failed to save API key to localStorage:', error);
+        }
+    }
+
+    private loadApiKey(): void {
+        try {
+            const savedApiKey = localStorage.getItem(this.API_KEY_STORAGE_KEY);
+            if (savedApiKey) {
+                const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
+                if (apiKeyInput) {
+                    apiKeyInput.value = savedApiKey;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load API key from localStorage:', error);
+        }
+    }
+
+    private deleteApiKey(): void {
+        try {
+            localStorage.removeItem(this.API_KEY_STORAGE_KEY);
+            const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
+            if (apiKeyInput) {
+                apiKeyInput.value = '';
+            }
+            this.showMessage('API key deleted successfully', 'success');
+        } catch (error: any) {
+            this.showMessage(`Failed to delete API key: ${error.message}`, 'error');
+        }
+    }
+
 
     private showMessage(message: string, type: 'success' | 'error'): void {
         const messageDiv = document.getElementById('message');

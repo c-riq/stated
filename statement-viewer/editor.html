@@ -153,8 +153,13 @@
                     <h3>API Configuration</h3>
                     <div class="form-group">
                         <label for="apiKey">API Key</label>
-                        <input type="password" id="apiKey" class="form-input" placeholder="Enter your API key">
-                        <small>Required to publish statements to api.country-a.com</small>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="apiKey" class="form-input" placeholder="Enter your API key" style="flex: 1;">
+                            <button type="button" id="deleteApiKey" class="btn-secondary" title="Delete saved API key">
+                                <img src="icons/x.svg" alt="Delete" width="14" height="14">
+                            </button>
+                        </div>
+                        <small>Required to publish statements to api.country-a.com. Your API key is saved locally and will be prefilled on next visit.</small>
                     </div>
                 </div>
 
