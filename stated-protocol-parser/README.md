@@ -1,5 +1,7 @@
 # Stated Protocol Parser
 
+[![npm](https://img.shields.io/badge/npm-stated--protocol--parser-CB3837?logo=npm)](https://www.npmjs.com/package/stated-protocol-parser)
+
 A TypeScript library for parsing and formatting statements in the Stated protocol - a decentralized statement verification system.
 
 ## Installation
