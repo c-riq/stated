@@ -12,13 +12,44 @@
         <div class="top-bar-content">
             <div class="header-left">
                 <img src="logo.png" alt="Logo" class="header-logo">
-                <h1>globalcoordination.org<span class="subtitle">Statement Editor</span></h1>
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Statement Editor</span></h1>
             </div>
-            <div class="header-right">
-                <a href="/" class="btn-link">← Back to Viewer</a>
-            </div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <img src="icons/menu.svg" alt="" width="24" height="24">
+            </button>
         </div>
     </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
+                <a href="/editor.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/edit.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Editor</span>
+                </a>
+                <a href="/browser.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/folder.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>File Browser</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <div class="container editor-container">
         <div id="message" class="message" style="display: none;"></div>
@@ -196,5 +227,38 @@
     </div>
 
     <script type="module" src="dist/editor-app.js"></script>
+    <script type="module">
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        const openMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.add('open');
+                menuOverlay.classList.add('active');
+            }
+        };
+        
+        const closeMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
+        };
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', openMenu);
+        }
+        
+        if (menuClose) {
+            menuClose.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+    </script>
 </body>
 </html>

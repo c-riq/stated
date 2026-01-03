@@ -11,7 +11,7 @@
         <div class="top-bar-content">
             <div class="header-left">
                 <img src="logo.png" alt="Logo" class="header-logo">
-                <h1>globalcoordination.org<span class="subtitle">Statement Viewer</span></h1>
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Statement Viewer</span></h1>
             </div>
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
                 <img src="icons/menu.svg" alt="" width="24" height="24">
@@ -26,26 +26,32 @@
         </div>
         <div class="menu-content">
             <div class="menu-section">
-                <h3>Filter</h3>
-                <label class="menu-checkbox">
-                    <input type="checkbox" id="showHostOnly" />
-                    <span>Host domain only</span>
-                </label>
-            </div>
-            <div class="menu-section">
-                <h3>Tools</h3>
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
                 <a href="/editor.html" class="menu-link">
                     <span class="menu-icon">
                         <img src="icons/edit.svg" alt="" width="16" height="16">
                     </span>
                     <span>Statement Editor</span>
                 </a>
-                <a href="/browser.html" class="menu-link" target="_blank">
+                <a href="/browser.html" class="menu-link">
                     <span class="menu-icon">
                         <img src="icons/folder.svg" alt="" width="16" height="16">
                     </span>
                     <span>File Browser</span>
                 </a>
+            </div>
+            <div class="menu-section">
+                <h3>Filter</h3>
+                <label class="menu-checkbox">
+                    <input type="checkbox" id="showHostOnly" />
+                    <span>Host domain only</span>
+                </label>
             </div>
         </div>
     </nav>

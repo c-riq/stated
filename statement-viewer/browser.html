@@ -114,7 +114,10 @@
 <body>
     <div class="top-bar">
         <div class="top-bar-content">
-            <h1>globalcoordination.org<span class="subtitle">Statement File Browser</span></h1>
+            <div class="header-left">
+                <img src="logo.png" alt="Logo" class="header-logo">
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Statement File Browser</span></h1>
+            </div>
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
                 <img src="icons/menu.svg" alt="" width="24" height="24">
             </button>
@@ -130,8 +133,22 @@
             <div class="menu-section">
                 <h3>Navigation</h3>
                 <a href="/" class="menu-link">
-                    <span class="menu-icon">←</span>
-                    <span>Back to Statements</span>
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
+                <a href="/editor.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/edit.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Editor</span>
+                </a>
+                <a href="/browser.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/folder.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>File Browser</span>
                 </a>
             </div>
         </div>
