@@ -22,9 +22,11 @@
   },
   "include": [
     "app.ts",
+    "editor-app.ts",
     "server.ts",
     "generate-samples.ts",
-    "lib/**/*"
+    "lib/**/*",
+    "*.ts"
   ],
   "exclude": [
     "node_modules",
