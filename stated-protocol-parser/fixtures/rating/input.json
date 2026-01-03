@@ -1,0 +1,14 @@
+{
+  "domain": "example.com",
+  "author": "Example Organization",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": {
+    "type": "rating",
+    "subjectName": "Example Product",
+    "subjectType": "Product",
+    "subjectReference": "https://example.com/product",
+    "rating": 4,
+    "quality": "high",
+    "comment": "Excellent quality and service."
+  }
+}

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statement Editor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="editor-styles.css">
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="header-left">
+                <img src="logo.png" alt="Logo" class="header-logo">
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Statement Editor</span></h1>
+            </div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <img src="icons/menu.svg" alt="" width="24" height="24">
+            </button>
+        </div>
+    </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
+                <a href="/editor.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/edit.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Editor</span>
+                </a>
+                <a href="/browser.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/folder.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>File Browser</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="container editor-container">
+        <div id="message" class="message" style="display: none;"></div>
+
+        <div class="editor-layout">
+            <!-- Left Panel: Form -->
+            <div class="editor-panel editor-form-panel">
+                <h2>Create Statement</h2>
+                
+                <form id="statementForm">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="domain">Publishing Domain *</label>
+                            <input type="text" id="domain" class="form-input" value="mofa.country-a.com" required>
+                            <small>The domain publishing this statement</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="author">Author *</label>
+                            <input type="text" id="author" class="form-input" value="Ministry of Foreign Affairs of Country A" required>
+                            <small>The name of the organization or person</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="statementType">Statement Type</label>
+                            <select id="statementType" class="form-select">
+                                <option value="">Basic Statement</option>
+                                <option value="poll">Poll</option>
+                                <option value="vote">Vote</option>
+                                <option value="organisation_verification">Organisation Verification</option>
+                                <option value="person_verification">Person Verification</option>
+                                <option value="response">Response</option>
+                                <option value="rating">Rating</option>
+                                <option value="sign_pdf">Sign PDF</option>
+                                <option value="dispute_statement_authenticity">Dispute Authenticity</option>
+                                <option value="dispute_statement_content">Dispute Content</option>
+                            </select>
+                            <small id="typeHelp" class="type-help"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="content">Statement Content *</label>
+                            <textarea id="content" class="form-textarea" rows="8" placeholder="Enter your statement content here..." required></textarea>
+                            <small id="contentHelp">The main content of your statement. For typed statements, the Type: field will be added automatically.</small>
+                        </div>
+
+                        <!-- Dynamic fields for typed statements -->
+                        <div id="typedFields" style="display: none;"></div>
+                    </div>
+
+                    <!-- Optional Fields -->
+                    <div class="form-section">
+                        <h3>Optional Fields</h3>
+
+                        <div class="form-group">
+                            <label>Tags</label>
+                            <div id="tagsContainer" class="dynamic-container"></div>
+                            <button type="button" id="addTag" class="btn-secondary">+ Add Tag</button>
+                            <small>Add tags to categorize your statement</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="supersededStatement">Superseded Statement Hash</label>
+                            <input type="text" id="supersededStatement" class="form-input" placeholder="Previous statement hash">
+                            <small>If this statement replaces a previous one, enter its hash</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Translations</label>
+                            <div id="translationsContainer" class="dynamic-container"></div>
+                            <button type="button" id="addTranslation" class="btn-secondary">+ Add Translation</button>
+                            <small>Add translations in other languages (use ISO 639-1 codes: es, fr, de, etc.)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attachments</label>
+                            <div id="attachmentsContainer" class="dynamic-container"></div>
+                            <button type="button" id="addAttachment" class="btn-secondary">+ Add Attachment</button>
+                            <small>Upload files that will be automatically published with your statement</small>
+                        </div>
+                    </div>
+
+                    <!-- Cryptographic Signing -->
+                    <div class="form-section">
+                        <h3>Cryptographic Signing</h3>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="signStatement">
+                                <span>Sign this statement with Ed25519 signature</span>
+                            </label>
+                            <small>Signing provides cryptographic proof of authenticity and prevents tampering</small>
+                        </div>
+
+                        <div id="signingFields" style="display: none;">
+                            <div class="form-group">
+                                <label for="publicKey">Public Key</label>
+                                <input type="text" id="publicKey" class="form-input" placeholder="Public key (base64)" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="privateKey">Private Key</label>
+                                <input type="text" id="privateKey" class="form-input" placeholder="Private key (base64)" readonly>
+                                <small class="warning">⚠ Keep your private key secure! Never share it.</small>
+                            </div>
+
+                            <button type="button" id="generateKeys" class="btn-secondary">Generate New Key Pair</button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Generate Statement</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Panel: Output -->
+            <div class="editor-panel editor-output-panel">
+                <h2>Generated Statement</h2>
+
+                <div class="output-section">
+                    <textarea id="outputStatement" class="output-textarea" readonly placeholder="Generated statement text will appear here..."></textarea>
+                    <div id="statementHash" class="statement-hash"></div>
+                    <div id="statementValidation" class="statement-validation"></div>
+                </div>
+
+                <div class="output-section">
+                    <h3>API Configuration</h3>
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="apiKey" class="form-input" placeholder="Enter your API key" style="flex: 1;">
+                            <button type="button" id="deleteApiKey" class="btn-secondary" title="Delete saved API key">
+                                <img src="icons/x.svg" alt="Delete" width="14" height="14">
+                            </button>
+                        </div>
+                        <small>Required to publish statements to api.country-a.com. Your API key is saved locally and will be prefilled on next visit.</small>
+                    </div>
+                </div>
+
+                <div class="output-actions">
+                    <button type="button" id="submitToAPI" class="btn-primary">
+                        <img src="icons/upload.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;">
+                        Submit
+                    </button>
+                    <button type="button" id="copyStatement" class="btn-secondary">
+                        <img src="icons/copy.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;">
+                        Copy
+                    </button>
+                    <button type="button" id="downloadStatement" class="btn-secondary">
+                        <img src="icons/download.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;">
+                        Download
+                    </button>
+                </div>
+
+                <div id="uploadProgress" class="upload-progress" style="display: none;"></div>
+
+                <div class="help-section">
+                    <h3>Automatic Publishing</h3>
+                    <p>When you click "Submit", the editor will automatically:</p>
+                    <ol>
+                        <li>Fetch and update <code>/.well-known/statements.txt</code></li>
+                        <li>Create <code>/.well-known/statements/&lt;hash&gt;.txt</code></li>
+                        <li>Update <code>/.well-known/statements/index.txt</code></li>
+                        <li>Upload any attachments to <code>/.well-known/statements/attachments/</code></li>
+                        <li>Invalidate cache for immediate updates</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="dist/editor-app.js"></script>
+    <script type="module">
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        const openMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.add('open');
+                menuOverlay.classList.add('active');
+            }
+        };
+        
+        const closeMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
+        };
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', openMenu);
+        }
+        
+        if (menuClose) {
+            menuClose.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+    </script>
+</body>
+</html>

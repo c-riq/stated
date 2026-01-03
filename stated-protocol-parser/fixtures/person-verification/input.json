@@ -1,0 +1,14 @@
+{
+  "domain": "verifier.com",
+  "author": "Verification Authority",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": {
+    "type": "person_verification",
+    "name": "John Doe",
+    "dateOfBirth": "1990-01-01T00:00:00.000Z",
+    "cityOfBirth": "New York",
+    "countryOfBirth": "United States",
+    "ownDomain": "johndoe.com",
+    "confidence": 0.9
+  }
+}

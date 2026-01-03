@@ -1,0 +1,13 @@
+Stated protocol version: 5
+Publishing domain: verifier.com
+Author: Verification Authority
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    Type: Person verification
+    Description: We verified the following information about a person.
+    Name: John Doe
+    Date of birth: 1 Jan 1990
+    City of birth: New York
+    Country of birth: United States
+    Owner of the domain: johndoe.com
+    Confidence: 0.9

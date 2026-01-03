@@ -1,0 +1,7 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    This statement has attached files.
+Attachments: abc123def456_-XYZ.pdf, xyz789ABC-_def.jpg, report2024_hash.docx

@@ -1,0 +1,9 @@
+{
+  "domain": "state.example.gov",
+  "author": "Department of State",
+  "time": "2035-01-15T14:30:00.000Z",
+  "content": {
+    "type": "pdf_signing",
+    "hash": "kSay1EJilHLNhIuvr4J04UkfCjhdWWPBcOosCbclc8Y"
+  }
+}

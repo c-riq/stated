@@ -1,0 +1,11 @@
+Stated protocol version: 5
+Publishing domain: globalcities.org
+Author: Global Cities Climate Alliance
+Time: Sun, 01 Apr 2035 09:00:00 GMT
+Statement content:
+    Type: Poll
+    Voting deadline: Mon, 30 Apr 2035 23:59:59 GMT
+    Poll: Should local governments adopt standardized carbon reporting by 2036?
+    Option 1: Yes
+    Option 2: No
+    Who can vote: Municipal governments and city councils worldwide

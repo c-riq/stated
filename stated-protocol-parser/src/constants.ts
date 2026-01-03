@@ -1,61 +1,245 @@
 export const legalForms = {
-    local_government: 'local government',
-    state_government: 'state government',
-    foreign_affairs_ministry: 'foreign affairs ministry',
-    corporation: 'corporation',
-}
+  local_government: 'local government',
+  state_government: 'state government',
+  foreign_affairs_ministry: 'foreign affairs ministry',
+  corporation: 'corporation',
+};
 
 export const statementTypes = {
-    statement: 'statement',
-    quotation: 'quotation',
-    organisationVerification: 'organisation_verification',
-    personVerification: 'person_verification',
-    poll: 'poll',
-    vote: 'vote',
-    response: 'response',
-    disputeContent: 'dispute_statement_content',
-    disputeAuthenticity: 'dispute_statement_authenticity',
-    boycott: 'boycott',
-    observation: 'observation',
-    rating: 'rating',
-    signPdf: "sign_pdf",
-    bounty: "bounty",
-    unsupported: "unsupported",
-}
+  statement: 'statement',
+  organisationVerification: 'organisation_verification',
+  personVerification: 'person_verification',
+  poll: 'poll',
+  vote: 'vote',
+  response: 'response',
+  disputeContent: 'dispute_statement_content',
+  disputeAuthenticity: 'dispute_statement_authenticity',
+  rating: 'rating',
+  signPdf: 'sign_pdf',
+  unsupported: 'unsupported',
+};
 
 export const peopleCountBuckets = {
-    "0": "0-10",
-    "10": "10-100",
-    "100": "100-1000",
-    "1000": "1000-10,000",
-    "10000": "10,000-100,000",
-    "100000": "100,000+",
-    "1000000": "1,000,000+",
-    "10000000": "10,000,000+",
-}
+  '0': '0-10',
+  '10': '10-100',
+  '100': '100-1000',
+  '1000': '1000-10,000',
+  '10000': '10,000-100,000',
+  '100000': '100,000+',
+  '1000000': '1,000,000+',
+  '10000000': '10,000,000+',
+};
 
-export const UTCFormat: RegExp = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/
+export const supportedLanguages = {
+  aa: 'aa',
+  ab: 'ab',
+  af: 'af',
+  ak: 'ak',
+  am: 'am',
+  ar: 'ar',
+  an: 'an',
+  as: 'as',
+  av: 'av',
+  ay: 'ay',
+  az: 'az',
+  ba: 'ba',
+  bm: 'bm',
+  be: 'be',
+  bn: 'bn',
+  bi: 'bi',
+  bo: 'bo',
+  bs: 'bs',
+  br: 'br',
+  bg: 'bg',
+  ca: 'ca',
+  cs: 'cs',
+  ch: 'ch',
+  ce: 'ce',
+  cv: 'cv',
+  kw: 'kw',
+  co: 'co',
+  cr: 'cr',
+  cy: 'cy',
+  da: 'da',
+  de: 'de',
+  dv: 'dv',
+  dz: 'dz',
+  el: 'el',
+  en: 'en',
+  eo: 'eo',
+  et: 'et',
+  eu: 'eu',
+  ee: 'ee',
+  fo: 'fo',
+  fa: 'fa',
+  fj: 'fj',
+  fi: 'fi',
+  fr: 'fr',
+  fy: 'fy',
+  ff: 'ff',
+  gd: 'gd',
+  ga: 'ga',
+  gl: 'gl',
+  gv: 'gv',
+  gn: 'gn',
+  gu: 'gu',
+  ht: 'ht',
+  ha: 'ha',
+  sh: 'sh',
+  he: 'he',
+  hz: 'hz',
+  hi: 'hi',
+  ho: 'ho',
+  hr: 'hr',
+  hu: 'hu',
+  hy: 'hy',
+  ig: 'ig',
+  io: 'io',
+  ii: 'ii',
+  iu: 'iu',
+  ie: 'ie',
+  ia: 'ia',
+  id: 'id',
+  ik: 'ik',
+  is: 'is',
+  it: 'it',
+  jv: 'jv',
+  ja: 'ja',
+  kl: 'kl',
+  kn: 'kn',
+  ks: 'ks',
+  ka: 'ka',
+  kr: 'kr',
+  kk: 'kk',
+  km: 'km',
+  ki: 'ki',
+  rw: 'rw',
+  ky: 'ky',
+  kv: 'kv',
+  kg: 'kg',
+  ko: 'ko',
+  kj: 'kj',
+  ku: 'ku',
+  lo: 'lo',
+  la: 'la',
+  lv: 'lv',
+  li: 'li',
+  ln: 'ln',
+  lt: 'lt',
+  lb: 'lb',
+  lu: 'lu',
+  lg: 'lg',
+  mh: 'mh',
+  ml: 'ml',
+  mr: 'mr',
+  mk: 'mk',
+  mg: 'mg',
+  mt: 'mt',
+  mn: 'mn',
+  mi: 'mi',
+  ms: 'ms',
+  my: 'my',
+  na: 'na',
+  nv: 'nv',
+  nr: 'nr',
+  nd: 'nd',
+  ng: 'ng',
+  ne: 'ne',
+  nl: 'nl',
+  nn: 'nn',
+  nb: 'nb',
+  no: 'no',
+  ny: 'ny',
+  oc: 'oc',
+  oj: 'oj',
+  or: 'or',
+  om: 'om',
+  os: 'os',
+  pa: 'pa',
+  pi: 'pi',
+  pl: 'pl',
+  pt: 'pt',
+  ps: 'ps',
+  qu: 'qu',
+  rm: 'rm',
+  ro: 'ro',
+  rn: 'rn',
+  ru: 'ru',
+  sg: 'sg',
+  sa: 'sa',
+  si: 'si',
+  sk: 'sk',
+  sl: 'sl',
+  se: 'se',
+  sm: 'sm',
+  sn: 'sn',
+  sd: 'sd',
+  so: 'so',
+  st: 'st',
+  es: 'es',
+  sq: 'sq',
+  sc: 'sc',
+  sr: 'sr',
+  ss: 'ss',
+  su: 'su',
+  sw: 'sw',
+  sv: 'sv',
+  ty: 'ty',
+  ta: 'ta',
+  tt: 'tt',
+  te: 'te',
+  tg: 'tg',
+  tl: 'tl',
+  th: 'th',
+  ti: 'ti',
+  to: 'to',
+  tn: 'tn',
+  ts: 'ts',
+  tk: 'tk',
+  tr: 'tr',
+  tw: 'tw',
+  ug: 'ug',
+  uk: 'uk',
+  ur: 'ur',
+  uz: 'uz',
+  ve: 've',
+  vi: 'vi',
+  vo: 'vo',
+  wa: 'wa',
+  wo: 'wo',
+  xh: 'xh',
+  yi: 'yi',
+  yo: 'yo',
+  za: 'za',
+  zh: 'zh',
+  zu: 'zu',
+} as const;
 
-export const pollKeys = /(Type: |The poll outcome is finalized when the following nodes agree: |Voting deadline: |Poll: |Option 1: |Option 2: |Option 3: |Option 4: |Option 5: |Allow free text votes: |Who can vote: |Description: |Country scope: |City scope: |Legal form scope: |Domain scope: |All entities with the following property: |As observed by: |Link to query defining who can vote: )/g
+export type SupportedLanguage = (typeof supportedLanguages)[keyof typeof supportedLanguages];
 
-export const organisationVerificationKeys = /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Longitude: |Latitude: |Population: |Logo: |Employee count: |Reliability policy: |Confidence: )/g
+export const UTCFormat: RegExp =
+  /(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s\d{2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\s\d{2}:\d{2}:\d{2}\sGMT/;
 
-export const personVerificationKeys = /(Type: |Description: |Name: |Date of birth: |City of birth: |Country of birth: |Job title: |Employer: |Owner of the domain: |Foreign domain used for publishing statements: |Picture: |Verification method: |Confidence: |Reliability policy: )/g
+export const pollKeys =
+  /(Type: |The poll outcome is finalized when the following nodes agree: |Voting deadline: |Poll: |Option 1: |Option 2: |Option 3: |Option 4: |Option 5: |Allow free text votes: |Who can vote: |Description: |Country scope: |City scope: |Legal form scope: |Domain scope: |All entities with the following property: |As observed by: |Link to query defining who can vote: )/g;
 
-export const voteKeys = /(Type: |Poll id: |Poll: |Option: )/g
+export const organisationVerificationKeys =
+  /(Type: |Description: |Name: |English name: |Country: |Legal entity: |Legal form: |Department using the domain: |Owner of the domain: |Foreign domain used for publishing statements: |Province or state: |Business register number: |City: |Longitude: |Latitude: |Population: |Logo: |Employee count: |Reliability policy: |Confidence: |Public key: )/g;
 
-export const disputeAuthenticityKeys = /(Type: |Description: |Hash of referenced statement: |Confidence: |Reliability policy: )/g
+export const personVerificationKeys =
+  /(Type: |Description: |Name: |Date of birth: |City of birth: |Country of birth: |Job title: |Employer: |Owner of the domain: |Foreign domain used for publishing statements: |Picture: |Verification method: |Confidence: |Reliability policy: )/g;
 
-export const disputeContentKeys = /(Type: |Description: |Hash of referenced statement: |Confidence: |Reliability policy: )/g
+export const voteKeys = /(Type: |Poll id: |Poll: |Option: )/g;
 
-export const responseKeys = /(Type: |Hash of referenced statement: |Response: )/
+export const disputeAuthenticityKeys =
+  /(Type: |Description: |Hash of referenced statement: |Confidence: |Reliability policy: )/g;
 
-export const PDFSigningKeys = /(Type: |Description: |PDF file hash: )/
+export const disputeContentKeys =
+  /(Type: |Description: |Hash of referenced statement: |Confidence: |Reliability policy: )/g;
 
-export const ratingKeys = /(Type: |Subject type: |Subject name: |URL that identifies the subject: |Document file hash: |Rated quality: |Our rating: |Comment: )/
+export const responseKeys = /(Type: |Hash of referenced statement: |Response: )/;
 
-export const BountyKeys = /(Type: |In order to: |We will reward any entity that: |The reward is: |In case of dispute, bounty claims are judged by: |The judge will be paid per investigated case with a maxium of: )/
+export const PDFSigningKeys = /(Type: |Description: |PDF file hash: )/g;
 
-export const ObservationKeys = /(Type: |Approach: |Confidence: |Reliability policy: |Subject: |Subject identity reference: |Observation reference: |Observed property: |Observed value: )/
-
-export const BoycottKeys = /(Type: |Description: |Subject: |Subject identity reference: )/
+export const ratingKeys =
+  /(Type: |Subject type: |Subject name: |URL that identifies the subject: |Document file hash: |Rated quality: |Our rating: |Comment: )/;

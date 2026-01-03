@@ -1,0 +1,7 @@
+node_modules/
+.well-known/
+.well-known-country-b/
+package-lock.json
+lib/
+dist/
+media/

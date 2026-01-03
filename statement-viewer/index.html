@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statement Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="header-left">
+                <img src="logo.png" alt="Logo" class="header-logo">
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Statement Viewer</span></h1>
+            </div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <img src="icons/menu.svg" alt="" width="24" height="24">
+            </button>
+        </div>
+    </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
+                <a href="/editor.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/edit.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Editor</span>
+                </a>
+                <a href="/browser.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/folder.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>File Browser</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <h3>Filter</h3>
+                <label class="menu-checkbox">
+                    <input type="checkbox" id="showHostOnly" />
+                    <span>Host domain only</span>
+                </label>
+            </div>
+        </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="container">
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading statements...</p>
+        </div>
+        <div id="error" class="error-message" style="display: none;"></div>
+        <div id="statementsList" class="statements-list"></div>
+    </div>
+
+    <!-- Statement Detail Modal -->
+    <div id="statementModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script type="module" src="dist/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    This statement has translations and attachments.
+Translation es:
+    Esta declaración tiene traducciones y archivos adjuntos.
+Attachments: file1_hash.pdf, file2_hash.jpg

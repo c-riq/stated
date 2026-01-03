@@ -1,0 +1,10 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    Type: Dispute statement authenticity
+    Description: We think that the referenced statement is not authentic.
+    Hash of referenced statement: abc123def456
+    Confidence: 0.85
+    Reliability policy: https://example.com/policy

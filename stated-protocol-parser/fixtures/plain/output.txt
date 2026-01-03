@@ -1,0 +1,6 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    This is a plain statement without any special type.

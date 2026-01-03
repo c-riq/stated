@@ -1,0 +1,12 @@
+{
+  "domain": "example.com",
+  "author": "Example Organization",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": "This is our official statement.",
+  "translations": {
+    "es": "Esta es nuestra declaración oficial.",
+    "ar": "هذا بياننا الرسمي",
+    "zh": "这是我们的官方声明",
+    "fr": "Ceci est notre déclaration officielle."
+  }
+}

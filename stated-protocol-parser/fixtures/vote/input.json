@@ -1,0 +1,11 @@
+{
+  "domain": "amsterdam.nl",
+  "author": "City of Amsterdam",
+  "time": "2035-04-15T14:30:00.000Z",
+  "content": {
+    "type": "vote",
+    "pollHash": "Fj9NdSAamveA2dV0DCTTIwRgbPAH42ddpyLl9_V-igY",
+    "poll": "Should local governments adopt standardized carbon reporting by 2036?",
+    "vote": "Yes"
+  }
+}

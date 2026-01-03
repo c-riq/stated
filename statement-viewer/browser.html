@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Browser - Stated</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .browser-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .breadcrumb {
+            background: #f9f9f9;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #0072BC;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: #999;
+        }
+
+        .file-list {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item:hover {
+            background: #f9f9f9;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .file-name {
+            flex: 1;
+            color: #0072BC;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .file-item.directory .file-name {
+            color: #003366;
+        }
+
+        .file-size {
+            color: #999;
+            font-size: 0.875rem;
+            margin-left: 16px;
+        }
+
+        .loading-browser {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-browser {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0072BC;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="header-left">
+                <img src="logo.png" alt="Logo" class="header-logo">
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Statement File Browser</span></h1>
+            </div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <img src="icons/menu.svg" alt="" width="24" height="24">
+            </button>
+        </div>
+    </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
+                <a href="/editor.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/edit.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Editor</span>
+                </a>
+                <a href="/browser.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/folder.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>File Browser</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="browser-container">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div id="loading" class="loading-browser" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading directory...</p>
+        </div>
+        <div id="error" class="error-browser" style="display: none;"></div>
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <script type="module">
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        const openMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.add('open');
+                menuOverlay.classList.add('active');
+            }
+        };
+        
+        const closeMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
+        };
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', openMenu);
+        }
+        
+        if (menuClose) {
+            menuClose.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+
+        // File browser functionality
+        const basePath = '/.well-known/';
+        
+        function getCurrentPath() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('path') || '';
+        }
+
+        function setCurrentPath(path) {
+            const url = new URL(window.location);
+            url.searchParams.set('path', path);
+            window.history.pushState({}, '', url);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            if (message) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function renderBreadcrumb(path) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            const parts = path ? path.split('/').filter(p => p) : [];
+            
+            let html = '<a href="?path="><img src="icons/folder.svg" alt="" width="16" height="16" style="vertical-align: middle; margin-right: 4px;"> .well-known</a>';
+            let currentPath = '';
+            
+            for (const part of parts) {
+                currentPath += part + '/';
+                html += '<span class="breadcrumb-separator">/</span>';
+                html += `<a href="?path=${encodeURIComponent(currentPath)}">${part}</a>`;
+            }
+            
+            breadcrumb.innerHTML = html;
+        }
+
+        async function loadDirectory(path) {
+            showLoading(true);
+            showError(null);
+            
+            try {
+                const cleanPath = path || '';
+                
+                if (cleanPath === '') {
+                    const rootEntries = ['statements/', 'statements.txt'];
+                    renderFileList(rootEntries, path);
+                    renderBreadcrumb(path);
+                } else {
+                    const indexPath = basePath + cleanPath + 'index.txt';
+                    const response = await fetch(indexPath);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load directory: ${response.status}`);
+                    }
+                    
+                    const text = await response.text();
+                    const entries = text.split('\n').filter(line => line.trim());
+                    
+                    renderFileList(entries, path);
+                    renderBreadcrumb(path);
+                }
+            } catch (error) {
+                showError(`Error loading directory: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderFileList(entries, currentPath) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            if (currentPath && currentPath !== '') {
+                const parentItem = document.createElement('div');
+                parentItem.className = 'file-item directory';
+                parentItem.innerHTML = `
+                    <span class="file-icon"><img src="icons/folder.svg" alt="" width="16" height="16"></span>
+                    <span class="file-name">..</span>
+                `;
+                const parentPath = currentPath.split('/').slice(0, -2).join('/');
+                parentItem.addEventListener('click', () => {
+                    const newPath = parentPath ? parentPath + '/' : '';
+                    setCurrentPath(newPath);
+                    loadDirectory(newPath);
+                });
+                fileList.appendChild(parentItem);
+            }
+            
+            entries.forEach(entry => {
+                const isDirectory = entry.endsWith('/');
+                const item = document.createElement('div');
+                item.className = isDirectory ? 'file-item directory' : 'file-item';
+                
+                const icon = isDirectory
+                    ? '<img src="icons/folder.svg" alt="" width="16" height="16">'
+                    : getFileIcon(entry);
+                const displayName = isDirectory ? entry.slice(0, -1) : entry;
+                
+                item.innerHTML = `
+                    <span class="file-icon">${icon}</span>
+                    <span class="file-name">${displayName}</span>
+                `;
+                
+                item.addEventListener('click', () => {
+                    if (isDirectory) {
+                        const newPath = currentPath + entry;
+                        setCurrentPath(newPath);
+                        loadDirectory(newPath);
+                    } else {
+                        window.open(basePath + currentPath + entry, '_blank');
+                    }
+                });
+                
+                fileList.appendChild(item);
+            });
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'txt': '<img src="icons/document.svg" alt="" width="16" height="16">',
+                'json': '<img src="icons/document.svg" alt="" width="16" height="16">',
+                'pdf': '<img src="icons/document.svg" alt="" width="16" height="16">',
+                'jpg': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'jpeg': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'png': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'gif': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'mp4': '<img src="icons/video.svg" alt="" width="16" height="16">',
+                'webm': '<img src="icons/video.svg" alt="" width="16" height="16">',
+            };
+            return iconMap[ext] || '<img src="icons/document.svg" alt="" width="16" height="16">';
+        }
+
+        window.addEventListener('popstate', () => {
+            loadDirectory(getCurrentPath());
+        });
+
+        loadDirectory(getCurrentPath());
+    </script>
+</body>
+</html>

@@ -2,33 +2,31 @@
   "name": "stated-protocol-parser",
   "version": "1.0.7",
   "description": "Parser and formatter for the Stated protocol - a decentralized statement verification system",
-  "main": "dist/index.node.js",
-  "module": "dist/esm/index.browser.js",
-  "types": "dist/index.browser.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.browser.d.ts",
-      "browser": "./dist/esm/index.browser.js",
-      "import": "./dist/esm/index.browser.js",
-      "require": "./dist/index.browser.js",
-      "default": "./dist/index.browser.js"
-    },
-    "./node": {
-      "types": "./dist/index.node.d.ts",
-      "import": "./dist/esm/index.node.js",
-      "require": "./dist/index.node.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
-  "browser": {
-    "./dist/esm/index.node.js": "./dist/esm/index.browser.js",
-    "./dist/index.node.js": "./dist/index.browser.js"
-  },
   "scripts": {
-    "build": "npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc",
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "test": "jest",
-    "prepublishOnly": "npm run build"
+    "build:esm": "node scripts/build-esm.js && tsc -p tsconfig.esm.json --emitDeclarationOnly",
+    "test": "tsx --test 'src/**/*.test.ts'",
+    "lint": "eslint 'src/**/*.ts' 'scripts/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' 'scripts/**/*.ts' --fix",
+    "format": "prettier --write 'src/**/*.ts' 'scripts/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'scripts/**/*.ts'",
+    "fix": "npm run format && npm run lint:fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "update-fixtures": "tsx scripts/updateFixtures.ts"
   },
   "keywords": [
     "stated",
@@ -42,10 +40,13 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^20.0.0",
-    "jest": "^29.5.0",
-    "ts-jest": "^29.1.0",
+    "@types/node": "^20.19.27",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "esbuild": "^0.27.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },
   "files": [
@@ -57,5 +58,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/c-riq/stated"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^3.0.0",
+    "@noble/hashes": "^2.0.1"
   }
 }

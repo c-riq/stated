@@ -1,0 +1,11 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    This is a cryptographically signed statement.
+---
+Statement hash: gp20RnZZj37Jov5KttLvstd2mVO5ouVRWEgzWijeweI
+Public key: 9JkJD8rojW4Hvng4abqDfQQx8MjQNl9iSiytp0z3fv0
+Signature: -J17BkD0vQtsLxen2catE0oJCQIZHYCCRdThA4bSyeAWyurg9GgHFOBDDSXOKA_l4-0uXR7InXUb77TfADYdDA
+Algorithm: Ed25519

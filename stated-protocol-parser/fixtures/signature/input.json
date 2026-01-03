@@ -1,0 +1,10 @@
+{
+  "domain": "example.com",
+  "author": "Example Organization",
+  "time": "2023-06-15T20:01:26.000Z",
+  "content": "This is a cryptographically signed statement.",
+  "signature": {
+    "privateKey": "test_private_key_placeholder",
+    "publicKey": "test_public_key_placeholder"
+  }
+}

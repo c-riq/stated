@@ -1,0 +1,12 @@
+{
+  "domain": "globalcities.org",
+  "author": "Global Cities Climate Alliance",
+  "time": "2035-04-01T09:00:00.000Z",
+  "content": {
+    "type": "poll",
+    "poll": "Should local governments adopt standardized carbon reporting by 2036?",
+    "options": ["Yes", "No"],
+    "deadline": "2035-04-30T23:59:59.000Z",
+    "scopeDescription": "Municipal governments and city councils worldwide"
+  }
+}

@@ -2,6 +2,14 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "ES2020",
-    "outDir": "./dist/esm"
+    "moduleResolution": "node",
+    "outDir": "./dist/esm",
+    "declaration": true,
+    "declarationMap": true
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   }
 }

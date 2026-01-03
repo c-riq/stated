@@ -1,0 +1,10 @@
+Stated protocol version: 5
+Publishing domain: example.com
+Author: Example Organization
+Time: Thu, 15 Jun 2023 20:01:26 GMT
+Statement content:
+    Type: Dispute statement content
+    Description: We think that the content of the referenced statement is false.
+    Hash of referenced statement: xyz789ghi012
+    Confidence: 0.75
+    Reliability policy: https://example.com/policy
