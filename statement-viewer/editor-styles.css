@@ -21,15 +21,11 @@
 }
 
 .editor-form-panel {
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
+    /* No height restriction - let it flow naturally */
 }
 
 .editor-output-panel {
-    position: sticky;
-    top: 100px;
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
+    /* No sticky positioning - let it scroll with the page */
 }
 
 /* Form Sections */
