@@ -1,7 +1,7 @@
 {
-  "name": "stated-protocol-parser",
+  "name": "stated-protocol",
   "version": "5.0.0",
-  "description": "Parser and formatter for the Stated protocol - a decentralized statement verification system",
+  "description": "Protocol for Decentralised Interorganisational Coordination",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
