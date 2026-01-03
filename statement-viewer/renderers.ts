@@ -15,7 +15,8 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     if (statement.signature) {
         const verifyBadge = document.createElement('div');
         verifyBadge.className = statement.signatureVerified ? 'verify-badge verified' : 'verify-badge unverified';
-        verifyBadge.textContent = statement.signatureVerified ? '✓' : '✗';
+        const iconPath = statement.signatureVerified ? 'icons/check.svg' : 'icons/x.svg';
+        verifyBadge.innerHTML = `<img src="${iconPath}" alt="" width="16" height="16">`;
         verifyBadge.title = statement.signatureVerified ? 'Verified signature' : 'Invalid signature';
         card.appendChild(verifyBadge);
     }
@@ -50,7 +51,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     if (identity && identity.isSelfVerified && statement.publicKey === identity.publicKey) {
         const verifiedBadge = document.createElement('span');
         verifiedBadge.className = 'identity-verified-badge';
-        verifiedBadge.textContent = '✓';
+        verifiedBadge.innerHTML = '<img src="icons/check.svg" alt="" width="14" height="14">';
         verifiedBadge.title = 'Verified identity with established public key';
         authorName.appendChild(verifiedBadge);
     }
@@ -84,7 +85,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
         const supersededIndicator = document.createElement('div');
         supersededIndicator.className = 'superseded-indicator';
         supersededIndicator.innerHTML = `
-            <span class="superseded-icon">⚠️</span>
+            <span class="superseded-icon"><img src="icons/warning.svg" alt="" width="16" height="16"></span>
             <span class="superseded-text">This statement was superseded by a newer version</span>
         `;
         supersededIndicator.addEventListener('click', (e: MouseEvent) => {
@@ -131,7 +132,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
                 
                 const pdfTitle = document.createElement('div');
                 pdfTitle.className = 'attachment-pdf-title';
-                pdfTitle.innerHTML = `📄 <strong>${escapeHtml(attachment)}</strong>`;
+                pdfTitle.innerHTML = `<img src="icons/document.svg" alt="" width="16" height="16" style="vertical-align: middle; margin-right: 4px;"> <strong>${escapeHtml(attachment)}</strong>`;
                 pdfContainer.appendChild(pdfTitle);
                 
                 const pdfEmbed = document.createElement('iframe');
@@ -145,7 +146,7 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
                 downloadLink.href = attachmentUrl;
                 downloadLink.download = attachment;
                 downloadLink.className = 'attachment-download-link';
-                downloadLink.textContent = '⬇ Download PDF';
+                downloadLink.innerHTML = '<img src="icons/download.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;"> Download PDF';
                 downloadLink.target = '_blank';
                 downloadLink.addEventListener('click', (e: MouseEvent) => e.stopPropagation());
                 pdfContainer.appendChild(downloadLink);
@@ -507,9 +508,9 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
             signatureIndicator.className = statement.signatureVerified
                 ? 'vote-signature-indicator verified'
                 : 'vote-signature-indicator unverified';
-            signatureIndicator.textContent = statement.signatureVerified
-                ? '✓ Verified'
-                : '✗ Invalid';
+            const iconPath = statement.signatureVerified ? 'icons/check.svg' : 'icons/x.svg';
+            const text = statement.signatureVerified ? 'Verified' : 'Invalid';
+            signatureIndicator.innerHTML = `<img src="${iconPath}" alt="" width="12" height="12" style="vertical-align: middle; margin-right: 2px;"> ${text}`;
             voteActionBar.appendChild(signatureIndicator);
         }
         
@@ -563,7 +564,7 @@ export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSig
     downloadLink.href = pdfUrl;
     downloadLink.download = pdfFilename;
     downloadLink.className = 'pdf-download-link';
-    downloadLink.textContent = '⬇ Download PDF';
+    downloadLink.innerHTML = '<img src="icons/download.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;"> Download PDF';
     downloadLink.target = '_blank';
     downloadLink.addEventListener('click', (e: MouseEvent) => e.stopPropagation());
     pdfContainer.appendChild(downloadLink);
@@ -611,7 +612,7 @@ export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSig
         if (identity && identity.isSelfVerified && statement.publicKey === identity.publicKey) {
             const verifiedBadge = document.createElement('span');
             verifiedBadge.className = 'identity-verified-badge';
-            verifiedBadge.textContent = '✓';
+            verifiedBadge.innerHTML = '<img src="icons/check.svg" alt="" width="14" height="14">';
             verifiedBadge.title = 'Verified identity with established public key';
             verifiedBadge.style.marginLeft = '4px';
             signerName.appendChild(verifiedBadge);
@@ -637,7 +638,8 @@ export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSig
             verifyIndicator.className = statement.signatureVerified
                 ? 'pdf-signature-verify verified'
                 : 'pdf-signature-verify unverified';
-            verifyIndicator.textContent = statement.signatureVerified ? '✓' : '✗';
+            const iconPath = statement.signatureVerified ? 'icons/check.svg' : 'icons/x.svg';
+            verifyIndicator.innerHTML = `<img src="${iconPath}" alt="" width="16" height="16">`;
             verifyIndicator.title = statement.signatureVerified ? 'Verified signature' : 'Invalid signature';
             signatureCard.appendChild(verifyIndicator);
         }

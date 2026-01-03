@@ -125,7 +125,7 @@
                             <div class="form-group">
                                 <label for="privateKey">Private Key</label>
                                 <input type="text" id="privateKey" class="form-input" placeholder="Private key (base64)" readonly>
-                                <small class="warning">⚠️ Keep your private key secure! Never share it.</small>
+                                <small class="warning">⚠ Keep your private key secure! Never share it.</small>
                             </div>
 
                             <button type="button" id="generateKeys" class="btn-secondary">Generate New Key Pair</button>
@@ -159,9 +159,18 @@
                 </div>
 
                 <div class="output-actions">
-                    <button type="button" id="submitToAPI" class="btn-primary">🚀 Submit to API</button>
-                    <button type="button" id="copyStatement" class="btn-secondary">📋 Copy</button>
-                    <button type="button" id="downloadStatement" class="btn-secondary">💾 Download</button>
+                    <button type="button" id="submitToAPI" class="btn-primary">
+                        <img src="icons/upload.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;">
+                        Submit to API
+                    </button>
+                    <button type="button" id="copyStatement" class="btn-secondary">
+                        <img src="icons/copy.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;">
+                        Copy
+                    </button>
+                    <button type="button" id="downloadStatement" class="btn-secondary">
+                        <img src="icons/download.svg" alt="" width="14" height="14" style="vertical-align: middle; margin-right: 4px;">
+                        Download
+                    </button>
                 </div>
 
                 <div id="uploadProgress" class="upload-progress" style="display: none;"></div>

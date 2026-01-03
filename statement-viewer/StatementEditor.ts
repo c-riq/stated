@@ -492,7 +492,7 @@ export class StatementEditor {
         try {
             // Parse the full statement
             const parsed = parseStatement({ statement });
-            results.push('✅ Statement format is valid');
+            results.push('✓ Statement format is valid');
 
             // If it's a typed statement, validate the content
             if (type && parsed.content) {
@@ -500,34 +500,34 @@ export class StatementEditor {
                     switch (type) {
                         case 'poll':
                             parsePoll(parsed.content);
-                            results.push('✅ Poll content is valid');
+                            results.push('✓ Poll content is valid');
                             break;
                         case 'vote':
                             parseVote(parsed.content);
-                            results.push('✅ Vote content is valid');
+                            results.push('✓ Vote content is valid');
                             break;
                         case 'response':
                             parseResponseContent(parsed.content);
-                            results.push('✅ Response content is valid');
+                            results.push('✓ Response content is valid');
                             break;
                         case 'rating':
                             parseRating(parsed.content);
-                            results.push('✅ Rating content is valid');
+                            results.push('✓ Rating content is valid');
                             break;
                         case 'sign_pdf':
                             parsePDFSigning(parsed.content);
-                            results.push('✅ PDF signing content is valid');
+                            results.push('✓ PDF signing content is valid');
                             break;
                     }
                 } catch (contentError: any) {
-                    results.push(`❌ Content validation failed: ${contentError.message}`);
+                    results.push(`✗ Content validation failed: ${contentError.message}`);
                 }
             }
 
             displayElement.innerHTML = results.join('<br>');
             displayElement.className = 'validation-success';
         } catch (error: any) {
-            displayElement.innerHTML = `❌ Statement validation failed: ${error.message}`;
+            displayElement.innerHTML = `✗ Statement validation failed: ${error.message}`;
             displayElement.className = 'validation-error';
         }
     }
@@ -621,11 +621,11 @@ export class StatementEditor {
             this.updateProgressStep(progressContainer, progressContainer.querySelectorAll('.progress-step').length - 1, 'Cache invalidated', 'success');
 
             // Final success message
-            this.addProgressStep(progressContainer, '✅ Statement published successfully!', 'success');
+            this.addProgressStep(progressContainer, '✓ Statement published successfully!', 'success');
             this.showMessage('Statement published successfully!', 'success');
         } catch (error: any) {
             if (progressContainer) {
-                this.addProgressStep(progressContainer, `❌ Error: ${error.message}`, 'error');
+                this.addProgressStep(progressContainer, `✗ Error: ${error.message}`, 'error');
             }
             this.showMessage(`Error submitting statement: ${error.message}`, 'error');
         }
@@ -634,8 +634,8 @@ export class StatementEditor {
     private addProgressStep(container: HTMLElement, message: string, status: 'pending' | 'success' | 'error'): void {
         const step = document.createElement('div');
         step.className = `progress-step progress-${status}`;
-        
-        const icon = status === 'pending' ? '⏳' : status === 'success' ? '✓' : '✗';
+
+        const icon = status === 'pending' ? '○' : status === 'success' ? '✓' : '✗';
         step.innerHTML = `<span class="progress-icon">${icon}</span> <span class="progress-text">${message}</span>`;
         
         container.appendChild(step);

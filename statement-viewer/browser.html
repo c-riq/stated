@@ -115,7 +115,9 @@
     <div class="top-bar">
         <div class="top-bar-content">
             <h1>globalcoordination.org<span class="subtitle">Statement File Browser</span></h1>
-            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <img src="icons/menu.svg" alt="" width="24" height="24">
+            </button>
         </div>
     </div>
 
@@ -211,7 +213,7 @@
             const breadcrumb = document.getElementById('breadcrumb');
             const parts = path ? path.split('/').filter(p => p) : [];
             
-            let html = '<a href="?path=">📁 .well-known</a>';
+            let html = '<a href="?path="><img src="icons/folder.svg" alt="" width="16" height="16" style="vertical-align: middle; margin-right: 4px;"> .well-known</a>';
             let currentPath = '';
             
             for (const part of parts) {
@@ -262,7 +264,7 @@
                 const parentItem = document.createElement('div');
                 parentItem.className = 'file-item directory';
                 parentItem.innerHTML = `
-                    <span class="file-icon">📁</span>
+                    <span class="file-icon"><img src="icons/folder.svg" alt="" width="16" height="16"></span>
                     <span class="file-name">..</span>
                 `;
                 const parentPath = currentPath.split('/').slice(0, -2).join('/');
@@ -279,7 +281,9 @@
                 const item = document.createElement('div');
                 item.className = isDirectory ? 'file-item directory' : 'file-item';
                 
-                const icon = isDirectory ? '📁' : getFileIcon(entry);
+                const icon = isDirectory
+                    ? '<img src="icons/folder.svg" alt="" width="16" height="16">'
+                    : getFileIcon(entry);
                 const displayName = isDirectory ? entry.slice(0, -1) : entry;
                 
                 item.innerHTML = `
@@ -304,17 +308,17 @@
         function getFileIcon(filename) {
             const ext = filename.split('.').pop().toLowerCase();
             const iconMap = {
-                'txt': '📄',
-                'json': '📋',
-                'pdf': '📕',
-                'jpg': '🖼️',
-                'jpeg': '🖼️',
-                'png': '🖼️',
-                'gif': '🖼️',
-                'mp4': '🎬',
-                'webm': '🎬',
+                'txt': '<img src="icons/document.svg" alt="" width="16" height="16">',
+                'json': '<img src="icons/document.svg" alt="" width="16" height="16">',
+                'pdf': '<img src="icons/document.svg" alt="" width="16" height="16">',
+                'jpg': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'jpeg': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'png': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'gif': '<img src="icons/image.svg" alt="" width="16" height="16">',
+                'mp4': '<img src="icons/video.svg" alt="" width="16" height="16">',
+                'webm': '<img src="icons/video.svg" alt="" width="16" height="16">',
             };
-            return iconMap[ext] || '📄';
+            return iconMap[ext] || '<img src="icons/document.svg" alt="" width="16" height="16">';
         }
 
         window.addEventListener('popstate', () => {
