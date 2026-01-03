@@ -1,1 +1,0 @@
-ALTER TABLE polls ALTER COLUMN deadline DROP NOT NULL;

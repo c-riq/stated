@@ -16,7 +16,7 @@ import {
     parseStatementsFile,
     parseStatement,
     parseOrganisationVerification,
-} from 'stated-protocol-parser';
+} from 'stated-protocol';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

@@ -1,13 +1,13 @@
 # Stated Protocol Parser
 
-[![npm](https://img.shields.io/badge/npm-stated--protocol--parser-CB3837?logo=npm)](https://www.npmjs.com/package/stated-protocol-parser)
+[![npm](https://img.shields.io/badge/npm-stated--protocol-CB3837?logo=npm)](https://www.npmjs.com/package/stated-protocol)
 
 A TypeScript library for parsing and formatting statements in the Stated protocol - a decentralized statement verification system.
 
 ## Installation
 
 ```bash
-npm install stated-protocol-parser
+npm install stated-protocol
 ```
 
 ## Features
@@ -32,7 +32,7 @@ npm install stated-protocol-parser
 ### Basic Statement
 
 ```typescript
-import { buildStatement, parseStatement } from 'stated-protocol-parser';
+import { buildStatement, parseStatement } from 'stated-protocol';
 
 // Build a statement
 const statement = buildStatement({
@@ -62,7 +62,7 @@ import {
   buildSignedStatement,
   verifySignedStatement,
   parseSignedStatement
-} from 'stated-protocol-parser/node';
+} from 'stated-protocol/node';
 
 // Generate a key pair
 const { publicKey, privateKey } = generateKeyPair();
@@ -97,7 +97,7 @@ import {
   generateKeyPair,
   buildSignedStatement,
   verifySignedStatement
-} from 'stated-protocol-parser';
+} from 'stated-protocol';
 
 // Generate a key pair (async in browser)
 const { publicKey, privateKey } = await generateKeyPair();
@@ -137,7 +137,7 @@ Algorithm: Ed25519
 ### Poll
 
 ```typescript
-import { buildPollContent, parsePoll } from 'stated-protocol-parser';
+import { buildPollContent, parsePoll } from 'stated-protocol';
 
 const pollContent = buildPollContent({
   poll: 'Should we implement feature X?',
@@ -152,7 +152,7 @@ const parsed = parsePoll(pollContent);
 ### Organisation Verification
 
 ```typescript
-import { buildOrganisationVerificationContent, parseOrganisationVerification } from 'stated-protocol-parser';
+import { buildOrganisationVerificationContent, parseOrganisationVerification } from 'stated-protocol';
 
 const verification = buildOrganisationVerificationContent({
   name: 'Example Corp',
@@ -167,7 +167,7 @@ const verification = buildOrganisationVerificationContent({
 ### Person Verification
 
 ```typescript
-import { buildPersonVerificationContent, parsePersonVerification } from 'stated-protocol-parser';
+import { buildPersonVerificationContent, parsePersonVerification } from 'stated-protocol';
 
 const verification = buildPersonVerificationContent({
   name: 'John Doe',
@@ -208,7 +208,7 @@ import {
   legalForms,
   peopleCountBuckets,
   UTCFormat 
-} from 'stated-protocol-parser';
+} from 'stated-protocol';
 ```
 
 ### Types
@@ -227,7 +227,7 @@ import type {
   ResponseContent,
   PDFSigning,
   Rating
-} from 'stated-protocol-parser';
+} from 'stated-protocol';
 ```
 
 ## Format Specifications
