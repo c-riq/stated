@@ -89,12 +89,16 @@ export class StatementEditor {
         // Statement type selector
         const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
         if (typeSelect) {
-            typeSelect.addEventListener('change', () => this.updateTypeHelp());
+            typeSelect.addEventListener('change', () => {
+                this.updateTypeHelp();
+                this.updateTypedFields();
+            });
         }
 
         // Initialize
         this.toggleSigningFields();
         this.updateTypeHelp();
+        this.updateTypedFields();
     }
 
     private toggleSigningFields(): void {
@@ -109,23 +113,187 @@ export class StatementEditor {
     private updateTypeHelp(): void {
         const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
         const typeHelp = document.getElementById('typeHelp');
+        const contentHelp = document.getElementById('contentHelp');
         
         if (!typeSelect || !typeHelp) return;
 
         const helpTexts: Record<string, string> = {
             '': 'A basic statement without a specific type.',
-            'poll': 'Create a poll with multiple choice options. Format: Type: poll\\nPoll: Question?\\nOptions: Option1, Option2, Option3',
-            'vote': 'Vote on an existing poll. Format: Type: vote\\nPoll hash: <hash>\\nVote: <option>',
-            'organisation_verification': 'Verify an organization\'s identity. Includes name, country, legal form, domain, etc.',
-            'person_verification': 'Verify a person\'s identity. Includes name, date of birth, country, etc.',
-            'response': 'Respond to another statement. Format: Type: response\\nStatement hash: <hash>\\nResponse: Your response',
-            'rating': 'Rate another statement. Format: Type: rating\\nStatement hash: <hash>\\nRating: 1-5',
-            'sign_pdf': 'Sign a PDF document. Format: Type: sign_pdf\\nPDF hash: <hash>',
+            'poll': 'Create a poll with multiple choice options.',
+            'vote': 'Vote on an existing poll.',
+            'organisation_verification': 'Verify an organization\'s identity.',
+            'person_verification': 'Verify a person\'s identity.',
+            'response': 'Respond to another statement.',
+            'rating': 'Rate another statement (1-5 stars).',
+            'sign_pdf': 'Sign a PDF document.',
             'dispute_statement_authenticity': 'Dispute the authenticity of a statement.',
             'dispute_statement_content': 'Dispute the content of a statement.'
         };
 
         typeHelp.textContent = helpTexts[typeSelect.value] || '';
+        
+        // Update content help based on type
+        if (contentHelp) {
+            if (typeSelect.value) {
+                contentHelp.textContent = 'Use the fields below to build your typed statement. The content will be generated automatically.';
+            } else {
+                contentHelp.textContent = 'The main content of your statement.';
+            }
+        }
+    }
+
+    private updateTypedFields(): void {
+        const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
+        const typedFieldsContainer = document.getElementById('typedFields');
+        const contentGroup = document.querySelector('.form-group:has(#content)') as HTMLElement;
+        const contentTextarea = document.getElementById('content') as HTMLTextAreaElement;
+        
+        if (!typeSelect || !typedFieldsContainer) return;
+
+        const type = typeSelect.value;
+        
+        if (!type) {
+            typedFieldsContainer.style.display = 'none';
+            typedFieldsContainer.innerHTML = '';
+            if (contentGroup) contentGroup.style.display = 'block';
+            if (contentTextarea) contentTextarea.required = true;
+            return;
+        }
+
+        typedFieldsContainer.style.display = 'block';
+        if (contentGroup) contentGroup.style.display = 'none';
+        if (contentTextarea) contentTextarea.required = false;
+
+        let fieldsHTML = '';
+
+        switch (type) {
+            case 'poll':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="pollQuestion">Poll Question *</label>
+                        <input type="text" id="pollQuestion" class="form-input" placeholder="Should we...?" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pollOptions">Options (comma-separated) *</label>
+                        <input type="text" id="pollOptions" class="form-input" placeholder="Yes, No, Maybe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pollDeadline">Deadline (optional)</label>
+                        <input type="datetime-local" id="pollDeadline" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="pollScope">Scope Description (optional)</label>
+                        <input type="text" id="pollScope" class="form-input" placeholder="All members">
+                    </div>
+                `;
+                break;
+
+            case 'vote':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="voteHash">Poll Statement Hash *</label>
+                        <input type="text" id="voteHash" class="form-input" placeholder="Statement hash of the poll" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="votePoll">Poll Question *</label>
+                        <input type="text" id="votePoll" class="form-input" placeholder="Copy the poll question" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voteChoice">Your Vote *</label>
+                        <input type="text" id="voteChoice" class="form-input" placeholder="Your chosen option" required>
+                    </div>
+                `;
+                break;
+
+            case 'response':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="responseHash">Statement Hash *</label>
+                        <input type="text" id="responseHash" class="form-input" placeholder="Hash of statement you're responding to" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="responseContent">Your Response *</label>
+                        <textarea id="responseContent" class="form-textarea" rows="4" placeholder="Your response..." required></textarea>
+                    </div>
+                `;
+                break;
+
+            case 'rating':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="ratingHash">Statement Hash *</label>
+                        <input type="text" id="ratingHash" class="form-input" placeholder="Hash of statement you're rating" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingValue">Rating (1-5) *</label>
+                        <input type="number" id="ratingValue" class="form-input" min="1" max="5" placeholder="5" required>
+                    </div>
+                `;
+                break;
+
+            case 'sign_pdf':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="pdfHash">PDF Hash *</label>
+                        <input type="text" id="pdfHash" class="form-input" placeholder="Hash of the PDF file" required>
+                    </div>
+                `;
+                break;
+        }
+
+        typedFieldsContainer.innerHTML = fieldsHTML;
+    }
+
+    private buildTypedContent(type: string): string {
+        let content = '';
+
+        switch (type) {
+            case 'poll':
+                const pollQuestion = (document.getElementById('pollQuestion') as HTMLInputElement)?.value.trim();
+                const pollOptions = (document.getElementById('pollOptions') as HTMLInputElement)?.value.trim();
+                const pollDeadline = (document.getElementById('pollDeadline') as HTMLInputElement)?.value;
+                const pollScope = (document.getElementById('pollScope') as HTMLInputElement)?.value.trim();
+
+                content = `Poll: ${pollQuestion}\nOptions: ${pollOptions}`;
+                if (pollDeadline) {
+                    const deadline = new Date(pollDeadline).toISOString();
+                    content += `\nDeadline: ${deadline}`;
+                }
+                if (pollScope) {
+                    content += `\nScope description: ${pollScope}`;
+                }
+                break;
+
+            case 'vote':
+                const voteHash = (document.getElementById('voteHash') as HTMLInputElement)?.value.trim();
+                const votePoll = (document.getElementById('votePoll') as HTMLInputElement)?.value.trim();
+                const voteChoice = (document.getElementById('voteChoice') as HTMLInputElement)?.value.trim();
+
+                content = `Poll hash: ${voteHash}\nPoll: ${votePoll}\nVote: ${voteChoice}`;
+                break;
+
+            case 'response':
+                const responseHash = (document.getElementById('responseHash') as HTMLInputElement)?.value.trim();
+                const responseContent = (document.getElementById('responseContent') as HTMLTextAreaElement)?.value.trim();
+
+                content = `Statement hash: ${responseHash}\nResponse: ${responseContent}`;
+                break;
+
+            case 'rating':
+                const ratingHash = (document.getElementById('ratingHash') as HTMLInputElement)?.value.trim();
+                const ratingValue = (document.getElementById('ratingValue') as HTMLInputElement)?.value.trim();
+
+                content = `Statement hash: ${ratingHash}\nRating: ${ratingValue}`;
+                break;
+
+            case 'sign_pdf':
+                const pdfHash = (document.getElementById('pdfHash') as HTMLInputElement)?.value.trim();
+
+                content = `PDF hash: ${pdfHash}`;
+                break;
+        }
+
+        return content;
     }
 
     private async generateKeys(): Promise<void> {
@@ -149,11 +317,18 @@ export class StatementEditor {
     private async getFormData(): Promise<StatementFormData> {
         const domain = (document.getElementById('domain') as HTMLInputElement).value.trim();
         const author = (document.getElementById('author') as HTMLInputElement).value.trim();
-        const content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
         const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
         const type = typeSelect.value || undefined;
         const supersededStatement = (document.getElementById('supersededStatement') as HTMLInputElement).value.trim() || undefined;
         const signStatement = (document.getElementById('signStatement') as HTMLInputElement).checked;
+
+        // Get content - either from textarea or build from typed fields
+        let content = '';
+        if (type) {
+            content = this.buildTypedContent(type);
+        } else {
+            content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
+        }
 
         // Get tags
         const tags: string[] = [];

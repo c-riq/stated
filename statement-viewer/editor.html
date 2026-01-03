@@ -35,13 +35,13 @@
                         
                         <div class="form-group">
                             <label for="domain">Publishing Domain *</label>
-                            <input type="text" id="domain" class="form-input" placeholder="example.com" required>
+                            <input type="text" id="domain" class="form-input" value="mofa.country-a.com" required>
                             <small>The domain publishing this statement</small>
                         </div>
 
                         <div class="form-group">
                             <label for="author">Author *</label>
-                            <input type="text" id="author" class="form-input" placeholder="Organization Name" required>
+                            <input type="text" id="author" class="form-input" value="Ministry of Foreign Affairs of Country A" required>
                             <small>The name of the organization or person</small>
                         </div>
 
@@ -65,8 +65,11 @@
                         <div class="form-group">
                             <label for="content">Statement Content *</label>
                             <textarea id="content" class="form-textarea" rows="8" placeholder="Enter your statement content here..." required></textarea>
-                            <small>The main content of your statement. For typed statements, the Type: field will be added automatically.</small>
+                            <small id="contentHelp">The main content of your statement. For typed statements, the Type: field will be added automatically.</small>
                         </div>
+
+                        <!-- Dynamic fields for typed statements -->
+                        <div id="typedFields" style="display: none;"></div>
                     </div>
 
                     <!-- Optional Fields -->
@@ -121,7 +124,7 @@
 
                             <div class="form-group">
                                 <label for="privateKey">Private Key</label>
-                                <input type="password" id="privateKey" class="form-input" placeholder="Private key (base64)" readonly>
+                                <input type="text" id="privateKey" class="form-input" placeholder="Private key (base64)" readonly>
                                 <small class="warning">⚠️ Keep your private key secure! Never share it.</small>
                             </div>
 
