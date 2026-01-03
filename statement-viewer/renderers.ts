@@ -95,10 +95,108 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
         card.appendChild(supersededIndicator);
     }
 
-    const content = document.createElement('div');
-    content.className = 'statement-content';
-    content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
-    card.appendChild(content);
+    // Add translation selector if translations are available
+    let currentLanguage = 'original';
+    const contentContainer = document.createElement('div');
+    
+    if (statement.translations && Object.keys(statement.translations).length > 0) {
+        const translationBar = document.createElement('div');
+        translationBar.className = 'translation-bar';
+        
+        // Original language button
+        const originalBtn = document.createElement('button');
+        originalBtn.className = 'translation-btn active';
+        originalBtn.innerHTML = '🌐 Original';
+        originalBtn.title = 'Show original content';
+        translationBar.appendChild(originalBtn);
+        
+        // Translation buttons with flag emojis
+        const languageFlags: Record<string, string> = {
+            'en': '🇬🇧',
+            'es': '🇪🇸',
+            'fr': '🇫🇷',
+            'de': '🇩🇪',
+            'it': '🇮🇹',
+            'pt': '🇵🇹',
+            'nl': '🇳🇱',
+            'pl': '🇵🇱',
+            'ru': '🇷🇺',
+            'ja': '🇯🇵',
+            'zh': '🇨🇳',
+            'ar': '🇸🇦',
+            'hi': '🇮🇳',
+            'ko': '🇰🇷',
+            'tr': '🇹🇷',
+            'sv': '🇸🇪',
+            'da': '🇩🇰',
+            'fi': '🇫🇮',
+            'no': '🇳🇴',
+            'cs': '🇨🇿',
+            'el': '🇬🇷',
+            'he': '🇮🇱',
+            'th': '🇹🇭',
+            'vi': '🇻🇳',
+            'id': '🇮🇩',
+            'ms': '🇲🇾',
+            'uk': '🇺🇦',
+            'ro': '🇷🇴',
+            'hu': '🇭🇺',
+            'bg': '🇧🇬',
+            'hr': '🇭🇷',
+            'sk': '🇸🇰',
+            'sl': '🇸🇮',
+            'lt': '🇱🇹',
+            'lv': '🇱🇻',
+            'et': '🇪🇪'
+        };
+        
+        Object.keys(statement.translations).forEach((lang: string) => {
+            const langBtn = document.createElement('button');
+            langBtn.className = 'translation-btn';
+            const flag = languageFlags[lang] || '🏳️';
+            langBtn.innerHTML = `${flag} ${lang.toUpperCase()}`;
+            langBtn.title = `Show ${lang} translation`;
+            langBtn.dataset.lang = lang;
+            translationBar.appendChild(langBtn);
+        });
+        
+        card.appendChild(translationBar);
+        
+        // Content element that will be updated
+        const content = document.createElement('div');
+        content.className = 'statement-content';
+        content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
+        contentContainer.appendChild(content);
+        
+        // Add click handlers for translation buttons
+        const allBtns = translationBar.querySelectorAll('.translation-btn');
+        allBtns.forEach((btn) => {
+            btn.addEventListener('click', (e: Event) => {
+                e.stopPropagation();
+                const target = e.currentTarget as HTMLButtonElement;
+                const lang = target.dataset.lang;
+                
+                // Update active state
+                allBtns.forEach(b => b.classList.remove('active'));
+                target.classList.add('active');
+                
+                // Update content
+                if (lang && statement.translations && statement.translations[lang]) {
+                    content.innerHTML = styleTypedStatementContent(statement.translations[lang], statement.type);
+                } else {
+                    content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
+                }
+            });
+        });
+    } else {
+        // No translations, just show content
+        const content = document.createElement('div');
+        content.className = 'statement-content';
+        content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
+        contentContainer.appendChild(content);
+    }
+    
+    card.appendChild(contentContainer);
 
     if (statement.attachments && statement.attachments.length > 0) {
         const attachmentsContainer = document.createElement('div');

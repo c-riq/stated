@@ -490,6 +490,52 @@ body.modal-open {
     display: block;
     max-height: 500px;
 }
+/* Translation bar */
+.translation-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    flex-wrap: wrap;
+    border: 1px solid #e0e0e0;
+}
+
+.translation-btn {
+    background: white;
+    border: 1px solid #d0d0d0;
+    color: #333;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.translation-btn:hover {
+    background: #f0f7ff;
+    border-color: #0072BC;
+    color: #0072BC;
+}
+
+.translation-btn.active {
+    background: #0072BC;
+    border-color: #0072BC;
+    color: white;
+    font-weight: 600;
+}
+
+.translation-btn.active:hover {
+    background: #005a94;
+    border-color: #005a94;
+}
+
 
 /* Action bar */
 .action-bar {

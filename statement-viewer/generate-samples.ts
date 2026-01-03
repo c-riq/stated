@@ -257,6 +257,9 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
             es: 'Damos la bienvenida a todas las naciones a participar en las negociaciones del tratado de seguridad de IA.',
             fr: 'Nous accueillons toutes les nations pour participer aux négociations du traité de sécurité de l\'IA.',
             de: 'Wir heißen alle Nationen willkommen, an den Verhandlungen über den KI-Sicherheitsvertrag teilzunehmen.',
+            zh: '我们欢迎所有国家参与人工智能安全条约谈判。',
+            ar: 'نرحب بجميع الدول للمشاركة في مفاوضات معاهدة سلامة الذكاء الاصطناعي.',
+            ja: 'AI安全条約交渉への全ての国の参加を歓迎します。',
         },
     });
     const signedStatement4 = await buildSignedStatement(statement4, countryB.privateKey!, countryB.publicKey!);
