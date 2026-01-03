@@ -97,7 +97,7 @@
                             <label>Attachments</label>
                             <div id="attachmentsContainer" class="dynamic-container"></div>
                             <button type="button" id="addAttachment" class="btn-secondary">+ Add Attachment</button>
-                            <small>Add attachment hashes (files must be uploaded separately to /.well-known/statements/attachments/)</small>
+                            <small>Upload files that will be automatically published with your statement</small>
                         </div>
                     </div>
 
@@ -139,33 +139,38 @@
             <!-- Right Panel: Output -->
             <div class="editor-panel editor-output-panel">
                 <h2>Generated Statement</h2>
-                
-                <div class="output-section">
-                    <h3>Preview</h3>
-                    <div id="statementPreview" class="statement-preview">
-                        <p class="placeholder-text">Your generated statement will appear here...</p>
-                    </div>
-                </div>
 
                 <div class="output-section">
-                    <h3>Raw Statement</h3>
                     <textarea id="outputStatement" class="output-textarea" readonly placeholder="Generated statement text will appear here..."></textarea>
                     <div id="statementHash" class="statement-hash"></div>
                 </div>
 
-                <div class="output-actions">
-                    <button type="button" id="copyStatement" class="btn-secondary">📋 Copy to Clipboard</button>
-                    <button type="button" id="downloadStatement" class="btn-secondary">💾 Download as .txt</button>
+                <div class="output-section">
+                    <h3>API Configuration</h3>
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="password" id="apiKey" class="form-input" placeholder="Enter your API key">
+                        <small>Required to publish statements to api.country-a.com</small>
+                    </div>
                 </div>
 
+                <div class="output-actions">
+                    <button type="button" id="submitToAPI" class="btn-primary">🚀 Submit to API</button>
+                    <button type="button" id="copyStatement" class="btn-secondary">📋 Copy</button>
+                    <button type="button" id="downloadStatement" class="btn-secondary">💾 Download</button>
+                </div>
+
+                <div id="uploadProgress" class="upload-progress" style="display: none;"></div>
+
                 <div class="help-section">
-                    <h3>Next Steps</h3>
+                    <h3>Automatic Publishing</h3>
+                    <p>When you click "Submit to API", the editor will automatically:</p>
                     <ol>
-                        <li>Copy or download the generated statement</li>
-                        <li>Save it to <code>/.well-known/statements/&lt;hash&gt;.txt</code></li>
-                        <li>Add the filename to <code>/.well-known/statements/index.txt</code></li>
-                        <li>Optionally add to <code>/.well-known/statements.txt</code></li>
-                        <li>If you have attachments, upload them to <code>/.well-known/statements/attachments/</code></li>
+                        <li>Fetch and update <code>/.well-known/statements.txt</code></li>
+                        <li>Create <code>/.well-known/statements/&lt;hash&gt;.txt</code></li>
+                        <li>Update <code>/.well-known/statements/index.txt</code></li>
+                        <li>Upload any attachments to <code>/.well-known/statements/attachments/</code></li>
+                        <li>Invalidate CloudFront cache for immediate updates</li>
                     </ol>
                 </div>
             </div>

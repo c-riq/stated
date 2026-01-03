@@ -1,4 +1,4 @@
-import { buildStatement, generateKeyPair, buildSignedStatement, sha256 } from './lib/index.js';
+import { buildStatement, generateKeyPair, buildSignedStatement, sha256, parseStatementsFile, generateStatementsFile } from './lib/index.js';
 
 export interface StatementFormData {
     domain: string;
@@ -15,15 +15,16 @@ export interface StatementFormData {
 export class StatementEditor {
     private form: HTMLFormElement | null;
     private outputArea: HTMLTextAreaElement | null;
-    private previewArea: HTMLDivElement | null;
     private privateKey: string = '';
     private publicKey: string = '';
     private generatedStatement: string = '';
+    private apiEndpoint: string = 'https://api.country-a.com/update';
+    private sourceEndpoint: string = 'https://mofa.country-a.com';
+    private attachmentFiles: Map<string, File> = new Map();
 
     constructor() {
         this.form = document.getElementById('statementForm') as HTMLFormElement;
         this.outputArea = document.getElementById('outputStatement') as HTMLTextAreaElement;
-        this.previewArea = document.getElementById('statementPreview') as HTMLDivElement;
         
         this.init();
     }
@@ -71,6 +72,12 @@ export class StatementEditor {
         const addAttachmentBtn = document.getElementById('addAttachment');
         if (addAttachmentBtn) {
             addAttachmentBtn.addEventListener('click', () => this.addAttachment());
+        }
+
+        // Submit to API button
+        const submitBtn = document.getElementById('submitToAPI');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => this.submitToAPI());
         }
 
         // Sign statement checkbox
@@ -139,7 +146,7 @@ export class StatementEditor {
         }
     }
 
-    private getFormData(): StatementFormData {
+    private async getFormData(): Promise<StatementFormData> {
         const domain = (document.getElementById('domain') as HTMLInputElement).value.trim();
         const author = (document.getElementById('author') as HTMLInputElement).value.trim();
         const content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
@@ -163,12 +170,15 @@ export class StatementEditor {
             if (lang && text) translations[lang] = text;
         });
 
-        // Get attachments
+        // Get attachment hashes (calculated from uploaded files)
         const attachments: string[] = [];
-        document.querySelectorAll('.attachment-item input').forEach((input) => {
-            const value = (input as HTMLInputElement).value.trim();
-            if (value) attachments.push(value);
-        });
+        for (const [filename, file] of this.attachmentFiles.entries()) {
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = new Uint8Array(arrayBuffer);
+            const hash = sha256(buffer);
+            const ext = filename.split('.').pop();
+            attachments.push(`${hash}.${ext}`);
+        }
 
         return {
             domain,
@@ -185,7 +195,7 @@ export class StatementEditor {
 
     private async generateStatement(): Promise<void> {
         try {
-            const formData = this.getFormData();
+            const formData = await this.getFormData();
 
             // Validate required fields
             if (!formData.domain) {
@@ -242,9 +252,6 @@ export class StatementEditor {
                 this.outputArea.value = this.generatedStatement;
             }
 
-            // Show preview
-            this.showPreview();
-
             // Calculate and show hash
             const hash = sha256(this.generatedStatement);
             const hashDisplay = document.getElementById('statementHash');
@@ -252,42 +259,254 @@ export class StatementEditor {
                 hashDisplay.textContent = `Statement Hash: ${hash}`;
             }
 
-            this.showMessage('Statement generated successfully!', 'success');
+            this.showMessage('Statement generated successfully! Click "Submit to API" to publish.', 'success');
         } catch (error: any) {
             this.showMessage(`Error generating statement: ${error.message}`, 'error');
         }
     }
 
-    private showPreview(): void {
-        if (!this.previewArea) return;
+    private async submitToAPI(): Promise<void> {
+        if (!this.generatedStatement) {
+            this.showMessage('Please generate a statement first', 'error');
+            return;
+        }
 
-        const lines = this.generatedStatement.split('\n');
-        let html = '<div class="statement-preview-content">';
-        
-        lines.forEach(line => {
-            if (line.startsWith('Stated protocol version:') || 
-                line.startsWith('Publishing domain:') || 
-                line.startsWith('Author:') ||
-                line.startsWith('Time:') ||
-                line.startsWith('Tags:') ||
-                line.startsWith('Type:') ||
-                line.startsWith('Superseded statement:') ||
-                line.startsWith('Statement content:') ||
-                line.startsWith('---') ||
-                line.startsWith('Statement hash:') ||
-                line.startsWith('Public key:') ||
-                line.startsWith('Signature:') ||
-                line.startsWith('Algorithm:')) {
-                html += `<div class="preview-field"><strong>${this.escapeHtml(line)}</strong></div>`;
-            } else if (line.trim()) {
-                html += `<div class="preview-content">${this.escapeHtml(line)}</div>`;
+        const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
+        const apiKey = apiKeyInput?.value.trim();
+
+        if (!apiKey) {
+            this.showMessage('Please enter an API key', 'error');
+            return;
+        }
+
+        const progressContainer = document.getElementById('uploadProgress');
+        if (!progressContainer) return;
+
+        try {
+            // Show progress container
+            progressContainer.style.display = 'block';
+            progressContainer.innerHTML = '<h4>Upload Progress</h4>';
+
+            const hash = sha256(this.generatedStatement);
+
+            // Step 1: Fetch current statements.txt from country-a.com
+            this.addProgressStep(progressContainer, 'Fetching current statements.txt from country-a.com...', 'pending');
+            const statementsResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements.txt`);
+            let existingStatements: string[] = [];
+            
+            if (statementsResponse.ok) {
+                const statementsText = await statementsResponse.text();
+                existingStatements = parseStatementsFile(statementsText);
+                this.updateProgressStep(progressContainer, 0, 'Fetched statements.txt from country-a.com', 'success');
             } else {
-                html += '<div class="preview-spacer"></div>';
+                this.updateProgressStep(progressContainer, 0, 'No existing statements.txt (will create new)', 'success');
             }
-        });
+
+            // Step 2: Append new statement and generate new statements.txt
+            this.addProgressStep(progressContainer, 'Generating updated statements.txt...', 'pending');
+            existingStatements.push(this.generatedStatement);
+            const newStatementsFile = generateStatementsFile(existingStatements);
+            this.updateProgressStep(progressContainer, 1, 'Generated updated statements.txt', 'success');
+
+            // Step 3: Upload statements.txt (without cache invalidation)
+            this.addProgressStep(progressContainer, 'Uploading statements.txt...', 'pending');
+            await this.uploadToAPI('.well-known/statements.txt', newStatementsFile, 'text/plain', apiKey, false, false);
+            this.updateProgressStep(progressContainer, 2, 'Uploaded statements.txt', 'success');
+
+            // Step 4: Upload individual statement file (without cache invalidation)
+            this.addProgressStep(progressContainer, `Uploading statements/${hash}.txt...`, 'pending');
+            await this.uploadToAPI(`.well-known/statements/${hash}.txt`, this.generatedStatement, 'text/plain', apiKey, false, false);
+            this.updateProgressStep(progressContainer, 3, `Uploaded statements/${hash}.txt`, 'success');
+
+            // Step 5: Fetch and update statements/index.txt from country-a.com
+            this.addProgressStep(progressContainer, 'Fetching statements/index.txt from country-a.com...', 'pending');
+            const indexResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements/index.txt`);
+            let indexContent = '';
+            
+            if (indexResponse.ok) {
+                indexContent = await indexResponse.text();
+                this.updateProgressStep(progressContainer, 4, 'Fetched statements/index.txt from country-a.com', 'success');
+            } else {
+                this.updateProgressStep(progressContainer, 4, 'No existing index.txt (will create new)', 'success');
+            }
+
+            const indexLines = indexContent.split('\n').filter(line => line.trim());
+            if (!indexLines.includes(`${hash}.txt`)) {
+                this.addProgressStep(progressContainer, 'Updating statements/index.txt...', 'pending');
+                indexLines.push(`${hash}.txt`);
+                const newIndexContent = indexLines.join('\n') + '\n';
+                await this.uploadToAPI('.well-known/statements/index.txt', newIndexContent, 'text/plain', apiKey, false, false);
+                this.updateProgressStep(progressContainer, 5, 'Updated statements/index.txt', 'success');
+            } else {
+                this.addProgressStep(progressContainer, 'Statement already in index.txt', 'success');
+            }
+
+            // Step 6: Upload attachments if any (without cache invalidation)
+            if (this.attachmentFiles.size > 0) {
+                this.addProgressStep(progressContainer, `Uploading ${this.attachmentFiles.size} attachment(s)...`, 'pending');
+                await this.uploadAttachments(apiKey, progressContainer);
+                this.updateProgressStep(progressContainer, progressContainer.querySelectorAll('.progress-step').length - 1, `Uploaded ${this.attachmentFiles.size} attachment(s)`, 'success');
+            }
+
+            // Step 7: Invalidate cache once after all uploads
+            this.addProgressStep(progressContainer, 'Invalidating CloudFront cache...', 'pending');
+            await this.invalidateCache(apiKey);
+            this.updateProgressStep(progressContainer, progressContainer.querySelectorAll('.progress-step').length - 1, 'Cache invalidated', 'success');
+
+            // Final success message
+            this.addProgressStep(progressContainer, '✅ Statement published successfully!', 'success');
+            this.showMessage('Statement published successfully!', 'success');
+        } catch (error: any) {
+            if (progressContainer) {
+                this.addProgressStep(progressContainer, `❌ Error: ${error.message}`, 'error');
+            }
+            this.showMessage(`Error submitting statement: ${error.message}`, 'error');
+        }
+    }
+
+    private addProgressStep(container: HTMLElement, message: string, status: 'pending' | 'success' | 'error'): void {
+        const step = document.createElement('div');
+        step.className = `progress-step progress-${status}`;
         
-        html += '</div>';
-        this.previewArea.innerHTML = html;
+        const icon = status === 'pending' ? '⏳' : status === 'success' ? '✓' : '✗';
+        step.innerHTML = `<span class="progress-icon">${icon}</span> <span class="progress-text">${message}</span>`;
+        
+        container.appendChild(step);
+    }
+
+    private updateProgressStep(container: HTMLElement, index: number, message: string, status: 'success' | 'error'): void {
+        const steps = container.querySelectorAll('.progress-step');
+        if (steps[index]) {
+            const step = steps[index] as HTMLElement;
+            step.className = `progress-step progress-${status}`;
+            const icon = status === 'success' ? '✓' : '✗';
+            step.innerHTML = `<span class="progress-icon">${icon}</span> <span class="progress-text">${message}</span>`;
+        }
+    }
+
+    private async uploadToAPI(path: string, content: string, contentType: string, apiKey: string, isBase64: boolean = false, invalidateCache: boolean = false): Promise<void> {
+        const response = await fetch(this.apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': apiKey,
+            },
+            body: JSON.stringify({
+                path,
+                content,
+                contentType,
+                isBase64,
+                invalidateCache,
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || `Failed to upload ${path}`);
+        }
+    }
+
+    private async invalidateCache(apiKey: string): Promise<void> {
+        const response = await fetch(this.apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': apiKey,
+            },
+            body: JSON.stringify({
+                invalidateCache: true,
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to invalidate cache');
+        }
+    }
+
+    private async uploadAttachments(apiKey: string, progressContainer?: HTMLElement): Promise<void> {
+        const attachmentsIndexResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements/attachments/index.txt`);
+        let attachmentsIndex: string[] = [];
+        
+        if (attachmentsIndexResponse.ok) {
+            const indexText = await attachmentsIndexResponse.text();
+            attachmentsIndex = indexText.split('\n').filter(line => line.trim());
+        }
+
+        for (const [filename, file] of this.attachmentFiles.entries()) {
+            // Read file as buffer
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = new Uint8Array(arrayBuffer);
+            
+            // Calculate hash
+            const hash = sha256(buffer);
+            const ext = filename.split('.').pop();
+            const attachmentFilename = `${hash}.${ext}`;
+
+            // Convert to base64 for upload
+            const base64Content = btoa(String.fromCharCode(...buffer));
+
+            // Determine content type
+            const contentType = this.getContentType(ext || '');
+
+            // Show progress for this attachment
+            if (progressContainer) {
+                this.addProgressStep(progressContainer, `  Uploading ${filename}...`, 'pending');
+            }
+
+            // Upload attachment (with isBase64 flag, without cache invalidation)
+            await this.uploadToAPI(
+                `.well-known/statements/attachments/${attachmentFilename}`,
+                base64Content,
+                contentType,
+                apiKey,
+                true,  // isBase64 = true for binary files
+                false  // invalidateCache = false, we'll do it once at the end
+            );
+
+            if (progressContainer) {
+                this.updateProgressStep(
+                    progressContainer,
+                    progressContainer.querySelectorAll('.progress-step').length - 1,
+                    `  Uploaded ${filename} as ${attachmentFilename}`,
+                    'success'
+                );
+            }
+
+            // Update index if needed
+            if (!attachmentsIndex.includes(attachmentFilename)) {
+                attachmentsIndex.push(attachmentFilename);
+            }
+        }
+
+        // Upload updated attachments index (without cache invalidation)
+        if (progressContainer) {
+            this.addProgressStep(progressContainer, '  Updating attachments/index.txt...', 'pending');
+        }
+        const newAttachmentsIndex = attachmentsIndex.join('\n') + '\n';
+        await this.uploadToAPI('.well-known/statements/attachments/index.txt', newAttachmentsIndex, 'text/plain', apiKey, false, false);
+        if (progressContainer) {
+            this.updateProgressStep(
+                progressContainer,
+                progressContainer.querySelectorAll('.progress-step').length - 1,
+                '  Updated attachments/index.txt',
+                'success'
+            );
+        }
+    }
+
+    private getContentType(ext: string): string {
+        const contentTypes: Record<string, string> = {
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'pdf': 'application/pdf',
+            'mp4': 'video/mp4',
+            'json': 'application/json',
+            'txt': 'text/plain',
+        };
+        return contentTypes[ext.toLowerCase()] || 'application/octet-stream';
     }
 
     private copyStatement(): void {
@@ -357,9 +576,19 @@ export class StatementEditor {
         const attachmentItem = document.createElement('div');
         attachmentItem.className = 'attachment-item';
         attachmentItem.innerHTML = `
-            <input type="text" placeholder="Attachment hash" class="form-input">
+            <input type="file" class="form-input attachment-file">
             <button type="button" class="btn-remove" onclick="this.parentElement.remove()">Remove</button>
         `;
+        
+        const fileInput = attachmentItem.querySelector('.attachment-file') as HTMLInputElement;
+        fileInput.addEventListener('change', (e) => {
+            const target = e.target as HTMLInputElement;
+            if (target.files && target.files[0]) {
+                const file = target.files[0];
+                this.attachmentFiles.set(file.name, file);
+            }
+        });
+        
         attachmentsContainer.appendChild(attachmentItem);
     }
 

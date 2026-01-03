@@ -318,6 +318,76 @@
 .output-actions button {
     flex: 1;
 }
+/* Upload Progress */
+.upload-progress {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.upload-progress h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.progress-icon {
+    display: inline-block;
+    width: 24px;
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.progress-text {
+    flex: 1;
+}
+
+.progress-pending {
+    color: #666;
+}
+
+.progress-pending .progress-icon {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.progress-success {
+    color: #2e7d32;
+}
+
+.progress-success .progress-icon {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.progress-error {
+    color: #c62828;
+}
+
+.progress-error .progress-icon {
+    color: #f44336;
+    font-weight: bold;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
 
 /* Help Section */
 .help-section {
@@ -424,27 +494,23 @@
 
 /* Scrollbar styling */
 .editor-form-panel::-webkit-scrollbar,
-.editor-output-panel::-webkit-scrollbar,
-.statement-preview::-webkit-scrollbar {
+.editor-output-panel::-webkit-scrollbar {
     width: 8px;
 }
 
 .editor-form-panel::-webkit-scrollbar-track,
-.editor-output-panel::-webkit-scrollbar-track,
-.statement-preview::-webkit-scrollbar-track {
+.editor-output-panel::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 4px;
 }
 
 .editor-form-panel::-webkit-scrollbar-thumb,
-.editor-output-panel::-webkit-scrollbar-thumb,
-.statement-preview::-webkit-scrollbar-thumb {
+.editor-output-panel::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
 }
 
 .editor-form-panel::-webkit-scrollbar-thumb:hover,
-.editor-output-panel::-webkit-scrollbar-thumb:hover,
-.statement-preview::-webkit-scrollbar-thumb:hover {
+.editor-output-panel::-webkit-scrollbar-thumb:hover {
     background: #555;
 }

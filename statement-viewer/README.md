@@ -50,22 +50,35 @@ Access the statement editor at `http://localhost:3033/editor.html`
 - **Form-based statement creation**: Easy-to-use interface for creating statements
 - **All statement types supported**: Basic statements, polls, votes, verifications, responses, ratings, PDF signing, and disputes
 - **Cryptographic signing**: Generate Ed25519 key pairs and sign statements
-- **Real-time preview**: See your statement as you create it
 - **Tags and translations**: Add multiple tags and translations in different languages
-- **Attachments**: Reference attachment files by hash
+- **File attachments**: Upload files that are automatically published with your statement
 - **Statement superseding**: Mark statements as superseding previous ones
+- **Automatic API submission**: Publishes directly to api.country-a.com
 - **Export options**: Copy to clipboard or download as `.txt` file
-- **Hash calculation**: Automatic hash generation for file naming
+
+### Automatic Publishing
+
+The editor automatically handles all publishing steps when you click "Submit to API":
+
+1. **Fetches** `/.well-known/statements.txt` and appends your new statement
+2. **Creates** `/.well-known/statements/<hash>.txt` with your statement
+3. **Updates** `/.well-known/statements/index.txt` with the new filename
+4. **Uploads** any attachments to `/.well-known/statements/attachments/`
+5. **Updates** `/.well-known/statements/attachments/index.txt`
+6. **Invalidates** CloudFront cache for immediate visibility
 
 ### Usage
 
 1. Fill in the required fields (domain, author, content)
-2. Optionally select a statement type and add tags, translations, or attachments
+2. Optionally select a statement type and add tags, translations, or file attachments
 3. If signing, generate or enter a key pair
 4. Click "Generate Statement" to create the statement
-5. Copy or download the generated statement
-6. Save it to `/.well-known/statements/<hash>.txt`
-7. Update `/.well-known/statements/index.txt` with the filename
+5. Enter your API key for api.country-a.com
+6. Click "Submit to API" to automatically publish
+
+### API Configuration
+
+The editor submits to `https://api.country-a.com/update` by default. You need an API key to publish statements. The API key should be configured in your deployment's Terraform infrastructure.
 
 ## Deployment
 
