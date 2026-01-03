@@ -336,15 +336,12 @@ export class StatementViewer {
         this.signaturesByPdfHash.clear();
         
         const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
-        console.log('[PDF Signatures] Total statements:', allStatements.length);
         
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'sign_pdf') {
-                console.log('[PDF Signatures] Found PDF signing statement:', stmt.domain, stmt.type);
                 try {
                     const pdfSigningData = parsePDFSigning(stmt.content);
                     const pdfHash = pdfSigningData.hash;
-                    console.log('[PDF Signatures] PDF hash:', pdfHash);
                     
                     if (!this.signaturesByPdfHash.has(pdfHash)) {
                         this.signaturesByPdfHash.set(pdfHash, []);
@@ -358,10 +355,6 @@ export class StatementViewer {
                     console.error('Error parsing PDF signing:', error);
                 }
             }
-        });
-        console.log('[PDF Signatures] Total PDF hashes with signatures:', this.signaturesByPdfHash.size);
-        this.signaturesByPdfHash.forEach((sigs, hash) => {
-            console.log(`[PDF Signatures] PDF ${hash}: ${sigs.length} signatures`);
         });
     }
     private buildSupersedingMap(): void {
@@ -603,22 +596,17 @@ export class StatementViewer {
             
             // Show PDF with signatures if this is a PDF signing statement (first one for each PDF)
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
-                console.log('[Render] Found PDF signing statement to render:', statement.domain);
                 try {
                     const pdfSigningData = parsePDFSigning(statement.content);
                     const pdfHash = pdfSigningData.hash;
-                    console.log('[Render] PDF hash:', pdfHash);
                     const signatures = this.signaturesByPdfHash.get(pdfHash);
-                    console.log('[Render] Signatures found:', signatures?.length || 0);
                     if (signatures && signatures.length > 0) {
                         // Filter signatures if showHostOnly is enabled
                         const filteredSignatures = this.showHostOnly
                             ? signatures.filter(({ statement: sigStatement }) => !sigStatement.isPeer)
                             : signatures;
                         
-                        console.log('[Render] Filtered signatures:', filteredSignatures.length);
                         if (filteredSignatures.length > 0) {
-                            console.log('[Render] Creating PDF signatures container');
                             const signaturesContainer = createPdfSignaturesContainer(
                                 pdfHash,
                                 filteredSignatures,
@@ -627,7 +615,6 @@ export class StatementViewer {
                                 (stmt) => this.showStatementDetails(stmt)
                             );
                             container.appendChild(signaturesContainer);
-                            console.log('[Render] PDF signatures container appended');
                         }
                     }
                 } catch (error: any) {
