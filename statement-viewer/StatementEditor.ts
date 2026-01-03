@@ -10,7 +10,13 @@ import {
     sha256,
     parseStatementsFile,
     generateStatementsFile,
-    isRatingValue
+    isRatingValue,
+    parseStatement,
+    parsePoll,
+    parseVote,
+    parseResponseContent,
+    parseRating,
+    parsePDFSigning
 } from './lib/index.js';
 
 export interface StatementFormData {
@@ -468,9 +474,61 @@ export class StatementEditor {
                 hashDisplay.textContent = `Statement Hash: ${hash}`;
             }
 
+            // Validate the generated statement
+            const validationDisplay = document.getElementById('statementValidation');
+            if (validationDisplay) {
+                this.validateStatement(this.generatedStatement, formData.type, validationDisplay);
+            }
+
             this.showMessage('Statement generated successfully! Click "Submit to API" to publish.', 'success');
         } catch (error: any) {
             this.showMessage(`Error generating statement: ${error.message}`, 'error');
+        }
+    }
+
+    private validateStatement(statement: string, type: string | undefined, displayElement: HTMLElement): void {
+        const results: string[] = [];
+
+        try {
+            // Parse the full statement
+            const parsed = parseStatement({ statement });
+            results.push('✅ Statement format is valid');
+
+            // If it's a typed statement, validate the content
+            if (type && parsed.content) {
+                try {
+                    switch (type) {
+                        case 'poll':
+                            parsePoll(parsed.content);
+                            results.push('✅ Poll content is valid');
+                            break;
+                        case 'vote':
+                            parseVote(parsed.content);
+                            results.push('✅ Vote content is valid');
+                            break;
+                        case 'response':
+                            parseResponseContent(parsed.content);
+                            results.push('✅ Response content is valid');
+                            break;
+                        case 'rating':
+                            parseRating(parsed.content);
+                            results.push('✅ Rating content is valid');
+                            break;
+                        case 'sign_pdf':
+                            parsePDFSigning(parsed.content);
+                            results.push('✅ PDF signing content is valid');
+                            break;
+                    }
+                } catch (contentError: any) {
+                    results.push(`❌ Content validation failed: ${contentError.message}`);
+                }
+            }
+
+            displayElement.innerHTML = results.join('<br>');
+            displayElement.className = 'validation-success';
+        } catch (error: any) {
+            displayElement.innerHTML = `❌ Statement validation failed: ${error.message}`;
+            displayElement.className = 'validation-error';
         }
     }
 
