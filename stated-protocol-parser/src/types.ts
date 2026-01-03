@@ -18,11 +18,25 @@ export type PeopleCountBucket =
 
 // Type guards
 export function isLegalForm(value: string): value is LegalForm {
-  return ['local government', 'state government', 'foreign affairs ministry', 'corporation'].includes(value);
+  return [
+    'local government',
+    'state government',
+    'foreign affairs ministry',
+    'corporation',
+  ].includes(value);
 }
 
 export function isPeopleCountBucket(value: string): value is PeopleCountBucket {
-  return ['0-10', '10-100', '100-1000', '1000-10,000', '10,000-100,000', '100,000+', '1,000,000+', '10,000,000+'].includes(value);
+  return [
+    '0-10',
+    '10-100',
+    '100-1000',
+    '1000-10,000',
+    '10,000-100,000',
+    '100,000+',
+    '1,000,000+',
+    '10,000,000+',
+  ].includes(value);
 }
 
 export function isRatingValue(value: number): value is RatingValue {

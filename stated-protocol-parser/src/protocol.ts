@@ -489,7 +489,7 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
   if (!isLegalForm(legalForm)) {
     throw new Error('Invalid legal form after validation: ' + legalForm);
   }
-  
+
   return {
     name,
     englishName,
@@ -858,7 +858,7 @@ export const parseRating = (content: string): Rating => {
   if (!isRatingValue(rating)) {
     throw new Error('Invalid rating after validation: ' + rating);
   }
-  
+
   return {
     subjectType: subjectType as RatingSubjectTypeValue,
     subjectName,
