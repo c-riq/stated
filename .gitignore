@@ -1,40 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-p2p/backend/*.js
-!p2p/backend/jest.config.js
-p2p/backend/*.js.map
-p2p/backend/database/*.js
-p2p/backend/database/*.js.map
-p2p/backend/domainNames/*.js
-p2p/backend/domainNames/*.js.map
-p2p/backend/constants/*.js
-p2p/backend/constants/*.js.map
-p2p/backend/scripts/*.js
-p2p/backend/scripts/*.js.map
-p2p/backend/statementFormats/*.js
-p2p/backend/statementFormats/*.js.map
-
-p2p/backend/public/files/*.pdf
-
-p2p/backend/ssh.sh
-
-static/public/statements.txt
-
-# libre office
-.~*#
 
 # dependencies
 node_modules
-p2p/frontend/docker_output
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-p2p/frontend/build
-#backend/public
 
 # misc
 .DS_Store
@@ -44,19 +11,3 @@ p2p/frontend/build
 .env.production.local
 
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-p2p/backend/log/
-p2p/backend/database/backups/*.sql
-p2p/backend/database/postgres-version-migration/backups/*.gz
-p2p/backend/.env
-
-# data
-analysis/data/*
-analysis/stated_analysis
-
-documents/*.pdf
-
-test/integration/migration/actual.sql
-test/integration/migration/expected.sql

@@ -8,7 +8,7 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "gen": "npm run build && node dist/generate-samples.js",
-    "update-lib": "cd ../stated-protocol-parser && npm run build && cd ../statement-viewer && rm -rf lib && mkdir -p lib && cp -r ../stated-protocol-parser/dist/esm/* lib/"
+    "update-lib": "cd ../stated-protocol && npm run build && cd ../statement-viewer && rm -rf lib && mkdir -p lib && cp -r ../stated-protocol/dist/esm/* lib/"
   },
   "keywords": [
     "stated",
@@ -19,7 +19,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "stated-protocol-parser": "file:../stated-protocol-parser",
+    "stated-protocol": "file:../stated-protocol",
     "express": "^4.18.2"
   },
   "devDependencies": {

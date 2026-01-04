@@ -1,38 +1,25 @@
-[![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/video_preview.jpg?raw=true)](https://www.youtube.com/watch?v=TTRtQjeuIAE)</br>
-[Check the intro video](https://www.youtube.com/watch?v=TTRtQjeuIAE)<br/>
-Stated enables large groups of organisations to make decisions collectively.<br />
-A decision could be for example a set of private sanctions by companies to enforce international laws or to promote peace.<br />
-To achieve a collective decision, participating organisations publish digital contract signatures as plain text statements on their website under a standardized subdomain and path in a standardized text format. This standardization enables automated verification and aggregation of signatures.<br/>
-The signatures are verified, saved, re-broadcasted and aggregated by each node in the network. This decentralized design makes the system more resillient against censorship and manipulation.<br/>
+# Stated protocol
+A decentralised protocol and tools for interorganisational coordination.
+
+## Use Case: Digital Diplomacy
+
+The Stated Protocol enables efficient international coordination by allowing organizations to publish standardized statements on their domains. This reduces coordination friction in diplomacy, enabling rapid consensus discovery, transparent treaty negotiation, and collective decision-making without relying on centralized platforms.
+
+**Key applications include:**
+- Faster treaty negotiation through incremental micro-agreements
+- Continuous operation of international institutions through asynchronous decision-making
+- Coordinated signaling from local governments to national authorities
+- Coalition formation among non-governmental organizations
+
+For a detailed analysis of the protocol's applications in digital diplomacy, see the research paper: [The Stated Protocol: A Decentralized Framework for Digital Diplomacy](https://arxiv.org/abs/2507.13517)
 
 ## Supported statement publication methods
 
 For publishing a statement, organisations or individuals can use the following options:
-1. Publish it on their website domain in a text file. Curently therer are 3 supported URI schemes:
-    - [https://stated.rixdata.net/statements/qg51IiW3RKIXSxiaF_hVQdZdtHzKsU4YePxFuZ2YVtQ](https://stated.rixdata.net/statements/qg51IiW3RKIXSxiaF_hVQdZdtHzKsU4YePxFuZ2YVtQ)
-    - [https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt](https://static.stated.rixdata.net/statements/YTIhylbTsXvJZN8og3LvusdfjjjnnVudocw1mki11Vs.txt)
-    - [https://www.rixdata.net/.well-known/statements.txt](https://www.rixdata.net/.well-known/statements.txt)
-    If you don't know how to host static text files, check our [instructions](https://github.com/c-riq/stated/blob/master/static/README.md)
-2. [Using DNS records](https://github.com/c-riq/stated/blob/master/documents/dns_authentication/README.md)
-3. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
-4. [Run a stated instance and publish](https://github.com/c-riq/stated/blob/master/backend/README.md)
-
-## Online identities
-
-The identity of the signature authors are established by:
- - SSL Organisation Validation certificates (such as this [certificate](https://crt.sh/?sha256=2884EC1DE425003B57CFECF80CEE32865E6C9351B57F816F5FA7CC43FE5FA99D)) issued by certificate authorities
- - Verifications among participating organisations within Stated (such as this [verification](https://stated.rixdata.net/statements/FwoLf1njZ3tMAujNh_t6NZy9qV2RDNmDjgqju86yDEo))
-
-![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/example_verification_graph.png?raw=true)<br />
-<b>Fig.1: Example of a verification graph for a associating a domain to an organisation.</b><br />The Certificate Authority Sectigo issued a SSL OV certificate, validating that Rix Data NL B.V. owns rixdata.net. Rix Data NL B.V. verified that Rix Data UG owns gritapp.info, which published a PDF signature statement using their domain. Rix Data UG also verified their own identity, represented by the loop, which is useful for reducing naming inconsistencies.
-
-## Independant verifiability of decisions
-
-![visualisatiuon](https://github.com/c-riq/stated/blob/master/documents/images/diagram.png?raw=true)
-<b>Fig.2: Steps for validating a collective decision</b><br />Any internet user should be able to independently verify collective actions on Stated.<br />
-<br />
-Statements can either contain plain text messages or a strucutured message such as an Organisation Verification, for associating another website domain with an organisation
-
+1. Publish it on their website domain in a text file under `/.well-known/statements/`:
+    - `https://mofa.country-a.com/.well-known/statements.txt` (index file listing all statements)
+    - `https://mofa.country-a.com/.well-known/statements/<hash>.txt` (individual statement files)
+2. Ask another organisation to publish statements on their behalf. This would be appropriate for example if the author does not own a domain name.
 
 ## Statement format
 ### Plain statement example
@@ -44,7 +31,30 @@ Time: Thu, 15 Jun 2023 20:01:26 GMT
 Statement content:
     hello world
 ```
-This statement can also be viewed under [https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA](https://stated.rixdata.net/statements/NF6irhgDU0F_HEgTRKnhnDlA2R8c9YnjihhiCyNGsQA)
+Try the live demo at [https://mofa.country-a.com/](https://mofa.country-a.com/)
+
+## Protocol Parser Library
+
+The [stated-protocol](https://github.com/c-riq/stated/tree/master/stated-protocol) is an npm library for parsing and formatting statements in the Stated protocol. It provides TypeScript/JavaScript functions for building, parsing, and validating statements with full type safety.
+
+[![npm](https://img.shields.io/badge/npm-stated--protocol--parser-CB3837?logo=npm)](https://www.npmjs.com/package/stated-protocol)
+
+Install via npm:
+```bash
+npm install stated-protocol
+```
+
+See the [stated-protocol README](https://github.com/c-riq/stated/blob/master/stated-protocol/README.md) for complete documentation and examples.
+
+## Statement Viewer and Editor
+
+The [statement-viewer](https://github.com/c-riq/stated/tree/master/statement-viewer) provides tools for viewing and creating statements:
+
+- **Statement Viewer**: Browse and view statements from `/.well-known/statements/` with a built-in file browser
+- **Statement Editor**: Create and sign new statements using a user-friendly form interface with support for all statement types, cryptographic signing, tags, translations, and file attachments
+- Works with static hosting (no backend required)
+
+See the [statement-viewer README](https://github.com/c-riq/stated/blob/master/statement-viewer/README.md) for more details.
 
 ## Design principles
 #### Everyone should be able to inspect how the system works
