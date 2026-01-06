@@ -200,7 +200,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement1 = buildStatement({
         domain: 'mofa.country-a.com',
         author: 'Ministry of Foreign Affairs of Country A',
-        time: new Date('2024-01-15T10:00:00Z'),
+        time: new Date('2024-05-15T10:00:00Z'),
         tags: ['announcement', 'treaty'],
         content: 'We are pleased to announce the initiation of multilateral treaty negotiations on digital cooperation frameworks.',
     });
@@ -218,7 +218,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement2 = buildStatement({
         domain: countryC.domain,
         author: countryC.author,
-        time: new Date('2024-02-01T14:30:00Z'),
+        time: new Date('2024-06-20T14:30:00Z'),
         tags: ['poll', 'treaty-negotiation'],
         content: pollContent,
     });
@@ -250,7 +250,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement4 = buildStatement({
         domain: countryB.domain,
         author: countryB.author,
-        time: new Date('2024-04-05T16:45:00Z'),
+        time: new Date('2024-06-18T16:45:00Z'),
         tags: ['multilingual', 'treaty-announcement'],
         content: 'We welcome all nations to participate in the AI safety treaty negotiations.',
         translations: {
@@ -273,14 +273,14 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     attachmentFiles.push(image1Filename, image2Filename);
     
     const statement5 = buildStatement({
-        domain: 'mofa.country-a.com',
-        author: 'Ministry of Foreign Affairs of Country A',
-        time: new Date('2024-05-20T11:20:00Z'),
+        domain: countryD.domain,
+        author: countryD.author,
+        time: new Date('2024-06-10T11:20:00Z'),
         tags: ['visual-content', 'global-coordination'],
         content: 'Proposed visual designs for the global coordination website. These mockups demonstrate the user interface for treaty monitoring and diplomatic collaboration.',
         attachments: [image1Filename, image2Filename],
     });
-    const signedStatement5 = await buildSignedStatement(statement5, privateKey, publicKey);
+    const signedStatement5 = await buildSignedStatement(statement5, countryD.privateKey!, countryD.publicKey!);
     statements.push(signedStatement5);
 
     // 6. Statement with PDF document - read and hash the actual file
@@ -289,14 +289,14 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     attachmentFiles.push(pdfFilename);
     
     const statement6 = buildStatement({
-        domain: 'mofa.country-a.com',
-        author: 'Ministry of Foreign Affairs of Country A',
-        time: new Date('2024-05-21T14:30:00Z'),
+        domain: countryC.domain,
+        author: countryC.author,
+        time: new Date('2024-06-08T14:30:00Z'),
         tags: ['publication', 'digital-diplomacy'],
         content: 'We are pleased to share our comprehensive publication on digital diplomacy practices. This document explores innovative approaches to international relations in the digital age and provides insights for modern diplomatic engagement.',
         attachments: [pdfFilename],
     });
-    const signedStatement6 = await buildSignedStatement(statement6, privateKey, publicKey);
+    const signedStatement6 = await buildSignedStatement(statement6, countryC.privateKey!, countryC.publicKey!);
     statements.push(signedStatement6);
     // 6b. Statement with video (from Country E)
     const videoContent = await readFile(join(MEDIA_DIR, 'video.mp4'));
@@ -306,7 +306,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement6b = buildStatement({
         domain: countryE.domain,
         author: countryE.author,
-        time: new Date('2024-05-22T10:00:00Z'),
+        time: new Date('2024-06-05T10:00:00Z'),
         tags: ['video', 'announcement', 'ai-safety'],
         content: 'Watch our video message on the importance of international AI safety cooperation. This presentation outlines our vision for collaborative frameworks in AI governance and highlights key initiatives for responsible AI development.',
         attachments: [videoFilename],
@@ -331,7 +331,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const pdfSignStatement1 = buildStatement({
         domain: countryA.domain,
         author: countryA.author,
-        time: new Date('2024-05-23T10:00:00Z'),
+        time: new Date('2024-06-15T10:00:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
     });
@@ -342,7 +342,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const pdfSignStatement2 = buildStatement({
         domain: countryB.domain,
         author: countryB.author,
-        time: new Date('2024-05-24T11:30:00Z'),
+        time: new Date('2024-06-15T11:30:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
     });
@@ -353,7 +353,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const pdfSignStatement3 = buildStatement({
         domain: countryC.domain,
         author: countryC.author,
-        time: new Date('2024-05-25T14:15:00Z'),
+        time: new Date('2024-06-15T14:15:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
     });
@@ -364,7 +364,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const pdfSignStatement4 = buildStatement({
         domain: countryD.domain,
         author: countryD.author,
-        time: new Date('2024-05-26T09:45:00Z'),
+        time: new Date('2024-06-15T09:45:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
     });
@@ -375,7 +375,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const pdfSignStatement5 = buildStatement({
         domain: countryE.domain,
         author: countryE.author,
-        time: new Date('2024-05-27T16:20:00Z'),
+        time: new Date('2024-06-15T16:20:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
     });
@@ -391,7 +391,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement7 = buildStatement({
         domain: countryB.domain,
         author: countryB.author,
-        time: new Date('2024-02-15T10:30:00Z'),
+        time: new Date('2024-06-21T10:30:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent,
     });
@@ -407,7 +407,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement7b = buildStatement({
         domain: countryC.domain,
         author: countryC.author,
-        time: new Date('2024-02-16T09:15:00Z'),
+        time: new Date('2024-06-21T09:15:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent2,
     });
@@ -422,7 +422,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement7c = buildStatement({
         domain: countryD.domain,
         author: countryD.author,
-        time: new Date('2024-02-17T14:20:00Z'),
+        time: new Date('2024-06-21T14:20:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent3,
     });
@@ -437,7 +437,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement7d = buildStatement({
         domain: countryE.domain,
         author: countryE.author,
-        time: new Date('2024-02-18T11:45:00Z'),
+        time: new Date('2024-06-21T11:45:00Z'),
         tags: ['vote', 'treaty-position'],
         content: voteContent4,
     });
@@ -448,7 +448,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const statement8 = buildStatement({
         domain: 'mofa.country-a.com',
         author: 'Ministry of Foreign Affairs of Country A',
-        time: new Date('2024-06-01T08:00:00Z'),
+        time: new Date('2024-05-20T08:00:00Z'),
         tags: ['correction', 'treaty-update'],
         content: 'Correction: The multilateral treaty negotiations will commence in Q3, not Q2 as previously announced. This adjustment allows for more comprehensive preparatory consultations.',
         supersededStatement: sha256(signedStatement1),
@@ -458,13 +458,13 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
 
     // 9. Recent statement
     const statement9 = buildStatement({
-        domain: 'mofa.country-a.com',
-        author: 'Ministry of Foreign Affairs of Country A',
+        domain: countryB.domain,
+        author: countryB.author,
         time: new Date(),
         tags: ['news', 'diplomatic-progress'],
         content: 'We are pleased to report significant progress in the treaty negotiations. Five nations have now formally committed to the digital cooperation framework, marking a milestone in international diplomatic collaboration.',
     });
-    const signedStatement9 = await buildSignedStatement(statement9, privateKey, publicKey);
+    const signedStatement9 = await buildSignedStatement(statement9, countryB.privateKey!, countryB.publicKey!);
     statements.push(signedStatement9);
 
     // 10. Statement with deliberately corrupted signature (for demonstration)
@@ -814,8 +814,12 @@ async function generateBothDeployments(): Promise<void> {
             response: 'We fully support the digital cooperation treaty initiative and commit to active participation in all negotiation phases.',
         },
     ];
-    const countryAFirstStatement = statements.find(s => s.includes('mofa.country-a.com') && s.includes('Signature:'));
-    await generatePeerReplications(countryAPaths.peersDir, countryAFirstStatement!, countryBPeers);
+    // Country B responds to Country A's treaty announcement
+    const countryATreatyStatement = statements.find(s =>
+        s.includes('mofa.country-a.com') &&
+        s.includes('multilateral treaty negotiations on digital cooperation frameworks')
+    );
+    await generatePeerReplications(countryAPaths.peersDir, countryATreatyStatement!, countryBPeers);
     
     const countryAOwnCount = statements.filter(s => s.includes('Publishing domain: mofa.country-a.com')).length;
     console.log(`✓ Country A deployment created in ${COUNTRY_A_DIR}`);
@@ -859,8 +863,12 @@ async function generateBothDeployments(): Promise<void> {
             response: 'We appreciate the support and look forward to collaborative efforts in establishing this framework.',
         },
     ];
-    const countryBFirstStatement = statements.find(s => s.includes('mofa.country-b.com') && s.includes('Signature:'));
-    await generatePeerReplications(countryBPaths.peersDir, countryBFirstStatement!, countryAPeers);
+    // Country A responds to Country B's multilingual treaty announcement
+    const countryBTreatyStatement = statements.find(s =>
+        s.includes('mofa.country-b.com') &&
+        s.includes('We welcome all nations to participate in the AI safety treaty negotiations')
+    );
+    await generatePeerReplications(countryBPaths.peersDir, countryBTreatyStatement!, countryAPeers);
     
     const countryBOwnCount = statements.filter(s => s.includes('Publishing domain: mofa.country-b.com')).length;
     console.log(`✓ Country B deployment created in ${COUNTRY_B_DIR}`);
