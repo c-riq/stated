@@ -37,7 +37,7 @@ Try the live demo at [https://mofa.country-a.com/](https://mofa.country-a.com/)
 
 The [stated-protocol](https://github.com/c-riq/stated/tree/master/stated-protocol) is an npm library for parsing and formatting statements in the Stated protocol. It provides TypeScript/JavaScript functions for building, parsing, and validating statements with full type safety.
 
-[![npm](https://img.shields.io/badge/npm-stated--protocol--parser-CB3837?logo=npm)](https://www.npmjs.com/package/stated-protocol)
+[![npm](https://img.shields.io/badge/npm-stated--protocol-CB3837?logo=npm)](https://www.npmjs.com/package/stated-protocol)
 
 Install via npm:
 ```bash
