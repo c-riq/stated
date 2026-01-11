@@ -8,3 +8,5 @@ lib/
 dist/
 media/
 generate-company-icons.ts
+generate-joint-statement-pdf.ts
+generate-eucnet-logo.ts

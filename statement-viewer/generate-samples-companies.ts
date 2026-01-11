@@ -202,39 +202,28 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         console.log(`Created self-verification for ${company.domain}`);
     }
 
-    // 1. Plain statement with signature - Joint sustainability initiative
-    const statement1 = buildStatement({
-        domain: 'business-a.com',
-        author: 'Business A - Technology Solutions',
-        time: new Date('2024-05-15T10:00:00Z'),
-        tags: ['announcement', 'sustainability', 'eu-initiative'],
-        content: 'We are pleased to announce the launch of the EU Companies Sustainability Initiative, a collaborative framework for achieving carbon neutrality by 2030.',
-    });
-    const signedStatement1 = await buildSignedStatement(statement1, privateKey, publicKey);
-    statements.push(signedStatement1);
-
-    // 2. Poll statement (from Business C)
+    // 1. Poll statement about EU regulatory challenges (from Business C)
     const pollContent = buildPollContent({
-        poll: 'Should the EU Companies Initiative mandate quarterly sustainability reporting?',
-        options: ['Yes, mandatory quarterly reports', 'No, annual reports are sufficient', 'Biannual reports as compromise'],
+        poll: 'What is the largest regulatory disadvantage of start ups in the EU which should be improved?',
+        options: ['Complex VAT rules', 'GDPR', 'Employment law'],
         deadline: new Date('2024-12-31T23:59:59Z'),
-        scopeDescription: 'All participating EU companies in the initiative',
+        scopeDescription: 'All participating EU companies',
         allowArbitraryVote: false,
     });
-    const statement2 = buildStatement({
+    const statement1 = buildStatement({
         domain: businessC.domain,
         author: businessC.author,
         time: new Date('2024-06-20T14:30:00Z'),
-        tags: ['poll', 'sustainability', 'reporting'],
+        tags: ['poll', 'regulation', 'startups'],
         content: pollContent,
     });
-    const signedStatement2 = await buildSignedStatement(statement2, businessC.privateKey!, businessC.publicKey!);
-    statements.push(signedStatement2);
+    const signedStatement1 = await buildSignedStatement(statement1, businessC.privateKey!, businessC.publicKey!);
+    statements.push(signedStatement1);
     
     // Calculate the poll statement hash for use in votes
-    const pollStatementHash = sha256(signedStatement2);
+    const pollStatementHash = sha256(signedStatement1);
 
-    // 3. Organization verification (Business A verifies Business B)
+    // 2. Organization verification (Business A verifies Business B)
     const orgVerification = buildOrganisationVerificationContent({
         name: 'Business B - Manufacturing Group',
         country: 'France',
@@ -243,102 +232,98 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         confidence: 0.95,
         publicKey: businessB.publicKey,
     });
-    const statement3 = buildStatement({
+    const statement2 = buildStatement({
         domain: 'business-a.com',
         author: 'Business A - Technology Solutions',
         time: new Date('2024-03-10T09:15:00Z'),
         tags: ['verification', 'business-relations', 'eu-network'],
         content: orgVerification,
     });
-    statements.push(statement3);
+    statements.push(statement2);
 
-    // 4. Statement with translations (from Business B)
+    // 3. Statement with company logo attachments - Partnership announcement
+    const companyBLogoContent = await readFile(join(MEDIA_DIR, 'company-b.png'));
+    const companyDLogoContent = await readFile(join(MEDIA_DIR, 'company-d.png'));
+    const companyBLogoFilename = await createAttachment(paths.attachmentsDir, 'company-b.png', companyBLogoContent);
+    const companyDLogoFilename = await createAttachment(paths.attachmentsDir, 'company-d.png', companyDLogoContent);
+    attachmentFiles.push(companyBLogoFilename, companyDLogoFilename);
+    
+    const statement3 = buildStatement({
+        domain: businessB.domain,
+        author: businessB.author,
+        time: new Date('2024-06-10T11:20:00Z'),
+        tags: ['partnership', 'collaboration', 'announcement'],
+        content: 'We are excited to announce a strategic partnership with Business D - Energy Corporation to develop sustainable manufacturing solutions powered by renewable energy.',
+        attachments: [companyBLogoFilename, companyDLogoFilename],
+    });
+    const signedStatement3 = await buildSignedStatement(statement3, businessB.privateKey!, businessB.publicKey!);
+    statements.push(signedStatement3);
+
+    // 4. Vote statements for the poll
+    const voteContent = buildVoteContent({
+        pollHash: pollStatementHash,
+        poll: 'What is the largest regulatory disadvantage of start ups in the EU which should be improved?',
+        vote: 'Complex VAT rules',
+    });
     const statement4 = buildStatement({
         domain: businessB.domain,
         author: businessB.author,
-        time: new Date('2024-06-18T16:45:00Z'),
-        tags: ['multilingual', 'partnership', 'eu-collaboration'],
-        content: 'We welcome all EU companies to join the sustainability initiative and contribute to our shared environmental goals.',
-        translations: {
-            de: 'Wir heißen alle EU-Unternehmen willkommen, sich der Nachhaltigkeitsinitiative anzuschließen und zu unseren gemeinsamen Umweltzielen beizutragen.',
-            fr: 'Nous accueillons toutes les entreprises de l\'UE pour rejoindre l\'initiative de durabilité et contribuer à nos objectifs environnementaux communs.',
-            es: 'Damos la bienvenida a todas las empresas de la UE para unirse a la iniciativa de sostenibilidad y contribuir a nuestros objetivos ambientales compartidos.',
-            it: 'Diamo il benvenuto a tutte le aziende dell\'UE per unirsi all\'iniziativa di sostenibilità e contribuire ai nostri obiettivi ambientali condivisi.',
-            nl: 'We verwelkomen alle EU-bedrijven om deel te nemen aan het duurzaamheidsinitiatief en bij te dragen aan onze gedeelde milieudoelen.',
-        },
+        time: new Date('2024-06-21T10:30:00Z'),
+        tags: ['vote', 'regulation'],
+        content: voteContent,
     });
     const signedStatement4 = await buildSignedStatement(statement4, businessB.privateKey!, businessB.publicKey!);
     statements.push(signedStatement4);
-
-    // 5. Statement with 2 images - Sustainability report visuals
-    const image1Content = await readFile(join(MEDIA_DIR, 'image1.png'));
-    const image2Content = await readFile(join(MEDIA_DIR, 'image2.png'));
-    const image1Filename = await createAttachment(paths.attachmentsDir, 'image1.png', image1Content);
-    const image2Filename = await createAttachment(paths.attachmentsDir, 'image2.png', image2Content);
-    attachmentFiles.push(image1Filename, image2Filename);
     
+    const voteContent2 = buildVoteContent({
+        pollHash: pollStatementHash,
+        poll: 'What is the largest regulatory disadvantage of start ups in the EU which should be improved?',
+        vote: 'GDPR',
+    });
     const statement5 = buildStatement({
         domain: businessD.domain,
         author: businessD.author,
-        time: new Date('2024-06-10T11:20:00Z'),
-        tags: ['visual-content', 'sustainability-report', 'energy-transition'],
-        content: 'Visual overview of our renewable energy transition roadmap. These charts demonstrate our progress toward 100% renewable energy sources and carbon neutrality targets.',
-        attachments: [image1Filename, image2Filename],
+        time: new Date('2024-06-21T14:20:00Z'),
+        tags: ['vote', 'regulation'],
+        content: voteContent2,
     });
     const signedStatement5 = await buildSignedStatement(statement5, businessD.privateKey!, businessD.publicKey!);
     statements.push(signedStatement5);
-
-    // 6. Statement with PDF document - Sustainability framework
-    const pdfContent = await readFile(join(MEDIA_DIR, 'document.pdf'));
-    const pdfFilename = await createAttachment(paths.attachmentsDir, 'document.pdf', pdfContent);
-    attachmentFiles.push(pdfFilename);
     
-    const statement6 = buildStatement({
-        domain: businessC.domain,
-        author: businessC.author,
-        time: new Date('2024-06-08T14:30:00Z'),
-        tags: ['publication', 'sustainability-framework', 'best-practices'],
-        content: 'We are pleased to share our comprehensive EU Sustainability Framework document. This publication outlines best practices for corporate environmental responsibility and provides actionable guidelines for sustainable business operations.',
-        attachments: [pdfFilename],
+    const voteContent3 = buildVoteContent({
+        pollHash: pollStatementHash,
+        poll: 'What is the largest regulatory disadvantage of start ups in the EU which should be improved?',
+        vote: 'Employment law',
     });
-    const signedStatement6 = await buildSignedStatement(statement6, businessC.privateKey!, businessC.publicKey!);
-    statements.push(signedStatement6);
-
-    // 6b. Statement with video (from Business E)
-    const videoContent = await readFile(join(MEDIA_DIR, 'video.mp4'));
-    const videoFilename = await createAttachment(paths.attachmentsDir, 'video.mp4', videoContent);
-    attachmentFiles.push(videoFilename);
-    
-    const statement6b = buildStatement({
+    const statement6 = buildStatement({
         domain: businessE.domain,
         author: businessE.author,
-        time: new Date('2024-06-05T10:00:00Z'),
-        tags: ['video', 'announcement', 'green-logistics'],
-        content: 'Watch our video presentation on sustainable logistics solutions. This presentation showcases our innovative approaches to reducing carbon emissions in supply chain operations and highlights our commitment to green transportation.',
-        attachments: [videoFilename],
+        time: new Date('2024-06-21T11:45:00Z'),
+        tags: ['vote', 'regulation'],
+        content: voteContent3,
     });
-    const signedStatement6b = await buildSignedStatement(statement6b, businessE.privateKey!, businessE.publicKey!);
-    statements.push(signedStatement6b);
+    const signedStatement6 = await buildSignedStatement(statement6, businessE.privateKey!, businessE.publicKey!);
+    statements.push(signedStatement6);
 
-    // 6c. Joint agreement PDF signing statements from all companies
-    const agreementPdfContent = await readFile(join(MEDIA_DIR, 'treaty.pdf'));
-    const agreementPdfFilename = await createAttachment(paths.attachmentsDir, 'treaty.pdf', agreementPdfContent);
-    attachmentFiles.push(agreementPdfFilename);
+    // 5. Joint statement PDF signing by all companies
+    const jointStatementPdfContent = await readFile(join(MEDIA_DIR, 'joint-statement.pdf'));
+    const jointStatementPdfFilename = await createAttachment(paths.attachmentsDir, 'joint-statement.pdf', jointStatementPdfContent);
+    attachmentFiles.push(jointStatementPdfFilename);
     
     // Extract just the hash part (without extension) for PDF signing
-    const agreementPdfHash = agreementPdfFilename.split('.')[0];
+    const jointStatementPdfHash = jointStatementPdfFilename.split('.')[0];
     
-    // All companies sign the joint sustainability agreement PDF
+    // All companies sign the joint statement PDF
     const pdfSigningContent = buildPDFSigningContent({
-        hash: agreementPdfHash,
+        hash: jointStatementPdfHash,
     });
     
-    // Business A signs (initiator)
+    // Business A signs
     const pdfSignStatement1 = buildStatement({
         domain: businessA.domain,
         author: businessA.author,
         time: new Date('2024-06-15T10:00:00Z'),
-        tags: ['agreement-signature', 'pdf-signing', 'sustainability-commitment'],
+        tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
     });
     const signedPdfSign1 = await buildSignedStatement(pdfSignStatement1, businessA.privateKey!, businessA.publicKey!);
@@ -349,7 +334,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         domain: businessB.domain,
         author: businessB.author,
         time: new Date('2024-06-15T11:30:00Z'),
-        tags: ['agreement-signature', 'pdf-signing', 'sustainability-commitment'],
+        tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
     });
     const signedPdfSign2 = await buildSignedStatement(pdfSignStatement2, businessB.privateKey!, businessB.publicKey!);
@@ -360,7 +345,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         domain: businessC.domain,
         author: businessC.author,
         time: new Date('2024-06-15T14:15:00Z'),
-        tags: ['agreement-signature', 'pdf-signing', 'sustainability-commitment'],
+        tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
     });
     const signedPdfSign3 = await buildSignedStatement(pdfSignStatement3, businessC.privateKey!, businessC.publicKey!);
@@ -371,7 +356,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         domain: businessD.domain,
         author: businessD.author,
         time: new Date('2024-06-15T09:45:00Z'),
-        tags: ['agreement-signature', 'pdf-signing', 'sustainability-commitment'],
+        tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
     });
     const signedPdfSign4 = await buildSignedStatement(pdfSignStatement4, businessD.privateKey!, businessD.publicKey!);
@@ -382,112 +367,11 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         domain: businessE.domain,
         author: businessE.author,
         time: new Date('2024-06-15T16:20:00Z'),
-        tags: ['agreement-signature', 'pdf-signing', 'sustainability-commitment'],
+        tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
     });
     const signedPdfSign5 = await buildSignedStatement(pdfSignStatement5, businessE.privateKey!, businessE.publicKey!);
     statements.push(signedPdfSign5);
-
-    // 7. Vote statements for the poll
-    const voteContent = buildVoteContent({
-        pollHash: pollStatementHash,
-        poll: 'Should the EU Companies Initiative mandate quarterly sustainability reporting?',
-        vote: 'Yes, mandatory quarterly reports',
-    });
-    const statement7 = buildStatement({
-        domain: businessB.domain,
-        author: businessB.author,
-        time: new Date('2024-06-21T10:30:00Z'),
-        tags: ['vote', 'reporting-policy'],
-        content: voteContent,
-    });
-    const signedStatement7 = await buildSignedStatement(statement7, businessB.privateKey!, businessB.publicKey!);
-    statements.push(signedStatement7);
-    
-    // Additional vote statements
-    const voteContent2 = buildVoteContent({
-        pollHash: pollStatementHash,
-        poll: 'Should the EU Companies Initiative mandate quarterly sustainability reporting?',
-        vote: 'Yes, mandatory quarterly reports',
-    });
-    const statement7b = buildStatement({
-        domain: businessC.domain,
-        author: businessC.author,
-        time: new Date('2024-06-21T09:15:00Z'),
-        tags: ['vote', 'reporting-policy'],
-        content: voteContent2,
-    });
-    const signedStatement7b = await buildSignedStatement(statement7b, businessC.privateKey!, businessC.publicKey!);
-    statements.push(signedStatement7b);
-    
-    const voteContent3 = buildVoteContent({
-        pollHash: pollStatementHash,
-        poll: 'Should the EU Companies Initiative mandate quarterly sustainability reporting?',
-        vote: 'Biannual reports as compromise',
-    });
-    const statement7c = buildStatement({
-        domain: businessD.domain,
-        author: businessD.author,
-        time: new Date('2024-06-21T14:20:00Z'),
-        tags: ['vote', 'reporting-policy'],
-        content: voteContent3,
-    });
-    const signedStatement7c = await buildSignedStatement(statement7c, businessD.privateKey!, businessD.publicKey!);
-    statements.push(signedStatement7c);
-    
-    const voteContent4 = buildVoteContent({
-        pollHash: pollStatementHash,
-        poll: 'Should the EU Companies Initiative mandate quarterly sustainability reporting?',
-        vote: 'Yes, mandatory quarterly reports',
-    });
-    const statement7d = buildStatement({
-        domain: businessE.domain,
-        author: businessE.author,
-        time: new Date('2024-06-21T11:45:00Z'),
-        tags: ['vote', 'reporting-policy'],
-        content: voteContent4,
-    });
-    const signedStatement7d = await buildSignedStatement(statement7d, businessE.privateKey!, businessE.publicKey!);
-    statements.push(signedStatement7d);
-
-    // 8. Statement superseding another
-    const statement8 = buildStatement({
-        domain: 'business-a.com',
-        author: 'Business A - Technology Solutions',
-        time: new Date('2024-05-20T08:00:00Z'),
-        tags: ['correction', 'initiative-update'],
-        content: 'Correction: The EU Companies Sustainability Initiative will launch in Q4 2024, not Q3 as previously announced. This adjustment allows for more comprehensive stakeholder consultations and framework refinement.',
-        supersededStatement: sha256(signedStatement1),
-    });
-    const signedStatement8 = await buildSignedStatement(statement8, privateKey, publicKey);
-    statements.push(signedStatement8);
-
-    // 9. Recent statement
-    const statement9 = buildStatement({
-        domain: businessB.domain,
-        author: businessB.author,
-        time: new Date(),
-        tags: ['news', 'progress-update', 'eu-collaboration'],
-        content: 'We are pleased to report significant progress in the EU Companies Sustainability Initiative. Five major corporations have now formally committed to the framework, representing over 50,000 employees and €10 billion in combined annual revenue.',
-    });
-    const signedStatement9 = await buildSignedStatement(statement9, businessB.privateKey!, businessB.publicKey!);
-    statements.push(signedStatement9);
-
-    // 10. Statement with deliberately corrupted signature (for demonstration)
-    const statement10 = buildStatement({
-        domain: 'unverified-business.com',
-        author: 'Unverified Corporation',
-        time: new Date('2024-06-15T16:00:00Z'),
-        tags: ['security', 'demonstration'],
-        content: 'This statement has a tampered signature to demonstrate signature verification failure in business communications.',
-    });
-    const signedStatement10 = await buildSignedStatement(statement10, privateKey, publicKey);
-    // Deliberately corrupt the signature
-    const corruptedStatement10 = signedStatement10.replace(/Signature: ([A-Za-z0-9_-]+)/, (match: string, sig: string) => {
-        const corruptedSig = 'X' + sig.substring(1);
-        return `Signature: ${corruptedSig}`;
-    });
-    statements.push(corruptedStatement10);
 
     // Write individual statement files
     for (const statement of statements) {
@@ -807,20 +691,6 @@ async function generateBothDeployments(): Promise<void> {
     await writePeerStatements(businessAPaths.peersDir, 'business-d.com', statements, statementFiles, businessAPaths.attachmentsDir);
     await writePeerStatements(businessAPaths.peersDir, 'business-e.com', statements, statementFiles, businessAPaths.attachmentsDir);
     
-    // Add response statement from Business B
-    const businessBPeers: PeerInfo[] = [
-        {
-            domain: 'business-b.com',
-            author: 'Business B - Manufacturing Group',
-            response: 'We fully support the EU Companies Sustainability Initiative and commit to active participation in all framework development phases.',
-        },
-    ];
-    const businessAInitiativeStatement = statements.find(s =>
-        s.includes('business-a.com') &&
-        s.includes('EU Companies Sustainability Initiative')
-    );
-    await generatePeerReplications(businessAPaths.peersDir, businessAInitiativeStatement!, businessBPeers);
-    
     const businessAOwnCount = statements.filter(s => s.includes('Publishing domain: business-a.com')).length;
     console.log(`✓ Business A deployment created in ${BUSINESS_A_DIR}`);
     console.log(`  - ${businessAOwnCount} own statements in main directory`);
@@ -854,20 +724,6 @@ async function generateBothDeployments(): Promise<void> {
     await writePeerStatements(businessDPaths.peersDir, 'business-b.com', statements, statementFiles, businessDPaths.attachmentsDir);
     await writePeerStatements(businessDPaths.peersDir, 'business-c.com', statements, statementFiles, businessDPaths.attachmentsDir);
     await writePeerStatements(businessDPaths.peersDir, 'business-e.com', statements, statementFiles, businessDPaths.attachmentsDir);
-    
-    // Add response statement from Business A
-    const businessAPeers: PeerInfo[] = [
-        {
-            domain: 'business-a.com',
-            author: 'Business A - Technology Solutions',
-            response: 'We appreciate the support and look forward to collaborative efforts in establishing this sustainability framework.',
-        },
-    ];
-    const businessBWelcomeStatement = statements.find(s =>
-        s.includes('business-b.com') &&
-        s.includes('We welcome all EU companies to join the sustainability initiative')
-    );
-    await generatePeerReplications(businessDPaths.peersDir, businessBWelcomeStatement!, businessAPeers);
     
     const businessDOwnCount = statements.filter(s => s.includes('Publishing domain: business-d.com')).length;
     console.log(`✓ Business D deployment created in ${BUSINESS_D_DIR}`);
