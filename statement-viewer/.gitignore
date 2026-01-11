@@ -1,7 +1,10 @@
 node_modules/
 .well-known/
 .well-known-country-b/
+.well-known-business-a/
+.well-known-business-d/
 package-lock.json
 lib/
 dist/
 media/
+generate-company-icons.ts

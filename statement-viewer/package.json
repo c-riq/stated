@@ -5,9 +5,11 @@
   "description": "Static web application for viewing Stated protocol statements",
   "scripts": {
     "start": "npm run build && node dist/server.js",
+    "start:companies": "npm run build && node dist/server-companies.js",
     "build": "tsc",
     "watch": "tsc --watch",
     "gen": "npm run build && node dist/generate-samples.js",
+    "gen:companies": "npm run build && node dist/generate-samples-companies.js",
     "update-lib": "cd ../stated-protocol && npm run build && cd ../statement-viewer && rm -rf lib && mkdir -p lib && cp -r ../stated-protocol/dist/esm/* lib/"
   },
   "keywords": [
