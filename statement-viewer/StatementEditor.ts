@@ -261,8 +261,17 @@ export class StatementEditor {
                         <input type="text" id="pollQuestion" class="form-input" placeholder="Should we...?" required>
                     </div>
                     <div class="form-group">
-                        <label for="pollOptions">Options (comma-separated) *</label>
-                        <input type="text" id="pollOptions" class="form-input" placeholder="Yes, No, Maybe" required>
+                        <label for="pollOptions">Options (comma-separated)</label>
+                        <input type="text" id="pollOptions" class="form-input" placeholder="Yes, No, Maybe">
+                        <small>Leave empty for open poll (free text votes)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="pollAllowArbitraryVote">Allow Free Text Votes (Open Poll)</label>
+                        <select id="pollAllowArbitraryVote" class="form-input">
+                            <option value="">-- Not specified --</option>
+                            <option value="true">Yes - Allow any text as vote</option>
+                            <option value="false">No - Only predefined options</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="pollDeadline">Deadline (optional)</label>
@@ -270,7 +279,7 @@ export class StatementEditor {
                     </div>
                     <div class="form-group">
                         <label for="pollScope">Scope Description (optional)</label>
-                        <input type="text" id="pollScope" class="form-input" placeholder="All members">
+                        <input type="text" id="pollScope" class="form-input" placeholder="Who can vote: All members">
                     </div>
                 `;
                 break;
@@ -557,15 +566,25 @@ export class StatementEditor {
                 const pollOptionsStr = (document.getElementById('pollOptions') as HTMLInputElement)?.value.trim();
                 const pollDeadline = (document.getElementById('pollDeadline') as HTMLInputElement)?.value;
                 const pollScope = (document.getElementById('pollScope') as HTMLInputElement)?.value.trim();
+                const allowArbitraryVoteStr = (document.getElementById('pollAllowArbitraryVote') as HTMLSelectElement)?.value;
 
-                const options = pollOptionsStr.split(',').map(opt => opt.trim());
+                // Parse options - split by comma and filter out empty strings
+                const options = pollOptionsStr ? pollOptionsStr.split(',').map(opt => opt.trim()).filter(opt => opt.length > 0) : [];
+                
+                // Parse allowArbitraryVote
+                let allowArbitraryVote: boolean | undefined = undefined;
+                if (allowArbitraryVoteStr === 'true') {
+                    allowArbitraryVote = true;
+                } else if (allowArbitraryVoteStr === 'false') {
+                    allowArbitraryVote = false;
+                }
                 
                 return buildPollContent({
                     poll: pollQuestion,
                     options,
                     deadline: pollDeadline ? new Date(pollDeadline) : undefined,
                     scopeDescription: pollScope || undefined,
-                    allowArbitraryVote: undefined
+                    allowArbitraryVote
                 });
             }
 
