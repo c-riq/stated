@@ -22,9 +22,11 @@ import {
     parseOrganisationVerification,
     parsePersonVerification,
     isLegalForm,
+    isPeopleCountBucket,
     legalForms,
     type LegalForm,
-    type RatingSubjectTypeValue
+    type RatingSubjectTypeValue,
+    type PeopleCountBucket
 } from './lib/index.js';
 
 export interface StatementFormData {
@@ -49,12 +51,51 @@ export class StatementEditor {
     private sourceEndpoint: string = 'https://mofa.country-a.com';
     private attachmentFiles: Map<string, File> = new Map();
     private readonly API_KEY_STORAGE_KEY = 'stated_api_key_api.country-a.com';
+    private countries: string[] = [];
 
     constructor() {
         this.form = document.getElementById('statementForm') as HTMLFormElement;
         this.outputArea = document.getElementById('outputStatement') as HTMLTextAreaElement;
         
         this.init();
+        this.loadCountries().then(() => {
+            // Update country dropdowns after countries are loaded
+            this.updateCountryDropdowns();
+        });
+    }
+
+    private async loadCountries(): Promise<void> {
+        try {
+            const response = await fetch('./countries.json');
+            const data = await response.json();
+            this.countries = data.countries.map((country: string[]) => country[0]);
+            console.log('Loaded', this.countries.length, 'countries');
+        } catch (error) {
+            console.error('Failed to load countries:', error);
+            this.countries = [];
+        }
+    }
+
+    private updateCountryDropdowns(): void {
+        // Update organisation country dropdown if it exists
+        const orgCountry = document.getElementById('orgCountry') as HTMLSelectElement;
+        if (orgCountry) {
+            orgCountry.innerHTML = this.getCountryOptions();
+        }
+
+        // Update person country dropdown if it exists
+        const personCountry = document.getElementById('personCountryOfBirth') as HTMLSelectElement;
+        if (personCountry) {
+            personCountry.innerHTML = this.getCountryOptions();
+        }
+    }
+
+    private getCountryOptions(): string {
+        if (this.countries.length === 0) {
+            return '<option value="">Loading countries...</option>';
+        }
+        return '<option value="">-- Select Country --</option>' +
+               this.countries.map(country => `<option value="${this.escapeHtml(country)}">${this.escapeHtml(country)}</option>`).join('');
     }
 
     private init(): void {
@@ -309,7 +350,9 @@ export class StatementEditor {
                     </div>
                     <div class="form-group">
                         <label for="orgCountry">Country *</label>
-                        <input type="text" id="orgCountry" class="form-input" placeholder="Country" required>
+                        <select id="orgCountry" class="form-input" required>
+                            ${this.getCountryOptions()}
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="orgLegalForm">Legal Form *</label>
@@ -330,6 +373,14 @@ export class StatementEditor {
                         <input type="text" id="orgEnglishName" class="form-input" placeholder="English translation of name">
                     </div>
                     <div class="form-group">
+                        <label for="orgForeignDomain">Foreign Domain (optional)</label>
+                        <input type="text" id="orgForeignDomain" class="form-input" placeholder="Foreign domain for statements">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgDepartment">Department (optional)</label>
+                        <input type="text" id="orgDepartment" class="form-input" placeholder="Department using the domain">
+                    </div>
+                    <div class="form-group">
                         <label for="orgCity">City (optional)</label>
                         <input type="text" id="orgCity" class="form-input" placeholder="City">
                     </div>
@@ -340,6 +391,58 @@ export class StatementEditor {
                     <div class="form-group">
                         <label for="orgSerialNumber">Business Register Number (optional)</label>
                         <input type="text" id="orgSerialNumber" class="form-input" placeholder="Registration number">
+                    </div>
+                    <div class="form-group org-govt-only" style="display: none;">
+                        <label for="orgLatitude">Latitude (optional)</label>
+                        <input type="number" id="orgLatitude" class="form-input" step="any" placeholder="e.g., 52.3676">
+                    </div>
+                    <div class="form-group org-govt-only" style="display: none;">
+                        <label for="orgLongitude">Longitude (optional)</label>
+                        <input type="number" id="orgLongitude" class="form-input" step="any" placeholder="e.g., 4.9041">
+                    </div>
+                    <div class="form-group org-corp-only" style="display: none;">
+                        <label for="orgEmployeeCount">Employee Count (optional)</label>
+                        <select id="orgEmployeeCount" class="form-input">
+                            <option value="">-- Select Range --</option>
+                            <option value="0-10">0-10</option>
+                            <option value="10-100">10-100</option>
+                            <option value="100-1000">100-1000</option>
+                            <option value="1000-10,000">1000-10,000</option>
+                            <option value="10,000-100,000">10,000-100,000</option>
+                            <option value="100,000+">100,000+</option>
+                            <option value="1,000,000+">1,000,000+</option>
+                            <option value="10,000,000+">10,000,000+</option>
+                        </select>
+                    </div>
+                    <div class="form-group org-govt-only" style="display: none;">
+                        <label for="orgPopulation">Population (optional)</label>
+                        <select id="orgPopulation" class="form-input">
+                            <option value="">-- Select Range --</option>
+                            <option value="0-10">0-10</option>
+                            <option value="10-100">10-100</option>
+                            <option value="100-1000">100-1000</option>
+                            <option value="1000-10,000">1000-10,000</option>
+                            <option value="10,000-100,000">10,000-100,000</option>
+                            <option value="100,000+">100,000+</option>
+                            <option value="1,000,000+">1,000,000+</option>
+                            <option value="10,000,000+">10,000,000+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgPictureHash">Logo Hash (optional)</label>
+                        <input type="text" id="orgPictureHash" class="form-input" placeholder="hash.ext (e.g., abc123.png)">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgPublicKey">Public Key (optional)</label>
+                        <input type="text" id="orgPublicKey" class="form-input" placeholder="URL-safe base64 public key">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgConfidence">Confidence (optional)</label>
+                        <input type="number" id="orgConfidence" class="form-input" step="0.01" min="0" max="1" placeholder="0.0 to 1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgReliabilityPolicy">Reliability Policy (optional)</label>
+                        <input type="text" id="orgReliabilityPolicy" class="form-input" placeholder="URL to reliability policy">
                     </div>
                 `;
                 break;
@@ -360,11 +463,17 @@ export class StatementEditor {
                     </div>
                     <div class="form-group">
                         <label for="personCountryOfBirth">Country of Birth *</label>
-                        <input type="text" id="personCountryOfBirth" class="form-input" placeholder="Country of birth" required>
+                        <select id="personCountryOfBirth" class="form-input" required>
+                            ${this.getCountryOptions()}
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="personDomain">Domain *</label>
                         <input type="text" id="personDomain" class="form-input" placeholder="example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personForeignDomain">Foreign Domain (optional)</label>
+                        <input type="text" id="personForeignDomain" class="form-input" placeholder="Foreign domain for statements">
                     </div>
                     <div class="form-group">
                         <label for="personJobTitle">Job Title (optional)</label>
@@ -377,6 +486,22 @@ export class StatementEditor {
                     <div class="form-group">
                         <label for="personVerificationMethod">Verification Method (optional)</label>
                         <input type="text" id="personVerificationMethod" class="form-input" placeholder="e.g., ID card, Passport">
+                    </div>
+                    <div class="form-group">
+                        <label for="personPicture">Picture Hash (optional)</label>
+                        <input type="text" id="personPicture" class="form-input" placeholder="hash.ext (e.g., abc123.jpg)">
+                    </div>
+                    <div class="form-group">
+                        <label for="personPublicKey">Public Key (optional)</label>
+                        <input type="text" id="personPublicKey" class="form-input" placeholder="URL-safe base64 public key">
+                    </div>
+                    <div class="form-group">
+                        <label for="personConfidence">Confidence (optional)</label>
+                        <input type="number" id="personConfidence" class="form-input" step="0.01" min="0" max="1" placeholder="0.0 to 1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="personReliabilityPolicy">Reliability Policy (optional)</label>
+                        <input type="text" id="personReliabilityPolicy" class="form-input" placeholder="URL to reliability policy">
                     </div>
                 `;
                 break;
@@ -392,6 +517,37 @@ export class StatementEditor {
         }
 
         typedFieldsContainer.innerHTML = fieldsHTML;
+        
+        // Add event listener for organisation legal form changes
+        if (type === 'organisation_verification') {
+            const orgLegalFormSelect = document.getElementById('orgLegalForm') as HTMLSelectElement;
+            if (orgLegalFormSelect) {
+                orgLegalFormSelect.addEventListener('change', () => this.updateOrgFieldsVisibility());
+                // Trigger initial update
+                this.updateOrgFieldsVisibility();
+            }
+        }
+    }
+
+    private updateOrgFieldsVisibility(): void {
+        const orgLegalFormSelect = document.getElementById('orgLegalForm') as HTMLSelectElement;
+        if (!orgLegalFormSelect) return;
+
+        const legalForm = orgLegalFormSelect.value;
+        const isCorporation = legalForm === 'corporation';
+        const isGovernment = legalForm === 'local government' || legalForm === 'state government' || legalForm === 'foreign affairs ministry';
+
+        // Show/hide government-only fields (latitude, longitude, population)
+        const govtFields = document.querySelectorAll('.org-govt-only');
+        govtFields.forEach((field) => {
+            (field as HTMLElement).style.display = isGovernment ? 'block' : 'none';
+        });
+
+        // Show/hide corporation-only fields (employee count)
+        const corpFields = document.querySelectorAll('.org-corp-only');
+        corpFields.forEach((field) => {
+            (field as HTMLElement).style.display = isCorporation ? 'block' : 'none';
+        });
     }
 
     private buildTypedContent(type: string): string {
@@ -460,18 +616,51 @@ export class StatementEditor {
 
             case 'organisation_verification': {
                 const name = (document.getElementById('orgName') as HTMLInputElement)?.value.trim();
-                const country = (document.getElementById('orgCountry') as HTMLInputElement)?.value.trim();
+                const country = (document.getElementById('orgCountry') as HTMLSelectElement)?.value.trim();
                 const legalFormInput = (document.getElementById('orgLegalForm') as HTMLSelectElement)?.value.trim();
                 const domain = (document.getElementById('orgDomain') as HTMLInputElement)?.value.trim();
                 const englishName = (document.getElementById('orgEnglishName') as HTMLInputElement)?.value.trim();
+                const foreignDomain = (document.getElementById('orgForeignDomain') as HTMLInputElement)?.value.trim();
+                const department = (document.getElementById('orgDepartment') as HTMLInputElement)?.value.trim();
                 const city = (document.getElementById('orgCity') as HTMLInputElement)?.value.trim();
                 const province = (document.getElementById('orgProvince') as HTMLInputElement)?.value.trim();
                 const serialNumber = (document.getElementById('orgSerialNumber') as HTMLInputElement)?.value.trim();
+                const latitudeStr = (document.getElementById('orgLatitude') as HTMLInputElement)?.value.trim();
+                const longitudeStr = (document.getElementById('orgLongitude') as HTMLInputElement)?.value.trim();
+                const employeeCountInput = (document.getElementById('orgEmployeeCount') as HTMLSelectElement)?.value.trim();
+                const populationInput = (document.getElementById('orgPopulation') as HTMLSelectElement)?.value.trim();
+                const pictureHash = (document.getElementById('orgPictureHash') as HTMLInputElement)?.value.trim();
+                const publicKey = (document.getElementById('orgPublicKey') as HTMLInputElement)?.value.trim();
+                const confidenceStr = (document.getElementById('orgConfidence') as HTMLInputElement)?.value.trim();
+                const reliabilityPolicy = (document.getElementById('orgReliabilityPolicy') as HTMLInputElement)?.value.trim();
 
                 // Validate legal form
                 if (!legalFormInput || !isLegalForm(legalFormInput)) {
                     throw new Error(`Invalid legal form: ${legalFormInput}. Must be one of: ${Object.values(legalForms).join(', ')}`);
                 }
+
+                // Validate employee count if provided
+                let employeeCount: PeopleCountBucket | undefined = undefined;
+                if (employeeCountInput && !isPeopleCountBucket(employeeCountInput)) {
+                    throw new Error(`Invalid employee count: ${employeeCountInput}`);
+                }
+                if (employeeCountInput) {
+                    employeeCount = employeeCountInput as PeopleCountBucket;
+                }
+
+                // Validate population if provided
+                let population: PeopleCountBucket | undefined = undefined;
+                if (populationInput && !isPeopleCountBucket(populationInput)) {
+                    throw new Error(`Invalid population: ${populationInput}`);
+                }
+                if (populationInput) {
+                    population = populationInput as PeopleCountBucket;
+                }
+
+                // Parse numeric values
+                const latitude = latitudeStr ? parseFloat(latitudeStr) : undefined;
+                const longitude = longitudeStr ? parseFloat(longitudeStr) : undefined;
+                const confidence = confidenceStr ? parseFloat(confidenceStr) : undefined;
 
                 return buildOrganisationVerificationContent({
                     name,
@@ -479,19 +668,19 @@ export class StatementEditor {
                     legalForm: legalFormInput as LegalForm,
                     domain,
                     englishName: englishName || undefined,
+                    foreignDomain: foreignDomain || undefined,
+                    department: department || undefined,
                     city: city || undefined,
                     province: province || undefined,
                     serialNumber: serialNumber || undefined,
-                    foreignDomain: undefined,
-                    department: undefined,
-                    confidence: undefined,
-                    reliabilityPolicy: undefined,
-                    employeeCount: undefined,
-                    pictureHash: undefined,
-                    latitude: undefined,
-                    longitude: undefined,
-                    population: undefined,
-                    publicKey: undefined
+                    latitude,
+                    longitude,
+                    employeeCount,
+                    population,
+                    pictureHash: pictureHash || undefined,
+                    publicKey: publicKey || undefined,
+                    confidence,
+                    reliabilityPolicy: reliabilityPolicy || undefined
                 });
             }
 
@@ -499,13 +688,19 @@ export class StatementEditor {
                 const name = (document.getElementById('personName') as HTMLInputElement)?.value.trim();
                 const dateOfBirthStr = (document.getElementById('personDateOfBirth') as HTMLInputElement)?.value;
                 const cityOfBirth = (document.getElementById('personCityOfBirth') as HTMLInputElement)?.value.trim();
-                const countryOfBirth = (document.getElementById('personCountryOfBirth') as HTMLInputElement)?.value.trim();
+                const countryOfBirth = (document.getElementById('personCountryOfBirth') as HTMLSelectElement)?.value.trim();
                 const ownDomain = (document.getElementById('personDomain') as HTMLInputElement)?.value.trim();
+                const foreignDomain = (document.getElementById('personForeignDomain') as HTMLInputElement)?.value.trim();
                 const jobTitle = (document.getElementById('personJobTitle') as HTMLInputElement)?.value.trim();
                 const employer = (document.getElementById('personEmployer') as HTMLInputElement)?.value.trim();
                 const verificationMethod = (document.getElementById('personVerificationMethod') as HTMLInputElement)?.value.trim();
+                const picture = (document.getElementById('personPicture') as HTMLInputElement)?.value.trim();
+                const publicKey = (document.getElementById('personPublicKey') as HTMLInputElement)?.value.trim();
+                const confidenceStr = (document.getElementById('personConfidence') as HTMLInputElement)?.value.trim();
+                const reliabilityPolicy = (document.getElementById('personReliabilityPolicy') as HTMLInputElement)?.value.trim();
 
                 const dateOfBirth = dateOfBirthStr ? new Date(dateOfBirthStr) : new Date();
+                const confidence = confidenceStr ? parseFloat(confidenceStr) : undefined;
 
                 return buildPersonVerificationContent({
                     name,
@@ -513,14 +708,14 @@ export class StatementEditor {
                     cityOfBirth,
                     countryOfBirth,
                     ownDomain,
+                    foreignDomain: foreignDomain || undefined,
                     jobTitle: jobTitle || undefined,
                     employer: employer || undefined,
                     verificationMethod: verificationMethod || undefined,
-                    foreignDomain: undefined,
-                    confidence: undefined,
-                    picture: undefined,
-                    reliabilityPolicy: undefined,
-                    publicKey: undefined
+                    picture: picture || undefined,
+                    publicKey: publicKey || undefined,
+                    confidence,
+                    reliabilityPolicy: reliabilityPolicy || undefined
                 });
             }
 
