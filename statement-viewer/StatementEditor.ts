@@ -7,6 +7,8 @@ import {
     buildResponseContent,
     buildRating,
     buildPDFSigningContent,
+    buildOrganisationVerificationContent,
+    buildPersonVerificationContent,
     sha256,
     parseStatementsFile,
     generateStatementsFile,
@@ -16,7 +18,13 @@ import {
     parseVote,
     parseResponseContent,
     parseRating,
-    parsePDFSigning
+    parsePDFSigning,
+    parseOrganisationVerification,
+    parsePersonVerification,
+    isLegalForm,
+    legalForms,
+    type LegalForm,
+    type RatingSubjectTypeValue
 } from './lib/index.js';
 
 export interface StatementFormData {
@@ -259,12 +267,116 @@ export class StatementEditor {
             case 'rating':
                 fieldsHTML = `
                     <div class="form-group">
-                        <label for="ratingHash">Statement Hash *</label>
-                        <input type="text" id="ratingHash" class="form-input" placeholder="Hash of statement you're rating" required>
+                        <label for="ratingSubjectName">Subject Name *</label>
+                        <input type="text" id="ratingSubjectName" class="form-input" placeholder="Name of what you're rating" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingSubjectType">Subject Type (optional)</label>
+                        <select id="ratingSubjectType" class="form-input">
+                            <option value="">-- Select Type --</option>
+                            <option value="Organisation">Organisation</option>
+                            <option value="Policy proposal">Policy proposal</option>
+                            <option value="Treaty draft">Treaty draft</option>
+                            <option value="Research publication">Research publication</option>
+                            <option value="Regulation">Regulation</option>
+                            <option value="Product">Product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingSubjectReference">Subject Reference/URL (optional)</label>
+                        <input type="text" id="ratingSubjectReference" class="form-input" placeholder="URL or hash identifying the subject">
                     </div>
                     <div class="form-group">
                         <label for="ratingValue">Rating (1-5) *</label>
                         <input type="number" id="ratingValue" class="form-input" min="1" max="5" placeholder="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingQuality">Rated Quality (optional)</label>
+                        <input type="text" id="ratingQuality" class="form-input" placeholder="e.g., Excellent, Good, Poor">
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingComment">Comment (optional)</label>
+                        <textarea id="ratingComment" class="form-textarea" rows="3" placeholder="Additional comments..."></textarea>
+                    </div>
+                `;
+                break;
+
+            case 'organisation_verification':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="orgName">Organization Name *</label>
+                        <input type="text" id="orgName" class="form-input" placeholder="Official organization name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgCountry">Country *</label>
+                        <input type="text" id="orgCountry" class="form-input" placeholder="Country" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgLegalForm">Legal Form *</label>
+                        <select id="orgLegalForm" class="form-input" required>
+                            <option value="">-- Select Legal Form --</option>
+                            <option value="local government">Local Government</option>
+                            <option value="state government">State Government</option>
+                            <option value="foreign affairs ministry">Foreign Affairs Ministry</option>
+                            <option value="corporation">Corporation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgDomain">Domain *</label>
+                        <input type="text" id="orgDomain" class="form-input" placeholder="example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgEnglishName">English Name (optional)</label>
+                        <input type="text" id="orgEnglishName" class="form-input" placeholder="English translation of name">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgCity">City (optional)</label>
+                        <input type="text" id="orgCity" class="form-input" placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgProvince">Province/State (optional)</label>
+                        <input type="text" id="orgProvince" class="form-input" placeholder="Province or state">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgSerialNumber">Business Register Number (optional)</label>
+                        <input type="text" id="orgSerialNumber" class="form-input" placeholder="Registration number">
+                    </div>
+                `;
+                break;
+
+            case 'person_verification':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="personName">Full Name *</label>
+                        <input type="text" id="personName" class="form-input" placeholder="Person's full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personDateOfBirth">Date of Birth *</label>
+                        <input type="date" id="personDateOfBirth" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personCityOfBirth">City of Birth *</label>
+                        <input type="text" id="personCityOfBirth" class="form-input" placeholder="City of birth" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personCountryOfBirth">Country of Birth *</label>
+                        <input type="text" id="personCountryOfBirth" class="form-input" placeholder="Country of birth" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personDomain">Domain *</label>
+                        <input type="text" id="personDomain" class="form-input" placeholder="example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personJobTitle">Job Title (optional)</label>
+                        <input type="text" id="personJobTitle" class="form-input" placeholder="Job title">
+                    </div>
+                    <div class="form-group">
+                        <label for="personEmployer">Employer (optional)</label>
+                        <input type="text" id="personEmployer" class="form-input" placeholder="Employer name">
+                    </div>
+                    <div class="form-group">
+                        <label for="personVerificationMethod">Verification Method (optional)</label>
+                        <input type="text" id="personVerificationMethod" class="form-input" placeholder="e.g., ID card, Passport">
                     </div>
                 `;
                 break;
@@ -324,21 +436,91 @@ export class StatementEditor {
             }
 
             case 'rating': {
-                const ratingHash = (document.getElementById('ratingHash') as HTMLInputElement)?.value.trim();
+                const subjectName = (document.getElementById('ratingSubjectName') as HTMLInputElement)?.value.trim();
+                const subjectType = (document.getElementById('ratingSubjectType') as HTMLSelectElement)?.value.trim();
+                const subjectReference = (document.getElementById('ratingSubjectReference') as HTMLInputElement)?.value.trim();
                 const ratingValue = parseInt((document.getElementById('ratingValue') as HTMLInputElement)?.value.trim());
+                const quality = (document.getElementById('ratingQuality') as HTMLInputElement)?.value.trim();
+                const comment = (document.getElementById('ratingComment') as HTMLTextAreaElement)?.value.trim();
 
                 if (!isRatingValue(ratingValue)) {
                     throw new Error('Rating must be between 1 and 5');
                 }
 
                 return buildRating({
-                    subjectName: 'Statement',
-                    subjectType: undefined,
-                    subjectReference: ratingHash,
+                    subjectName: subjectName,
+                    subjectType: (subjectType || undefined) as RatingSubjectTypeValue | undefined,
+                    subjectReference: subjectReference || undefined,
                     rating: ratingValue,
                     documentFileHash: undefined,
-                    quality: undefined,
-                    comment: undefined
+                    quality: quality || undefined,
+                    comment: comment || undefined
+                });
+            }
+
+            case 'organisation_verification': {
+                const name = (document.getElementById('orgName') as HTMLInputElement)?.value.trim();
+                const country = (document.getElementById('orgCountry') as HTMLInputElement)?.value.trim();
+                const legalFormInput = (document.getElementById('orgLegalForm') as HTMLSelectElement)?.value.trim();
+                const domain = (document.getElementById('orgDomain') as HTMLInputElement)?.value.trim();
+                const englishName = (document.getElementById('orgEnglishName') as HTMLInputElement)?.value.trim();
+                const city = (document.getElementById('orgCity') as HTMLInputElement)?.value.trim();
+                const province = (document.getElementById('orgProvince') as HTMLInputElement)?.value.trim();
+                const serialNumber = (document.getElementById('orgSerialNumber') as HTMLInputElement)?.value.trim();
+
+                // Validate legal form
+                if (!legalFormInput || !isLegalForm(legalFormInput)) {
+                    throw new Error(`Invalid legal form: ${legalFormInput}. Must be one of: ${Object.values(legalForms).join(', ')}`);
+                }
+
+                return buildOrganisationVerificationContent({
+                    name,
+                    country,
+                    legalForm: legalFormInput as LegalForm,
+                    domain,
+                    englishName: englishName || undefined,
+                    city: city || undefined,
+                    province: province || undefined,
+                    serialNumber: serialNumber || undefined,
+                    foreignDomain: undefined,
+                    department: undefined,
+                    confidence: undefined,
+                    reliabilityPolicy: undefined,
+                    employeeCount: undefined,
+                    pictureHash: undefined,
+                    latitude: undefined,
+                    longitude: undefined,
+                    population: undefined,
+                    publicKey: undefined
+                });
+            }
+
+            case 'person_verification': {
+                const name = (document.getElementById('personName') as HTMLInputElement)?.value.trim();
+                const dateOfBirthStr = (document.getElementById('personDateOfBirth') as HTMLInputElement)?.value;
+                const cityOfBirth = (document.getElementById('personCityOfBirth') as HTMLInputElement)?.value.trim();
+                const countryOfBirth = (document.getElementById('personCountryOfBirth') as HTMLInputElement)?.value.trim();
+                const ownDomain = (document.getElementById('personDomain') as HTMLInputElement)?.value.trim();
+                const jobTitle = (document.getElementById('personJobTitle') as HTMLInputElement)?.value.trim();
+                const employer = (document.getElementById('personEmployer') as HTMLInputElement)?.value.trim();
+                const verificationMethod = (document.getElementById('personVerificationMethod') as HTMLInputElement)?.value.trim();
+
+                const dateOfBirth = dateOfBirthStr ? new Date(dateOfBirthStr) : new Date();
+
+                return buildPersonVerificationContent({
+                    name,
+                    dateOfBirth,
+                    cityOfBirth,
+                    countryOfBirth,
+                    ownDomain,
+                    jobTitle: jobTitle || undefined,
+                    employer: employer || undefined,
+                    verificationMethod: verificationMethod || undefined,
+                    foreignDomain: undefined,
+                    confidence: undefined,
+                    picture: undefined,
+                    reliabilityPolicy: undefined,
+                    publicKey: undefined
                 });
             }
 
@@ -532,6 +714,14 @@ export class StatementEditor {
                         case 'rating':
                             parseRating(parsed.content);
                             results.push('✓ Rating content is valid');
+                            break;
+                        case 'organisation_verification':
+                            parseOrganisationVerification(parsed.content);
+                            results.push('✓ Organisation verification content is valid');
+                            break;
+                        case 'person_verification':
+                            parsePersonVerification(parsed.content);
+                            results.push('✓ Person verification content is valid');
                             break;
                         case 'sign_pdf':
                             parsePDFSigning(parsed.content);
