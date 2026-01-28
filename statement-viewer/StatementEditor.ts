@@ -822,18 +822,12 @@ export class StatementEditor {
                 return;
             }
 
-            // Build the statement content with type if specified
-            let content = formData.content;
-            if (formData.type && !content.startsWith('Type:')) {
-                content = `Type: ${formData.type}\n${content}`;
-            }
-
-            // Build the statement
+            // Build the statement using the library - it handles all formatting
             const statement = buildStatement({
                 domain: formData.domain,
                 author: formData.author,
                 time: new Date(),
-                content: content,
+                content: formData.content,
                 tags: formData.tags,
                 supersededStatement: formData.supersededStatement,
                 attachments: formData.attachments,
