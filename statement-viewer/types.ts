@@ -52,3 +52,21 @@ export interface StatementMaps {
     responsesByHash: Map<string, ParsedStatement[]>;
     votesByPollHash: Map<string, VoteEntry[]>;
 }
+
+export interface AppConfig {
+    branding: {
+        logo: string;
+        title: string;
+        subtitle: string;
+    };
+    editor: {
+        defaults: {
+            domain: string;
+            author: string;
+        };
+        api: {
+            endpoint: string;
+            sourceEndpoint: string;
+        };
+    };
+}

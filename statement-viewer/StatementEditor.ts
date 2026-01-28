@@ -28,6 +28,7 @@ import {
     type RatingSubjectTypeValue,
     type PeopleCountBucket
 } from './lib/index.js';
+import type { AppConfig } from './types.js';
 
 export interface StatementFormData {
     domain: string;
@@ -52,12 +53,18 @@ export class StatementEditor {
     private attachmentFiles: Map<string, File> = new Map();
     private readonly API_KEY_STORAGE_KEY = 'stated_api_key_api.country-a.com';
     private countries: string[] = [];
+    private config: AppConfig;
 
-    constructor() {
+    constructor(config: AppConfig) {
+        this.config = config;
+        this.apiEndpoint = config.editor.api.endpoint;
+        this.sourceEndpoint = config.editor.api.sourceEndpoint;
+        
         this.form = document.getElementById('statementForm') as HTMLFormElement;
         this.outputArea = document.getElementById('outputStatement') as HTMLTextAreaElement;
         
         this.init();
+        this.applyEditorDefaults();
         this.loadCountries().then(() => {
             // Update country dropdowns after countries are loaded
             this.updateCountryDropdowns();
@@ -97,6 +104,20 @@ export class StatementEditor {
         return '<option value="">-- Select Country --</option>' +
                this.countries.map(country => `<option value="${this.escapeHtml(country)}">${this.escapeHtml(country)}</option>`).join('');
     }
+    private applyEditorDefaults(): void {
+        // Apply default domain
+        const domainInput = document.getElementById('domain') as HTMLInputElement;
+        if (domainInput) {
+            domainInput.value = this.config.editor.defaults.domain;
+        }
+
+        // Apply default author
+        const authorInput = document.getElementById('author') as HTMLInputElement;
+        if (authorInput) {
+            authorInput.value = this.config.editor.defaults.author;
+        }
+    }
+
 
     private init(): void {
         if (!this.form) return;

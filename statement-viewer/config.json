@@ -1,0 +1,17 @@
+{
+  "branding": {
+    "logo": "logo.png",
+    "title": "globalcoordination.org",
+    "subtitle": "Statement Viewer"
+  },
+  "editor": {
+    "defaults": {
+      "domain": "mofa.country-a.com",
+      "author": "Ministry of Foreign Affairs of Country A"
+    },
+    "api": {
+      "endpoint": "https://api.country-a.com/update",
+      "sourceEndpoint": "https://mofa.country-a.com"
+    }
+  }
+}

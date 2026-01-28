@@ -80,7 +80,14 @@ The editor automatically handles all publishing steps when you click "Submit to 
 
 The editor submits to `https://api.country-a.com/update` by default. You need an API key to publish statements. The API key should be configured in your deployment's Terraform infrastructure.
 
+## Configuration
+
+Runtime configuration via [`config.json`](config.json) - no rebuild required:
+- `branding`: logo path, title, subtitle
+- `editor.defaults`: pre-filled domain and author
+- `editor.api`: API endpoints
+
 ## Deployment
 
-Upload to any static host (GitHub Pages, Netlify, etc.). The file browser reads `index.txt` files for navigation.
+Build once, deploy anywhere. Copy `dist/` and customize [`config.json`](config.json) per deployment. Works with any static host.
 
