@@ -1,0 +1,17 @@
+{
+  "branding": {
+    "logo": "logo-eucnet.png",
+    "title": "eucompanies.org",
+    "subtitle": "Statement Viewer"
+  },
+  "editor": {
+    "defaults": {
+      "domain": "business-a.com",
+      "author": "Business A"
+    },
+    "api": {
+      "endpoint": "https://api.business-a.com/update",
+      "sourceEndpoint": "https://business-a.com"
+    }
+  }
+}

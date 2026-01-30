@@ -26,6 +26,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Redirect /.well-known to /.well-known-business-a
 app.use('/.well-known', express.static(join(PROJECT_ROOT, '.well-known-business-a')));
 
+// Serve config-companies.json as config.json
+app.get('/config.json', (req: Request, res: Response) => {
+    res.sendFile(join(PROJECT_ROOT, 'config-companies.json'));
+});
+
 // Serve index-companies.html as the default index
 app.get('/', (req: Request, res: Response) => {
     res.sendFile(join(PROJECT_ROOT, 'index-companies.html'));
