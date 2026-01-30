@@ -271,6 +271,17 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
     const actionBar = document.createElement('div');
     actionBar.className = 'action-bar';
     
+    // Add Reply button
+    const replyBtn = document.createElement('button');
+    replyBtn.className = 'action-btn';
+    replyBtn.textContent = 'Reply';
+    replyBtn.addEventListener('click', (e: MouseEvent) => {
+        e.stopPropagation();
+        const statementHash = sha256(statement.raw);
+        window.location.href = `/editor.html?type=response&statementHash=${encodeURIComponent(statementHash)}`;
+    });
+    actionBar.appendChild(replyBtn);
+    
     const detailsBtn = document.createElement('button');
     detailsBtn.className = 'action-btn';
     detailsBtn.textContent = 'Details';
@@ -564,6 +575,17 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     });
     
     container.appendChild(resultsContainer);
+    
+    // Add Vote button
+    const voteBtn = document.createElement('button');
+    voteBtn.className = 'votes-toggle-btn';
+    voteBtn.textContent = 'Cast Your Vote';
+    voteBtn.style.marginBottom = '12px';
+    voteBtn.addEventListener('click', () => {
+        const pollHash = sha256(pollStatement.raw);
+        window.location.href = `/editor.html?type=vote&pollHash=${encodeURIComponent(pollHash)}&pollQuestion=${encodeURIComponent(pollQuestion)}`;
+    });
+    container.appendChild(voteBtn);
     
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'votes-toggle-btn';

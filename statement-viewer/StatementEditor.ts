@@ -122,6 +122,9 @@ export class StatementEditor {
     private init(): void {
         if (!this.form) return;
 
+        // Parse URL parameters and prefill form
+        this.prefillFromUrlParams();
+
         // Form submission
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -207,6 +210,50 @@ export class StatementEditor {
         this.updateTypeHelp();
         this.updateTypedFields();
         this.loadApiKey();
+    }
+
+    private prefillFromUrlParams(): void {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Get statement type from URL
+        const type = urlParams.get('type');
+        if (type) {
+            const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
+            if (typeSelect) {
+                typeSelect.value = type;
+                this.updateTypeHelp();
+                this.updateTypedFields();
+            }
+        }
+        
+        // Prefill based on statement type
+        if (type === 'vote') {
+            const pollHash = urlParams.get('pollHash');
+            const pollQuestion = urlParams.get('pollQuestion');
+            
+            if (pollHash) {
+                setTimeout(() => {
+                    const voteHashInput = document.getElementById('voteHash') as HTMLInputElement;
+                    if (voteHashInput) voteHashInput.value = pollHash;
+                }, 100);
+            }
+            
+            if (pollQuestion) {
+                setTimeout(() => {
+                    const votePollInput = document.getElementById('votePoll') as HTMLInputElement;
+                    if (votePollInput) votePollInput.value = decodeURIComponent(pollQuestion);
+                }, 100);
+            }
+        } else if (type === 'response') {
+            const statementHash = urlParams.get('statementHash');
+            
+            if (statementHash) {
+                setTimeout(() => {
+                    const responseHashInput = document.getElementById('responseHash') as HTMLInputElement;
+                    if (responseHashInput) responseHashInput.value = statementHash;
+                }, 100);
+            }
+        }
     }
 
     private toggleSigningFields(): void {
