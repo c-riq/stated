@@ -8,8 +8,7 @@
     "dev:c": "vite --mode companies",
     "gen": "tsx generate-samples.ts",
     "gen:c": "tsx generate-samples-companies.ts",
-    "build": "vite build",
-    "update-lib": "cd ../stated-protocol && npm run build && cd ../statement-viewer && rm -rf lib && mkdir -p lib && cp -r ../stated-protocol/dist/esm/* lib/"
+    "build": "vite build"
   },
   "keywords": [
     "stated",
@@ -19,7 +18,9 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "stated-protocol": "^5.1.0"
+  },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@vitejs/plugin-basic-ssl": "^2.1.4",

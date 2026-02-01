@@ -1,4 +1,4 @@
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning, parseRating } from './lib/index.js';
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning, parseRating } from 'stated-protocol';
 import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { sortStatementsByTime } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';

@@ -29,8 +29,7 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './'),
-        'stated-protocol': resolve(__dirname, './lib')
+        '@': resolve(__dirname, './')
       }
     }
   };
