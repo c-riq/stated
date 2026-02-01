@@ -862,6 +862,12 @@ export function createRatingsContainer(subjectName: string, ratings: RatingEntry
     const container = document.createElement('div');
     container.className = 'ratings-container';
     
+    // Add title showing what's being rated
+    const title = document.createElement('div');
+    title.className = 'ratings-title';
+    title.textContent = `Ratings for ${subjectName}`;
+    container.appendChild(title);
+    
     // Calculate average rating
     const totalRating = ratings.reduce((sum, { rating }) => sum + rating, 0);
     const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
