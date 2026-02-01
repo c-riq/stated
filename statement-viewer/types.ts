@@ -65,6 +65,7 @@ export interface AppConfig {
         title: string;
         subtitle: string;
     };
+    statementsPath: string;
     editor: {
         defaults: {
             domain: string;

@@ -1145,14 +1145,15 @@ body.modal-open {
 
 .ratings-header {
     margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .ratings-summary {
     display: flex;
     align-items: center;
-    gap: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e0e0e0;
+    gap: 32px;
+    justify-content: space-between;
 }
 
 .ratings-average {
@@ -1160,11 +1161,13 @@ body.modal-open {
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    min-width: 120px;
+    flex-shrink: 0;
 }
 
 .average-number {
-    font-size: 3rem;
-    font-weight: 500;
+    font-size: 3.5rem;
+    font-weight: 400;
     color: #333;
     line-height: 1;
 }
@@ -1177,6 +1180,7 @@ body.modal-open {
 .ratings-count {
     font-size: 0.875rem;
     color: #666;
+    text-align: center;
 }
 
 /* Star styles */
@@ -1202,7 +1206,10 @@ body.modal-open {
 
 /* Distribution bars */
 .ratings-distribution {
-    margin: 20px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .distribution-row {

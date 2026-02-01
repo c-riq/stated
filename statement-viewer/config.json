@@ -4,6 +4,7 @@
     "title": "globalcoordination.org",
     "subtitle": "Statement Viewer"
   },
+  "statementsPath": "/.well-known/statements/",
   "editor": {
     "defaults": {
       "domain": "mofa.country-a.com",

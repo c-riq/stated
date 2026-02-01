@@ -16,8 +16,8 @@ export class StatementViewer {
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
 
-    constructor() {
-        this.baseUrl = '';
+    constructor(statementsPath: string = '/.well-known/statements/') {
+        this.baseUrl = `${window.location.origin}${statementsPath}`;
         this.statements = [];
         this.peerStatements = [];
         this.statementsByHash = new Map();
@@ -113,9 +113,7 @@ export class StatementViewer {
     }
 
     private async loadStatements(): Promise<void> {
-        // Always use host domain
-        this.baseUrl = `${window.location.origin}/.well-known/statements/`;
-
+        // baseUrl is already set in constructor
         this.statements = [];
         this.peerStatements = [];
         this.statementsByHash.clear();

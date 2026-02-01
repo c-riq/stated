@@ -867,29 +867,19 @@ export function createRatingsContainer(subjectName: string, ratings: RatingEntry
     const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
     const roundedAverage = Math.round(averageRating * 10) / 10;
     
-    // Header with Google-style summary
+    // Header with Google-style summary - horizontal layout
     const header = document.createElement('div');
     header.className = 'ratings-header';
-    header.innerHTML = `
-        <div class="ratings-summary">
-            <div class="ratings-average">
-                <span class="average-number">${roundedAverage.toFixed(1)}</span>
-                <div class="average-stars">${renderStars(averageRating)}</div>
-            </div>
-            <div class="ratings-count">${ratings.length} review${ratings.length !== 1 ? 's' : ''}</div>
-        </div>
-    `;
-    container.appendChild(header);
-    
-    // Star distribution (Google-style)
-    const distribution = document.createElement('div');
-    distribution.className = 'ratings-distribution';
     
     // Count ratings by star level
     const starCounts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     ratings.forEach(({ rating }) => {
         starCounts[rating] = (starCounts[rating] || 0) + 1;
     });
+    
+    // Left side: Star distribution bars
+    const distribution = document.createElement('div');
+    distribution.className = 'ratings-distribution';
     
     // Display distribution bars (5 to 1 stars)
     for (let stars = 5; stars >= 1; stars--) {
@@ -908,7 +898,23 @@ export function createRatingsContainer(subjectName: string, ratings: RatingEntry
         distribution.appendChild(row);
     }
     
-    container.appendChild(distribution);
+    // Right side: Average rating display
+    const averageDisplay = document.createElement('div');
+    averageDisplay.className = 'ratings-average';
+    averageDisplay.innerHTML = `
+        <span class="average-number">${roundedAverage.toFixed(1)}</span>
+        <div class="average-stars">${renderStars(averageRating)}</div>
+        <div class="ratings-count">${ratings.length} review${ratings.length !== 1 ? 's' : ''}</div>
+    `;
+    
+    // Combine in horizontal layout
+    const summaryContainer = document.createElement('div');
+    summaryContainer.className = 'ratings-summary';
+    summaryContainer.appendChild(distribution);
+    summaryContainer.appendChild(averageDisplay);
+    
+    header.appendChild(summaryContainer);
+    container.appendChild(header);
     
     // Individual reviews
     const reviewsHeader = document.createElement('div');

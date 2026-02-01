@@ -5,10 +5,15 @@ let viewerInstance: StatementViewer;
 
 async function loadConfig(): Promise<AppConfig> {
     try {
-        const response = await fetch('./config.json');
+        // Detect which config to load based on URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const configParam = urlParams.get('config') || 'default';
+        const configFile = configParam === 'companies' ? './config-companies.json' : './config.json';
+        
+        const response = await fetch(configFile);
         return await response.json();
     } catch (error) {
-        console.error('Failed to load config.json, using defaults:', error);
+        console.error('Failed to load config, using defaults:', error);
         // Return default config if loading fails
         return {
             branding: {
@@ -16,6 +21,7 @@ async function loadConfig(): Promise<AppConfig> {
                 title: 'globalcoordination.org',
                 subtitle: 'Statement Viewer'
             },
+            statementsPath: '/.well-known/statements/',
             editor: {
                 defaults: {
                     domain: 'mofa.country-a.com',
@@ -60,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const config = await loadConfig();
     applyBranding(config);
     
-    viewerInstance = new StatementViewer();
+    viewerInstance = new StatementViewer(config.statementsPath);
     
     // Make the viewer instance globally accessible for verification statement links
     (window as any).viewVerificationStatement = (hash: string) => {

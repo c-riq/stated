@@ -4,6 +4,7 @@
     "title": "eucompanies.org",
     "subtitle": "Statement Viewer"
   },
+  "statementsPath": "/.well-known-business-a/statements/",
   "editor": {
     "defaults": {
       "domain": "business-a.com",
