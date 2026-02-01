@@ -17,13 +17,13 @@ import {
     parseStatementsFile,
     parseStatement,
     parseOrganisationVerification,
-} from 'stated-protocol';
+} from './lib/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Go up one level from dist to project root
-const PROJECT_ROOT = join(__dirname, '..');
+// When running with tsx, __dirname is already in statement-viewer/
+const PROJECT_ROOT = __dirname;
 const MEDIA_DIR = join(PROJECT_ROOT, 'media');
 
 // Business A deployment (business-a.com) - DEFAULT
@@ -306,40 +306,38 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement6 = await buildSignedStatement(statement6, businessE.privateKey!, businessE.publicKey!);
     statements.push(signedStatement6);
 
-    // 5. Rating statements - Companies rate each other's services
-    // Business A rates Business B's manufacturing services
+    // 5. Rating statements - All companies rate Business A's services
+    // Business B rates Business A's technology solutions
     const ratingContent1 = buildRating({
         subjectType: 'Organisation',
-        subjectName: 'Business B - Manufacturing Group',
-        subjectReference: 'https://business-b.com',
+        subjectName: 'Business A - Technology Solutions',
+        subjectReference: 'https://business-a.com',
         rating: 5,
-        quality: 'Manufacturing quality and delivery',
-        comment: 'Excellent manufacturing partner with consistent quality and on-time delivery. Highly recommended for sustainable production solutions.',
+        comment: 'Excellent technology partner with innovative solutions. Their custom ERP system streamlined our operations significantly.',
     });
     const ratingStatement1 = buildStatement({
-        domain: businessA.domain,
-        author: businessA.author,
+        domain: businessB.domain,
+        author: businessB.author,
         time: new Date('2024-06-25T10:30:00Z'),
-        tags: ['rating', 'business-review', 'partnership'],
+        tags: ['business-review', 'partnership'],
         content: ratingContent1,
     });
-    const signedRating1 = await buildSignedStatement(ratingStatement1, businessA.privateKey!, businessA.publicKey!);
+    const signedRating1 = await buildSignedStatement(ratingStatement1, businessB.privateKey!, businessB.publicKey!);
     statements.push(signedRating1);
 
-    // Business C rates Business D's energy services
+    // Business C rates Business A's technology solutions
     const ratingContent2 = buildRating({
         subjectType: 'Organisation',
-        subjectName: 'Business D - Energy Corporation',
-        subjectReference: 'https://business-d.com',
+        subjectName: 'Business A - Technology Solutions',
+        subjectReference: 'https://business-a.com',
         rating: 4,
-        quality: 'Renewable energy solutions',
-        comment: 'Reliable renewable energy provider with competitive pricing. Good technical support and transparent billing.',
+        comment: 'Reliable technology provider with strong security practices. Good technical support and transparent pricing structure.',
     });
     const ratingStatement2 = buildStatement({
         domain: businessC.domain,
         author: businessC.author,
         time: new Date('2024-06-26T14:15:00Z'),
-        tags: ['rating', 'business-review', 'energy'],
+        tags: ['business-review', 'technology'],
         content: ratingContent2,
     });
     const signedRating2 = await buildSignedStatement(ratingStatement2, businessC.privateKey!, businessC.publicKey!);
@@ -351,14 +349,13 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         subjectName: 'Business A - Technology Solutions',
         subjectReference: 'https://business-a.com',
         rating: 5,
-        quality: 'Software development and IT infrastructure',
         comment: 'Outstanding technology partner. Their logistics management system improved our efficiency by 40%. Professional team with excellent post-deployment support.',
     });
     const ratingStatement3 = buildStatement({
         domain: businessE.domain,
         author: businessE.author,
         time: new Date('2024-06-27T09:20:00Z'),
-        tags: ['rating', 'business-review', 'technology'],
+        tags: ['business-review', 'technology'],
         content: ratingContent3,
     });
     const signedRating3 = await buildSignedStatement(ratingStatement3, businessE.privateKey!, businessE.publicKey!);

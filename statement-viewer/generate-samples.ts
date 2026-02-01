@@ -16,13 +16,13 @@ import {
     parseStatementsFile,
     parseStatement,
     parseOrganisationVerification,
-} from 'stated-protocol';
+} from './lib/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Go up one level from dist to project root
-const PROJECT_ROOT = join(__dirname, '..');
+// When running with tsx, __dirname is already in statement-viewer/
+const PROJECT_ROOT = __dirname;
 const MEDIA_DIR = join(PROJECT_ROOT, 'media');
 
 // Country A deployment (mofa.country-a.com) - DEFAULT

@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "dev:c": "vite --mode companies",
-    "gen": "npm run build && node dist/generate-samples.js",
-    "gen:c": "npm run build && node dist/generate-samples-companies.js",
-    "build": "vite build"
-    },
+    "gen": "tsx generate-samples.ts",
+    "gen:c": "tsx generate-samples-companies.ts",
+    "build": "vite build",
+    "update-lib": "cd ../stated-protocol && npm run build && cd ../statement-viewer && rm -rf lib && mkdir -p lib && cp -r ../stated-protocol/dist/esm/* lib/"
+  },
   "keywords": [
     "stated",
     "protocol",
@@ -18,12 +19,11 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "stated-protocol": "file:../stated-protocol"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@vitejs/plugin-basic-ssl": "^2.1.4",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vite": "^7.3.1"
   }
