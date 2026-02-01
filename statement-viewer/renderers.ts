@@ -1,5 +1,5 @@
-import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent } from './lib/index.js';
-import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry } from './types.js';
+import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent, parseRating } from './lib/index.js';
+import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
 export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
@@ -856,4 +856,191 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     card.appendChild(actionBar);
     
     return card;
+}
+
+export function createRatingsContainer(subjectName: string, ratings: RatingEntry[], identities: Map<string, Identity>, baseUrl: string, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+    const container = document.createElement('div');
+    container.className = 'ratings-container';
+    
+    // Calculate average rating
+    const totalRating = ratings.reduce((sum, { rating }) => sum + rating, 0);
+    const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
+    const roundedAverage = Math.round(averageRating * 10) / 10;
+    
+    // Header with Google-style summary
+    const header = document.createElement('div');
+    header.className = 'ratings-header';
+    header.innerHTML = `
+        <div class="ratings-summary">
+            <div class="ratings-average">
+                <span class="average-number">${roundedAverage.toFixed(1)}</span>
+                <div class="average-stars">${renderStars(averageRating)}</div>
+            </div>
+            <div class="ratings-count">${ratings.length} review${ratings.length !== 1 ? 's' : ''}</div>
+        </div>
+    `;
+    container.appendChild(header);
+    
+    // Star distribution (Google-style)
+    const distribution = document.createElement('div');
+    distribution.className = 'ratings-distribution';
+    
+    // Count ratings by star level
+    const starCounts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    ratings.forEach(({ rating }) => {
+        starCounts[rating] = (starCounts[rating] || 0) + 1;
+    });
+    
+    // Display distribution bars (5 to 1 stars)
+    for (let stars = 5; stars >= 1; stars--) {
+        const count = starCounts[stars] || 0;
+        const percentage = ratings.length > 0 ? (count / ratings.length) * 100 : 0;
+        
+        const row = document.createElement('div');
+        row.className = 'distribution-row';
+        row.innerHTML = `
+            <span class="star-label">${stars} <span class="star-icon">★</span></span>
+            <div class="distribution-bar-container">
+                <div class="distribution-bar" style="width: ${percentage}%"></div>
+            </div>
+            <span class="distribution-count">${count}</span>
+        `;
+        distribution.appendChild(row);
+    }
+    
+    container.appendChild(distribution);
+    
+    // Individual reviews
+    const reviewsHeader = document.createElement('div');
+    reviewsHeader.className = 'reviews-header';
+    reviewsHeader.textContent = 'Reviews';
+    container.appendChild(reviewsHeader);
+    
+    const reviewsList = document.createElement('div');
+    reviewsList.className = 'reviews-list';
+    
+    // Sort by date (newest first)
+    const sortedRatings = [...ratings].sort((a, b) => {
+        const timeA = new Date(a.statement.time || 0);
+        const timeB = new Date(b.statement.time || 0);
+        return timeB.getTime() - timeA.getTime();
+    });
+    
+    sortedRatings.forEach(({ statement, rating, ratingData }) => {
+        const reviewCard = document.createElement('div');
+        reviewCard.className = 'review-card';
+        
+        // Reviewer info
+        const reviewerInfo = document.createElement('div');
+        reviewerInfo.className = 'reviewer-info';
+        
+        const identity = statement.domain ? identities.get(statement.domain) : undefined;
+        
+        // Profile picture
+        if (identity && identity.profilePicture) {
+            const profilePic = document.createElement('img');
+            const profilePicPath = identity.verificationStatement?.isPeer && identity.verificationStatement?.peerDomain
+                ? `${baseUrl}peers/${identity.verificationStatement.peerDomain}/statements/attachments/${identity.profilePicture}`
+                : `${baseUrl}attachments/${identity.profilePicture}`;
+            profilePic.src = profilePicPath;
+            profilePic.alt = identity.author;
+            profilePic.className = 'reviewer-picture';
+            profilePic.onerror = () => {
+                profilePic.style.display = 'none';
+            };
+            reviewerInfo.appendChild(profilePic);
+        }
+        
+        const reviewerDetails = document.createElement('div');
+        reviewerDetails.className = 'reviewer-details';
+        
+        const reviewerName = document.createElement('div');
+        reviewerName.className = 'reviewer-name';
+        reviewerName.textContent = statement.author || statement.domain || 'Anonymous';
+        
+        // Add verified badge if identity is established
+        if (identity && identity.isSelfVerified && statement.publicKey === identity.publicKey) {
+            const verifiedBadge = document.createElement('span');
+            verifiedBadge.className = 'identity-verified-badge';
+            verifiedBadge.innerHTML = '<img src="icons/check.svg" alt="" width="12" height="12">';
+            verifiedBadge.title = 'Verified identity';
+            reviewerName.appendChild(verifiedBadge);
+        }
+        
+        reviewerDetails.appendChild(reviewerName);
+        
+        const reviewDate = document.createElement('div');
+        reviewDate.className = 'review-date';
+        reviewDate.textContent = getTimeAgo(new Date(statement.time || 0));
+        reviewerDetails.appendChild(reviewDate);
+        
+        reviewerInfo.appendChild(reviewerDetails);
+        reviewCard.appendChild(reviewerInfo);
+        
+        // Rating stars
+        const ratingStars = document.createElement('div');
+        ratingStars.className = 'review-stars';
+        ratingStars.innerHTML = renderStars(rating);
+        reviewCard.appendChild(ratingStars);
+        
+        // Quality label if present
+        if (ratingData.quality) {
+            const qualityLabel = document.createElement('div');
+            qualityLabel.className = 'review-quality';
+            qualityLabel.textContent = ratingData.quality;
+            reviewCard.appendChild(qualityLabel);
+        }
+        
+        // Comment
+        if (ratingData.comment) {
+            const comment = document.createElement('div');
+            comment.className = 'review-comment';
+            comment.textContent = ratingData.comment;
+            reviewCard.appendChild(comment);
+        }
+        
+        // Action buttons
+        const actionBar = document.createElement('div');
+        actionBar.className = 'review-actions';
+        
+        const detailsBtn = document.createElement('button');
+        detailsBtn.className = 'action-btn-small';
+        detailsBtn.textContent = 'Details';
+        detailsBtn.addEventListener('click', () => {
+            onShowDetails(statement);
+        });
+        actionBar.appendChild(detailsBtn);
+        
+        reviewCard.appendChild(actionBar);
+        reviewsList.appendChild(reviewCard);
+    });
+    
+    container.appendChild(reviewsList);
+    
+    return container;
+}
+
+function renderStars(rating: number): string {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    let starsHtml = '';
+    
+    // Full stars
+    for (let i = 0; i < fullStars; i++) {
+        starsHtml += '<span class="star filled">★</span>';
+    }
+    
+    // Half star
+    if (hasHalfStar) {
+        starsHtml += '<span class="star half">★</span>';
+    }
+    
+    // Empty stars
+    for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '<span class="star empty">★</span>';
+    }
+    
+    return starsHtml;
 }

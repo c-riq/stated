@@ -40,6 +40,12 @@ export interface PDFSignatureEntry {
     signatureData: any;
 }
 
+export interface RatingEntry {
+    statement: ParsedStatement;
+    rating: number;
+    ratingData: any;
+}
+
 export interface SignatureInfo {
     algorithm: string;
     publicKey: string;

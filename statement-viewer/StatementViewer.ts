@@ -1,7 +1,7 @@
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning } from './lib/index.js';
-import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry } from './types.js';
+import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning, parseRating } from './lib/index.js';
+import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { sortStatementsByTime } from './utils.js';
-import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, renderStatementDetails } from './renderers.js';
+import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
 
 export class StatementViewer {
     private baseUrl: string;
@@ -11,6 +11,7 @@ export class StatementViewer {
     private responsesByHash: Map<string, ParsedStatement[]>;
     private votesByPollHash: Map<string, VoteEntry[]>;
     private signaturesByPdfHash: Map<string, PDFSignatureEntry[]>;
+    private ratingsBySubject: Map<string, RatingEntry[]>;
     private expandedStatements: Set<string>;
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
@@ -23,6 +24,7 @@ export class StatementViewer {
         this.responsesByHash = new Map();
         this.votesByPollHash = new Map();
         this.signaturesByPdfHash = new Map();
+        this.ratingsBySubject = new Map();
         this.expandedStatements = new Set();
         this.identities = new Map();
         this.showHostOnly = false;
@@ -120,6 +122,7 @@ export class StatementViewer {
         this.responsesByHash.clear();
         this.votesByPollHash.clear();
         this.signaturesByPdfHash.clear();
+        this.ratingsBySubject.clear();
         this.identities.clear();
 
         this.showLoading(true);
@@ -222,6 +225,7 @@ export class StatementViewer {
                 this.buildIdentityRegistry();
                 this.buildVotesMap();
                 this.buildPdfSignaturesMap();
+                this.buildRatingsMap();
                 this.buildSupersedingMap();
                 
                 this.verifyAllSignatures().then(() => {
@@ -279,6 +283,7 @@ export class StatementViewer {
             this.buildResponseMap();
             this.buildVotesMap();
             this.buildPdfSignaturesMap();
+            this.buildRatingsMap();
             this.buildSupersedingMap();
             this.renderStatements();
         } catch (error: any) {
@@ -357,6 +362,33 @@ export class StatementViewer {
             }
         });
     }
+    
+    private buildRatingsMap(): void {
+        this.ratingsBySubject.clear();
+        
+        const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
+        
+        allStatements.forEach((stmt: ParsedStatement) => {
+            if (stmt.type && stmt.type.toLowerCase() === 'rating') {
+                try {
+                    const ratingData = parseRating(stmt.content);
+                    const subjectName = ratingData.subjectName;
+                    
+                    if (!this.ratingsBySubject.has(subjectName)) {
+                        this.ratingsBySubject.set(subjectName, []);
+                    }
+                    this.ratingsBySubject.get(subjectName)!.push({
+                        statement: stmt,
+                        rating: ratingData.rating,
+                        ratingData: ratingData
+                    });
+                } catch (error: any) {
+                    console.error('Error parsing rating:', error);
+                }
+            }
+        });
+    }
+    
     private buildSupersedingMap(): void {
         const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
         
@@ -528,6 +560,8 @@ export class StatementViewer {
 
         const aggregatedVoteHashes = new Set<string>();
         const aggregatedPdfSignatureHashes = new Set<string>();
+        const aggregatedRatingHashes = new Set<string>();
+        const displayedRatingSubjects = new Set<string>();
         
         allStatements.forEach((statement: ParsedStatement) => {
             if (statement.type && statement.type.toLowerCase() === 'poll') {
@@ -560,6 +594,24 @@ export class StatementViewer {
                     console.error('Error processing PDF signing for aggregation:', error);
                 }
             }
+            
+            // Track rating statements - aggregate by subject
+            if (statement.type && statement.type.toLowerCase() === 'rating') {
+                try {
+                    const ratingData = parseRating(statement.content);
+                    const subjectName = ratingData.subjectName;
+                    const ratings = this.ratingsBySubject.get(subjectName);
+                    if (ratings && ratings.length > 0) {
+                        // Mark all rating statements as aggregated (they'll be shown together)
+                        ratings.forEach(({ statement: ratingStatement }) => {
+                            const ratingHash = sha256(ratingStatement.raw);
+                            aggregatedRatingHashes.add(ratingHash);
+                        });
+                    }
+                } catch (error: any) {
+                    console.error('Error processing rating for aggregation:', error);
+                }
+            }
         });
 
         const sortedStatements = sortStatementsByTime(allStatements);
@@ -572,6 +624,10 @@ export class StatementViewer {
             }
             
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf' && aggregatedPdfSignatureHashes.has(statementHash)) {
+                return;
+            }
+            
+            if (statement.type && statement.type.toLowerCase() === 'rating' && aggregatedRatingHashes.has(statementHash)) {
                 return;
             }
             
@@ -619,6 +675,31 @@ export class StatementViewer {
                     }
                 } catch (error: any) {
                     console.error('Error rendering PDF signatures:', error);
+                }
+            }
+            
+            // Show ratings if this statement is being rated
+            if (statement.author || statement.domain) {
+                const subjectName = statement.author || statement.domain || '';
+                const ratings = this.ratingsBySubject.get(subjectName);
+                if (ratings && ratings.length > 0 && !displayedRatingSubjects.has(subjectName)) {
+                    displayedRatingSubjects.add(subjectName);
+                    
+                    // Filter ratings if showHostOnly is enabled
+                    const filteredRatings = this.showHostOnly
+                        ? ratings.filter(({ statement: ratingStatement }) => !ratingStatement.isPeer)
+                        : ratings;
+                    
+                    if (filteredRatings.length > 0) {
+                        const ratingsContainer = createRatingsContainer(
+                            subjectName,
+                            filteredRatings,
+                            this.identities,
+                            this.baseUrl,
+                            (stmt) => this.showStatementDetails(stmt)
+                        );
+                        container.appendChild(ratingsContainer);
+                    }
                 }
             }
             

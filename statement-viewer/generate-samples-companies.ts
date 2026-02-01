@@ -10,6 +10,7 @@ import {
     buildResponseContent,
     buildSignedStatement,
     buildPDFSigningContent,
+    buildRating,
     generateKeyPair,
     sha256,
     generateStatementsFile,
@@ -305,7 +306,65 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement6 = await buildSignedStatement(statement6, businessE.privateKey!, businessE.publicKey!);
     statements.push(signedStatement6);
 
-    // 5. Joint statement PDF signing by all companies
+    // 5. Rating statements - Companies rate each other's services
+    // Business A rates Business B's manufacturing services
+    const ratingContent1 = buildRating({
+        subjectType: 'Organisation',
+        subjectName: 'Business B - Manufacturing Group',
+        subjectReference: 'https://business-b.com',
+        rating: 5,
+        quality: 'Manufacturing quality and delivery',
+        comment: 'Excellent manufacturing partner with consistent quality and on-time delivery. Highly recommended for sustainable production solutions.',
+    });
+    const ratingStatement1 = buildStatement({
+        domain: businessA.domain,
+        author: businessA.author,
+        time: new Date('2024-06-25T10:30:00Z'),
+        tags: ['rating', 'business-review', 'partnership'],
+        content: ratingContent1,
+    });
+    const signedRating1 = await buildSignedStatement(ratingStatement1, businessA.privateKey!, businessA.publicKey!);
+    statements.push(signedRating1);
+
+    // Business C rates Business D's energy services
+    const ratingContent2 = buildRating({
+        subjectType: 'Organisation',
+        subjectName: 'Business D - Energy Corporation',
+        subjectReference: 'https://business-d.com',
+        rating: 4,
+        quality: 'Renewable energy solutions',
+        comment: 'Reliable renewable energy provider with competitive pricing. Good technical support and transparent billing.',
+    });
+    const ratingStatement2 = buildStatement({
+        domain: businessC.domain,
+        author: businessC.author,
+        time: new Date('2024-06-26T14:15:00Z'),
+        tags: ['rating', 'business-review', 'energy'],
+        content: ratingContent2,
+    });
+    const signedRating2 = await buildSignedStatement(ratingStatement2, businessC.privateKey!, businessC.publicKey!);
+    statements.push(signedRating2);
+
+    // Business E rates Business A's technology solutions
+    const ratingContent3 = buildRating({
+        subjectType: 'Organisation',
+        subjectName: 'Business A - Technology Solutions',
+        subjectReference: 'https://business-a.com',
+        rating: 5,
+        quality: 'Software development and IT infrastructure',
+        comment: 'Outstanding technology partner. Their logistics management system improved our efficiency by 40%. Professional team with excellent post-deployment support.',
+    });
+    const ratingStatement3 = buildStatement({
+        domain: businessE.domain,
+        author: businessE.author,
+        time: new Date('2024-06-27T09:20:00Z'),
+        tags: ['rating', 'business-review', 'technology'],
+        content: ratingContent3,
+    });
+    const signedRating3 = await buildSignedStatement(ratingStatement3, businessE.privateKey!, businessE.publicKey!);
+    statements.push(signedRating3);
+
+    // 6. Joint statement PDF signing by all companies
     const jointStatementPdfContent = await readFile(join(MEDIA_DIR, 'joint-statement.pdf'));
     const jointStatementPdfFilename = await createAttachment(paths.attachmentsDir, 'joint-statement.pdf', jointStatementPdfContent);
     attachmentFiles.push(jointStatementPdfFilename);
