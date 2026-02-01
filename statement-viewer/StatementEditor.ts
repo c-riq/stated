@@ -253,6 +253,40 @@ export class StatementEditor {
                     if (responseHashInput) responseHashInput.value = statementHash;
                 }, 100);
             }
+        } else if (type === 'rating') {
+            const subjectName = urlParams.get('subjectName');
+            const subjectType = urlParams.get('subjectType');
+            const subjectReference = urlParams.get('subjectReference');
+            
+            if (subjectName) {
+                setTimeout(() => {
+                    const ratingSubjectInput = document.getElementById('ratingSubjectName') as HTMLInputElement;
+                    if (ratingSubjectInput) ratingSubjectInput.value = decodeURIComponent(subjectName);
+                }, 100);
+            }
+            
+            if (subjectType) {
+                setTimeout(() => {
+                    const ratingTypeSelect = document.getElementById('ratingSubjectType') as HTMLSelectElement;
+                    if (ratingTypeSelect) ratingTypeSelect.value = decodeURIComponent(subjectType);
+                }, 100);
+            }
+            
+            if (subjectReference) {
+                setTimeout(() => {
+                    const ratingRefInput = document.getElementById('ratingSubjectReference') as HTMLInputElement;
+                    if (ratingRefInput) ratingRefInput.value = decodeURIComponent(subjectReference);
+                }, 100);
+            }
+        } else if (type === 'sign_pdf') {
+            const pdfHash = urlParams.get('pdfHash');
+            
+            if (pdfHash) {
+                setTimeout(() => {
+                    const pdfHashInput = document.getElementById('pdfHash') as HTMLInputElement;
+                    if (pdfHashInput) pdfHashInput.value = pdfHash;
+                }, 100);
+            }
         }
     }
 

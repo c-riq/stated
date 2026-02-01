@@ -773,6 +773,16 @@ export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSig
     
     container.appendChild(signaturesGrid);
     
+    // Add "Sign this document" button
+    const signDocBtn = document.createElement('button');
+    signDocBtn.className = 'votes-toggle-btn';
+    signDocBtn.textContent = 'Sign This Document';
+    signDocBtn.style.marginTop = '12px';
+    signDocBtn.addEventListener('click', () => {
+        window.location.href = `/editor.html?type=sign_pdf&pdfHash=${encodeURIComponent(pdfHash)}`;
+    });
+    container.appendChild(signDocBtn);
+    
     return container;
 }
 
@@ -921,6 +931,32 @@ export function createRatingsContainer(subjectName: string, ratings: RatingEntry
     
     header.appendChild(summaryContainer);
     container.appendChild(header);
+    
+    // Add "Add your review" button
+    const addReviewBtn = document.createElement('button');
+    addReviewBtn.className = 'votes-toggle-btn';
+    addReviewBtn.textContent = 'Add Your Review';
+    addReviewBtn.style.marginBottom = '12px';
+    addReviewBtn.addEventListener('click', () => {
+        // Try to get subjectType and subjectReference from the first rating if available
+        let subjectType = '';
+        let subjectReference = '';
+        if (ratings.length > 0) {
+            const firstRating = ratings[0].ratingData;
+            subjectType = firstRating.subjectType || '';
+            subjectReference = firstRating.subjectReference || '';
+        }
+        
+        let url = `/editor.html?type=rating&subjectName=${encodeURIComponent(subjectName)}`;
+        if (subjectType) {
+            url += `&subjectType=${encodeURIComponent(subjectType)}`;
+        }
+        if (subjectReference) {
+            url += `&subjectReference=${encodeURIComponent(subjectReference)}`;
+        }
+        window.location.href = url;
+    });
+    container.appendChild(addReviewBtn);
     
     // Individual reviews
     const reviewsHeader = document.createElement('div');
