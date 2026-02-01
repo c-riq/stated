@@ -356,6 +356,9 @@ body.modal-open {
 
 .verify-badge.unverified {
     background: #dc2626;
+    color: white;
+}
+
 /* Superseded indicator */
 .superseded-indicator {
     background: #fff3cd;
@@ -384,9 +387,6 @@ body.modal-open {
     font-size: 0.875rem;
     color: #856404;
     font-weight: 500;
-}
-
-    color: white;
 }
 
 /* Statement content */
@@ -1133,6 +1133,8 @@ body.modal-open {
 
 .vote-signature-indicator.unverified {
     background: #fee;
+    color: #dc2626;
+}
 
 /* Ratings container - Google-style */
 .ratings-container {
@@ -1151,8 +1153,8 @@ body.modal-open {
 
 .ratings-summary {
     display: flex;
-    align-items: center;
-    gap: 32px;
+    align-items: flex-start;
+    gap: 40px;
     justify-content: space-between;
 }
 
@@ -1161,8 +1163,9 @@ body.modal-open {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    min-width: 120px;
+    min-width: 140px;
     flex-shrink: 0;
+    order: 2;
 }
 
 .average-number {
@@ -1209,49 +1212,54 @@ body.modal-open {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
+    order: 1;
 }
 
 .distribution-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: 8px;
+    height: 20px;
 }
 
 .star-label {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #666;
-    min-width: 40px;
+    min-width: 45px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
+    flex-shrink: 0;
 }
 
 .star-icon {
     color: #fbbc04;
-    font-size: 1rem;
+    font-size: 0.875rem;
 }
 
 .distribution-bar-container {
     flex: 1;
-    height: 8px;
-    background: #e0e0e0;
-    border-radius: 4px;
+    height: 12px;
+    background: #e8eaed;
+    border-radius: 6px;
     overflow: hidden;
+    min-width: 100px;
 }
 
 .distribution-bar {
     height: 100%;
     background: #fbbc04;
     transition: width 0.3s ease;
+    border-radius: 6px;
 }
 
 .distribution-count {
-    font-size: 0.875rem;
-    color: #666;
-    min-width: 30px;
+    font-size: 0.8125rem;
+    color: #5f6368;
+    min-width: 35px;
     text-align: right;
+    flex-shrink: 0;
 }
 
 /* Reviews section */
@@ -1360,5 +1368,35 @@ body.modal-open {
     border-color: #0072BC;
     color: #0072BC;
 }
-    color: #dc2626;
+
+/* Responsive adjustments for ratings */
+@media (max-width: 600px) {
+    .ratings-summary {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .ratings-average {
+        order: 1;
+        width: 100%;
+    }
+    
+    .ratings-distribution {
+        order: 2;
+        width: 100%;
+    }
+    
+    .distribution-row {
+        gap: 6px;
+    }
+    
+    .star-label {
+        min-width: 40px;
+        font-size: 0.75rem;
+    }
+    
+    .distribution-count {
+        min-width: 30px;
+        font-size: 0.75rem;
+    }
 }
