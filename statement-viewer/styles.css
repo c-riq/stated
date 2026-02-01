@@ -882,6 +882,8 @@ body.modal-open {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .pdf-signature-card {
@@ -895,6 +897,8 @@ body.modal-open {
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .pdf-signature-card:hover {
@@ -916,6 +920,9 @@ body.modal-open {
     display: flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .pdf-signature-name {
@@ -923,18 +930,24 @@ body.modal-open {
     font-weight: 600;
     color: #003366;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pdf-signature-domain {
     font-size: 0.75rem;
     color: #666;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pdf-signature-time {
     font-size: 0.75rem;
     color: #999;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pdf-signature-verify {
@@ -961,8 +974,31 @@ body.modal-open {
 }
 
 @media (max-width: 600px) {
+    .pdf-signatures-container {
+        padding: 12px 12px 12px 16px;
+    }
+    
     .pdf-signatures-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .pdf-signature-card {
+        width: 100%;
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .pdf-signature-info {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .pdf-signature-name,
+    .pdf-signature-domain,
+    .pdf-signature-time {
+        max-width: 100%;
     }
 }
 
