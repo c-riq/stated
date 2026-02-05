@@ -202,10 +202,16 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
         const attachmentsContainer = document.createElement('div');
         attachmentsContainer.className = 'statement-attachments';
         
+        const isSignPdf = statement.type && statement.type.toLowerCase() === 'sign_pdf';
+        
         statement.attachments.forEach((attachment: string) => {
             const attachmentUrl = attachmentBasePath + attachment;
             const extension = attachment.split('.').pop()?.toLowerCase();
             if (!extension) return;
+            
+            if (isSignPdf && extension === 'pdf') {
+                return;
+            }
             
             if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
                 const imageContainer = document.createElement('div');
