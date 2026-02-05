@@ -12,7 +12,6 @@ export class StatementViewer {
     private votesByPollHash: Map<string, VoteEntry[]>;
     private signaturesByPdfHash: Map<string, PDFSignatureEntry[]>;
     private ratingsBySubject: Map<string, RatingEntry[]>;
-    private expandedStatements: Set<string>;
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
 
@@ -25,7 +24,6 @@ export class StatementViewer {
         this.votesByPollHash = new Map();
         this.signaturesByPdfHash = new Map();
         this.ratingsBySubject = new Map();
-        this.expandedStatements = new Set();
         this.identities = new Map();
         this.showHostOnly = false;
         this.init();
@@ -559,7 +557,6 @@ export class StatementViewer {
         const aggregatedVoteHashes = new Set<string>();
         const aggregatedPdfSignatureHashes = new Set<string>();
         const aggregatedRatingHashes = new Set<string>();
-        const displayedRatingSubjects = new Set<string>();
         
         allStatements.forEach((statement: ParsedStatement) => {
             if (statement.type && statement.type.toLowerCase() === 'poll') {
@@ -593,22 +590,10 @@ export class StatementViewer {
                 }
             }
             
-            // Track rating statements - aggregate by subject
+            // Mark ALL rating statements as aggregated - they will be displayed separately
             if (statement.type && statement.type.toLowerCase() === 'rating') {
-                try {
-                    const ratingData = parseRating(statement.content);
-                    const subjectName = ratingData.subjectName;
-                    const ratings = this.ratingsBySubject.get(subjectName);
-                    if (ratings && ratings.length > 0) {
-                        // Mark all rating statements as aggregated (they'll be shown together)
-                        ratings.forEach(({ statement: ratingStatement }) => {
-                            const ratingHash = sha256(ratingStatement.raw);
-                            aggregatedRatingHashes.add(ratingHash);
-                        });
-                    }
-                } catch (error: any) {
-                    console.error('Error processing rating for aggregation:', error);
-                }
+                const statementHash = sha256(statement.raw);
+                aggregatedRatingHashes.add(statementHash);
             }
         });
 
@@ -676,30 +661,6 @@ export class StatementViewer {
                 }
             }
             
-            // Show ratings if this statement is being rated
-            if (statement.author || statement.domain) {
-                const subjectName = statement.author || statement.domain || '';
-                const ratings = this.ratingsBySubject.get(subjectName);
-                if (ratings && ratings.length > 0 && !displayedRatingSubjects.has(subjectName)) {
-                    displayedRatingSubjects.add(subjectName);
-                    
-                    // Filter ratings if showHostOnly is enabled
-                    const filteredRatings = this.showHostOnly
-                        ? ratings.filter(({ statement: ratingStatement }) => !ratingStatement.isPeer)
-                        : ratings;
-                    
-                    if (filteredRatings.length > 0) {
-                        const ratingsContainer = createRatingsContainer(
-                            subjectName,
-                            filteredRatings,
-                            this.identities,
-                            this.baseUrl,
-                            (stmt) => this.showStatementDetails(stmt)
-                        );
-                        container.appendChild(ratingsContainer);
-                    }
-                }
-            }
             
             const responses = this.responsesByHash.get(statementHash);
             if (responses && responses.length > 0) {
@@ -712,6 +673,25 @@ export class StatementViewer {
                     const responsesContainer = createResponsesContainer(filteredResponses, (stmt) => this.showStatementDetails(stmt));
                     container.appendChild(responsesContainer);
                 }
+            }
+        });
+        
+        // Display all rating subjects at the end
+        this.ratingsBySubject.forEach((ratings, subjectName) => {
+            // Filter ratings if showHostOnly is enabled
+            const filteredRatings = this.showHostOnly
+                ? ratings.filter(({ statement: ratingStatement }) => !ratingStatement.isPeer)
+                : ratings;
+            
+            if (filteredRatings.length > 0) {
+                const ratingsContainer = createRatingsContainer(
+                    subjectName,
+                    filteredRatings,
+                    this.identities,
+                    this.baseUrl,
+                    (stmt) => this.showStatementDetails(stmt)
+                );
+                container.appendChild(ratingsContainer);
             }
         });
     }
