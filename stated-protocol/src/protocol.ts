@@ -381,7 +381,6 @@ export const buildOrganisationVerificationContent = ({
   confidence,
   reliabilityPolicy,
   employeeCount,
-  pictureHash,
   latitude,
   longitude,
   population,
@@ -397,16 +396,13 @@ export const buildOrganisationVerificationContent = ({
     throw new Error('Invalid population ' + population);
   if (confidence && !('' + confidence)?.match(/^[0-9.]+$/))
     throw new Error('Invalid confidence ' + confidence);
-  if (pictureHash && !pictureHash.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
-    throw new Error("Logo must be in format 'base64hash.extension' (URL-safe base64)");
-  }
   if (publicKey && !publicKey.match(/^[A-Za-z0-9_-]+$/)) {
     throw new Error('Public key must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)');
   }
 
   return (
     '    Type: Organisation verification\n' +
-    '    Description: We verified the following information about an organisation.\n' +
+    '    Description: We verified the following information about an organisation. Their logo may be attached to this statement.\n' +
     '    Name: ' +
     name +
     '\n' +
@@ -428,7 +424,6 @@ export const buildOrganisationVerificationContent = ({
     (latitude ? '    Latitude: ' + latitude + '\n' : '') +
     (longitude ? '    Longitude: ' + longitude + '\n' : '') +
     (population ? '    Population: ' + population + '\n' : '') +
-    (pictureHash ? '    Logo: ' + pictureHash + '\n' : '') +
     (employeeCount ? '    Employee count: ' + employeeCount + '\n' : '') +
     (publicKey ? '    Public key: ' + publicKey + '\n' : '') +
     (reliabilityPolicy ? '    Reliability policy: ' + reliabilityPolicy + '\n' : '') +
@@ -440,7 +435,7 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
   const organisationVerificationRegex = new RegExp(
     '' +
       /^    Type: Organisation verification\n/.source +
-      /    Description: We verified the following information about an organisation.\n/.source +
+      /    Description: We verified the following information about an organisation\.(?:\sTheir logo may be attached to this statement\.)?\n/.source +
       /    Name: (?<name>[^\n]+?)\n/.source +
       /(?:    English name: (?<englishName>[^\n]+?)\n)?/.source +
       /    Country: (?<country>[^\n]+?)\n/.source +
@@ -454,7 +449,7 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
       /(?:    Latitude: (?<latitude>[^\n]+?)\n)?/.source +
       /(?:    Longitude: (?<longitude>[^\n]+?)\n)?/.source +
       /(?:    Population: (?<population>[^\n]+?)\n)?/.source +
-      /(?:    Logo: (?<pictureHash>[A-Za-z0-9_-]+\.[a-zA-Z0-9]+)\n)?/.source +
+      /(?:    Logo: (?:[A-Za-z0-9_-]+\.[a-zA-Z0-9]+)\n)?/.source +
       /(?:    Employee count: (?<employeeCount>[01,+-]+?)\n)?/.source +
       /(?:    Public key: (?<publicKey>[A-Za-z0-9_-]+)\n)?/.source +
       /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source +
@@ -479,7 +474,6 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     latitude,
     longitude,
     population,
-    pictureHash,
     employeeCount,
     publicKey,
     reliabilityPolicy,
@@ -504,7 +498,6 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     latitude: latitude ? parseFloat(latitude) : undefined,
     longitude: longitude ? parseFloat(longitude) : undefined,
     population: population && isPeopleCountBucket(population) ? population : undefined,
-    pictureHash,
     employeeCount: employeeCount && isPeopleCountBucket(employeeCount) ? employeeCount : undefined,
     publicKey,
     reliabilityPolicy,
@@ -523,7 +516,6 @@ export const buildPersonVerificationContent = ({
   employer,
   verificationMethod,
   confidence,
-  picture,
   reliabilityPolicy,
   publicKey,
 }: PersonVerification) => {
@@ -539,7 +531,7 @@ export const buildPersonVerificationContent = ({
     .filter((_i, j) => [1, 2, 3].includes(j));
   const content =
     '    Type: Person verification\n' +
-    '    Description: We verified the following information about a person.\n' +
+    '    Description: We verified the following information about a person. Their profile picture may be attached to this statement.\n' +
     '    Name: ' +
     name +
     '\n' +
@@ -558,7 +550,6 @@ export const buildPersonVerificationContent = ({
     (foreignDomain
       ? '    Foreign domain used for publishing statements: ' + foreignDomain + '\n'
       : '') +
-    (picture ? '    Picture: ' + picture + '\n' : '') +
     (verificationMethod ? '    Verification method: ' + verificationMethod + '\n' : '') +
     (publicKey ? '    Public key: ' + publicKey + '\n' : '') +
     (confidence ? '    Confidence: ' + confidence + '\n' : '') +
@@ -570,7 +561,7 @@ export const parsePersonVerification = (content: string): PersonVerification => 
   const domainVerificationRegex = new RegExp(
     '' +
       /^    Type: Person verification\n/.source +
-      /    Description: We verified the following information about a person.\n/.source +
+      /    Description: We verified the following information about a person\.(?:\sTheir profile picture may be attached to this statement\.)?\n/.source +
       /    Name: (?<name>[^\n]+?)\n/.source +
       /    Date of birth: (?<dateOfBirth>[^\n]+?)\n/.source +
       /    City of birth: (?<cityOfBirth>[^\n]+?)\n/.source +
@@ -579,7 +570,7 @@ export const parsePersonVerification = (content: string): PersonVerification => 
       /(?:    Employer: (?<employer>[^\n]+?)\n)?/.source +
       /(?:    Owner of the domain: (?<domain>[^\n]+?)\n)?/.source +
       /(?:    Foreign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source +
-      /(?:    Picture: (?<picture>[^\n]+?)\n)?/.source +
+      /(?:    Picture: (?:[^\n]+?)\n)?/.source +
       /(?:    Verification method: (?<verificationMethod>[^\n]+?)\n)?/.source +
       /(?:    Public key: (?<publicKey>[A-Za-z0-9_-]+)\n)?/.source +
       /(?:    Confidence: (?<confidence>[^\n]+?)\n)?/.source +
@@ -598,7 +589,6 @@ export const parsePersonVerification = (content: string): PersonVerification => 
     employer,
     domain,
     foreignDomain,
-    picture,
     verificationMethod,
     publicKey,
     confidence,
@@ -619,7 +609,6 @@ export const parsePersonVerification = (content: string): PersonVerification => 
     employer,
     ownDomain: domain,
     foreignDomain,
-    picture,
     verificationMethod,
     publicKey,
     confidence: confidence ? parseFloat(confidence) : undefined,

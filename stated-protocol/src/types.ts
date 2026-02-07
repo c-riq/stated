@@ -100,7 +100,6 @@ export type OrganisationVerification = {
   confidence?: number;
   reliabilityPolicy?: string;
   employeeCount?: PeopleCountBucket;
-  pictureHash?: string;
   latitude?: number;
   longitude?: number;
   population?: PeopleCountBucket;
@@ -126,7 +125,6 @@ export type PersonVerification = {
   employer?: string;
   verificationMethod?: string;
   confidence?: number;
-  picture?: string;
   reliabilityPolicy?: string;
   publicKey?: string;
 } & (withOwnDomain | withForeignDomain);

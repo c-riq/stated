@@ -70,7 +70,6 @@ function buildContentFromInput(contentObj: any): string {
         confidence: contentObj.confidence,
         reliabilityPolicy: contentObj.reliabilityPolicy,
         employeeCount: contentObj.employeeCount,
-        pictureHash: contentObj.pictureHash,
         latitude: contentObj.latitude,
         longitude: contentObj.longitude,
         population: contentObj.population,
@@ -88,7 +87,6 @@ function buildContentFromInput(contentObj: any): string {
         employer: contentObj.employer,
         verificationMethod: contentObj.verificationMethod,
         confidence: contentObj.confidence,
-        picture: contentObj.picture,
         reliabilityPolicy: contentObj.reliabilityPolicy,
         publicKey: contentObj.publicKey,
       });

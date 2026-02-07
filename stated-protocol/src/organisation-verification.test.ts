@@ -11,7 +11,6 @@ describe('Organisation verification building', () => {
   it('build & parse function compatibility: input=parse(build(input))', () => {
     const [name, englishName, city, domain, foreignDomain, serialNumber, reliabilityPolicy] =
       Array.from({ length: 7 }, randomUnicodeString);
-    const pictureHash = 'abc123_-XYZ.png';
     const country = 'Germany';
     const province = 'Bayern';
     const legalForm = 'corporation';
@@ -25,7 +24,6 @@ describe('Organisation verification building', () => {
       province,
       legalForm,
       domain,
-      pictureHash,
       foreignDomain,
       serialNumber,
       confidence,
@@ -43,7 +41,6 @@ describe('Organisation verification building', () => {
     assert.strictEqual(parsedVerification.foreignDomain, foreignDomain);
     assert.strictEqual(parsedVerification.serialNumber, serialNumber);
     assert.strictEqual(parsedVerification.confidence, confidence);
-    assert.strictEqual(parsedVerification.pictureHash, pictureHash);
     assert.strictEqual(parsedVerification.reliabilityPolicy, reliabilityPolicy);
     assert.strictEqual(parsedVerification.employeeCount, employeeCount);
   });
