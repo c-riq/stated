@@ -1,4 +1,4 @@
-Stated protocol version: 5
+Stated protocol version: 5.2
 Publishing domain: amsterdam.nl
 Author: City of Amsterdam
 Time: Sun, 15 Apr 2035 14:30:00 GMT

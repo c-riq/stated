@@ -199,7 +199,7 @@ describe('Fixture Validation', () => {
         assert.ok(parsed.domain);
         assert.ok(parsed.author);
         assert.ok(parsed.content);
-        assert.strictEqual(parsed.formatVersion, '5');
+        assert.strictEqual(parsed.formatVersion, '5.2');
       });
 
       it('round-trip: parse(output.txt) should match input.json structure', () => {

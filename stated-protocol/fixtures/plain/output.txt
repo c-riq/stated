@@ -1,4 +1,4 @@
-Stated protocol version: 5
+Stated protocol version: 5.2
 Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
