@@ -7,7 +7,7 @@ export interface ParsedStatement {
     content: string;
     type?: string;
     signature?: string;
-    formatVersion?: string;
+    formatVersion: string;
     attachments?: string[];
     supersededStatement?: string;
     supersededBy?: ParsedStatement;

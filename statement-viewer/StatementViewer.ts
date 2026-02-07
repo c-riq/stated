@@ -1,7 +1,19 @@
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning, parseRating } from 'stated-protocol';
+import { sha256, verifySignature, parseSignedStatement } from 'stated-protocol';
+import { sha256 as sha256_v5_1, verifySignature as verifySignature_v5_1, parseSignedStatement as parseSignedStatement_v5_1 } from 'stated-protocol-v5.1';
 import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { sortStatementsByTime } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
+import {
+    parseStatementsFileCompat,
+    parseStatementCompat,
+    parseOrganisationVerificationCompat,
+    parsePDFSigningCompat,
+    parseVoteCompat,
+    parseResponseContentCompat,
+    parseRatingCompat,
+    extractPdfHash,
+    extractProfilePicture
+} from './protocol-compat.js';
 
 export class StatementViewer {
     private baseUrl: string;
@@ -190,7 +202,7 @@ export class StatementViewer {
 
     private parseStatementsFile(text: string, isPeer: boolean = false): ParsedStatement[] | undefined {
         try {
-            const statementTexts = parseStatementsFileLib(text);
+            const statementTexts = parseStatementsFileCompat(text);
             
             if (statementTexts.length === 0) {
                 if (!isPeer) {
@@ -200,7 +212,7 @@ export class StatementViewer {
             }
 
             const statements: ParsedStatement[] = statementTexts.map((statementText: string) => {
-                const parsed = parseStatementLib({ statement: statementText });
+                const parsed = parseStatementCompat({ statement: statementText });
                 return {
                     raw: statementText,
                     ...parsed,
@@ -293,7 +305,7 @@ export class StatementViewer {
         this.peerStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'response') {
                 try {
-                    const responseData = parseResponseContent(stmt.content);
+                    const responseData = parseResponseContentCompat(stmt.content, stmt.formatVersion);
                     const referencedHash = responseData.hash;
                     if (!this.responsesByHash.has(referencedHash)) {
                         this.responsesByHash.set(referencedHash, []);
@@ -314,7 +326,7 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'vote') {
                 try {
-                    const voteData = parseVote(stmt.content);
+                    const voteData = parseVoteCompat(stmt.content, stmt.formatVersion);
                     const pollHash = voteData.pollHash;
                     const vote = voteData.vote;
                     
@@ -341,18 +353,20 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigning(stmt.content);
-                    const pdfHash = pdfSigningData.hash;
+                    const pdfSigningData = parsePDFSigningCompat(stmt.content, stmt.formatVersion);
+                    const pdfHash = extractPdfHash(pdfSigningData, stmt.attachments);
                     
-                    if (!this.signaturesByPdfHash.has(pdfHash)) {
+                    if (pdfHash && !this.signaturesByPdfHash.has(pdfHash)) {
                         this.signaturesByPdfHash.set(pdfHash, []);
                     }
-                    this.signaturesByPdfHash.get(pdfHash)!.push({
-                        statement: stmt,
-                        pdfHash: pdfHash,
-                        signatureData: pdfSigningData
-                    });
-                } catch (error: any) {
+                    if (pdfHash) {
+                        this.signaturesByPdfHash.get(pdfHash)!.push({
+                            statement: stmt,
+                            pdfHash: pdfHash,
+                            signatureData: pdfSigningData
+                        });
+                    }
+                } catch (error: unknown) {
                     console.error('Error parsing PDF signing:', error);
                 }
             }
@@ -367,7 +381,7 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'rating') {
                 try {
-                    const ratingData = parseRating(stmt.content);
+                    const ratingData = parseRatingCompat(stmt.content, stmt.formatVersion);
                     const subjectName = ratingData.subjectName;
                     
                     if (!this.ratingsBySubject.has(subjectName)) {
@@ -413,25 +427,27 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'organisation_verification') {
                 try {
-                    const verification = parseOrganisationVerification(stmt.content);
+                    const verification = parseOrganisationVerificationCompat(stmt.content, stmt.formatVersion);
                     
                     // Check if this is a self-verification: the statement's publishing domain
                     // must match the domain being verified
                     const isSelfVerified = verification.domain && stmt.domain === verification.domain;
                     
                     if (isSelfVerified) {
+                        const profilePicture = extractProfilePicture(verification, stmt.attachments);
+                        
                         const identity: Identity = {
                             domain: verification.domain,
                             author: verification.name,
                             publicKey: verification.publicKey,
-                            profilePicture: verification.pictureHash,
+                            profilePicture: profilePicture,
                             verificationStatement: stmt,
                             isSelfVerified: true
                         };
                         
                         this.identities.set(verification.domain, identity);
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error('Error parsing organisation verification:', error);
                 }
             }
@@ -573,9 +589,9 @@ export class StatementViewer {
             // Track PDF signing statements - only the first one will render the PDF with all signatures
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigning(statement.content);
-                    const pdfHash = pdfSigningData.hash;
-                    const signatures = this.signaturesByPdfHash.get(pdfHash);
+                    const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
+                    const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                    const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                     if (signatures && signatures.length > 0) {
                         // Mark all but the first signature as aggregated (to hide them)
                         signatures.forEach(({ statement: sigStatement }, index) => {
@@ -636,9 +652,9 @@ export class StatementViewer {
             // Show PDF with signatures if this is a PDF signing statement (first one for each PDF)
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigning(statement.content);
-                    const pdfHash = pdfSigningData.hash;
-                    const signatures = this.signaturesByPdfHash.get(pdfHash);
+                    const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
+                    const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                    const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                     if (signatures && signatures.length > 0) {
                         // Filter signatures if showHostOnly is enabled
                         const filteredSignatures = this.showHostOnly
