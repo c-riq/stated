@@ -4,7 +4,8 @@ export type LegalForm =
   | 'local government'
   | 'state government'
   | 'foreign affairs ministry'
-  | 'corporation';
+  | 'corporation'
+  | 'sole proprietorship';
 
 export type PeopleCountBucket =
   | '0-10'
@@ -23,6 +24,7 @@ export function isLegalForm(value: string): value is LegalForm {
     'state government',
     'foreign affairs ministry',
     'corporation',
+    'sole proprietorship',
   ].includes(value);
 }
 

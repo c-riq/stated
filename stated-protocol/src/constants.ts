@@ -3,6 +3,7 @@ export const legalForms = {
   state_government: 'state government',
   foreign_affairs_ministry: 'foreign affairs ministry',
   corporation: 'corporation',
+  sole_proprietorship: 'sole proprietorship',
 };
 
 export const statementTypes = {
