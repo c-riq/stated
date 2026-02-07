@@ -32,15 +32,13 @@ import type {
     ResponseContent as ResponseContent_v5_1
 } from 'stated-protocol-v5.1';
 
-type ProtocolVersion = '5' | '5.1' | '5.2';
-
 export type OrganisationVerificationCompat =
     | (OrganisationVerification & { _version: '5.2' })
-    | (OrganisationVerification_v5_1 & { _version: '5' | '5.1'; pictureHash?: string });
+    | (OrganisationVerification_v5_1 & { _version: '5' | '5.1' });
 
 export type PDFSigningCompat =
-    | (PDFSigning & { _version: '5.2' })
-    | (PDFSigning_v5_1 & { _version: '5' | '5.1'; hash?: string });
+    | ({ _version: '5.2' })
+    | (PDFSigning_v5_1 & { _version: '5' | '5.1'});
 
 export type RatingCompat =
     | (Rating & { _version: '5.2' })
