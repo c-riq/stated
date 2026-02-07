@@ -540,10 +540,6 @@ export class StatementEditor {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="orgPictureHash">Logo Hash (optional)</label>
-                        <input type="text" id="orgPictureHash" class="form-input" placeholder="hash.ext (e.g., abc123.png)">
-                    </div>
-                    <div class="form-group">
                         <label for="orgPublicKey">Public Key (optional)</label>
                         <input type="text" id="orgPublicKey" class="form-input" placeholder="URL-safe base64 public key">
                     </div>
@@ -599,10 +595,6 @@ export class StatementEditor {
                         <input type="text" id="personVerificationMethod" class="form-input" placeholder="e.g., ID card, Passport">
                     </div>
                     <div class="form-group">
-                        <label for="personPicture">Picture Hash (optional)</label>
-                        <input type="text" id="personPicture" class="form-input" placeholder="hash.ext (e.g., abc123.jpg)">
-                    </div>
-                    <div class="form-group">
                         <label for="personPublicKey">Public Key (optional)</label>
                         <input type="text" id="personPublicKey" class="form-input" placeholder="URL-safe base64 public key">
                     </div>
@@ -620,8 +612,8 @@ export class StatementEditor {
             case 'sign_pdf':
                 fieldsHTML = `
                     <div class="form-group">
-                        <label for="pdfHash">PDF Hash *</label>
-                        <input type="text" id="pdfHash" class="form-input" placeholder="Hash of the PDF file" required>
+                        <label>PDF Signing</label>
+                        <p class="help-text">Upload the PDF file as an attachment. The statement will reference it automatically.</p>
                     </div>
                 `;
                 break;
@@ -661,7 +653,7 @@ export class StatementEditor {
         });
     }
 
-    private buildTypedContent(type: string): string {
+    private async buildTypedContent(type: string): Promise<string> {
         switch (type) {
             case 'poll': {
                 const pollQuestion = (document.getElementById('pollQuestion') as HTMLInputElement)?.value.trim();
@@ -750,7 +742,6 @@ export class StatementEditor {
                 const longitudeStr = (document.getElementById('orgLongitude') as HTMLInputElement)?.value.trim();
                 const employeeCountInput = (document.getElementById('orgEmployeeCount') as HTMLSelectElement)?.value.trim();
                 const populationInput = (document.getElementById('orgPopulation') as HTMLSelectElement)?.value.trim();
-                const pictureHash = (document.getElementById('orgPictureHash') as HTMLInputElement)?.value.trim();
                 const publicKey = (document.getElementById('orgPublicKey') as HTMLInputElement)?.value.trim();
                 const confidenceStr = (document.getElementById('orgConfidence') as HTMLInputElement)?.value.trim();
                 const reliabilityPolicy = (document.getElementById('orgReliabilityPolicy') as HTMLInputElement)?.value.trim();
@@ -798,7 +789,6 @@ export class StatementEditor {
                     longitude,
                     employeeCount,
                     population,
-                    pictureHash: pictureHash || undefined,
                     publicKey: publicKey || undefined,
                     confidence,
                     reliabilityPolicy: reliabilityPolicy || undefined
@@ -815,7 +805,6 @@ export class StatementEditor {
                 const jobTitle = (document.getElementById('personJobTitle') as HTMLInputElement)?.value.trim();
                 const employer = (document.getElementById('personEmployer') as HTMLInputElement)?.value.trim();
                 const verificationMethod = (document.getElementById('personVerificationMethod') as HTMLInputElement)?.value.trim();
-                const picture = (document.getElementById('personPicture') as HTMLInputElement)?.value.trim();
                 const publicKey = (document.getElementById('personPublicKey') as HTMLInputElement)?.value.trim();
                 const confidenceStr = (document.getElementById('personConfidence') as HTMLInputElement)?.value.trim();
                 const reliabilityPolicy = (document.getElementById('personReliabilityPolicy') as HTMLInputElement)?.value.trim();
@@ -833,7 +822,6 @@ export class StatementEditor {
                     jobTitle: jobTitle || undefined,
                     employer: employer || undefined,
                     verificationMethod: verificationMethod || undefined,
-                    picture: picture || undefined,
                     publicKey: publicKey || undefined,
                     confidence,
                     reliabilityPolicy: reliabilityPolicy || undefined
@@ -841,10 +829,19 @@ export class StatementEditor {
             }
 
             case 'sign_pdf': {
-                const pdfHash = (document.getElementById('pdfHash') as HTMLInputElement)?.value.trim();
+                if (this.attachmentFiles.size === 0) {
+                    throw new Error('Please upload a PDF file as an attachment for PDF signing');
+                }
+                
+                const firstFile = Array.from(this.attachmentFiles.values())[0];
+                const arrayBuffer = await firstFile.arrayBuffer();
+                const buffer = new Uint8Array(arrayBuffer);
+                const hash = sha256(buffer);
+                const ext = firstFile.name.split('.').pop();
+                const attachmentHash = `${hash}.${ext}`;
 
                 return buildPDFSigningContent({
-                    hash: pdfHash
+                    hash: attachmentHash
                 });
             }
 
@@ -882,7 +879,7 @@ export class StatementEditor {
         // Get content - either from textarea or build from typed fields
         let content = '';
         if (type) {
-            content = this.buildTypedContent(type);
+            content = await this.buildTypedContent(type);
         } else {
             content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
         }
