@@ -435,7 +435,8 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
   const organisationVerificationRegex = new RegExp(
     '' +
       /^    Type: Organisation verification\n/.source +
-      /    Description: We verified the following information about an organisation\.(?:\sTheir logo may be attached to this statement\.)?\n/.source +
+      /    Description: We verified the following information about an organisation\.(?:\sTheir logo may be attached to this statement\.)?\n/
+        .source +
       /    Name: (?<name>[^\n]+?)\n/.source +
       /(?:    English name: (?<englishName>[^\n]+?)\n)?/.source +
       /    Country: (?<country>[^\n]+?)\n/.source +
@@ -561,7 +562,8 @@ export const parsePersonVerification = (content: string): PersonVerification => 
   const domainVerificationRegex = new RegExp(
     '' +
       /^    Type: Person verification\n/.source +
-      /    Description: We verified the following information about a person\.(?:\sTheir profile picture may be attached to this statement\.)?\n/.source +
+      /    Description: We verified the following information about a person\.(?:\sTheir profile picture may be attached to this statement\.)?\n/
+        .source +
       /    Name: (?<name>[^\n]+?)\n/.source +
       /    Date of birth: (?<dateOfBirth>[^\n]+?)\n/.source +
       /    City of birth: (?<cityOfBirth>[^\n]+?)\n/.source +
@@ -759,7 +761,8 @@ export const parsePDFSigning = (content: string): PDFSigning => {
   const signingRegex = new RegExp(
     '' +
       /^    Type: Sign PDF\n/.source +
-      /    Description: We hereby digitally sign the attached PDF file\. The filename contains a hash of the file contents\.\n/.source +
+      /    Description: We hereby digitally sign the attached PDF file\. The filename contains a hash of the file contents\.\n/
+        .source +
       /$/.source
   );
   const match = content.match(signingRegex);
