@@ -168,7 +168,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         const profileFilename = await createAttachment(paths.attachmentsDir, ministry.profileImage, profileContent);
         attachmentFiles.push(profileFilename);
 
-        // Create self-verification statement with pictureHash
+        // Create self-verification statement with profile picture as attachment
         const selfVerification = buildOrganisationVerificationContent({
             name: ministry.author,
             country: ministry.country,
@@ -176,7 +176,6 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
             domain: ministry.domain,
             confidence: 0.98,
             publicKey: ministry.publicKey,
-            pictureHash: profileFilename,
         });
 
         const verificationStatement = buildStatement({
@@ -185,6 +184,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
             time: new Date('2024-01-01T08:00:00Z'),
             tags: ['self-verification', 'ministry-profile'],
             content: selfVerification,
+            attachments: [profileFilename],
         });
 
         const signedVerification = await buildSignedStatement(
@@ -314,18 +314,13 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const signedStatement6b = await buildSignedStatement(statement6b, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedStatement6b);
 
-    // 6c. Treaty PDF signing statements from all countries (NO statement with attachment)
+    // 6c. Treaty PDF signing statements from all countries
     const treatyPdfContent = await readFile(join(MEDIA_DIR, 'treaty.pdf'));
     const treatyPdfFilename = await createAttachment(paths.attachmentsDir, 'treaty.pdf', treatyPdfContent);
     attachmentFiles.push(treatyPdfFilename);
     
-    // Extract just the hash part (without extension) for PDF signing
-    const treatyPdfHash = treatyPdfFilename.split('.')[0];
-    
-    // All countries sign the treaty PDF directly (no separate statement with attachment)
-    const pdfSigningContent = buildPDFSigningContent({
-        hash: treatyPdfHash,
-    });
+    // All countries sign the treaty PDF with the PDF as an attachment
+    const pdfSigningContent = buildPDFSigningContent({});
     
     // Country A signs (publisher)
     const pdfSignStatement1 = buildStatement({
@@ -334,6 +329,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T10:00:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
+        attachments: [treatyPdfFilename],
     });
     const signedPdfSign1 = await buildSignedStatement(pdfSignStatement1, countryA.privateKey!, countryA.publicKey!);
     statements.push(signedPdfSign1);
@@ -345,6 +341,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T11:30:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
+        attachments: [treatyPdfFilename],
     });
     const signedPdfSign2 = await buildSignedStatement(pdfSignStatement2, countryB.privateKey!, countryB.publicKey!);
     statements.push(signedPdfSign2);
@@ -356,6 +353,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T14:15:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
+        attachments: [treatyPdfFilename],
     });
     const signedPdfSign3 = await buildSignedStatement(pdfSignStatement3, countryC.privateKey!, countryC.publicKey!);
     statements.push(signedPdfSign3);
@@ -367,6 +365,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T09:45:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
+        attachments: [treatyPdfFilename],
     });
     const signedPdfSign4 = await buildSignedStatement(pdfSignStatement4, countryD.privateKey!, countryD.publicKey!);
     statements.push(signedPdfSign4);
@@ -378,6 +377,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T16:20:00Z'),
         tags: ['treaty-signature', 'pdf-signing'],
         content: pdfSigningContent,
+        attachments: [treatyPdfFilename],
     });
     const signedPdfSign5 = await buildSignedStatement(pdfSignStatement5, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedPdfSign5);
@@ -683,17 +683,9 @@ async function writePeerStatements(
             try {
                 const parsed = parseStatement({ statement: statements[i] });
                 
-                // Add regular attachments
+                // Add all attachments (including profile pictures for organisation verifications)
                 if (parsed.attachments && Array.isArray(parsed.attachments)) {
                     parsed.attachments.forEach(att => peerAttachmentFiles.add(att));
-                }
-                
-                // Add profile picture from organisation verification
-                if (parsed.type === 'organisation_verification' && parsed.content) {
-                    const orgVerification = parseOrganisationVerification(parsed.content);
-                    if (orgVerification.pictureHash) {
-                        peerAttachmentFiles.add(orgVerification.pictureHash);
-                    }
                 }
             } catch (error) {
                 console.error(`Error parsing statement for attachments: ${error}`);

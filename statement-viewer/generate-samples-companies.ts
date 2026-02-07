@@ -175,7 +175,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         const profileFilename = await createAttachment(paths.attachmentsDir, company.profileImage, profileContent);
         attachmentFiles.push(profileFilename);
 
-        // Create self-verification statement with pictureHash
+        // Create self-verification statement with profile picture as attachment
         const selfVerification = buildOrganisationVerificationContent({
             name: company.author,
             country: company.country,
@@ -183,7 +183,6 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
             domain: company.domain,
             confidence: 0.95,
             publicKey: company.publicKey,
-            pictureHash: profileFilename,
         });
 
         const verificationStatement = buildStatement({
@@ -192,6 +191,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
             time: new Date('2024-01-01T08:00:00Z'),
             tags: ['self-verification', 'company-profile', 'eu-business'],
             content: selfVerification,
+            attachments: [profileFilename],
         });
 
         const signedVerification = await buildSignedStatement(
@@ -366,13 +366,8 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     const jointStatementPdfFilename = await createAttachment(paths.attachmentsDir, 'joint-statement.pdf', jointStatementPdfContent);
     attachmentFiles.push(jointStatementPdfFilename);
     
-    // Extract just the hash part (without extension) for PDF signing
-    const jointStatementPdfHash = jointStatementPdfFilename.split('.')[0];
-    
-    // All companies sign the joint statement PDF
-    const pdfSigningContent = buildPDFSigningContent({
-        hash: jointStatementPdfHash,
-    });
+    // All companies sign the joint statement PDF with the PDF as an attachment
+    const pdfSigningContent = buildPDFSigningContent({});
     
     // Business A signs
     const pdfSignStatement1 = buildStatement({
@@ -381,6 +376,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T10:00:00Z'),
         tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
+        attachments: [jointStatementPdfFilename],
     });
     const signedPdfSign1 = await buildSignedStatement(pdfSignStatement1, businessA.privateKey!, businessA.publicKey!);
     statements.push(signedPdfSign1);
@@ -392,6 +388,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T11:30:00Z'),
         tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
+        attachments: [jointStatementPdfFilename],
     });
     const signedPdfSign2 = await buildSignedStatement(pdfSignStatement2, businessB.privateKey!, businessB.publicKey!);
     statements.push(signedPdfSign2);
@@ -403,6 +400,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T14:15:00Z'),
         tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
+        attachments: [jointStatementPdfFilename],
     });
     const signedPdfSign3 = await buildSignedStatement(pdfSignStatement3, businessC.privateKey!, businessC.publicKey!);
     statements.push(signedPdfSign3);
@@ -414,6 +412,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T09:45:00Z'),
         tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
+        attachments: [jointStatementPdfFilename],
     });
     const signedPdfSign4 = await buildSignedStatement(pdfSignStatement4, businessD.privateKey!, businessD.publicKey!);
     statements.push(signedPdfSign4);
@@ -425,6 +424,7 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
         time: new Date('2024-06-15T16:20:00Z'),
         tags: ['joint-statement', 'pdf-signing', 'regulatory-reform'],
         content: pdfSigningContent,
+        attachments: [jointStatementPdfFilename],
     });
     const signedPdfSign5 = await buildSignedStatement(pdfSignStatement5, businessE.privateKey!, businessE.publicKey!);
     statements.push(signedPdfSign5);
@@ -626,15 +626,9 @@ async function writePeerStatements(
             try {
                 const parsed = parseStatement({ statement: statements[i] });
                 
+                // Add all attachments (including profile pictures for organisation verifications)
                 if (parsed.attachments && Array.isArray(parsed.attachments)) {
                     parsed.attachments.forEach(att => peerAttachmentFiles.add(att));
-                }
-                
-                if (parsed.type === 'organisation_verification' && parsed.content) {
-                    const orgVerification = parseOrganisationVerification(parsed.content);
-                    if (orgVerification.pictureHash) {
-                        peerAttachmentFiles.add(orgVerification.pictureHash);
-                    }
                 }
             } catch (error) {
                 console.error(`Error parsing statement for attachments: ${error}`);
