@@ -152,7 +152,7 @@ export type ResponseContent = {
   response: string;
 };
 
-export type PDFSigning = {};
+export type PDFSigning = Record<string, never>;
 
 export type RatingSubjectTypeValue =
   | 'Organisation'
