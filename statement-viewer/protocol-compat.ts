@@ -1,7 +1,6 @@
 // Protocol version compatibility: v5_1 (statements specify "5") and v5.2
 
 import {
-    parseStatementsFile as parseStatementsFileLib,
     parseVote,
     parseStatement as parseStatementLib,
     parseResponseContent,
@@ -18,7 +17,6 @@ import type {
 } from 'stated-protocol';
 
 import {
-    parseStatementsFile as parseStatementsFileLib_v5_1,
     parseVote as parseVote_v5_1,
     parseStatement as parseStatementLib_v5_1,
     parseResponseContent as parseResponseContent_v5_1,
@@ -60,25 +58,15 @@ function isV5_1Version(version?: string): version is '5' | '5.1' {
     return version === '5' || version === '5.1';
 }
 
-export function parseStatementsFileCompat(text: string): string[] {
+export function parseStatementCompat(statement: { statement: string }): ReturnType<typeof parseStatementLib> & { formatVersion: string } {
+    // Try v5.1 parser first (supports version 5 and 5.1)
     try {
-        return parseStatementsFileLib(text);
-    } catch (e) {
-        return parseStatementsFileLib_v5_1(text);
-    }
-}
-
-export function parseStatementCompat(statement: { statement: string; formatVersion?: string }): ReturnType<typeof parseStatementLib> & { formatVersion: string } {
-    if (!statement.formatVersion) {
-        throw new Error('Statement formatVersion is required');
-    }
-    
-    try {
-        const parsed = parseStatementLib(statement);
-        return { ...parsed, formatVersion: statement.formatVersion };
-    } catch (e) {
         const parsed = parseStatementLib_v5_1(statement);
-        return { ...parsed, formatVersion: statement.formatVersion };
+        return { ...parsed, formatVersion: parsed.formatVersion };
+    } catch (e) {
+        // Fall back to v5.2 parser
+        const parsed = parseStatementLib(statement);
+        return { ...parsed, formatVersion: parsed.formatVersion };
     }
 }
 

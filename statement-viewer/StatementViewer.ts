@@ -1,10 +1,8 @@
-import { sha256, verifySignature, parseSignedStatement } from 'stated-protocol';
-import { sha256 as sha256_v5_1, verifySignature as verifySignature_v5_1, parseSignedStatement as parseSignedStatement_v5_1 } from 'stated-protocol-v5.1';
+import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol';
 import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { sortStatementsByTime } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
 import {
-    parseStatementsFileCompat,
     parseStatementCompat,
     parseOrganisationVerificationCompat,
     parsePDFSigningCompat,
@@ -202,7 +200,7 @@ export class StatementViewer {
 
     private parseStatementsFile(text: string, isPeer: boolean = false): ParsedStatement[] | undefined {
         try {
-            const statementTexts = parseStatementsFileCompat(text);
+            const statementTexts = splitStatements(text);
             
             if (statementTexts.length === 0) {
                 if (!isPeer) {

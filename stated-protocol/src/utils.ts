@@ -1,7 +1,6 @@
 import { peopleCountBuckets } from './constants';
 
 import { sha256, verify } from './hash';
-import { parseStatement } from './protocol';
 
 export const generateFileHash = (fileContent: Buffer | string): string => {
   return sha256(fileContent);
@@ -42,7 +41,7 @@ export const generateStatementsFile = (statements: string[]): string => {
   return statements.join('\n\n');
 };
 
-export const parseStatementsFile = (statementsFileContent: string): string[] => {
+export const splitStatements = (statementsFileContent: string): string[] => {
   const statementParts = statementsFileContent.split(/\n\nStated protocol version: /);
   const statements: string[] = [];
 
@@ -57,18 +56,13 @@ export const parseStatementsFile = (statementsFileContent: string): string[] => 
 
     statement = statement.replace(/\n+$/, '\n');
 
-    try {
-      parseStatement({ statement });
-      statements.push(statement);
-    } catch (error) {
-      throw new Error(
-        `Invalid statement at index ${i}: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
+    statements.push(statement);
   }
 
   return statements;
 };
+
+export const parseStatementsFile = splitStatements;
 
 export const generateStatementFilename = (statement: string): string => {
   const hash = generateStatementHash(statement);

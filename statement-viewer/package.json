@@ -19,8 +19,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "stated-protocol": "^5.2.1",
-    "stated-protocol-v5.1": "npm:stated-protocol@^5.1.0"
+    "stated-protocol": "^5.2.2",
+    "stated-protocol-v5.1": "npm:stated-protocol@~5.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
