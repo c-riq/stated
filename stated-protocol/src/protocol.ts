@@ -759,16 +759,10 @@ export const parseResponseContent = (content: string): ResponseContent => {
   return { hash, response };
 };
 
-export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
-  if (!hash.match(/^[A-Za-z0-9_-]+$/)) {
-    throw new Error('PDF file hash must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)');
-  }
+export const buildPDFSigningContent = (_params: PDFSigning) => {
   const content =
     '    Type: Sign PDF\n' +
-    '    Description: We hereby digitally sign the referenced PDF file.\n' +
-    '    PDF file hash: ' +
-    hash +
-    '\n';
+    '    Description: We hereby digitally sign the attached PDF file. The filename contains a hash of the file contents.\n';
   return content;
 };
 
@@ -776,15 +770,13 @@ export const parsePDFSigning = (content: string): PDFSigning => {
   const signingRegex = new RegExp(
     '' +
       /^    Type: Sign PDF\n/.source +
-      /    Description: We hereby digitally sign the referenced PDF file.\n/.source +
-      /    PDF file hash: (?<hash>[A-Za-z0-9_-]+)\n/.source +
+      /    Description: We hereby digitally sign the attached PDF file\. The filename contains a hash of the file contents\.\n/.source +
       /$/.source
   );
   const match = content.match(signingRegex);
-  if (!match || !match.groups) throw new Error('Invalid PDF signing format: ' + content);
+  if (!match) throw new Error('Invalid PDF signing format: ' + content);
 
-  const { hash } = match.groups;
-  return { hash };
+  return {};
 };
 
 export const buildRating = ({

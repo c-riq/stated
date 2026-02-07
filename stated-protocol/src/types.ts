@@ -154,9 +154,7 @@ export type ResponseContent = {
   response: string;
 };
 
-export type PDFSigning = {
-  hash: string;
-};
+export type PDFSigning = {};
 
 export type RatingSubjectTypeValue =
   | 'Organisation'

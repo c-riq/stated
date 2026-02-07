@@ -240,7 +240,7 @@ export const disputeContentKeys =
 
 export const responseKeys = /(Type: |Hash of referenced statement: |Response: )/;
 
-export const PDFSigningKeys = /(Type: |Description: |PDF file hash: )/g;
+export const PDFSigningKeys = /(Type: |Description: )/g;
 
 export const ratingKeys =
   /(Type: |Subject type: |Subject name: |URL that identifies the subject: |Document file hash: |Rated quality: |Our rating: |Comment: )/;

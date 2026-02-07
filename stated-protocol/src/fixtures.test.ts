@@ -110,9 +110,7 @@ function buildContentFromInput(contentObj: any): string {
         response: contentObj.response,
       });
     case 'pdf_signing':
-      return buildPDFSigningContent({
-        hash: contentObj.hash,
-      });
+      return buildPDFSigningContent({});
     case 'rating':
       return buildRating({
         subjectName: contentObj.subjectName,
