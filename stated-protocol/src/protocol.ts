@@ -17,7 +17,7 @@ import type {
 } from './types';
 import { isLegalForm, isPeopleCountBucket, isRatingValue } from './types';
 
-const version = 5;
+const version = 5.2;
 
 export * from './types';
 export * from './constants';
@@ -236,9 +236,9 @@ export const parseStatement = ({
   if (!parsed.content) throw new Error('Invalid statement format: statement content is required');
   if (!parsed.formatVersion)
     throw new Error('Invalid statement format: format version is required');
-  if (parsed.formatVersion !== '5')
+  if (parsed.formatVersion !== '5.2')
     throw new Error(
-      `Invalid statement format: only version 5 is supported, got version ${parsed.formatVersion}`
+      `Invalid statement format: only version 5.2 is supported, got version ${parsed.formatVersion}`
     );
 
   const tags = parsed.tagsStr?.split(', ');

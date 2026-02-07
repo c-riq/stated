@@ -1,6 +1,6 @@
 {
   "name": "stated-protocol",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "Protocol for Decentralised Interorganisational Coordination",
   "type": "module",
   "main": "dist/index.js",
