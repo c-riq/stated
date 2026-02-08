@@ -17,7 +17,7 @@ import type {
 } from './types';
 import { isLegalForm, isPeopleCountBucket, isRatingValue } from './types';
 
-const version = 5.2;
+const VERSION = '5.2';
 
 export * from './types';
 export * from './constants';
@@ -100,7 +100,7 @@ export const buildStatement = ({
 
   const statement =
     'Stated protocol version: ' +
-    version +
+    VERSION +
     '\n' +
     'Publishing domain: ' +
     domain +
@@ -236,9 +236,9 @@ export const parseStatement = ({
   if (!parsed.content) throw new Error('Invalid statement format: statement content is required');
   if (!parsed.formatVersion)
     throw new Error('Invalid statement format: format version is required');
-  if (parsed.formatVersion !== '5.2')
+  if (parsed.formatVersion !== VERSION)
     throw new Error(
-      `Invalid statement format: only version 5.2 is supported, got version ${parsed.formatVersion}`
+      `Invalid statement format: only version ${VERSION} is supported, got version ${parsed.formatVersion}`
     );
 
   const tags = parsed.tagsStr?.split(', ');
@@ -322,7 +322,7 @@ export const buildPollContent = ({
 };
 
 export const parsePoll = (content: string, version?: string): Poll => {
-  if (version !== '5.2') throw new Error('Invalid version ' + version);
+  if (version !== VERSION) throw new Error('Invalid version ' + version);
   const pollRegex = new RegExp(
     '' +
       /^    Type: Poll\n/.source +
