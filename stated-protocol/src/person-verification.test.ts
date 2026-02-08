@@ -16,9 +16,8 @@ describe('Person verification building', () => {
       jobTitle,
       employer,
       verificationMethod,
-      picture,
       reliabilityPolicy,
-    ] = Array.from({ length: 12 }, randomUnicodeString);
+    ] = Array.from({ length: 7 }, randomUnicodeString);
     const countryOfBirth = 'Germany';
     const cityOfBirth = 'Berlin';
     const confidence = Math.random();
@@ -34,7 +33,6 @@ describe('Person verification building', () => {
       employer,
       verificationMethod,
       confidence,
-      picture,
       reliabilityPolicy,
     });
 
@@ -47,7 +45,6 @@ describe('Person verification building', () => {
     assert.strictEqual(parsedVerification.employer, employer);
     assert.strictEqual(parsedVerification.verificationMethod, verificationMethod);
     assert.strictEqual(parsedVerification.confidence, confidence);
-    assert.strictEqual(parsedVerification.picture, picture);
     assert.strictEqual(parsedVerification.reliabilityPolicy, reliabilityPolicy);
     assert.strictEqual(parsedVerification.countryOfBirth, countryOfBirth);
     assert.strictEqual(parsedVerification.cityOfBirth, cityOfBirth);

@@ -1,3 +1,4 @@
+<!-- Version 1.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statement Viewer</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            try {
+                const cached = localStorage.getItem('stated_config_cache');
+                if (cached) {
+                    const config = JSON.parse(cached);
+                    if (config.branding) {
+                        document.title = config.branding.subtitle + ' - ' + config.branding.title;
+                    }
+                }
+            } catch(e) {}
+        })();
+    </script>
 </head>
 <body>
     <div class="top-bar">
@@ -74,6 +88,6 @@
         </div>
     </div>
 
-    <script type="module" src="dist/app.js"></script>
+    <script type="module" src="/app.ts"></script>
 </body>
 </html>

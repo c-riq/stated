@@ -1,13 +1,13 @@
 # Statement Viewer
 
-A static web application for viewing Stated protocol statements.
+Static web application for viewing and creating Stated protocol statements.
 
 ## Quick Start
 
 ```bash
 npm install
 npm run gen      # Generate sample data
-npm start        # Start server on port 3033
+npm run dev      # Start dev server on port 3033
 ```
 
 Open: `http://localhost:3033/`
@@ -43,44 +43,50 @@ Open: `http://localhost:3033/`
 
 ## Statement Editor
 
-Access the statement editor at `http://localhost:3033/editor.html`
+Access at `http://localhost:3033/editor.html`
 
 ### Features
 
-- **Form-based statement creation**: Easy-to-use interface for creating statements
-- **All statement types supported**: Basic statements, polls, votes, verifications, responses, ratings, PDF signing, and disputes
-- **Cryptographic signing**: Generate Ed25519 key pairs and sign statements
-- **Tags and translations**: Add multiple tags and translations in different languages
-- **File attachments**: Upload files that are automatically published with your statement
-- **Statement superseding**: Mark statements as superseding previous ones
-- **Automatic API submission**: Publishes directly to api.country-a.com
-- **Export options**: Copy to clipboard or download as `.txt` file
+- Form-based statement creation for all statement types
+- Ed25519 key pair generation and signing
+- Tags, translations, and file attachments
+- Statement superseding
+- Automatic API submission
+- Export options (copy/download)
 
 ### Automatic Publishing
 
-The editor automatically handles all publishing steps when you click "Submit to API":
+When you click "Submit to API", the editor:
 
-1. **Fetches** `/.well-known/statements.txt` and appends your new statement
-2. **Creates** `/.well-known/statements/<hash>.txt` with your statement
-3. **Updates** `/.well-known/statements/index.txt` with the new filename
-4. **Uploads** any attachments to `/.well-known/statements/attachments/`
-5. **Updates** `/.well-known/statements/attachments/index.txt`
-6. **Invalidates** CloudFront cache for immediate visibility
+1. Fetches `/.well-known/statements.txt` and appends your statement
+2. Creates `/.well-known/statements/<hash>.txt`
+3. Updates `/.well-known/statements/index.txt`
+4. Uploads attachments to `/.well-known/statements/attachments/`
+5. Updates `/.well-known/statements/attachments/index.txt`
+6. Invalidates CloudFront cache
 
 ### Usage
 
-1. Fill in the required fields (domain, author, content)
-2. Optionally select a statement type and add tags, translations, or file attachments
-3. If signing, generate or enter a key pair
-4. Click "Generate Statement" to create the statement
-5. Enter your API key for api.country-a.com
-6. Click "Submit to API" to automatically publish
+1. Fill required fields (domain, author, content)
+2. Optionally select statement type, add tags/translations/attachments
+3. Generate or enter key pair for signing
+4. Click "Generate Statement"
+5. Enter API key for api.country-a.com
+6. Click "Submit to API"
 
 ### API Configuration
 
-The editor submits to `https://api.country-a.com/update` by default. You need an API key to publish statements. The API key should be configured in your deployment's Terraform infrastructure.
+Default endpoint: `https://api.country-a.com/update`
+
+Requires API key configured in deployment's Terraform infrastructure.
+
+## Configuration
+
+Runtime configuration via [`config.json`](config.json) - no rebuild required:
+- `branding`: logo, title, subtitle
+- `editor.defaults`: pre-filled domain and author
+- `editor.api`: API endpoints
 
 ## Deployment
 
-Upload to any static host (GitHub Pages, Netlify, etc.). The file browser reads `index.txt` files for navigation.
-
+Build once, deploy anywhere. Copy `dist/` and customize [`config.json`](config.json) per deployment. Works with any static host.

@@ -356,6 +356,9 @@ body.modal-open {
 
 .verify-badge.unverified {
     background: #dc2626;
+    color: white;
+}
+
 /* Superseded indicator */
 .superseded-indicator {
     background: #fff3cd;
@@ -384,9 +387,6 @@ body.modal-open {
     font-size: 0.875rem;
     color: #856404;
     font-weight: 500;
-}
-
-    color: white;
 }
 
 /* Statement content */
@@ -882,6 +882,8 @@ body.modal-open {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .pdf-signature-card {
@@ -895,6 +897,8 @@ body.modal-open {
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .pdf-signature-card:hover {
@@ -916,6 +920,9 @@ body.modal-open {
     display: flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .pdf-signature-name {
@@ -923,18 +930,24 @@ body.modal-open {
     font-weight: 600;
     color: #003366;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pdf-signature-domain {
     font-size: 0.75rem;
     color: #666;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pdf-signature-time {
     font-size: 0.75rem;
     color: #999;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pdf-signature-verify {
@@ -961,8 +974,31 @@ body.modal-open {
 }
 
 @media (max-width: 600px) {
+    .pdf-signatures-container {
+        padding: 12px 12px 12px 16px;
+    }
+    
     .pdf-signatures-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .pdf-signature-card {
+        width: 100%;
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .pdf-signature-info {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .pdf-signature-name,
+    .pdf-signature-domain,
+    .pdf-signature-time {
+        max-width: 100%;
     }
 }
 
@@ -1134,4 +1170,278 @@ body.modal-open {
 .vote-signature-indicator.unverified {
     background: #fee;
     color: #dc2626;
+}
+
+/* Ratings container - Google-style */
+.ratings-container {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.ratings-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ratings-header {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ratings-summary {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    justify-content: space-between;
+}
+
+.ratings-average {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 100px;
+    flex-shrink: 0;
+    order: 2;
+}
+
+.average-number {
+    font-size: 2rem;
+    font-weight: 500;
+    color: #333;
+    line-height: 1;
+}
+
+.average-stars {
+    display: flex;
+    gap: 1px;
+}
+
+.ratings-count {
+    font-size: 0.8125rem;
+    color: #666;
+    text-align: center;
+}
+
+/* Star styles */
+.star {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.star.filled {
+    color: #fbbc04;
+}
+
+.star.half {
+    background: linear-gradient(90deg, #fbbc04 50%, #e0e0e0 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.star.empty {
+    color: #e0e0e0;
+}
+
+/* Distribution bars */
+.ratings-distribution {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    order: 1;
+}
+
+.distribution-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 18px;
+}
+
+.star-label {
+    font-size: 0.75rem;
+    color: #666;
+    min-width: 38px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.star-icon {
+    color: #fbbc04;
+    font-size: 0.8125rem;
+}
+
+.distribution-bar-container {
+    flex: 1;
+    height: 10px;
+    background: #e8eaed;
+    border-radius: 5px;
+    overflow: hidden;
+    min-width: 80px;
+}
+
+.distribution-bar {
+    height: 100%;
+    background: #fbbc04;
+    transition: width 0.3s ease;
+    border-radius: 5px;
+}
+
+.distribution-count {
+    font-size: 0.75rem;
+    color: #5f6368;
+    min-width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Reviews section */
+.reviews-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 16px 0 12px 0;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review-card {
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.reviewer-picture {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+}
+
+.reviewer-details {
+    flex: 1;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9375rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.review-date {
+    font-size: 0.8125rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.review-stars {
+    display: flex;
+    gap: 1px;
+    margin-bottom: 6px;
+}
+
+.review-stars .star {
+    font-size: 1rem;
+}
+
+.review-quality {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0072BC;
+    margin-bottom: 8px;
+}
+
+.review-comment {
+    font-size: 0.9375rem;
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.review-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.action-btn-small {
+    background: transparent;
+    border: 1px solid #d0d0d0;
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn-small:hover {
+    background: #f5f5f5;
+    border-color: #0072BC;
+    color: #0072BC;
+}
+
+/* Responsive adjustments for ratings */
+@media (max-width: 600px) {
+    .ratings-summary {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .ratings-average {
+        order: 1;
+        width: 100%;
+    }
+    
+    .ratings-distribution {
+        order: 2;
+        width: 100%;
+    }
+    
+    .distribution-row {
+        gap: 6px;
+    }
+    
+    .star-label {
+        min-width: 40px;
+        font-size: 0.75rem;
+    }
+    
+    .distribution-count {
+        min-width: 30px;
+        font-size: 0.75rem;
+    }
 }

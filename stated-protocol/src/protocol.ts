@@ -17,7 +17,7 @@ import type {
 } from './types';
 import { isLegalForm, isPeopleCountBucket, isRatingValue } from './types';
 
-const version = 5;
+const VERSION = '5.2';
 
 export * from './types';
 export * from './constants';
@@ -100,7 +100,7 @@ export const buildStatement = ({
 
   const statement =
     'Stated protocol version: ' +
-    version +
+    VERSION +
     '\n' +
     'Publishing domain: ' +
     domain +
@@ -236,9 +236,9 @@ export const parseStatement = ({
   if (!parsed.content) throw new Error('Invalid statement format: statement content is required');
   if (!parsed.formatVersion)
     throw new Error('Invalid statement format: format version is required');
-  if (parsed.formatVersion !== '5')
+  if (parsed.formatVersion !== VERSION)
     throw new Error(
-      `Invalid statement format: only version 5 is supported, got version ${parsed.formatVersion}`
+      `Invalid statement format: only version ${VERSION} is supported, got version ${parsed.formatVersion}`
     );
 
   const tags = parsed.tagsStr?.split(', ');
@@ -322,7 +322,7 @@ export const buildPollContent = ({
 };
 
 export const parsePoll = (content: string, version?: string): Poll => {
-  if (version !== '5') throw new Error('Invalid version ' + version);
+  if (version !== VERSION) throw new Error('Invalid version ' + version);
   const pollRegex = new RegExp(
     '' +
       /^    Type: Poll\n/.source +
@@ -381,7 +381,6 @@ export const buildOrganisationVerificationContent = ({
   confidence,
   reliabilityPolicy,
   employeeCount,
-  pictureHash,
   latitude,
   longitude,
   population,
@@ -397,16 +396,13 @@ export const buildOrganisationVerificationContent = ({
     throw new Error('Invalid population ' + population);
   if (confidence && !('' + confidence)?.match(/^[0-9.]+$/))
     throw new Error('Invalid confidence ' + confidence);
-  if (pictureHash && !pictureHash.match(/^[A-Za-z0-9_-]+\.[a-zA-Z0-9]+$/)) {
-    throw new Error("Logo must be in format 'base64hash.extension' (URL-safe base64)");
-  }
   if (publicKey && !publicKey.match(/^[A-Za-z0-9_-]+$/)) {
     throw new Error('Public key must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)');
   }
 
   return (
     '    Type: Organisation verification\n' +
-    '    Description: We verified the following information about an organisation.\n' +
+    '    Description: We verified the following information about an organisation. Their logo may be attached to this statement.\n' +
     '    Name: ' +
     name +
     '\n' +
@@ -428,7 +424,6 @@ export const buildOrganisationVerificationContent = ({
     (latitude ? '    Latitude: ' + latitude + '\n' : '') +
     (longitude ? '    Longitude: ' + longitude + '\n' : '') +
     (population ? '    Population: ' + population + '\n' : '') +
-    (pictureHash ? '    Logo: ' + pictureHash + '\n' : '') +
     (employeeCount ? '    Employee count: ' + employeeCount + '\n' : '') +
     (publicKey ? '    Public key: ' + publicKey + '\n' : '') +
     (reliabilityPolicy ? '    Reliability policy: ' + reliabilityPolicy + '\n' : '') +
@@ -440,7 +435,8 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
   const organisationVerificationRegex = new RegExp(
     '' +
       /^    Type: Organisation verification\n/.source +
-      /    Description: We verified the following information about an organisation.\n/.source +
+      /    Description: We verified the following information about an organisation\.(?:\sTheir logo may be attached to this statement\.)?\n/
+        .source +
       /    Name: (?<name>[^\n]+?)\n/.source +
       /(?:    English name: (?<englishName>[^\n]+?)\n)?/.source +
       /    Country: (?<country>[^\n]+?)\n/.source +
@@ -454,7 +450,7 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
       /(?:    Latitude: (?<latitude>[^\n]+?)\n)?/.source +
       /(?:    Longitude: (?<longitude>[^\n]+?)\n)?/.source +
       /(?:    Population: (?<population>[^\n]+?)\n)?/.source +
-      /(?:    Logo: (?<pictureHash>[A-Za-z0-9_-]+\.[a-zA-Z0-9]+)\n)?/.source +
+      /(?:    Logo: (?:[A-Za-z0-9_-]+\.[a-zA-Z0-9]+)\n)?/.source +
       /(?:    Employee count: (?<employeeCount>[01,+-]+?)\n)?/.source +
       /(?:    Public key: (?<publicKey>[A-Za-z0-9_-]+)\n)?/.source +
       /(?:    Reliability policy: (?<reliabilityPolicy>[^\n]+?)\n)?/.source +
@@ -479,7 +475,6 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     latitude,
     longitude,
     population,
-    pictureHash,
     employeeCount,
     publicKey,
     reliabilityPolicy,
@@ -504,7 +499,6 @@ export const parseOrganisationVerification = (content: string): OrganisationVeri
     latitude: latitude ? parseFloat(latitude) : undefined,
     longitude: longitude ? parseFloat(longitude) : undefined,
     population: population && isPeopleCountBucket(population) ? population : undefined,
-    pictureHash,
     employeeCount: employeeCount && isPeopleCountBucket(employeeCount) ? employeeCount : undefined,
     publicKey,
     reliabilityPolicy,
@@ -523,7 +517,6 @@ export const buildPersonVerificationContent = ({
   employer,
   verificationMethod,
   confidence,
-  picture,
   reliabilityPolicy,
   publicKey,
 }: PersonVerification) => {
@@ -539,7 +532,7 @@ export const buildPersonVerificationContent = ({
     .filter((_i, j) => [1, 2, 3].includes(j));
   const content =
     '    Type: Person verification\n' +
-    '    Description: We verified the following information about a person.\n' +
+    '    Description: We verified the following information about a person. Their profile picture may be attached to this statement.\n' +
     '    Name: ' +
     name +
     '\n' +
@@ -558,7 +551,6 @@ export const buildPersonVerificationContent = ({
     (foreignDomain
       ? '    Foreign domain used for publishing statements: ' + foreignDomain + '\n'
       : '') +
-    (picture ? '    Picture: ' + picture + '\n' : '') +
     (verificationMethod ? '    Verification method: ' + verificationMethod + '\n' : '') +
     (publicKey ? '    Public key: ' + publicKey + '\n' : '') +
     (confidence ? '    Confidence: ' + confidence + '\n' : '') +
@@ -570,7 +562,8 @@ export const parsePersonVerification = (content: string): PersonVerification => 
   const domainVerificationRegex = new RegExp(
     '' +
       /^    Type: Person verification\n/.source +
-      /    Description: We verified the following information about a person.\n/.source +
+      /    Description: We verified the following information about a person\.(?:\sTheir profile picture may be attached to this statement\.)?\n/
+        .source +
       /    Name: (?<name>[^\n]+?)\n/.source +
       /    Date of birth: (?<dateOfBirth>[^\n]+?)\n/.source +
       /    City of birth: (?<cityOfBirth>[^\n]+?)\n/.source +
@@ -579,7 +572,7 @@ export const parsePersonVerification = (content: string): PersonVerification => 
       /(?:    Employer: (?<employer>[^\n]+?)\n)?/.source +
       /(?:    Owner of the domain: (?<domain>[^\n]+?)\n)?/.source +
       /(?:    Foreign domain used for publishing statements: (?<foreignDomain>[^\n]+?)\n)?/.source +
-      /(?:    Picture: (?<picture>[^\n]+?)\n)?/.source +
+      /(?:    Picture: (?:[^\n]+?)\n)?/.source +
       /(?:    Verification method: (?<verificationMethod>[^\n]+?)\n)?/.source +
       /(?:    Public key: (?<publicKey>[A-Za-z0-9_-]+)\n)?/.source +
       /(?:    Confidence: (?<confidence>[^\n]+?)\n)?/.source +
@@ -598,7 +591,6 @@ export const parsePersonVerification = (content: string): PersonVerification => 
     employer,
     domain,
     foreignDomain,
-    picture,
     verificationMethod,
     publicKey,
     confidence,
@@ -619,7 +611,6 @@ export const parsePersonVerification = (content: string): PersonVerification => 
     employer,
     ownDomain: domain,
     foreignDomain,
-    picture,
     verificationMethod,
     publicKey,
     confidence: confidence ? parseFloat(confidence) : undefined,
@@ -759,16 +750,10 @@ export const parseResponseContent = (content: string): ResponseContent => {
   return { hash, response };
 };
 
-export const buildPDFSigningContent = ({ hash }: PDFSigning) => {
-  if (!hash.match(/^[A-Za-z0-9_-]+$/)) {
-    throw new Error('PDF file hash must be in URL-safe base64 format (A-Z, a-z, 0-9, _, -)');
-  }
+export const buildPDFSigningContent = (_params: PDFSigning) => {
   const content =
     '    Type: Sign PDF\n' +
-    '    Description: We hereby digitally sign the referenced PDF file.\n' +
-    '    PDF file hash: ' +
-    hash +
-    '\n';
+    '    Description: We hereby digitally sign the attached PDF file. The filename contains a hash of the file contents.\n';
   return content;
 };
 
@@ -776,15 +761,14 @@ export const parsePDFSigning = (content: string): PDFSigning => {
   const signingRegex = new RegExp(
     '' +
       /^    Type: Sign PDF\n/.source +
-      /    Description: We hereby digitally sign the referenced PDF file.\n/.source +
-      /    PDF file hash: (?<hash>[A-Za-z0-9_-]+)\n/.source +
+      /    Description: We hereby digitally sign the attached PDF file\. The filename contains a hash of the file contents\.\n/
+        .source +
       /$/.source
   );
   const match = content.match(signingRegex);
-  if (!match || !match.groups) throw new Error('Invalid PDF signing format: ' + content);
+  if (!match) throw new Error('Invalid PDF signing format: ' + content);
 
-  const { hash } = match.groups;
-  return { hash };
+  return {};
 };
 
 export const buildRating = ({

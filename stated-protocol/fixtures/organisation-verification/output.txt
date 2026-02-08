@@ -1,10 +1,10 @@
-Stated protocol version: 5
+Stated protocol version: 5.2
 Publishing domain: transparency-watch.org
 Author: International Transparency Watch
 Time: Sat, 10 Mar 2035 11:00:00 GMT
 Statement content:
     Type: Organisation verification
-    Description: We verified the following information about an organisation.
+    Description: We verified the following information about an organisation. Their logo may be attached to this statement.
     Name: Global Anti-Corruption Alliance
     Country: Switzerland
     Legal form: corporation

@@ -1,7 +1,17 @@
-import { sha256, verifySignature, parseSignedStatement, parseStatementsFile as parseStatementsFileLib, parseVote, parseStatement as parseStatementLib, parseResponseContent, parseOrganisationVerification, parsePDFSigning } from './lib/index.js';
-import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry } from './types.js';
+import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol';
+import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { sortStatementsByTime } from './utils.js';
-import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, renderStatementDetails } from './renderers.js';
+import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
+import {
+    parseStatementCompat,
+    parseOrganisationVerificationCompat,
+    parsePDFSigningCompat,
+    parseVoteCompat,
+    parseResponseContentCompat,
+    parseRatingCompat,
+    extractPdfHash,
+    extractProfilePicture
+} from './protocol-compat.js';
 
 export class StatementViewer {
     private baseUrl: string;
@@ -11,19 +21,19 @@ export class StatementViewer {
     private responsesByHash: Map<string, ParsedStatement[]>;
     private votesByPollHash: Map<string, VoteEntry[]>;
     private signaturesByPdfHash: Map<string, PDFSignatureEntry[]>;
-    private expandedStatements: Set<string>;
+    private ratingsBySubject: Map<string, RatingEntry[]>;
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
 
-    constructor() {
-        this.baseUrl = '';
+    constructor(statementsPath: string = '/.well-known/statements/') {
+        this.baseUrl = `${window.location.origin}${statementsPath}`;
         this.statements = [];
         this.peerStatements = [];
         this.statementsByHash = new Map();
         this.responsesByHash = new Map();
         this.votesByPollHash = new Map();
         this.signaturesByPdfHash = new Map();
-        this.expandedStatements = new Set();
+        this.ratingsBySubject = new Map();
         this.identities = new Map();
         this.showHostOnly = false;
         this.init();
@@ -111,15 +121,14 @@ export class StatementViewer {
     }
 
     private async loadStatements(): Promise<void> {
-        // Always use host domain
-        this.baseUrl = `${window.location.origin}/.well-known/statements/`;
-
+        // baseUrl is already set in constructor
         this.statements = [];
         this.peerStatements = [];
         this.statementsByHash.clear();
         this.responsesByHash.clear();
         this.votesByPollHash.clear();
         this.signaturesByPdfHash.clear();
+        this.ratingsBySubject.clear();
         this.identities.clear();
 
         this.showLoading(true);
@@ -191,7 +200,7 @@ export class StatementViewer {
 
     private parseStatementsFile(text: string, isPeer: boolean = false): ParsedStatement[] | undefined {
         try {
-            const statementTexts = parseStatementsFileLib(text);
+            const statementTexts = splitStatements(text);
             
             if (statementTexts.length === 0) {
                 if (!isPeer) {
@@ -201,7 +210,7 @@ export class StatementViewer {
             }
 
             const statements: ParsedStatement[] = statementTexts.map((statementText: string) => {
-                const parsed = parseStatementLib({ statement: statementText });
+                const parsed = parseStatementCompat({ statement: statementText });
                 return {
                     raw: statementText,
                     ...parsed,
@@ -222,6 +231,7 @@ export class StatementViewer {
                 this.buildIdentityRegistry();
                 this.buildVotesMap();
                 this.buildPdfSignaturesMap();
+                this.buildRatingsMap();
                 this.buildSupersedingMap();
                 
                 this.verifyAllSignatures().then(() => {
@@ -279,6 +289,7 @@ export class StatementViewer {
             this.buildResponseMap();
             this.buildVotesMap();
             this.buildPdfSignaturesMap();
+            this.buildRatingsMap();
             this.buildSupersedingMap();
             this.renderStatements();
         } catch (error: any) {
@@ -292,7 +303,7 @@ export class StatementViewer {
         this.peerStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'response') {
                 try {
-                    const responseData = parseResponseContent(stmt.content);
+                    const responseData = parseResponseContentCompat(stmt.content, stmt.formatVersion);
                     const referencedHash = responseData.hash;
                     if (!this.responsesByHash.has(referencedHash)) {
                         this.responsesByHash.set(referencedHash, []);
@@ -313,7 +324,7 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'vote') {
                 try {
-                    const voteData = parseVote(stmt.content);
+                    const voteData = parseVoteCompat(stmt.content, stmt.formatVersion);
                     const pollHash = voteData.pollHash;
                     const vote = voteData.vote;
                     
@@ -340,23 +351,52 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigning(stmt.content);
-                    const pdfHash = pdfSigningData.hash;
+                    const pdfSigningData = parsePDFSigningCompat(stmt.content, stmt.formatVersion);
+                    const pdfHash = extractPdfHash(pdfSigningData, stmt.attachments);
                     
-                    if (!this.signaturesByPdfHash.has(pdfHash)) {
+                    if (pdfHash && !this.signaturesByPdfHash.has(pdfHash)) {
                         this.signaturesByPdfHash.set(pdfHash, []);
                     }
-                    this.signaturesByPdfHash.get(pdfHash)!.push({
-                        statement: stmt,
-                        pdfHash: pdfHash,
-                        signatureData: pdfSigningData
-                    });
-                } catch (error: any) {
+                    if (pdfHash) {
+                        this.signaturesByPdfHash.get(pdfHash)!.push({
+                            statement: stmt,
+                            pdfHash: pdfHash,
+                            signatureData: pdfSigningData
+                        });
+                    }
+                } catch (error: unknown) {
                     console.error('Error parsing PDF signing:', error);
                 }
             }
         });
     }
+    
+    private buildRatingsMap(): void {
+        this.ratingsBySubject.clear();
+        
+        const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
+        
+        allStatements.forEach((stmt: ParsedStatement) => {
+            if (stmt.type && stmt.type.toLowerCase() === 'rating') {
+                try {
+                    const ratingData = parseRatingCompat(stmt.content, stmt.formatVersion);
+                    const subjectName = ratingData.subjectName;
+                    
+                    if (!this.ratingsBySubject.has(subjectName)) {
+                        this.ratingsBySubject.set(subjectName, []);
+                    }
+                    this.ratingsBySubject.get(subjectName)!.push({
+                        statement: stmt,
+                        rating: ratingData.rating,
+                        ratingData: ratingData
+                    });
+                } catch (error: any) {
+                    console.error('Error parsing rating:', error);
+                }
+            }
+        });
+    }
+    
     private buildSupersedingMap(): void {
         const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
         
@@ -385,25 +425,27 @@ export class StatementViewer {
         allStatements.forEach((stmt: ParsedStatement) => {
             if (stmt.type && stmt.type.toLowerCase() === 'organisation_verification') {
                 try {
-                    const verification = parseOrganisationVerification(stmt.content);
+                    const verification = parseOrganisationVerificationCompat(stmt.content, stmt.formatVersion);
                     
                     // Check if this is a self-verification: the statement's publishing domain
                     // must match the domain being verified
                     const isSelfVerified = verification.domain && stmt.domain === verification.domain;
                     
                     if (isSelfVerified) {
+                        const profilePicture = extractProfilePicture(verification, stmt.attachments);
+                        
                         const identity: Identity = {
                             domain: verification.domain,
                             author: verification.name,
                             publicKey: verification.publicKey,
-                            profilePicture: verification.pictureHash,
+                            profilePicture: profilePicture,
                             verificationStatement: stmt,
                             isSelfVerified: true
                         };
                         
                         this.identities.set(verification.domain, identity);
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error('Error parsing organisation verification:', error);
                 }
             }
@@ -528,6 +570,7 @@ export class StatementViewer {
 
         const aggregatedVoteHashes = new Set<string>();
         const aggregatedPdfSignatureHashes = new Set<string>();
+        const aggregatedRatingHashes = new Set<string>();
         
         allStatements.forEach((statement: ParsedStatement) => {
             if (statement.type && statement.type.toLowerCase() === 'poll') {
@@ -544,9 +587,9 @@ export class StatementViewer {
             // Track PDF signing statements - only the first one will render the PDF with all signatures
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigning(statement.content);
-                    const pdfHash = pdfSigningData.hash;
-                    const signatures = this.signaturesByPdfHash.get(pdfHash);
+                    const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
+                    const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                    const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                     if (signatures && signatures.length > 0) {
                         // Mark all but the first signature as aggregated (to hide them)
                         signatures.forEach(({ statement: sigStatement }, index) => {
@@ -560,6 +603,12 @@ export class StatementViewer {
                     console.error('Error processing PDF signing for aggregation:', error);
                 }
             }
+            
+            // Mark ALL rating statements as aggregated - they will be displayed separately
+            if (statement.type && statement.type.toLowerCase() === 'rating') {
+                const statementHash = sha256(statement.raw);
+                aggregatedRatingHashes.add(statementHash);
+            }
         });
 
         const sortedStatements = sortStatementsByTime(allStatements);
@@ -572,6 +621,10 @@ export class StatementViewer {
             }
             
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf' && aggregatedPdfSignatureHashes.has(statementHash)) {
+                return;
+            }
+            
+            if (statement.type && statement.type.toLowerCase() === 'rating' && aggregatedRatingHashes.has(statementHash)) {
                 return;
             }
             
@@ -597,9 +650,9 @@ export class StatementViewer {
             // Show PDF with signatures if this is a PDF signing statement (first one for each PDF)
             if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigning(statement.content);
-                    const pdfHash = pdfSigningData.hash;
-                    const signatures = this.signaturesByPdfHash.get(pdfHash);
+                    const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
+                    const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                    const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                     if (signatures && signatures.length > 0) {
                         // Filter signatures if showHostOnly is enabled
                         const filteredSignatures = this.showHostOnly
@@ -622,6 +675,7 @@ export class StatementViewer {
                 }
             }
             
+            
             const responses = this.responsesByHash.get(statementHash);
             if (responses && responses.length > 0) {
                 // Filter responses if showHostOnly is enabled
@@ -633,6 +687,25 @@ export class StatementViewer {
                     const responsesContainer = createResponsesContainer(filteredResponses, (stmt) => this.showStatementDetails(stmt));
                     container.appendChild(responsesContainer);
                 }
+            }
+        });
+        
+        // Display all rating subjects at the end
+        this.ratingsBySubject.forEach((ratings, subjectName) => {
+            // Filter ratings if showHostOnly is enabled
+            const filteredRatings = this.showHostOnly
+                ? ratings.filter(({ statement: ratingStatement }) => !ratingStatement.isPeer)
+                : ratings;
+            
+            if (filteredRatings.length > 0) {
+                const ratingsContainer = createRatingsContainer(
+                    subjectName,
+                    filteredRatings,
+                    this.identities,
+                    this.baseUrl,
+                    (stmt) => this.showStatementDetails(stmt)
+                );
+                container.appendChild(ratingsContainer);
             }
         });
     }

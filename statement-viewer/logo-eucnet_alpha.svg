@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Connected graph network symbol (background) -->
+    <g opacity="0.3">
+        <!-- Connection lines (edges) -->
+        <g stroke="#FFFFFF" stroke-width="2" fill="none">
+            <line x1="100" y1="50" x2="70" y2="70"/>
+            <line x1="100" y1="50" x2="130" y2="70"/>
+            <line x1="100" y1="50" x2="100" y2="90"/>
+            <line x1="70" y1="70" x2="100" y2="90"/>
+            <line x1="130" y1="70" x2="100" y2="90"/>
+            <line x1="70" y1="70" x2="60" y2="110"/>
+            <line x1="130" y1="70" x2="140" y2="110"/>
+            <line x1="100" y1="90" x2="60" y2="110"/>
+            <line x1="100" y1="90" x2="140" y2="110"/>
+        </g>
+        
+        <!-- Nodes (vertices) -->
+        <g fill="#FFFFFF">
+            <circle cx="100" cy="50" r="6"/>
+            <circle cx="70" cy="70" r="6"/>
+            <circle cx="130" cy="70" r="6"/>
+            <circle cx="100" cy="90" r="6"/>
+            <circle cx="60" cy="110" r="6"/>
+            <circle cx="140" cy="110" r="6"/>
+        </g>
+    </g>
+    
+    <!-- Text: EU (larger, centered) -->
+    <text x="100" y="95" font-family="Arial, sans-serif" font-size="32" font-weight="bold"
+          fill="#FFFFFF" text-anchor="middle" letter-spacing="2">EU</text>
+    
+    <!-- Text: Companies -->
+    <text x="100" y="120" font-family="Arial, sans-serif" font-size="20" font-weight="normal"
+          fill="#FFFFFF" text-anchor="middle" letter-spacing="1">Companies</text>
+    
+    <!-- Text: Network -->
+    <text x="100" y="142" font-family="Arial, sans-serif" font-size="20" font-weight="normal"
+          fill="#FFFFFF" text-anchor="middle" letter-spacing="1">Network</text>
+</svg>

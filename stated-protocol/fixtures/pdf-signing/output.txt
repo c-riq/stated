@@ -1,8 +1,8 @@
-Stated protocol version: 5
+Stated protocol version: 5.2
 Publishing domain: state.example.gov
 Author: Department of State
 Time: Mon, 15 Jan 2035 14:30:00 GMT
 Statement content:
     Type: Sign PDF
-    Description: We hereby digitally sign the referenced PDF file.
-    PDF file hash: kSay1EJilHLNhIuvr4J04UkfCjhdWWPBcOosCbclc8Y
+    Description: We hereby digitally sign the attached PDF file. The filename contains a hash of the file contents.
+Attachments: kSay1EJilHLNhIuvr4J04UkfCjhdWWPBcOosCbclc8Y.pdf

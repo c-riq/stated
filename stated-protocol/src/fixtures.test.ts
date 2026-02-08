@@ -70,7 +70,6 @@ function buildContentFromInput(contentObj: any): string {
         confidence: contentObj.confidence,
         reliabilityPolicy: contentObj.reliabilityPolicy,
         employeeCount: contentObj.employeeCount,
-        pictureHash: contentObj.pictureHash,
         latitude: contentObj.latitude,
         longitude: contentObj.longitude,
         population: contentObj.population,
@@ -88,7 +87,6 @@ function buildContentFromInput(contentObj: any): string {
         employer: contentObj.employer,
         verificationMethod: contentObj.verificationMethod,
         confidence: contentObj.confidence,
-        picture: contentObj.picture,
         reliabilityPolicy: contentObj.reliabilityPolicy,
         publicKey: contentObj.publicKey,
       });
@@ -110,9 +108,7 @@ function buildContentFromInput(contentObj: any): string {
         response: contentObj.response,
       });
     case 'pdf_signing':
-      return buildPDFSigningContent({
-        hash: contentObj.hash,
-      });
+      return buildPDFSigningContent({});
     case 'rating':
       return buildRating({
         subjectName: contentObj.subjectName,
@@ -203,7 +199,7 @@ describe('Fixture Validation', () => {
         assert.ok(parsed.domain);
         assert.ok(parsed.author);
         assert.ok(parsed.content);
-        assert.strictEqual(parsed.formatVersion, '5');
+        assert.strictEqual(parsed.formatVersion, '5.2');
       });
 
       it('round-trip: parse(output.txt) should match input.json structure', () => {

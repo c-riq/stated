@@ -7,7 +7,7 @@ export interface ParsedStatement {
     content: string;
     type?: string;
     signature?: string;
-    formatVersion?: string;
+    formatVersion: string;
     attachments?: string[];
     supersededStatement?: string;
     supersededBy?: ParsedStatement;
@@ -40,6 +40,12 @@ export interface PDFSignatureEntry {
     signatureData: any;
 }
 
+export interface RatingEntry {
+    statement: ParsedStatement;
+    rating: number;
+    ratingData: any;
+}
+
 export interface SignatureInfo {
     algorithm: string;
     publicKey: string;
@@ -51,4 +57,23 @@ export interface StatementMaps {
     statementsByHash: Map<string, ParsedStatement>;
     responsesByHash: Map<string, ParsedStatement[]>;
     votesByPollHash: Map<string, VoteEntry[]>;
+}
+
+export interface AppConfig {
+    branding: {
+        logo: string;
+        title: string;
+        subtitle: string;
+    };
+    statementsPath: string;
+    editor: {
+        defaults: {
+            domain: string;
+            author: string;
+        };
+        api: {
+            endpoint: string;
+            sourceEndpoint: string;
+        };
+    };
 }

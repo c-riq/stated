@@ -1,4 +1,4 @@
-Stated protocol version: 5
+Stated protocol version: 5.2
 Publishing domain: climate-action.org
 Author: Climate Action Network
 Time: Tue, 20 Mar 2035 16:45:00 GMT

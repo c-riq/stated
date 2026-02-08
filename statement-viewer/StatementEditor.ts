@@ -7,6 +7,8 @@ import {
     buildResponseContent,
     buildRating,
     buildPDFSigningContent,
+    buildOrganisationVerificationContent,
+    buildPersonVerificationContent,
     sha256,
     parseStatementsFile,
     generateStatementsFile,
@@ -16,8 +18,17 @@ import {
     parseVote,
     parseResponseContent,
     parseRating,
-    parsePDFSigning
-} from './lib/index.js';
+    parsePDFSigning,
+    parseOrganisationVerification,
+    parsePersonVerification,
+    isLegalForm,
+    isPeopleCountBucket,
+    legalForms,
+    type LegalForm,
+    type RatingSubjectTypeValue,
+    type PeopleCountBucket
+} from 'stated-protocol';
+import type { AppConfig } from './types.js';
 
 export interface StatementFormData {
     domain: string;
@@ -41,16 +52,78 @@ export class StatementEditor {
     private sourceEndpoint: string = 'https://mofa.country-a.com';
     private attachmentFiles: Map<string, File> = new Map();
     private readonly API_KEY_STORAGE_KEY = 'stated_api_key_api.country-a.com';
+    private countries: string[] = [];
+    private config: AppConfig;
 
-    constructor() {
+    constructor(config: AppConfig) {
+        this.config = config;
+        this.apiEndpoint = config.editor.api.endpoint;
+        this.sourceEndpoint = config.editor.api.sourceEndpoint;
+        
         this.form = document.getElementById('statementForm') as HTMLFormElement;
         this.outputArea = document.getElementById('outputStatement') as HTMLTextAreaElement;
         
         this.init();
+        this.applyEditorDefaults();
+        this.loadCountries().then(() => {
+            // Update country dropdowns after countries are loaded
+            this.updateCountryDropdowns();
+        });
     }
+
+    private async loadCountries(): Promise<void> {
+        try {
+            const response = await fetch('./countries.json');
+            const data = await response.json();
+            this.countries = data.countries.map((country: string[]) => country[0]);
+            console.log('Loaded', this.countries.length, 'countries');
+        } catch (error) {
+            console.error('Failed to load countries:', error);
+            this.countries = [];
+        }
+    }
+
+    private updateCountryDropdowns(): void {
+        // Update organisation country dropdown if it exists
+        const orgCountry = document.getElementById('orgCountry') as HTMLSelectElement;
+        if (orgCountry) {
+            orgCountry.innerHTML = this.getCountryOptions();
+        }
+
+        // Update person country dropdown if it exists
+        const personCountry = document.getElementById('personCountryOfBirth') as HTMLSelectElement;
+        if (personCountry) {
+            personCountry.innerHTML = this.getCountryOptions();
+        }
+    }
+
+    private getCountryOptions(): string {
+        if (this.countries.length === 0) {
+            return '<option value="">Loading countries...</option>';
+        }
+        return '<option value="">-- Select Country --</option>' +
+               this.countries.map(country => `<option value="${this.escapeHtml(country)}">${this.escapeHtml(country)}</option>`).join('');
+    }
+    private applyEditorDefaults(): void {
+        // Apply default domain
+        const domainInput = document.getElementById('domain') as HTMLInputElement;
+        if (domainInput) {
+            domainInput.value = this.config.editor.defaults.domain;
+        }
+
+        // Apply default author
+        const authorInput = document.getElementById('author') as HTMLInputElement;
+        if (authorInput) {
+            authorInput.value = this.config.editor.defaults.author;
+        }
+    }
+
 
     private init(): void {
         if (!this.form) return;
+
+        // Parse URL parameters and prefill form
+        this.prefillFromUrlParams();
 
         // Form submission
         this.form.addEventListener('submit', (e) => {
@@ -139,6 +212,84 @@ export class StatementEditor {
         this.loadApiKey();
     }
 
+    private prefillFromUrlParams(): void {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Get statement type from URL
+        const type = urlParams.get('type');
+        if (type) {
+            const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
+            if (typeSelect) {
+                typeSelect.value = type;
+                this.updateTypeHelp();
+                this.updateTypedFields();
+            }
+        }
+        
+        // Prefill based on statement type
+        if (type === 'vote') {
+            const pollHash = urlParams.get('pollHash');
+            const pollQuestion = urlParams.get('pollQuestion');
+            
+            if (pollHash) {
+                setTimeout(() => {
+                    const voteHashInput = document.getElementById('voteHash') as HTMLInputElement;
+                    if (voteHashInput) voteHashInput.value = pollHash;
+                }, 100);
+            }
+            
+            if (pollQuestion) {
+                setTimeout(() => {
+                    const votePollInput = document.getElementById('votePoll') as HTMLInputElement;
+                    if (votePollInput) votePollInput.value = decodeURIComponent(pollQuestion);
+                }, 100);
+            }
+        } else if (type === 'response') {
+            const statementHash = urlParams.get('statementHash');
+            
+            if (statementHash) {
+                setTimeout(() => {
+                    const responseHashInput = document.getElementById('responseHash') as HTMLInputElement;
+                    if (responseHashInput) responseHashInput.value = statementHash;
+                }, 100);
+            }
+        } else if (type === 'rating') {
+            const subjectName = urlParams.get('subjectName');
+            const subjectType = urlParams.get('subjectType');
+            const subjectReference = urlParams.get('subjectReference');
+            
+            if (subjectName) {
+                setTimeout(() => {
+                    const ratingSubjectInput = document.getElementById('ratingSubjectName') as HTMLInputElement;
+                    if (ratingSubjectInput) ratingSubjectInput.value = decodeURIComponent(subjectName);
+                }, 100);
+            }
+            
+            if (subjectType) {
+                setTimeout(() => {
+                    const ratingTypeSelect = document.getElementById('ratingSubjectType') as HTMLSelectElement;
+                    if (ratingTypeSelect) ratingTypeSelect.value = decodeURIComponent(subjectType);
+                }, 100);
+            }
+            
+            if (subjectReference) {
+                setTimeout(() => {
+                    const ratingRefInput = document.getElementById('ratingSubjectReference') as HTMLInputElement;
+                    if (ratingRefInput) ratingRefInput.value = decodeURIComponent(subjectReference);
+                }, 100);
+            }
+        } else if (type === 'sign_pdf') {
+            const pdfHash = urlParams.get('pdfHash');
+            
+            if (pdfHash) {
+                setTimeout(() => {
+                    const pdfHashInput = document.getElementById('pdfHash') as HTMLInputElement;
+                    if (pdfHashInput) pdfHashInput.value = pdfHash;
+                }, 100);
+            }
+        }
+    }
+
     private toggleSigningFields(): void {
         const signCheckbox = document.getElementById('signStatement') as HTMLInputElement;
         const signingFields = document.getElementById('signingFields');
@@ -212,8 +363,17 @@ export class StatementEditor {
                         <input type="text" id="pollQuestion" class="form-input" placeholder="Should we...?" required>
                     </div>
                     <div class="form-group">
-                        <label for="pollOptions">Options (comma-separated) *</label>
-                        <input type="text" id="pollOptions" class="form-input" placeholder="Yes, No, Maybe" required>
+                        <label for="pollOptions">Options (comma-separated)</label>
+                        <input type="text" id="pollOptions" class="form-input" placeholder="Yes, No, Maybe">
+                        <small>Leave empty for open poll (free text votes)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="pollAllowArbitraryVote">Allow Free Text Votes (Open Poll)</label>
+                        <select id="pollAllowArbitraryVote" class="form-input">
+                            <option value="">-- Not specified --</option>
+                            <option value="true">Yes - Allow any text as vote</option>
+                            <option value="false">No - Only predefined options</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="pollDeadline">Deadline (optional)</label>
@@ -221,7 +381,7 @@ export class StatementEditor {
                     </div>
                     <div class="form-group">
                         <label for="pollScope">Scope Description (optional)</label>
-                        <input type="text" id="pollScope" class="form-input" placeholder="All members">
+                        <input type="text" id="pollScope" class="form-input" placeholder="Who can vote: All members">
                     </div>
                 `;
                 break;
@@ -259,12 +419,192 @@ export class StatementEditor {
             case 'rating':
                 fieldsHTML = `
                     <div class="form-group">
-                        <label for="ratingHash">Statement Hash *</label>
-                        <input type="text" id="ratingHash" class="form-input" placeholder="Hash of statement you're rating" required>
+                        <label for="ratingSubjectName">Subject Name *</label>
+                        <input type="text" id="ratingSubjectName" class="form-input" placeholder="Name of what you're rating" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingSubjectType">Subject Type (optional)</label>
+                        <select id="ratingSubjectType" class="form-input">
+                            <option value="">-- Select Type --</option>
+                            <option value="Organisation">Organisation</option>
+                            <option value="Policy proposal">Policy proposal</option>
+                            <option value="Treaty draft">Treaty draft</option>
+                            <option value="Research publication">Research publication</option>
+                            <option value="Regulation">Regulation</option>
+                            <option value="Product">Product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingSubjectReference">Subject Reference/URL (optional)</label>
+                        <input type="text" id="ratingSubjectReference" class="form-input" placeholder="URL or hash identifying the subject">
                     </div>
                     <div class="form-group">
                         <label for="ratingValue">Rating (1-5) *</label>
                         <input type="number" id="ratingValue" class="form-input" min="1" max="5" placeholder="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingQuality">Rated Quality (optional)</label>
+                        <input type="text" id="ratingQuality" class="form-input" placeholder="e.g., Excellent, Good, Poor">
+                    </div>
+                    <div class="form-group">
+                        <label for="ratingComment">Comment (optional)</label>
+                        <textarea id="ratingComment" class="form-textarea" rows="3" placeholder="Additional comments..."></textarea>
+                    </div>
+                `;
+                break;
+
+            case 'organisation_verification':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="orgName">Organization Name *</label>
+                        <input type="text" id="orgName" class="form-input" placeholder="Official organization name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgCountry">Country *</label>
+                        <select id="orgCountry" class="form-input" required>
+                            ${this.getCountryOptions()}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgLegalForm">Legal Form *</label>
+                        <select id="orgLegalForm" class="form-input" required>
+                            <option value="">-- Select Legal Form --</option>
+                            <option value="local government">Local Government</option>
+                            <option value="state government">State Government</option>
+                            <option value="foreign affairs ministry">Foreign Affairs Ministry</option>
+                            <option value="corporation">Corporation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgDomain">Domain *</label>
+                        <input type="text" id="orgDomain" class="form-input" placeholder="example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgEnglishName">English Name (optional)</label>
+                        <input type="text" id="orgEnglishName" class="form-input" placeholder="English translation of name">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgForeignDomain">Foreign Domain (optional)</label>
+                        <input type="text" id="orgForeignDomain" class="form-input" placeholder="Foreign domain for statements">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgDepartment">Department (optional)</label>
+                        <input type="text" id="orgDepartment" class="form-input" placeholder="Department using the domain">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgCity">City (optional)</label>
+                        <input type="text" id="orgCity" class="form-input" placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgProvince">Province/State (optional)</label>
+                        <input type="text" id="orgProvince" class="form-input" placeholder="Province or state">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgSerialNumber">Business Register Number (optional)</label>
+                        <input type="text" id="orgSerialNumber" class="form-input" placeholder="Registration number">
+                    </div>
+                    <div class="form-group org-govt-only" style="display: none;">
+                        <label for="orgLatitude">Latitude (optional)</label>
+                        <input type="number" id="orgLatitude" class="form-input" step="any" placeholder="e.g., 52.3676">
+                    </div>
+                    <div class="form-group org-govt-only" style="display: none;">
+                        <label for="orgLongitude">Longitude (optional)</label>
+                        <input type="number" id="orgLongitude" class="form-input" step="any" placeholder="e.g., 4.9041">
+                    </div>
+                    <div class="form-group org-corp-only" style="display: none;">
+                        <label for="orgEmployeeCount">Employee Count (optional)</label>
+                        <select id="orgEmployeeCount" class="form-input">
+                            <option value="">-- Select Range --</option>
+                            <option value="0-10">0-10</option>
+                            <option value="10-100">10-100</option>
+                            <option value="100-1000">100-1000</option>
+                            <option value="1000-10,000">1000-10,000</option>
+                            <option value="10,000-100,000">10,000-100,000</option>
+                            <option value="100,000+">100,000+</option>
+                            <option value="1,000,000+">1,000,000+</option>
+                            <option value="10,000,000+">10,000,000+</option>
+                        </select>
+                    </div>
+                    <div class="form-group org-govt-only" style="display: none;">
+                        <label for="orgPopulation">Population (optional)</label>
+                        <select id="orgPopulation" class="form-input">
+                            <option value="">-- Select Range --</option>
+                            <option value="0-10">0-10</option>
+                            <option value="10-100">10-100</option>
+                            <option value="100-1000">100-1000</option>
+                            <option value="1000-10,000">1000-10,000</option>
+                            <option value="10,000-100,000">10,000-100,000</option>
+                            <option value="100,000+">100,000+</option>
+                            <option value="1,000,000+">1,000,000+</option>
+                            <option value="10,000,000+">10,000,000+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orgPublicKey">Public Key (optional)</label>
+                        <input type="text" id="orgPublicKey" class="form-input" placeholder="URL-safe base64 public key">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgConfidence">Confidence (optional)</label>
+                        <input type="number" id="orgConfidence" class="form-input" step="0.01" min="0" max="1" placeholder="0.0 to 1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="orgReliabilityPolicy">Reliability Policy (optional)</label>
+                        <input type="text" id="orgReliabilityPolicy" class="form-input" placeholder="URL to reliability policy">
+                    </div>
+                `;
+                break;
+
+            case 'person_verification':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="personName">Full Name *</label>
+                        <input type="text" id="personName" class="form-input" placeholder="Person's full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personDateOfBirth">Date of Birth *</label>
+                        <input type="date" id="personDateOfBirth" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personCityOfBirth">City of Birth *</label>
+                        <input type="text" id="personCityOfBirth" class="form-input" placeholder="City of birth" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personCountryOfBirth">Country of Birth *</label>
+                        <select id="personCountryOfBirth" class="form-input" required>
+                            ${this.getCountryOptions()}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="personDomain">Domain *</label>
+                        <input type="text" id="personDomain" class="form-input" placeholder="example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="personForeignDomain">Foreign Domain (optional)</label>
+                        <input type="text" id="personForeignDomain" class="form-input" placeholder="Foreign domain for statements">
+                    </div>
+                    <div class="form-group">
+                        <label for="personJobTitle">Job Title (optional)</label>
+                        <input type="text" id="personJobTitle" class="form-input" placeholder="Job title">
+                    </div>
+                    <div class="form-group">
+                        <label for="personEmployer">Employer (optional)</label>
+                        <input type="text" id="personEmployer" class="form-input" placeholder="Employer name">
+                    </div>
+                    <div class="form-group">
+                        <label for="personVerificationMethod">Verification Method (optional)</label>
+                        <input type="text" id="personVerificationMethod" class="form-input" placeholder="e.g., ID card, Passport">
+                    </div>
+                    <div class="form-group">
+                        <label for="personPublicKey">Public Key (optional)</label>
+                        <input type="text" id="personPublicKey" class="form-input" placeholder="URL-safe base64 public key">
+                    </div>
+                    <div class="form-group">
+                        <label for="personConfidence">Confidence (optional)</label>
+                        <input type="number" id="personConfidence" class="form-input" step="0.01" min="0" max="1" placeholder="0.0 to 1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="personReliabilityPolicy">Reliability Policy (optional)</label>
+                        <input type="text" id="personReliabilityPolicy" class="form-input" placeholder="URL to reliability policy">
                     </div>
                 `;
                 break;
@@ -272,32 +612,73 @@ export class StatementEditor {
             case 'sign_pdf':
                 fieldsHTML = `
                     <div class="form-group">
-                        <label for="pdfHash">PDF Hash *</label>
-                        <input type="text" id="pdfHash" class="form-input" placeholder="Hash of the PDF file" required>
+                        <label>PDF Signing</label>
+                        <p class="help-text">Upload the PDF file as an attachment. The statement will reference it automatically.</p>
                     </div>
                 `;
                 break;
         }
 
         typedFieldsContainer.innerHTML = fieldsHTML;
+        
+        // Add event listener for organisation legal form changes
+        if (type === 'organisation_verification') {
+            const orgLegalFormSelect = document.getElementById('orgLegalForm') as HTMLSelectElement;
+            if (orgLegalFormSelect) {
+                orgLegalFormSelect.addEventListener('change', () => this.updateOrgFieldsVisibility());
+                // Trigger initial update
+                this.updateOrgFieldsVisibility();
+            }
+        }
     }
 
-    private buildTypedContent(type: string): string {
+    private updateOrgFieldsVisibility(): void {
+        const orgLegalFormSelect = document.getElementById('orgLegalForm') as HTMLSelectElement;
+        if (!orgLegalFormSelect) return;
+
+        const legalForm = orgLegalFormSelect.value;
+        const isCorporation = legalForm === 'corporation';
+        const isGovernment = legalForm === 'local government' || legalForm === 'state government' || legalForm === 'foreign affairs ministry';
+
+        // Show/hide government-only fields (latitude, longitude, population)
+        const govtFields = document.querySelectorAll('.org-govt-only');
+        govtFields.forEach((field) => {
+            (field as HTMLElement).style.display = isGovernment ? 'block' : 'none';
+        });
+
+        // Show/hide corporation-only fields (employee count)
+        const corpFields = document.querySelectorAll('.org-corp-only');
+        corpFields.forEach((field) => {
+            (field as HTMLElement).style.display = isCorporation ? 'block' : 'none';
+        });
+    }
+
+    private async buildTypedContent(type: string): Promise<string> {
         switch (type) {
             case 'poll': {
                 const pollQuestion = (document.getElementById('pollQuestion') as HTMLInputElement)?.value.trim();
                 const pollOptionsStr = (document.getElementById('pollOptions') as HTMLInputElement)?.value.trim();
                 const pollDeadline = (document.getElementById('pollDeadline') as HTMLInputElement)?.value;
                 const pollScope = (document.getElementById('pollScope') as HTMLInputElement)?.value.trim();
+                const allowArbitraryVoteStr = (document.getElementById('pollAllowArbitraryVote') as HTMLSelectElement)?.value;
 
-                const options = pollOptionsStr.split(',').map(opt => opt.trim());
+                // Parse options - split by comma and filter out empty strings
+                const options = pollOptionsStr ? pollOptionsStr.split(',').map(opt => opt.trim()).filter(opt => opt.length > 0) : [];
+                
+                // Parse allowArbitraryVote
+                let allowArbitraryVote: boolean | undefined = undefined;
+                if (allowArbitraryVoteStr === 'true') {
+                    allowArbitraryVote = true;
+                } else if (allowArbitraryVoteStr === 'false') {
+                    allowArbitraryVote = false;
+                }
                 
                 return buildPollContent({
                     poll: pollQuestion,
                     options,
                     deadline: pollDeadline ? new Date(pollDeadline) : undefined,
                     scopeDescription: pollScope || undefined,
-                    allowArbitraryVote: undefined
+                    allowArbitraryVote
                 });
             }
 
@@ -324,29 +705,143 @@ export class StatementEditor {
             }
 
             case 'rating': {
-                const ratingHash = (document.getElementById('ratingHash') as HTMLInputElement)?.value.trim();
+                const subjectName = (document.getElementById('ratingSubjectName') as HTMLInputElement)?.value.trim();
+                const subjectType = (document.getElementById('ratingSubjectType') as HTMLSelectElement)?.value.trim();
+                const subjectReference = (document.getElementById('ratingSubjectReference') as HTMLInputElement)?.value.trim();
                 const ratingValue = parseInt((document.getElementById('ratingValue') as HTMLInputElement)?.value.trim());
+                const quality = (document.getElementById('ratingQuality') as HTMLInputElement)?.value.trim();
+                const comment = (document.getElementById('ratingComment') as HTMLTextAreaElement)?.value.trim();
 
                 if (!isRatingValue(ratingValue)) {
                     throw new Error('Rating must be between 1 and 5');
                 }
 
                 return buildRating({
-                    subjectName: 'Statement',
-                    subjectType: undefined,
-                    subjectReference: ratingHash,
+                    subjectName: subjectName,
+                    subjectType: (subjectType || undefined) as RatingSubjectTypeValue | undefined,
+                    subjectReference: subjectReference || undefined,
                     rating: ratingValue,
                     documentFileHash: undefined,
-                    quality: undefined,
-                    comment: undefined
+                    quality: quality || undefined,
+                    comment: comment || undefined
+                });
+            }
+
+            case 'organisation_verification': {
+                const name = (document.getElementById('orgName') as HTMLInputElement)?.value.trim();
+                const country = (document.getElementById('orgCountry') as HTMLSelectElement)?.value.trim();
+                const legalFormInput = (document.getElementById('orgLegalForm') as HTMLSelectElement)?.value.trim();
+                const domain = (document.getElementById('orgDomain') as HTMLInputElement)?.value.trim();
+                const englishName = (document.getElementById('orgEnglishName') as HTMLInputElement)?.value.trim();
+                const foreignDomain = (document.getElementById('orgForeignDomain') as HTMLInputElement)?.value.trim();
+                const department = (document.getElementById('orgDepartment') as HTMLInputElement)?.value.trim();
+                const city = (document.getElementById('orgCity') as HTMLInputElement)?.value.trim();
+                const province = (document.getElementById('orgProvince') as HTMLInputElement)?.value.trim();
+                const serialNumber = (document.getElementById('orgSerialNumber') as HTMLInputElement)?.value.trim();
+                const latitudeStr = (document.getElementById('orgLatitude') as HTMLInputElement)?.value.trim();
+                const longitudeStr = (document.getElementById('orgLongitude') as HTMLInputElement)?.value.trim();
+                const employeeCountInput = (document.getElementById('orgEmployeeCount') as HTMLSelectElement)?.value.trim();
+                const populationInput = (document.getElementById('orgPopulation') as HTMLSelectElement)?.value.trim();
+                const publicKey = (document.getElementById('orgPublicKey') as HTMLInputElement)?.value.trim();
+                const confidenceStr = (document.getElementById('orgConfidence') as HTMLInputElement)?.value.trim();
+                const reliabilityPolicy = (document.getElementById('orgReliabilityPolicy') as HTMLInputElement)?.value.trim();
+
+                // Validate legal form
+                if (!legalFormInput || !isLegalForm(legalFormInput)) {
+                    throw new Error(`Invalid legal form: ${legalFormInput}. Must be one of: ${Object.values(legalForms).join(', ')}`);
+                }
+
+                // Validate employee count if provided
+                let employeeCount: PeopleCountBucket | undefined = undefined;
+                if (employeeCountInput && !isPeopleCountBucket(employeeCountInput)) {
+                    throw new Error(`Invalid employee count: ${employeeCountInput}`);
+                }
+                if (employeeCountInput) {
+                    employeeCount = employeeCountInput as PeopleCountBucket;
+                }
+
+                // Validate population if provided
+                let population: PeopleCountBucket | undefined = undefined;
+                if (populationInput && !isPeopleCountBucket(populationInput)) {
+                    throw new Error(`Invalid population: ${populationInput}`);
+                }
+                if (populationInput) {
+                    population = populationInput as PeopleCountBucket;
+                }
+
+                // Parse numeric values
+                const latitude = latitudeStr ? parseFloat(latitudeStr) : undefined;
+                const longitude = longitudeStr ? parseFloat(longitudeStr) : undefined;
+                const confidence = confidenceStr ? parseFloat(confidenceStr) : undefined;
+
+                return buildOrganisationVerificationContent({
+                    name,
+                    country,
+                    legalForm: legalFormInput as LegalForm,
+                    domain,
+                    englishName: englishName || undefined,
+                    foreignDomain: foreignDomain || undefined,
+                    department: department || undefined,
+                    city: city || undefined,
+                    province: province || undefined,
+                    serialNumber: serialNumber || undefined,
+                    latitude,
+                    longitude,
+                    employeeCount,
+                    population,
+                    publicKey: publicKey || undefined,
+                    confidence,
+                    reliabilityPolicy: reliabilityPolicy || undefined
+                });
+            }
+
+            case 'person_verification': {
+                const name = (document.getElementById('personName') as HTMLInputElement)?.value.trim();
+                const dateOfBirthStr = (document.getElementById('personDateOfBirth') as HTMLInputElement)?.value;
+                const cityOfBirth = (document.getElementById('personCityOfBirth') as HTMLInputElement)?.value.trim();
+                const countryOfBirth = (document.getElementById('personCountryOfBirth') as HTMLSelectElement)?.value.trim();
+                const ownDomain = (document.getElementById('personDomain') as HTMLInputElement)?.value.trim();
+                const foreignDomain = (document.getElementById('personForeignDomain') as HTMLInputElement)?.value.trim();
+                const jobTitle = (document.getElementById('personJobTitle') as HTMLInputElement)?.value.trim();
+                const employer = (document.getElementById('personEmployer') as HTMLInputElement)?.value.trim();
+                const verificationMethod = (document.getElementById('personVerificationMethod') as HTMLInputElement)?.value.trim();
+                const publicKey = (document.getElementById('personPublicKey') as HTMLInputElement)?.value.trim();
+                const confidenceStr = (document.getElementById('personConfidence') as HTMLInputElement)?.value.trim();
+                const reliabilityPolicy = (document.getElementById('personReliabilityPolicy') as HTMLInputElement)?.value.trim();
+
+                const dateOfBirth = dateOfBirthStr ? new Date(dateOfBirthStr) : new Date();
+                const confidence = confidenceStr ? parseFloat(confidenceStr) : undefined;
+
+                return buildPersonVerificationContent({
+                    name,
+                    dateOfBirth,
+                    cityOfBirth,
+                    countryOfBirth,
+                    ownDomain,
+                    foreignDomain: foreignDomain || undefined,
+                    jobTitle: jobTitle || undefined,
+                    employer: employer || undefined,
+                    verificationMethod: verificationMethod || undefined,
+                    publicKey: publicKey || undefined,
+                    confidence,
+                    reliabilityPolicy: reliabilityPolicy || undefined
                 });
             }
 
             case 'sign_pdf': {
-                const pdfHash = (document.getElementById('pdfHash') as HTMLInputElement)?.value.trim();
+                if (this.attachmentFiles.size === 0) {
+                    throw new Error('Please upload a PDF file as an attachment for PDF signing');
+                }
+                
+                const firstFile = Array.from(this.attachmentFiles.values())[0];
+                const arrayBuffer = await firstFile.arrayBuffer();
+                const buffer = new Uint8Array(arrayBuffer);
+                const hash = sha256(buffer);
+                const ext = firstFile.name.split('.').pop();
+                const attachmentHash = `${hash}.${ext}`;
 
                 return buildPDFSigningContent({
-                    hash: pdfHash
+                    hash: attachmentHash
                 });
             }
 
@@ -384,7 +879,7 @@ export class StatementEditor {
         // Get content - either from textarea or build from typed fields
         let content = '';
         if (type) {
-            content = this.buildTypedContent(type);
+            content = await this.buildTypedContent(type);
         } else {
             content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
         }
@@ -445,18 +940,12 @@ export class StatementEditor {
                 return;
             }
 
-            // Build the statement content with type if specified
-            let content = formData.content;
-            if (formData.type && !content.startsWith('Type:')) {
-                content = `Type: ${formData.type}\n${content}`;
-            }
-
-            // Build the statement
+            // Build the statement using the library - it handles all formatting
             const statement = buildStatement({
                 domain: formData.domain,
                 author: formData.author,
                 time: new Date(),
-                content: content,
+                content: formData.content,
                 tags: formData.tags,
                 supersededStatement: formData.supersededStatement,
                 attachments: formData.attachments,
@@ -532,6 +1021,14 @@ export class StatementEditor {
                         case 'rating':
                             parseRating(parsed.content);
                             results.push('✓ Rating content is valid');
+                            break;
+                        case 'organisation_verification':
+                            parseOrganisationVerification(parsed.content);
+                            results.push('✓ Organisation verification content is valid');
+                            break;
+                        case 'person_verification':
+                            parsePersonVerification(parsed.content);
+                            results.push('✓ Person verification content is valid');
                             break;
                         case 'sign_pdf':
                             parsePDFSigning(parsed.content);

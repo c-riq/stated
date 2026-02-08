@@ -4,7 +4,8 @@ export type LegalForm =
   | 'local government'
   | 'state government'
   | 'foreign affairs ministry'
-  | 'corporation';
+  | 'corporation'
+  | 'sole proprietorship';
 
 export type PeopleCountBucket =
   | '0-10'
@@ -23,6 +24,7 @@ export function isLegalForm(value: string): value is LegalForm {
     'state government',
     'foreign affairs ministry',
     'corporation',
+    'sole proprietorship',
   ].includes(value);
 }
 
@@ -98,7 +100,6 @@ export type OrganisationVerification = {
   confidence?: number;
   reliabilityPolicy?: string;
   employeeCount?: PeopleCountBucket;
-  pictureHash?: string;
   latitude?: number;
   longitude?: number;
   population?: PeopleCountBucket;
@@ -124,7 +125,6 @@ export type PersonVerification = {
   employer?: string;
   verificationMethod?: string;
   confidence?: number;
-  picture?: string;
   reliabilityPolicy?: string;
   publicKey?: string;
 } & (withOwnDomain | withForeignDomain);
@@ -152,9 +152,7 @@ export type ResponseContent = {
   response: string;
 };
 
-export type PDFSigning = {
-  hash: string;
-};
+export type PDFSigning = Record<string, never>;
 
 export type RatingSubjectTypeValue =
   | 'Organisation'

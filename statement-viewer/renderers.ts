@@ -1,5 +1,6 @@
-import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent } from './lib/index.js';
-import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry } from './types.js';
+import { sha256, verifySignature, parseSignedStatement } from './lib/index.js';
+import { parsePollCompat, parseResponseContentCompat } from './protocol-compat.js';
+import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
 export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
@@ -202,10 +203,16 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
         const attachmentsContainer = document.createElement('div');
         attachmentsContainer.className = 'statement-attachments';
         
+        const isSignPdf = statement.type && statement.type.toLowerCase() === 'sign_pdf';
+        
         statement.attachments.forEach((attachment: string) => {
             const attachmentUrl = attachmentBasePath + attachment;
             const extension = attachment.split('.').pop()?.toLowerCase();
             if (!extension) return;
+            
+            if (isSignPdf && extension === 'pdf') {
+                return;
+            }
             
             if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
                 const imageContainer = document.createElement('div');
@@ -270,6 +277,17 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
 
     const actionBar = document.createElement('div');
     actionBar.className = 'action-bar';
+    
+    // Add Reply button
+    const replyBtn = document.createElement('button');
+    replyBtn.className = 'action-btn';
+    replyBtn.textContent = 'Reply';
+    replyBtn.addEventListener('click', (e: MouseEvent) => {
+        e.stopPropagation();
+        const statementHash = sha256(statement.raw);
+        window.location.href = `/editor.html?type=response&statementHash=${encodeURIComponent(statementHash)}`;
+    });
+    actionBar.appendChild(replyBtn);
     
     const detailsBtn = document.createElement('button');
     detailsBtn.className = 'action-btn';
@@ -441,7 +459,7 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     let options: string[] = [];
     
     try {
-        const pollData = parsePoll(pollStatement.content, pollStatement.formatVersion);
+        const pollData = parsePollCompat(pollStatement.content, pollStatement.formatVersion);
         pollQuestion = pollData.poll;
         options = pollData.options || [];
     } catch (error: any) {
@@ -564,6 +582,17 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     });
     
     container.appendChild(resultsContainer);
+    
+    // Add Vote button
+    const voteBtn = document.createElement('button');
+    voteBtn.className = 'votes-toggle-btn';
+    voteBtn.textContent = 'Cast Your Vote';
+    voteBtn.style.marginBottom = '12px';
+    voteBtn.addEventListener('click', () => {
+        const pollHash = sha256(pollStatement.raw);
+        window.location.href = `/editor.html?type=vote&pollHash=${encodeURIComponent(pollHash)}&pollQuestion=${encodeURIComponent(pollQuestion)}`;
+    });
+    container.appendChild(voteBtn);
     
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'votes-toggle-btn';
@@ -751,6 +780,16 @@ export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSig
     
     container.appendChild(signaturesGrid);
     
+    // Add "Sign this document" button
+    const signDocBtn = document.createElement('button');
+    signDocBtn.className = 'votes-toggle-btn';
+    signDocBtn.textContent = 'Sign This Document';
+    signDocBtn.style.marginTop = '12px';
+    signDocBtn.addEventListener('click', () => {
+        window.location.href = `/editor.html?type=sign_pdf&pdfHash=${encodeURIComponent(pdfHash)}`;
+    });
+    container.appendChild(signDocBtn);
+    
     return container;
 }
 
@@ -797,7 +836,7 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     
     let responseText = statement.content;
     try {
-        const responseData = parseResponseContent(statement.content);
+        const responseData = parseResponseContentCompat(statement.content, statement.formatVersion);
         responseText = responseData.response;
     } catch (error: any) {
         console.error('Error parsing response text:', error);
@@ -834,4 +873,229 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     card.appendChild(actionBar);
     
     return card;
+}
+
+export function createRatingsContainer(subjectName: string, ratings: RatingEntry[], identities: Map<string, Identity>, baseUrl: string, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+    const container = document.createElement('div');
+    container.className = 'ratings-container';
+    
+    // Add title showing what's being rated
+    const title = document.createElement('div');
+    title.className = 'ratings-title';
+    title.textContent = `Ratings for ${subjectName}`;
+    container.appendChild(title);
+    
+    // Calculate average rating
+    const totalRating = ratings.reduce((sum, { rating }) => sum + rating, 0);
+    const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
+    const roundedAverage = Math.round(averageRating * 10) / 10;
+    
+    // Header with Google-style summary - horizontal layout
+    const header = document.createElement('div');
+    header.className = 'ratings-header';
+    
+    // Count ratings by star level
+    const starCounts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    ratings.forEach(({ rating }) => {
+        starCounts[rating] = (starCounts[rating] || 0) + 1;
+    });
+    
+    // Left side: Star distribution bars
+    const distribution = document.createElement('div');
+    distribution.className = 'ratings-distribution';
+    
+    // Display distribution bars (5 to 1 stars)
+    for (let stars = 5; stars >= 1; stars--) {
+        const count = starCounts[stars] || 0;
+        const percentage = ratings.length > 0 ? (count / ratings.length) * 100 : 0;
+        
+        const row = document.createElement('div');
+        row.className = 'distribution-row';
+        row.innerHTML = `
+            <span class="star-label">${stars} <span class="star-icon">★</span></span>
+            <div class="distribution-bar-container">
+                <div class="distribution-bar" style="width: ${percentage}%"></div>
+            </div>
+            <span class="distribution-count">${count}</span>
+        `;
+        distribution.appendChild(row);
+    }
+    
+    // Right side: Average rating display
+    const averageDisplay = document.createElement('div');
+    averageDisplay.className = 'ratings-average';
+    averageDisplay.innerHTML = `
+        <span class="average-number">${roundedAverage.toFixed(1)}</span>
+        <div class="average-stars">${renderStars(averageRating)}</div>
+        <div class="ratings-count">${ratings.length} review${ratings.length !== 1 ? 's' : ''}</div>
+    `;
+    
+    // Combine in horizontal layout
+    const summaryContainer = document.createElement('div');
+    summaryContainer.className = 'ratings-summary';
+    summaryContainer.appendChild(distribution);
+    summaryContainer.appendChild(averageDisplay);
+    
+    header.appendChild(summaryContainer);
+    container.appendChild(header);
+    
+    // Add "Add your review" button
+    const addReviewBtn = document.createElement('button');
+    addReviewBtn.className = 'votes-toggle-btn';
+    addReviewBtn.textContent = 'Add Your Review';
+    addReviewBtn.style.marginBottom = '12px';
+    addReviewBtn.addEventListener('click', () => {
+        // Try to get subjectType and subjectReference from the first rating if available
+        let subjectType = '';
+        let subjectReference = '';
+        if (ratings.length > 0) {
+            const firstRating = ratings[0].ratingData;
+            subjectType = firstRating.subjectType || '';
+            subjectReference = firstRating.subjectReference || '';
+        }
+        
+        let url = `/editor.html?type=rating&subjectName=${encodeURIComponent(subjectName)}`;
+        if (subjectType) {
+            url += `&subjectType=${encodeURIComponent(subjectType)}`;
+        }
+        if (subjectReference) {
+            url += `&subjectReference=${encodeURIComponent(subjectReference)}`;
+        }
+        window.location.href = url;
+    });
+    container.appendChild(addReviewBtn);
+    
+    // Individual reviews
+    const reviewsHeader = document.createElement('div');
+    reviewsHeader.className = 'reviews-header';
+    reviewsHeader.textContent = 'Reviews';
+    container.appendChild(reviewsHeader);
+    
+    const reviewsList = document.createElement('div');
+    reviewsList.className = 'reviews-list';
+    
+    // Sort by date (newest first)
+    const sortedRatings = [...ratings].sort((a, b) => {
+        const timeA = new Date(a.statement.time || 0);
+        const timeB = new Date(b.statement.time || 0);
+        return timeB.getTime() - timeA.getTime();
+    });
+    
+    sortedRatings.forEach(({ statement, rating, ratingData }) => {
+        const reviewCard = document.createElement('div');
+        reviewCard.className = 'review-card';
+        
+        // Reviewer info
+        const reviewerInfo = document.createElement('div');
+        reviewerInfo.className = 'reviewer-info';
+        
+        const identity = statement.domain ? identities.get(statement.domain) : undefined;
+        
+        // Profile picture
+        if (identity && identity.profilePicture) {
+            const profilePic = document.createElement('img');
+            const profilePicPath = identity.verificationStatement?.isPeer && identity.verificationStatement?.peerDomain
+                ? `${baseUrl}peers/${identity.verificationStatement.peerDomain}/statements/attachments/${identity.profilePicture}`
+                : `${baseUrl}attachments/${identity.profilePicture}`;
+            profilePic.src = profilePicPath;
+            profilePic.alt = identity.author;
+            profilePic.className = 'reviewer-picture';
+            profilePic.onerror = () => {
+                profilePic.style.display = 'none';
+            };
+            reviewerInfo.appendChild(profilePic);
+        }
+        
+        const reviewerDetails = document.createElement('div');
+        reviewerDetails.className = 'reviewer-details';
+        
+        const reviewerName = document.createElement('div');
+        reviewerName.className = 'reviewer-name';
+        reviewerName.textContent = statement.author || statement.domain || 'Anonymous';
+        
+        // Add verified badge if identity is established
+        if (identity && identity.isSelfVerified && statement.publicKey === identity.publicKey) {
+            const verifiedBadge = document.createElement('span');
+            verifiedBadge.className = 'identity-verified-badge';
+            verifiedBadge.innerHTML = '<img src="icons/check.svg" alt="" width="12" height="12">';
+            verifiedBadge.title = 'Verified identity';
+            reviewerName.appendChild(verifiedBadge);
+        }
+        
+        reviewerDetails.appendChild(reviewerName);
+        
+        const reviewDate = document.createElement('div');
+        reviewDate.className = 'review-date';
+        reviewDate.textContent = getTimeAgo(new Date(statement.time || 0));
+        reviewerDetails.appendChild(reviewDate);
+        
+        reviewerInfo.appendChild(reviewerDetails);
+        reviewCard.appendChild(reviewerInfo);
+        
+        // Rating stars
+        const ratingStars = document.createElement('div');
+        ratingStars.className = 'review-stars';
+        ratingStars.innerHTML = renderStars(rating);
+        reviewCard.appendChild(ratingStars);
+        
+        // Quality label if present
+        if (ratingData.quality) {
+            const qualityLabel = document.createElement('div');
+            qualityLabel.className = 'review-quality';
+            qualityLabel.textContent = ratingData.quality;
+            reviewCard.appendChild(qualityLabel);
+        }
+        
+        // Comment
+        if (ratingData.comment) {
+            const comment = document.createElement('div');
+            comment.className = 'review-comment';
+            comment.textContent = ratingData.comment;
+            reviewCard.appendChild(comment);
+        }
+        
+        // Action buttons
+        const actionBar = document.createElement('div');
+        actionBar.className = 'review-actions';
+        
+        const detailsBtn = document.createElement('button');
+        detailsBtn.className = 'action-btn-small';
+        detailsBtn.textContent = 'Details';
+        detailsBtn.addEventListener('click', () => {
+            onShowDetails(statement);
+        });
+        actionBar.appendChild(detailsBtn);
+        
+        reviewCard.appendChild(actionBar);
+        reviewsList.appendChild(reviewCard);
+    });
+    
+    container.appendChild(reviewsList);
+    
+    return container;
+}
+
+function renderStars(rating: number): string {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    let starsHtml = '';
+    
+    // Full stars
+    for (let i = 0; i < fullStars; i++) {
+        starsHtml += '<span class="star filled">★</span>';
+    }
+    
+    // Half star
+    if (hasHalfStar) {
+        starsHtml += '<span class="star half">★</span>';
+    }
+    
+    // Empty stars
+    for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '<span class="star empty">★</span>';
+    }
+    
+    return starsHtml;
 }
