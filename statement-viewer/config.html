@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Editor</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="editor-styles.css">
+    <style>
+        .editor-container {
+            max-width: 720px;
+        }
+
+        .config-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .section-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .no-peers {
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .peer-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .peer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .peer-header h4 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #d32f2f;
+            transition: color 0.2s;
+        }
+
+        .btn-icon:hover {
+            color: #b71c1c;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .message-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .message-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+    </style>
+    <script>
+        (function() {
+            try {
+                const cached = localStorage.getItem('stated_config_cache');
+                if (cached) {
+                    const config = JSON.parse(cached);
+                    if (config.branding) {
+                        document.title = 'Configuration Editor - ' + config.branding.title;
+                    }
+                }
+            } catch(e) {}
+        })();
+    </script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="header-left">
+                <img src="logo.png" alt="Logo" class="header-logo">
+                <h1><a href="/" style="color: inherit; text-decoration: none;">globalcoordination.org</a><span class="subtitle">Settings</span></h1>
+            </div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <img src="icons/menu.svg" alt="" width="24" height="24">
+            </button>
+        </div>
+    </div>
+
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <h3>Navigation</h3>
+                <a href="/" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/document.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Viewer</span>
+                </a>
+                <a href="/editor.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/edit.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Statement Editor</span>
+                </a>
+                <a href="/browser.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/folder.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>File Browser</span>
+                </a>
+                <a href="/config.html" class="menu-link">
+                    <span class="menu-icon">
+                        <img src="icons/settings.svg" alt="" width="16" height="16">
+                    </span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div id="configEditorContainer"></div>
+
+    <script type="module" src="/config-app.ts"></script>
+    <script type="module">
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        const openMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.add('open');
+                menuOverlay.classList.add('active');
+            }
+        };
+        
+        const closeMenu = () => {
+            if (sideMenu && menuOverlay) {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
+        };
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', openMenu);
+        }
+        
+        if (menuClose) {
+            menuClose.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+    </script>
+</body>
+</html>

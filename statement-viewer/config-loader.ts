@@ -1,6 +1,6 @@
 import type { AppConfig } from './types.js';
+import { CONFIG_CACHE_KEY } from './constants.js';
 
-const CONFIG_CACHE_KEY = 'stated_config_cache';
 const CONFIG_TIMESTAMP_KEY = 'stated_config_timestamp';
 const CACHE_DURATION = 5 * 60 * 1000;
 

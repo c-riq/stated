@@ -59,6 +59,14 @@ export interface StatementMaps {
     votesByPollHash: Map<string, VoteEntry[]>;
 }
 
+export interface PeerInfo {
+    domain: string;
+    lastSyncTime?: string;
+    lastSyncEtag?: string;
+    pullUpdates: boolean;
+    trustScore: number; // 0-1
+}
+
 export interface AppConfig {
     branding: {
         logo: string;
@@ -75,5 +83,9 @@ export interface AppConfig {
             endpoint: string;
             sourceEndpoint: string;
         };
+    };
+    sync: {
+        peers: PeerInfo[];
+        cronSchedule: string;
     };
 }

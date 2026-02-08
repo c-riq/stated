@@ -17,6 +17,7 @@ Open: `http://localhost:3033/`
 - **Statement Viewer**: View statements from `/.well-known/statements/`
 - **Statement Editor**: Create and sign new statements with a user-friendly form
 - **File Browser**: Browse files with built-in file browser
+- **Settings Editor**: Edit application configuration via a dedicated UI at `/config.html`
 - Supports all Stated protocol v5 statement types
 - Keyword highlighting for typed statements
 - Cryptographic signing with Ed25519
@@ -71,21 +72,26 @@ When you click "Submit to API", the editor:
 2. Optionally select statement type, add tags/translations/attachments
 3. Generate or enter key pair for signing
 4. Click "Generate Statement"
-5. Enter API key for api.country-a.com
+5. Enter API key for the configured endpoint
 6. Click "Submit to API"
 
 ### API Configuration
 
-Default endpoint: `https://api.country-a.com/update`
-
-Requires API key configured in deployment's Terraform infrastructure.
+The API endpoint is set in [`config.json`](config.json) under `editor.api.endpoint`
+(default: `https://api.country-a.com/update`). The API key is stored in the browser's
+localStorage and can be deleted via the editor UI.
 
 ## Configuration
 
 Runtime configuration via [`config.json`](config.json) - no rebuild required:
 - `branding`: logo, title, subtitle
+- `statementsPath`: path to the statements directory
 - `editor.defaults`: pre-filled domain and author
 - `editor.api`: API endpoints
+- `sync`: peer synchronization settings (peers, cron schedule)
+
+Edit configuration in the browser at `/config.html`. The settings editor exports a
+`config.json` file that can be placed in the deployment root.
 
 ## Deployment
 

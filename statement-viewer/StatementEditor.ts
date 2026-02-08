@@ -29,6 +29,7 @@ import {
     type PeopleCountBucket
 } from 'stated-protocol';
 import type { AppConfig } from './types.js';
+import { API_KEY_STORAGE_KEY } from './constants.js';
 
 export interface StatementFormData {
     domain: string;
@@ -51,7 +52,7 @@ export class StatementEditor {
     private apiEndpoint: string = 'https://api.country-a.com/update';
     private sourceEndpoint: string = 'https://mofa.country-a.com';
     private attachmentFiles: Map<string, File> = new Map();
-    private readonly API_KEY_STORAGE_KEY = 'stated_api_key_api.country-a.com';
+    private readonly API_KEY_STORAGE_KEY = API_KEY_STORAGE_KEY;
     private countries: string[] = [];
     private config: AppConfig;
 
@@ -840,9 +841,7 @@ export class StatementEditor {
                 const ext = firstFile.name.split('.').pop();
                 const attachmentHash = `${hash}.${ext}`;
 
-                return buildPDFSigningContent({
-                    hash: attachmentHash
-                });
+                return buildPDFSigningContent({});
             }
 
             default:

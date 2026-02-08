@@ -14,5 +14,24 @@
       "endpoint": "https://api.country-a.com/update",
       "sourceEndpoint": "https://mofa.country-a.com"
     }
+  },
+  "sync": {
+    "peers": [
+      {
+        "domain": "mofa.country-b.com",
+        "lastSyncTime": "2026-02-08T20:00:00.000Z",
+        "lastSyncEtag": "\"abc123def456\"",
+        "pullUpdates": true,
+        "trustScore": 0.95
+      },
+      {
+        "domain": "business-a.com",
+        "lastSyncTime": "2026-02-08T19:30:00.000Z",
+        "lastSyncEtag": "\"xyz789ghi012\"",
+        "pullUpdates": true,
+        "trustScore": 0.8
+      }
+    ],
+    "cronSchedule": "0 */6 * * *"
   }
 }
