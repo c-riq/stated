@@ -131,6 +131,5 @@ describe('Statement Utils', () => {
       const parsed = splitStatements(fileWithEmpty);
       assert.strictEqual(parsed.length, 2);
     });
-
   });
 });
