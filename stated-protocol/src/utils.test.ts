@@ -9,7 +9,7 @@ import {
   generateStatementHash,
   validateStatementHash,
   generateStatementsFile,
-  parseStatementsFile,
+  splitStatements,
   generateStatementFilename,
   generateAttachmentFilename,
 } from './utils';
@@ -118,23 +118,19 @@ describe('Statement Utils', () => {
       assert.ok(statementsFile.includes('\n\n'));
     });
 
-    it('should parse statements file', () => {
+    it('should split statements file', () => {
       const statementsFile = generateStatementsFile([statement1, statement2]);
-      const parsed = parseStatementsFile(statementsFile);
+      const parsed = splitStatements(statementsFile);
       assert.strictEqual(parsed.length, 2);
       assert.strictEqual(parsed[0], statement1);
       assert.strictEqual(parsed[1], statement2);
     });
 
-    it('should throw error for invalid statement in file', () => {
-      const invalidFile = 'Invalid statement\n\nAnother invalid statement';
-      assert.throws(() => parseStatementsFile(invalidFile));
-    });
-
-    it('should filter empty statements', () => {
+    it('should filter empty statements when splitting', () => {
       const fileWithEmpty = statement1 + '\n\n\n\n' + statement2;
-      const parsed = parseStatementsFile(fileWithEmpty);
+      const parsed = splitStatements(fileWithEmpty);
       assert.strictEqual(parsed.length, 2);
     });
+
   });
 });

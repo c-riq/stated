@@ -62,7 +62,6 @@ export const splitStatements = (statementsFileContent: string): string[] => {
   return statements;
 };
 
-export const parseStatementsFile = splitStatements;
 
 export const generateStatementFilename = (statement: string): string => {
   const hash = generateStatementHash(statement);
