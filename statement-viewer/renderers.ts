@@ -1,4 +1,5 @@
-import { sha256, verifySignature, parseSignedStatement, parsePoll, parseResponseContent, parseRating } from './lib/index.js';
+import { sha256, verifySignature, parseSignedStatement } from './lib/index.js';
+import { parsePollCompat, parseResponseContentCompat } from './protocol-compat.js';
 import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
@@ -458,7 +459,7 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     let options: string[] = [];
     
     try {
-        const pollData = parsePoll(pollStatement.content, pollStatement.formatVersion);
+        const pollData = parsePollCompat(pollStatement.content, pollStatement.formatVersion);
         pollQuestion = pollData.poll;
         options = pollData.options || [];
     } catch (error: any) {
@@ -835,7 +836,7 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     
     let responseText = statement.content;
     try {
-        const responseData = parseResponseContent(statement.content);
+        const responseData = parseResponseContentCompat(statement.content, statement.formatVersion);
         responseText = responseData.response;
     } catch (error: any) {
         console.error('Error parsing response text:', error);

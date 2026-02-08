@@ -6,14 +6,15 @@ import {
     parseResponseContent,
     parseOrganisationVerification,
     parsePDFSigning,
-    parseRating
+    parseRating,
+    parsePoll
 } from 'stated-protocol';
 import type {
     OrganisationVerification,
-    PDFSigning,
     Rating,
     Vote,
-    ResponseContent
+    ResponseContent,
+    Poll
 } from 'stated-protocol';
 
 import {
@@ -22,14 +23,16 @@ import {
     parseResponseContent as parseResponseContent_v5_1,
     parseOrganisationVerification as parseOrganisationVerification_v5_1,
     parsePDFSigning as parsePDFSigning_v5_1,
-    parseRating as parseRating_v5_1
+    parseRating as parseRating_v5_1,
+    parsePoll as parsePoll_v5_1
 } from 'stated-protocol-v5.1';
 import type {
     OrganisationVerification as OrganisationVerification_v5_1,
     PDFSigning as PDFSigning_v5_1,
     Rating as Rating_v5_1,
     Vote as Vote_v5_1,
-    ResponseContent as ResponseContent_v5_1
+    ResponseContent as ResponseContent_v5_1,
+    Poll as Poll_v5_1
 } from 'stated-protocol-v5.1';
 
 export type OrganisationVerificationCompat =
@@ -51,6 +54,10 @@ export type VoteCompat =
 export type ResponseContentCompat =
     | (ResponseContent & { _version: '5.2' })
     | (ResponseContent_v5_1 & { _version: '5' | '5.1' });
+
+export type PollCompat =
+    | (Poll & { _version: '5.2' })
+    | (Poll_v5_1 & { _version: '5' | '5.1' });
 
 function isV5_1Version(version?: string): version is '5' | '5.1' {
     return version === '5' || version === '5.1';
@@ -116,6 +123,16 @@ export function parseRatingCompat(
         return { ...parseRating_v5_1(content), _version: formatVersion };
     }
     return { ...parseRating(content), _version: '5.2' };
+}
+
+export function parsePollCompat(
+    content: string,
+    formatVersion?: string
+): PollCompat {
+    if (isV5_1Version(formatVersion)) {
+        return { ...parsePoll_v5_1(content, formatVersion), _version: formatVersion };
+    }
+    return { ...parsePoll(content, formatVersion), _version: '5.2' };
 }
 
 export function extractPdfHash(

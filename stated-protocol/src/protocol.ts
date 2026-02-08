@@ -322,7 +322,7 @@ export const buildPollContent = ({
 };
 
 export const parsePoll = (content: string, version?: string): Poll => {
-  if (version !== '5' && version !== '5.2') throw new Error('Invalid version ' + version);
+  if (version !== '5.2') throw new Error('Invalid version ' + version);
   const pollRegex = new RegExp(
     '' +
       /^    Type: Poll\n/.source +
