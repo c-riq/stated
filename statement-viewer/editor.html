@@ -73,20 +73,15 @@
                 <h2>Create Statement</h2>
                 
                 <form id="statementForm">
-                    <!-- Basic Information -->
                     <div class="form-section">
-                        <h3>Basic Information</h3>
-                        
                         <div class="form-group">
                             <label for="domain">Publishing Domain *</label>
                             <input type="text" id="domain" class="form-input" value="mofa.country-a.com" required>
-                            <small>The domain publishing this statement</small>
                         </div>
 
                         <div class="form-group">
                             <label for="author">Author *</label>
                             <input type="text" id="author" class="form-input" value="Ministry of Foreign Affairs of Country A" required>
-                            <small>The name of the organization or person</small>
                         </div>
 
                         <div class="form-group">
@@ -103,13 +98,11 @@
                                 <option value="dispute_statement_authenticity">Dispute Authenticity</option>
                                 <option value="dispute_statement_content">Dispute Content</option>
                             </select>
-                            <small id="typeHelp" class="type-help"></small>
                         </div>
 
                         <div class="form-group">
                             <label for="content">Statement Content *</label>
                             <textarea id="content" class="form-textarea" rows="8" placeholder="Enter your statement content here..." required></textarea>
-                            <small id="contentHelp">The main content of your statement. For typed statements, the Type: field will be added automatically.</small>
                         </div>
 
                         <!-- Dynamic fields for typed statements -->
@@ -117,62 +110,73 @@
                     </div>
 
                     <!-- Optional Fields -->
-                    <div class="form-section">
-                        <h3>Optional Fields</h3>
+                    <div class="form-section collapsible-section">
+                        <h3 class="collapsible-header" data-target="optionalFields">
+                            <span class="collapse-icon">▶</span>
+                            Optional Fields
+                        </h3>
+                        <div id="optionalFields" class="collapsible-content" style="display: none;">
+                            <div class="form-group">
+                                <label>Tags</label>
+                                <div id="tagsContainer" class="dynamic-container"></div>
+                                <button type="button" id="addTag" class="btn-secondary">+ Add Tag</button>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Tags</label>
-                            <div id="tagsContainer" class="dynamic-container"></div>
-                            <button type="button" id="addTag" class="btn-secondary">+ Add Tag</button>
-                            <small>Add tags to categorize your statement</small>
-                        </div>
+                            <div class="form-group">
+                                <label for="supersededStatement">
+                                    Superseded Statement Hash
+                                    <span class="info-icon" data-tooltip="Enter the hash of a previous statement that this one replaces">ⓘ</span>
+                                </label>
+                                <input type="text" id="supersededStatement" class="form-input" placeholder="Previous statement hash">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="supersededStatement">Superseded Statement Hash</label>
-                            <input type="text" id="supersededStatement" class="form-input" placeholder="Previous statement hash">
-                            <small>If this statement replaces a previous one, enter its hash</small>
-                        </div>
+                            <div class="form-group">
+                                <label>
+                                    Translations
+                                    <span class="info-icon" data-tooltip="Add translations using ISO 639-1 language codes (es, fr, de, etc.)">ⓘ</span>
+                                </label>
+                                <div id="translationsContainer" class="dynamic-container"></div>
+                                <button type="button" id="addTranslation" class="btn-secondary">+ Add Translation</button>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Translations</label>
-                            <div id="translationsContainer" class="dynamic-container"></div>
-                            <button type="button" id="addTranslation" class="btn-secondary">+ Add Translation</button>
-                            <small>Add translations in other languages (use ISO 639-1 codes: es, fr, de, etc.)</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Attachments</label>
-                            <div id="attachmentsContainer" class="dynamic-container"></div>
-                            <button type="button" id="addAttachment" class="btn-secondary">+ Add Attachment</button>
-                            <small>Upload files that will be automatically published with your statement</small>
+                            <div class="form-group">
+                                <label>Attachments</label>
+                                <div id="attachmentsContainer" class="dynamic-container"></div>
+                                <button type="button" id="addAttachment" class="btn-secondary">+ Add Attachment</button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Cryptographic Signing -->
-                    <div class="form-section">
-                        <h3>Cryptographic Signing</h3>
-                        
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="signStatement">
-                                <span>Sign this statement with Ed25519 signature</span>
-                            </label>
-                            <small>Signing provides cryptographic proof of authenticity and prevents tampering</small>
-                        </div>
-
-                        <div id="signingFields" style="display: none;">
+                    <div class="form-section collapsible-section">
+                        <h3 class="collapsible-header" data-target="signingSection">
+                            <span class="collapse-icon">▶</span>
+                            Cryptographic Signing
+                        </h3>
+                        <div id="signingSection" class="collapsible-content" style="display: none;">
                             <div class="form-group">
-                                <label for="publicKey">Public Key</label>
-                                <input type="text" id="publicKey" class="form-input" placeholder="Public key (base64)" readonly>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="signStatement">
+                                    <span>Sign this statement</span>
+                                </label>
                             </div>
 
-                            <div class="form-group">
-                                <label for="privateKey">Private Key</label>
-                                <input type="text" id="privateKey" class="form-input" placeholder="Private key (base64)" readonly>
-                                <small class="warning">⚠ Keep your private key secure! Never share it.</small>
-                            </div>
+                            <div id="signingFields" style="display: none;">
+                                <div class="form-group">
+                                    <label for="publicKey">Public Key</label>
+                                    <input type="text" id="publicKey" class="form-input" placeholder="Public key (base64)" readonly>
+                                </div>
 
-                            <button type="button" id="generateKeys" class="btn-secondary">Generate New Key Pair</button>
+                                <div class="form-group">
+                                    <label for="privateKey">
+                                        Private Key
+                                        <span class="info-icon" data-tooltip="⚠️ Keep this secret! Never share your private key with anyone">ⓘ</span>
+                                    </label>
+                                    <input type="text" id="privateKey" class="form-input" placeholder="Private key (base64)" readonly>
+                                </div>
+
+                                <button type="button" id="generateKeys" class="btn-secondary">Generate New Key Pair</button>
+                            </div>
                         </div>
                     </div>
 
@@ -184,13 +188,11 @@
             </div>
 
             <!-- Right Panel: Output -->
-            <div class="editor-panel editor-output-panel">
+            <div class="editor-panel editor-output-panel" id="outputPanel" style="display: none;">
                 <h2>Generated Statement</h2>
 
                 <div class="output-section">
                     <textarea id="outputStatement" class="output-textarea" readonly placeholder="Generated statement text will appear here..."></textarea>
-                    <div id="statementHash" class="statement-hash"></div>
-                    <div id="statementValidation" class="statement-validation"></div>
                 </div>
 
                 <div class="output-section">
@@ -203,7 +205,6 @@
                                 <img src="icons/x.svg" alt="Delete" width="14" height="14">
                             </button>
                         </div>
-                        <small>Required to publish statements to api.country-a.com. Your API key is saved locally and will be prefilled on next visit.</small>
                     </div>
                 </div>
 

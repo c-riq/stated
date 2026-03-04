@@ -200,16 +200,40 @@ export class StatementEditor {
         const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
         if (typeSelect) {
             typeSelect.addEventListener('change', () => {
-                this.updateTypeHelp();
                 this.updateTypedFields();
             });
         }
 
+        // Collapsible section headers
+        this.initCollapsibleSections();
+
         // Initialize
         this.toggleSigningFields();
-        this.updateTypeHelp();
         this.updateTypedFields();
         this.loadApiKey();
+    }
+
+    private initCollapsibleSections(): void {
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+        collapsibleHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const targetId = header.getAttribute('data-target');
+                if (!targetId) return;
+
+                const content = document.getElementById(targetId);
+                if (!content) return;
+
+                const isVisible = content.style.display !== 'none';
+                
+                if (isVisible) {
+                    content.style.display = 'none';
+                    header.classList.remove('active');
+                } else {
+                    content.style.display = 'block';
+                    header.classList.add('active');
+                }
+            });
+        });
     }
 
     private prefillFromUrlParams(): void {
@@ -221,7 +245,6 @@ export class StatementEditor {
             const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
             if (typeSelect) {
                 typeSelect.value = type;
-                this.updateTypeHelp();
                 this.updateTypedFields();
             }
         }
@@ -296,38 +319,6 @@ export class StatementEditor {
         
         if (signingFields) {
             signingFields.style.display = signCheckbox?.checked ? 'block' : 'none';
-        }
-    }
-
-    private updateTypeHelp(): void {
-        const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
-        const typeHelp = document.getElementById('typeHelp');
-        const contentHelp = document.getElementById('contentHelp');
-        
-        if (!typeSelect || !typeHelp) return;
-
-        const helpTexts: Record<string, string> = {
-            '': 'A basic statement without a specific type.',
-            'poll': 'Create a poll with multiple choice options.',
-            'vote': 'Vote on an existing poll.',
-            'organisation_verification': 'Verify an organization\'s identity.',
-            'person_verification': 'Verify a person\'s identity.',
-            'response': 'Respond to another statement.',
-            'rating': 'Rate another statement (1-5 stars).',
-            'sign_pdf': 'Sign a PDF document.',
-            'dispute_statement_authenticity': 'Dispute the authenticity of a statement.',
-            'dispute_statement_content': 'Dispute the content of a statement.'
-        };
-
-        typeHelp.textContent = helpTexts[typeSelect.value] || '';
-        
-        // Update content help based on type
-        if (contentHelp) {
-            if (typeSelect.value) {
-                contentHelp.textContent = 'Use the fields below to build your typed statement. The content will be generated automatically.';
-            } else {
-                contentHelp.textContent = 'The main content of your statement.';
-            }
         }
     }
 
@@ -968,25 +959,16 @@ export class StatementEditor {
                 this.generatedStatement = statement;
             }
 
+            // Show the output panel
+            const outputPanel = document.getElementById('outputPanel');
+            if (outputPanel) {
+                outputPanel.style.display = 'block';
+            }
+
             // Display the statement
             if (this.outputArea) {
                 this.outputArea.value = this.generatedStatement;
             }
-
-            // Calculate and show hash
-            const hash = sha256(this.generatedStatement);
-            const hashDisplay = document.getElementById('statementHash');
-            if (hashDisplay) {
-                hashDisplay.textContent = `Statement Hash: ${hash}`;
-            }
-
-            // Validate the generated statement
-            const validationDisplay = document.getElementById('statementValidation');
-            if (validationDisplay) {
-                this.validateStatement(this.generatedStatement, formData.type, validationDisplay);
-            }
-
-            this.showMessage('Statement generated successfully! Click "Submit to API" to publish.', 'success');
         } catch (error: any) {
             this.showMessage(`Error generating statement: ${error.message}`, 'error');
         }
