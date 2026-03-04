@@ -10,7 +10,7 @@ import {
     buildOrganisationVerificationContent,
     buildPersonVerificationContent,
     sha256,
-    parseStatementsFile,
+    splitStatements,
     generateStatementsFile,
     isRatingValue,
     parseStatement,
@@ -34,7 +34,7 @@ export interface StatementFormData {
     domain: string;
     author: string;
     content: string;
-    tags: string[];
+    tags?: string[];
     type?: string;
     supersededStatement?: string;
     attachments?: string[];
@@ -840,9 +840,7 @@ export class StatementEditor {
                 const ext = firstFile.name.split('.').pop();
                 const attachmentHash = `${hash}.${ext}`;
 
-                return buildPDFSigningContent({
-                    hash: attachmentHash
-                });
+                return buildPDFSigningContent({});
             }
 
             default:
@@ -1079,7 +1077,7 @@ export class StatementEditor {
             
             if (statementsResponse.ok) {
                 const statementsText = await statementsResponse.text();
-                existingStatements = parseStatementsFile(statementsText);
+                existingStatements = splitStatements(statementsText);
                 this.updateProgressStep(progressContainer, 0, 'Fetched statements.txt from country-a.com', 'success');
             } else {
                 this.updateProgressStep(progressContainer, 0, 'No existing statements.txt (will create new)', 'success');
