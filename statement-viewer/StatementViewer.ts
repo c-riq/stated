@@ -1,6 +1,6 @@
 import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol';
 import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
-import { sortStatementsByTime } from './utils.js';
+import { sortStatementsByTime, escapeHtml, styleTypedStatementContent } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
 import {
     parseStatementCompat,
@@ -24,6 +24,7 @@ export class StatementViewer {
     private ratingsBySubject: Map<string, RatingEntry[]>;
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
+    private showTechnicalDetails: boolean;
 
     constructor(statementsPath: string = '/.well-known/statements/') {
         this.baseUrl = `${window.location.origin}${statementsPath}`;
@@ -36,6 +37,7 @@ export class StatementViewer {
         this.ratingsBySubject = new Map();
         this.identities = new Map();
         this.showHostOnly = false;
+        this.showTechnicalDetails = false;
         this.init();
     }
 
@@ -88,6 +90,8 @@ export class StatementViewer {
             closeBtn.addEventListener('click', () => {
                 modal.style.display = 'none';
                 document.body.classList.remove('modal-open');
+                // Clear URL hash when closing modal
+                this.clearUrlParam();
             });
         }
         
@@ -95,7 +99,14 @@ export class StatementViewer {
             if (e.target === modal && modal) {
                 modal.style.display = 'none';
                 document.body.classList.remove('modal-open');
+                // Clear URL hash when closing modal
+                this.clearUrlParam();
             }
+        });
+        
+        // Handle URL parameter changes for deep linking
+        window.addEventListener('popstate', () => {
+            this.handleUrlParam();
         });
         
         // Always load from host domain
@@ -237,6 +248,8 @@ export class StatementViewer {
                 this.verifyAllSignatures().then(() => {
                     this.linkSignaturesToIdentities();
                     this.renderStatements();
+                    // Check if URL has a statement parameter to open a specific statement
+                    this.handleUrlParam();
                 });
             }
         } catch (error: any) {
@@ -292,6 +305,8 @@ export class StatementViewer {
             this.buildRatingsMap();
             this.buildSupersedingMap();
             this.renderStatements();
+            // Check if URL has a statement parameter to open a specific statement
+            this.handleUrlParam();
         } catch (error: any) {
             console.error('Error loading peer statements:', error);
         }
@@ -717,16 +732,163 @@ export class StatementViewer {
         
         document.body.classList.add('modal-open');
         
-        const html = await renderStatementDetails(statement, this.baseUrl, this.statementsByHash, this.identities);
-        modalBody.innerHTML = html;
+        // Render the statement details with view mode toggle
+        await this.renderModalContent(statement, modalBody);
         
         modal.style.display = 'block';
+        
+        // Update URL with statement ID parameter for deep linking
+        const statementHash = sha256(statement.raw);
+        this.setUrlParam(statementHash);
+    }
+    
+    private async renderModalContent(statement: ParsedStatement, modalBody: HTMLElement): Promise<void> {
+        const statementHash = sha256(statement.raw);
+        
+        // Create view mode toggle
+        const toggleContainer = document.createElement('div');
+        toggleContainer.className = 'view-mode-toggle';
+        toggleContainer.innerHTML = `
+            <button class="view-mode-btn ${!this.showTechnicalDetails ? 'active' : ''}" data-mode="content">
+                Content View
+            </button>
+            <button class="view-mode-btn ${this.showTechnicalDetails ? 'active' : ''}" data-mode="technical">
+                Technical Details
+            </button>
+        `;
+        
+        // Add event listeners to toggle buttons
+        const buttons = toggleContainer.querySelectorAll('.view-mode-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const mode = (e.target as HTMLElement).getAttribute('data-mode');
+                this.showTechnicalDetails = mode === 'technical';
+                await this.renderModalContent(statement, modalBody);
+            });
+        });
+        
+        // Create content container
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'modal-detail-content';
+        
+        if (this.showTechnicalDetails) {
+            // Show technical details
+            contentContainer.innerHTML = await renderStatementDetails(statement, this.baseUrl, this.statementsByHash, this.identities);
+        } else {
+            // Show content view with aggregated data - append DOM elements directly
+            await this.renderContentViewDom(statement, statementHash, contentContainer);
+        }
+        
+        // Clear and update modal body
+        modalBody.innerHTML = '';
+        modalBody.appendChild(toggleContainer);
+        modalBody.appendChild(contentContainer);
+    }
+    
+    private async renderContentViewDom(statement: ParsedStatement, statementHash: string, container: HTMLElement): Promise<void> {
+        // Use the existing createStatementCard function to render exactly like in the feed
+        const identity = statement.domain ? this.identities.get(statement.domain) : undefined;
+        const card = createStatementCard(statement, this.baseUrl, identity, (stmt) => this.showStatementDetails(stmt));
+        container.appendChild(card);
+        
+        // Add aggregated votes if this is a poll
+        if (statement.type && statement.type.toLowerCase() === 'poll') {
+            const votes = this.votesByPollHash.get(statementHash);
+            if (votes && votes.length > 0) {
+                const filteredVotes = this.showHostOnly
+                    ? votes.filter(({ statement: voteStatement }) => !voteStatement.isPeer)
+                    : votes;
+                
+                if (filteredVotes.length > 0) {
+                    const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt));
+                    container.appendChild(votesContainer);
+                }
+            }
+        }
+        
+        // Add PDF signatures if this is a PDF signing statement
+        if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
+            try {
+                const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
+                const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
+                if (signatures && signatures.length > 0) {
+                    const filteredSignatures = this.showHostOnly
+                        ? signatures.filter(({ statement: sigStatement }) => !sigStatement.isPeer)
+                        : signatures;
+                    
+                    if (filteredSignatures.length > 0) {
+                        const signaturesContainer = createPdfSignaturesContainer(
+                            pdfHash,
+                            filteredSignatures,
+                            this.baseUrl,
+                            this.identities,
+                            (stmt) => this.showStatementDetails(stmt)
+                        );
+                        container.appendChild(signaturesContainer);
+                    }
+                }
+            } catch (error: any) {
+                console.error('Error rendering PDF signatures in content view:', error);
+            }
+        }
+        
+        // Add responses
+        const responses = this.responsesByHash.get(statementHash);
+        if (responses && responses.length > 0) {
+            const filteredResponses = this.showHostOnly
+                ? responses.filter(response => !response.isPeer)
+                : responses;
+            
+            if (filteredResponses.length > 0) {
+                const responsesContainer = createResponsesContainer(filteredResponses, (stmt) => this.showStatementDetails(stmt));
+                container.appendChild(responsesContainer);
+            }
+        }
     }
     
     public showStatementByHash(hash: string): void {
-        const statement = this.statementsByHash.get(hash);
+        // Check host statements first
+        let statement = this.statementsByHash.get(hash);
+        
+        // If not found, check peer statements
+        if (!statement) {
+            statement = this.peerStatements.find(stmt => sha256(stmt.raw) === hash);
+        }
+        
         if (statement) {
             this.showStatementDetails(statement);
+        } else {
+            console.warn(`Statement with hash ${hash} not found`);
         }
     }
+    
+    private setUrlParam(statementId: string): void {
+        // Update URL with statement parameter without triggering navigation
+        const url = new URL(window.location.href);
+        url.searchParams.set('statement', statementId);
+        window.history.replaceState(null, '', url.toString());
+    }
+    
+    private clearUrlParam(): void {
+        // Remove statement parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('statement');
+        window.history.replaceState(null, '', url.toString());
+    }
+    
+    private handleUrlParam(): void {
+        const urlParams = new URLSearchParams(window.location.search);
+        const statementId = urlParams.get('statement');
+        if (statementId) {
+            // Wait for statements to be loaded before trying to show
+            if (this.statementsByHash.size > 0) {
+                this.showStatementByHash(statementId);
+            } else {
+                // If statements aren't loaded yet, wait and try again
+                setTimeout(() => this.handleUrlParam(), 100);
+            }
+        }
+    }
+    
 }

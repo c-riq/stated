@@ -1445,3 +1445,165 @@ body.modal-open {
         font-size: 0.75rem;
     }
 }
+
+/* View Mode Toggle */
+.view-mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.view-mode-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.view-mode-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.view-mode-btn.active {
+    background: #0072BC;
+    color: white;
+}
+
+/* Content View Styles */
+.content-view {
+    padding: 0;
+}
+
+.content-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.content-profile-pic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.content-author-info {
+    flex: 1;
+}
+
+.content-author-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #003366;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.content-domain-time {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.content-body {
+    margin-bottom: 20px;
+}
+
+.content-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.content-aggregated {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.content-aggregated h3 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #003366;
+}
+
+.vote-results {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.vote-option {
+    font-weight: 600;
+    color: #003366;
+}
+
+.vote-count {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.response-item {
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 8px;
+}
+
+.response-item:last-child {
+    margin-bottom: 0;
+}
+
+.response-author {
+    font-weight: 600;
+    color: #003366;
+    margin-bottom: 4px;
+    font-size: 0.875rem;
+}
+
+.response-content {
+    color: #333;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.modal-detail-content {
+    margin-top: 8px;
+}
+
+/* Content View Container - ensure cards display properly in modal */
+.content-view-container .statement-card {
+    margin-bottom: 0;
+    box-shadow: none;
+}
