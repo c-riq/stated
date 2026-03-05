@@ -1,5 +1,5 @@
 import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol';
-import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
+import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry, AppConfig } from './types.js';
 import { sortStatementsByTime, escapeHtml, styleTypedStatementContent } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
 import {
@@ -25,8 +25,10 @@ export class StatementViewer {
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
     private showTechnicalDetails: boolean;
+    private config: AppConfig;
 
-    constructor(statementsPath: string = '/.well-known/statements/') {
+    constructor(statementsPath: string = '/.well-known/statements/', config: AppConfig) {
+        this.config = config;
         this.baseUrl = `${window.location.origin}${statementsPath}`;
         this.statements = [];
         this.peerStatements = [];
@@ -656,7 +658,7 @@ export class StatementViewer {
                         : votes;
                     
                     if (filteredVotes.length > 0) {
-                        const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt));
+                        const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt), this.config);
                         container.appendChild(votesContainer);
                     }
                 }
@@ -680,7 +682,8 @@ export class StatementViewer {
                                 filteredSignatures,
                                 this.baseUrl,
                                 this.identities,
-                                (stmt) => this.showStatementDetails(stmt)
+                                (stmt) => this.showStatementDetails(stmt),
+                                this.config
                             );
                             container.appendChild(signaturesContainer);
                         }
@@ -800,7 +803,7 @@ export class StatementViewer {
                     : votes;
                 
                 if (filteredVotes.length > 0) {
-                    const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt));
+                    const votesContainer = createVotesContainer(statement, filteredVotes, this.identities, (stmt) => this.showStatementDetails(stmt), this.config);
                     container.appendChild(votesContainer);
                 }
             }
@@ -823,7 +826,8 @@ export class StatementViewer {
                             filteredSignatures,
                             this.baseUrl,
                             this.identities,
-                            (stmt) => this.showStatementDetails(stmt)
+                            (stmt) => this.showStatementDetails(stmt),
+                            this.config
                         );
                         container.appendChild(signaturesContainer);
                     }

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const config = await loadConfig(configFile);
     applyBranding(config);
     
-    viewerInstance = new StatementViewer(config.statementsPath);
+    viewerInstance = new StatementViewer(config.statementsPath, config);
     
     // Make the viewer instance globally accessible for verification statement links
     (window as any).viewVerificationStatement = (hash: string) => {

@@ -1,6 +1,6 @@
 import { sha256, verifySignature, parseSignedStatement } from './lib/index.js';
 import { parsePollCompat, parseResponseContentCompat } from './protocol-compat.js';
-import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry } from './types.js';
+import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry, AppConfig } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
 export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
@@ -451,7 +451,250 @@ export function createResponsesContainer(responses: ParsedStatement[], onShowDet
     return container;
 }
 
-export function createVotesContainer(pollStatement: ParsedStatement, votes: VoteEntry[], identities: Map<string, Identity>, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+function showEmailRequestForm(config: AppConfig, editorUrl: string, actionType: 'vote' | 'sign', statementHash: string, statementContext: string): void {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'publishing-modal-overlay';
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'publishing-modal';
+    
+    const networkName = config.branding.title;
+    const orgName = config.organisationName;
+    const actionText = actionType === 'vote' ? 'cast a vote' : 'sign a document';
+    
+    modal.innerHTML = `
+        <div class="publishing-modal-header">
+            <h3>Request Publication</h3>
+            <button class="publishing-modal-close">&times;</button>
+        </div>
+        <div class="publishing-modal-body">
+            <div class="email-notice">
+                <strong>Important:</strong> Please send this email from your work email address.
+            </div>
+            
+            <p style="margin-bottom: 20px; color: #666;">Provide your business information to request publication by ${orgName}.</p>
+            
+            <form id="emailRequestForm" class="email-request-form">
+                <div class="form-group">
+                    <label for="businessRegNumber">Business Registration Number *</label>
+                    <input type="text" id="businessRegNumber" class="form-input" required placeholder="e.g., 12345678">
+                </div>
+                
+                <div class="form-group">
+                    <label for="businessName">Business Name *</label>
+                    <input type="text" id="businessName" class="form-input" required placeholder="Trading or common business name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="websiteDomain">Website Domain (optional)</label>
+                    <input type="text" id="websiteDomain" class="form-input" placeholder="example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="requesterName">Your Name *</label>
+                    <input type="text" id="requesterName" class="form-input" required placeholder="John Smith">
+                </div>
+                
+                <div class="form-group">
+                    <label for="profileLink">LinkedIn or Profile Link (optional)</label>
+                    <input type="text" id="profileLink" class="form-input" placeholder="https://linkedin.com/in/yourprofile">
+                    <small style="color: #666; font-size: 12px;">Link to your LinkedIn profile or other professional profile</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="authorizedCheckbox" required>
+                        <span>I am authorized to represent this company in this matter *</span>
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelEmailForm">Cancel</button>
+                    <button type="submit" class="btn-primary">Generate Email</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.body.classList.add('modal-open');
+    
+    // Close button handler
+    const closeBtn = modal.querySelector('.publishing-modal-close');
+    const cancelBtn = modal.querySelector('#cancelEmailForm');
+    
+    const closeModal = () => {
+        document.body.removeChild(overlay);
+        document.body.classList.remove('modal-open');
+    };
+    
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    
+    // Overlay click to close
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeModal();
+        }
+    });
+    
+    // Form submission
+    const form = modal.querySelector('#emailRequestForm') as HTMLFormElement;
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const businessRegNumber = (document.getElementById('businessRegNumber') as HTMLInputElement).value.trim();
+        const businessName = (document.getElementById('businessName') as HTMLInputElement).value.trim();
+        const websiteDomain = (document.getElementById('websiteDomain') as HTMLInputElement).value.trim();
+        const requesterName = (document.getElementById('requesterName') as HTMLInputElement).value.trim();
+        const profileLink = (document.getElementById('profileLink') as HTMLInputElement).value.trim();
+        const isAuthorized = (document.getElementById('authorizedCheckbox') as HTMLInputElement).checked;
+        
+        if (!isAuthorized) {
+            alert('Please confirm that you are authorized to represent this company.');
+            return;
+        }
+        
+        // Build requester info - prefer profile link, fallback to name
+        const requesterInfo = profileLink
+            ? `- Name: ${requesterName}\n- Profile: ${profileLink}`
+            : `- Name: ${requesterName}`;
+        
+        // Build business info with optional website
+        const businessInfo = websiteDomain
+            ? `- Business Registration Number: ${businessRegNumber}\n- Business Name: ${businessName}\n- Website Domain: ${websiteDomain}`
+            : `- Business Registration Number: ${businessRegNumber}\n- Business Name: ${businessName}`;
+        
+        // Generate email
+        const recipient = config.organisationContactEmail;
+        const subject = encodeURIComponent(`Publication Request: ${actionText} on ${networkName}`);
+        const body = encodeURIComponent(
+`Dear ${orgName},
+
+I would like to request publication to ${actionText} on ${networkName}.
+
+BUSINESS INFORMATION:
+${businessInfo}
+
+REQUESTER INFORMATION:
+${requesterInfo}
+
+AUTHORIZATION:
+I confirm that I am authorized to represent ${businessName} in this matter.
+
+STATEMENT DETAILS:
+- Action: ${actionType === 'vote' ? 'Vote' : 'PDF Signature'}
+- Statement Hash: ${statementHash}
+- Context: ${statementContext}
+- Editor URL: ${window.location.origin}${editorUrl}
+
+Please publish this statement on my behalf on the ${networkName} network.
+
+Thank you.
+
+Best regards,
+${requesterName}`
+        );
+        
+        window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+        closeModal();
+    });
+}
+
+function showPublishingOptionsModal(config: AppConfig, editorUrl: string, actionType: 'vote' | 'sign', statementHash: string, statementContext: string): void {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'publishing-modal-overlay';
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'publishing-modal';
+    
+    const networkName = config.branding.title;
+    const orgName = config.organisationName;
+    const hostname = new URL(config.editor.api.sourceEndpoint).hostname;
+    
+    const actionText = actionType === 'vote' ? 'cast your vote' : 'sign this document';
+    
+    modal.innerHTML = `
+        <div class="publishing-modal-header">
+            <h3>How would you like to ${actionText}?</h3>
+            <button class="publishing-modal-close">&times;</button>
+        </div>
+        <div class="publishing-modal-body">
+            <div class="publishing-option publishing-option-recommended">
+                <div class="publishing-option-content">
+                    <h4>Email ${orgName} <span class="recommended-badge">Recommended</span></h4>
+                    <p>Request ${orgName} to publish on your behalf</p>
+                    <button class="publishing-option-btn" data-option="email">Send Email Request</button>
+                </div>
+            </div>
+            
+            <div class="publishing-option">
+                <div class="publishing-option-content">
+                    <h4>Publish under ${hostname}</h4>
+                    <p>Use an API key to publish directly on ${networkName}</p>
+                    <button class="publishing-option-btn" data-option="api">Continue with API Key</button>
+                </div>
+            </div>
+            
+            <div class="publishing-option">
+                <div class="publishing-option-content">
+                    <h4>Publish under your own domain</h4>
+                    <p>Join the ${networkName} network with your own domain</p>
+                    <button class="publishing-option-btn" data-option="own">Learn More</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.body.classList.add('modal-open');
+    
+    // Close button handler
+    const closeBtn = modal.querySelector('.publishing-modal-close');
+    closeBtn?.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        document.body.classList.remove('modal-open');
+    });
+    
+    // Overlay click to close
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+            document.body.classList.remove('modal-open');
+        }
+    });
+    
+    // Option buttons
+    const optionBtns = modal.querySelectorAll('.publishing-option-btn');
+    optionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const option = (btn as HTMLElement).dataset.option;
+            
+            // Close current modal
+            document.body.removeChild(overlay);
+            document.body.classList.remove('modal-open');
+            
+            if (option === 'api') {
+                // Go to editor with API key option
+                window.location.href = editorUrl;
+            } else if (option === 'email') {
+                // Show email request form
+                showEmailRequestForm(config, editorUrl, actionType, statementHash, statementContext);
+            } else if (option === 'own') {
+                // Open join.stated.network in new tab
+                window.open('https://join.stated.network', '_blank');
+            }
+        });
+    });
+}
+
+export function createVotesContainer(pollStatement: ParsedStatement, votes: VoteEntry[], identities: Map<string, Identity>, onShowDetails: (stmt: ParsedStatement) => void, config?: AppConfig): HTMLDivElement {
     const container = document.createElement('div');
     container.className = 'votes-container';
     
@@ -590,7 +833,14 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     voteBtn.style.marginBottom = '12px';
     voteBtn.addEventListener('click', () => {
         const pollHash = sha256(pollStatement.raw);
-        window.location.href = `/editor.html?type=vote&pollHash=${encodeURIComponent(pollHash)}&pollQuestion=${encodeURIComponent(pollQuestion)}`;
+        const editorUrl = `/editor.html?type=vote&pollHash=${encodeURIComponent(pollHash)}&pollQuestion=${encodeURIComponent(pollQuestion)}`;
+        
+        // Show modal if requestEmailPublicationByDefault is enabled, otherwise go directly
+        if (config && config.requestEmailPublicationByDefault) {
+            showPublishingOptionsModal(config, editorUrl, 'vote', pollHash, `Poll: ${pollQuestion}`);
+        } else {
+            window.location.href = editorUrl;
+        }
     });
     container.appendChild(voteBtn);
     
@@ -670,7 +920,7 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     return container;
 }
 
-export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSignatureEntry[], baseUrl: string, identities: Map<string, Identity>, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSignatureEntry[], baseUrl: string, identities: Map<string, Identity>, onShowDetails: (stmt: ParsedStatement) => void, config?: AppConfig): HTMLDivElement {
     const container = document.createElement('div');
     container.className = 'pdf-signatures-container';
     
@@ -786,7 +1036,14 @@ export function createPdfSignaturesContainer(pdfHash: string, signatures: PDFSig
     signDocBtn.textContent = 'Sign This Document';
     signDocBtn.style.marginTop = '12px';
     signDocBtn.addEventListener('click', () => {
-        window.location.href = `/editor.html?type=sign_pdf&pdfHash=${encodeURIComponent(pdfHash)}`;
+        const editorUrl = `/editor.html?type=sign_pdf&pdfHash=${encodeURIComponent(pdfHash)}`;
+        
+        // Show modal if requestEmailPublicationByDefault is enabled, otherwise go directly
+        if (config && config.requestEmailPublicationByDefault) {
+            showPublishingOptionsModal(config, editorUrl, 'sign', pdfHash, `PDF Document: ${pdfHash}`);
+        } else {
+            window.location.href = editorUrl;
+        }
     });
     container.appendChild(signDocBtn);
     

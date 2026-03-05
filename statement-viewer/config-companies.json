@@ -5,6 +5,9 @@
     "subtitle": "Statement Viewer"
   },
   "statementsPath": "/.well-known-business-a/statements/",
+  "requestEmailPublicationByDefault": true,
+  "organisationName": "Business A",
+  "organisationContactEmail": "info@rixdata.net",
   "editor": {
     "defaults": {
       "domain": "business-a.com",

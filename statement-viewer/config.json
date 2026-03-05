@@ -5,6 +5,9 @@
     "subtitle": "Statement Viewer"
   },
   "statementsPath": "/.well-known/statements/",
+  "requestEmailPublicationByDefault": true,
+  "organisationName": "Ministry of Foreign Affairs of Country A",
+  "organisationContactEmail": "info@rixdata.net",
   "editor": {
     "defaults": {
       "domain": "mofa.country-a.com",
