@@ -1206,8 +1206,14 @@ export class StatementEditor {
             const ext = filename.split('.').pop();
             const attachmentFilename = `${hash}.${ext}`;
 
-            // Convert to base64 for upload
-            const base64Content = btoa(String.fromCharCode(...buffer));
+            // Convert to base64 for upload (chunked to avoid stack overflow)
+            let binaryString = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < buffer.length; i += chunkSize) {
+                const chunk = buffer.subarray(i, Math.min(i + chunkSize, buffer.length));
+                binaryString += String.fromCharCode(...chunk);
+            }
+            const base64Content = btoa(binaryString);
 
             // Determine content type
             const contentType = this.getContentType(ext || '');
