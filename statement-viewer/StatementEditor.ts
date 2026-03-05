@@ -1052,15 +1052,16 @@ export class StatementEditor {
 
             const hash = sha256(this.generatedStatement);
 
-            // Step 1: Fetch current statements.txt from country-a.com
-            this.addProgressStep(progressContainer, 'Fetching current statements.txt from country-a.com...', 'pending');
+            // Step 1: Fetch current statements.txt
+            const sourceDomain = new URL(this.sourceEndpoint).hostname;
+            this.addProgressStep(progressContainer, `Fetching current statements.txt from ${sourceDomain}...`, 'pending');
             const statementsResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements.txt`);
             let existingStatements: string[] = [];
             
             if (statementsResponse.ok) {
                 const statementsText = await statementsResponse.text();
                 existingStatements = splitStatements(statementsText);
-                this.updateProgressStep(progressContainer, 0, 'Fetched statements.txt from country-a.com', 'success');
+                this.updateProgressStep(progressContainer, 0, `Fetched statements.txt from ${sourceDomain}`, 'success');
             } else {
                 this.updateProgressStep(progressContainer, 0, 'No existing statements.txt (will create new)', 'success');
             }
@@ -1081,14 +1082,14 @@ export class StatementEditor {
             await this.uploadToAPI(`.well-known/statements/${hash}.txt`, this.generatedStatement, 'text/plain', apiKey, false, false);
             this.updateProgressStep(progressContainer, 3, `Uploaded statements/${hash}.txt`, 'success');
 
-            // Step 5: Fetch and update statements/index.txt from country-a.com
-            this.addProgressStep(progressContainer, 'Fetching statements/index.txt from country-a.com...', 'pending');
+            // Step 5: Fetch and update statements/index.txt
+            this.addProgressStep(progressContainer, `Fetching statements/index.txt from ${sourceDomain}...`, 'pending');
             const indexResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements/index.txt`);
             let indexContent = '';
             
             if (indexResponse.ok) {
                 indexContent = await indexResponse.text();
-                this.updateProgressStep(progressContainer, 4, 'Fetched statements/index.txt from country-a.com', 'success');
+                this.updateProgressStep(progressContainer, 4, `Fetched statements/index.txt from ${sourceDomain}`, 'success');
             } else {
                 this.updateProgressStep(progressContainer, 4, 'No existing index.txt (will create new)', 'success');
             }
