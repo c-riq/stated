@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { parseRating, buildRating } from './protocol';
+import { isRatingValue } from './types';
 
 const randomUnicodeString = () =>
   Array.from({ length: 20 }, () => String.fromCharCode(Math.floor(Math.random() * 65536)))
@@ -13,7 +14,10 @@ describe('Rating building', () => {
       { length: 4 },
       randomUnicodeString
     );
-    const rating = Math.ceil(Math.random() * 5);
+    const rating = Math.floor(Math.random() * 5) + 1;
+    if (!isRatingValue(rating)) {
+      throw new Error(`Generated invalid rating: ${rating}`);
+    }
     const ratingContent = buildRating({ subjectName, subjectReference, rating, comment, quality });
     const parsedRating = parseRating(ratingContent);
     assert.strictEqual(parsedRating.subjectName, subjectName);

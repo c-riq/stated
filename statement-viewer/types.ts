@@ -66,6 +66,9 @@ export interface AppConfig {
         subtitle: string;
     };
     statementsPath: string;
+    requestEmailPublicationByDefault: boolean;
+    organisationName: string;
+    organisationContactEmail: string;
     editor: {
         defaults: {
             domain: string;

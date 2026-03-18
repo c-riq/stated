@@ -11,6 +11,17 @@
     grid-template-columns: 1fr 1fr;
     gap: 30px;
     margin-top: 20px;
+    transition: grid-template-columns 0.3s ease;
+}
+
+.editor-layout:has(#outputPanel[style*="display: none"]) {
+    grid-template-columns: 1fr;
+    justify-items: center;
+}
+
+.editor-layout:has(#outputPanel[style*="display: none"]) .editor-form-panel {
+    max-width: 800px;
+    width: 100%;
 }
 
 .editor-panel {
@@ -44,6 +55,124 @@
     color: #333;
     font-size: 1.2em;
     font-weight: 600;
+}
+
+/* Collapsible Sections */
+.collapsible-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0;
+    margin-bottom: 20px;
+    background: #fafafa;
+}
+
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+    border-radius: 6px;
+}
+
+.collapsible-header:hover {
+    background-color: #f0f0f0;
+}
+
+.collapse-icon {
+    display: inline-block;
+    font-size: 0.8em;
+    transition: transform 0.2s;
+    color: #666;
+}
+
+.collapsible-header.active .collapse-icon {
+    transform: rotate(90deg);
+}
+
+.collapsible-content {
+    padding: 0 20px 20px 20px;
+    background: white;
+    border-radius: 0 0 6px 6px;
+}
+
+.collapsible-content .form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Info Icon Tooltips */
+.info-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #2196F3;
+    cursor: help;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: rgba(33, 150, 243, 0.1);
+    transition: all 0.2s;
+    vertical-align: middle;
+    position: relative;
+}
+
+.info-icon:hover {
+    background: rgba(33, 150, 243, 0.2);
+    transform: scale(1.1);
+}
+
+/* CSS Tooltip */
+.info-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 1000;
+    font-weight: normal;
+    line-height: 1.4;
+    min-width: 200px;
+    max-width: 350px;
+    white-space: normal;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.info-icon::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-2px);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 1000;
+}
+
+.info-icon:hover::after,
+.info-icon:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+label .info-icon {
+    font-weight: normal;
 }
 
 /* Form Groups */

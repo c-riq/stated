@@ -10,7 +10,7 @@ import {
     buildOrganisationVerificationContent,
     buildPersonVerificationContent,
     sha256,
-    parseStatementsFile,
+    splitStatements,
     generateStatementsFile,
     isRatingValue,
     parseStatement,
@@ -34,7 +34,7 @@ export interface StatementFormData {
     domain: string;
     author: string;
     content: string;
-    tags: string[];
+    tags?: string[];
     type?: string;
     supersededStatement?: string;
     attachments?: string[];
@@ -200,16 +200,40 @@ export class StatementEditor {
         const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
         if (typeSelect) {
             typeSelect.addEventListener('change', () => {
-                this.updateTypeHelp();
                 this.updateTypedFields();
             });
         }
 
+        // Collapsible section headers
+        this.initCollapsibleSections();
+
         // Initialize
         this.toggleSigningFields();
-        this.updateTypeHelp();
         this.updateTypedFields();
         this.loadApiKey();
+    }
+
+    private initCollapsibleSections(): void {
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+        collapsibleHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const targetId = header.getAttribute('data-target');
+                if (!targetId) return;
+
+                const content = document.getElementById(targetId);
+                if (!content) return;
+
+                const isVisible = content.style.display !== 'none';
+                
+                if (isVisible) {
+                    content.style.display = 'none';
+                    header.classList.remove('active');
+                } else {
+                    content.style.display = 'block';
+                    header.classList.add('active');
+                }
+            });
+        });
     }
 
     private prefillFromUrlParams(): void {
@@ -221,7 +245,6 @@ export class StatementEditor {
             const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
             if (typeSelect) {
                 typeSelect.value = type;
-                this.updateTypeHelp();
                 this.updateTypedFields();
             }
         }
@@ -296,38 +319,6 @@ export class StatementEditor {
         
         if (signingFields) {
             signingFields.style.display = signCheckbox?.checked ? 'block' : 'none';
-        }
-    }
-
-    private updateTypeHelp(): void {
-        const typeSelect = document.getElementById('statementType') as HTMLSelectElement;
-        const typeHelp = document.getElementById('typeHelp');
-        const contentHelp = document.getElementById('contentHelp');
-        
-        if (!typeSelect || !typeHelp) return;
-
-        const helpTexts: Record<string, string> = {
-            '': 'A basic statement without a specific type.',
-            'poll': 'Create a poll with multiple choice options.',
-            'vote': 'Vote on an existing poll.',
-            'organisation_verification': 'Verify an organization\'s identity.',
-            'person_verification': 'Verify a person\'s identity.',
-            'response': 'Respond to another statement.',
-            'rating': 'Rate another statement (1-5 stars).',
-            'sign_pdf': 'Sign a PDF document.',
-            'dispute_statement_authenticity': 'Dispute the authenticity of a statement.',
-            'dispute_statement_content': 'Dispute the content of a statement.'
-        };
-
-        typeHelp.textContent = helpTexts[typeSelect.value] || '';
-        
-        // Update content help based on type
-        if (contentHelp) {
-            if (typeSelect.value) {
-                contentHelp.textContent = 'Use the fields below to build your typed statement. The content will be generated automatically.';
-            } else {
-                contentHelp.textContent = 'The main content of your statement.';
-            }
         }
     }
 
@@ -840,9 +831,7 @@ export class StatementEditor {
                 const ext = firstFile.name.split('.').pop();
                 const attachmentHash = `${hash}.${ext}`;
 
-                return buildPDFSigningContent({
-                    hash: attachmentHash
-                });
+                return buildPDFSigningContent({});
             }
 
             default:
@@ -970,25 +959,16 @@ export class StatementEditor {
                 this.generatedStatement = statement;
             }
 
+            // Show the output panel
+            const outputPanel = document.getElementById('outputPanel');
+            if (outputPanel) {
+                outputPanel.style.display = 'block';
+            }
+
             // Display the statement
             if (this.outputArea) {
                 this.outputArea.value = this.generatedStatement;
             }
-
-            // Calculate and show hash
-            const hash = sha256(this.generatedStatement);
-            const hashDisplay = document.getElementById('statementHash');
-            if (hashDisplay) {
-                hashDisplay.textContent = `Statement Hash: ${hash}`;
-            }
-
-            // Validate the generated statement
-            const validationDisplay = document.getElementById('statementValidation');
-            if (validationDisplay) {
-                this.validateStatement(this.generatedStatement, formData.type, validationDisplay);
-            }
-
-            this.showMessage('Statement generated successfully! Click "Submit to API" to publish.', 'success');
         } catch (error: any) {
             this.showMessage(`Error generating statement: ${error.message}`, 'error');
         }
@@ -1072,15 +1052,16 @@ export class StatementEditor {
 
             const hash = sha256(this.generatedStatement);
 
-            // Step 1: Fetch current statements.txt from country-a.com
-            this.addProgressStep(progressContainer, 'Fetching current statements.txt from country-a.com...', 'pending');
+            // Step 1: Fetch current statements.txt
+            const sourceDomain = new URL(this.sourceEndpoint).hostname;
+            this.addProgressStep(progressContainer, `Fetching current statements.txt from ${sourceDomain}...`, 'pending');
             const statementsResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements.txt`);
             let existingStatements: string[] = [];
             
             if (statementsResponse.ok) {
                 const statementsText = await statementsResponse.text();
-                existingStatements = parseStatementsFile(statementsText);
-                this.updateProgressStep(progressContainer, 0, 'Fetched statements.txt from country-a.com', 'success');
+                existingStatements = splitStatements(statementsText);
+                this.updateProgressStep(progressContainer, 0, `Fetched statements.txt from ${sourceDomain}`, 'success');
             } else {
                 this.updateProgressStep(progressContainer, 0, 'No existing statements.txt (will create new)', 'success');
             }
@@ -1101,14 +1082,14 @@ export class StatementEditor {
             await this.uploadToAPI(`.well-known/statements/${hash}.txt`, this.generatedStatement, 'text/plain', apiKey, false, false);
             this.updateProgressStep(progressContainer, 3, `Uploaded statements/${hash}.txt`, 'success');
 
-            // Step 5: Fetch and update statements/index.txt from country-a.com
-            this.addProgressStep(progressContainer, 'Fetching statements/index.txt from country-a.com...', 'pending');
+            // Step 5: Fetch and update statements/index.txt
+            this.addProgressStep(progressContainer, `Fetching statements/index.txt from ${sourceDomain}...`, 'pending');
             const indexResponse = await fetch(`${this.sourceEndpoint}/.well-known/statements/index.txt`);
             let indexContent = '';
             
             if (indexResponse.ok) {
                 indexContent = await indexResponse.text();
-                this.updateProgressStep(progressContainer, 4, 'Fetched statements/index.txt from country-a.com', 'success');
+                this.updateProgressStep(progressContainer, 4, `Fetched statements/index.txt from ${sourceDomain}`, 'success');
             } else {
                 this.updateProgressStep(progressContainer, 4, 'No existing index.txt (will create new)', 'success');
             }
@@ -1226,8 +1207,14 @@ export class StatementEditor {
             const ext = filename.split('.').pop();
             const attachmentFilename = `${hash}.${ext}`;
 
-            // Convert to base64 for upload
-            const base64Content = btoa(String.fromCharCode(...buffer));
+            // Convert to base64 for upload (chunked to avoid stack overflow)
+            let binaryString = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < buffer.length; i += chunkSize) {
+                const chunk = buffer.subarray(i, Math.min(i + chunkSize, buffer.length));
+                binaryString += String.fromCharCode(...chunk);
+            }
+            const base64Content = btoa(binaryString);
 
             // Determine content type
             const contentType = this.getContentType(ext || '');
