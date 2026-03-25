@@ -15,6 +15,7 @@ import {
   buildResponseContent,
   buildPDFSigningContent,
   buildRating,
+  buildObservationContent,
 } from './protocol';
 import { verifySignedStatement } from './signature';
 
@@ -118,6 +119,12 @@ function buildContentFromInput(contentObj: any): string {
         rating: contentObj.rating,
         quality: contentObj.quality,
         comment: contentObj.comment,
+      });
+    case 'observation':
+      return buildObservationContent({
+        subject: contentObj.subject,
+        property: contentObj.property,
+        value: contentObj.value,
       });
     default:
       throw new Error(`Unknown content type: ${contentObj.type}`);

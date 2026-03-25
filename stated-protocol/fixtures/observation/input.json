@@ -1,0 +1,11 @@
+{
+  "domain": "example.com",
+  "author": "Alice",
+  "time": "2023-06-15T10:00:00.000Z",
+  "content": {
+    "type": "observation",
+    "subject": "John_Doe@globalcoordination.johndoe.com",
+    "property": "Among the members of this network they are the most appropriate to represent",
+    "value": "Germany"
+  }
+}
