@@ -9,6 +9,7 @@ import {
     buildPDFSigningContent,
     buildOrganisationVerificationContent,
     buildPersonVerificationContent,
+    buildObservationContent,
     sha256,
     splitStatements,
     generateStatementsFile,
@@ -21,6 +22,7 @@ import {
     parsePDFSigning,
     parseOrganisationVerification,
     parsePersonVerification,
+    parseObservation,
     isLegalForm,
     isPeopleCountBucket,
     legalForms,
@@ -608,6 +610,26 @@ export class StatementEditor {
                     </div>
                 `;
                 break;
+
+            case 'observation':
+                fieldsHTML = `
+                    <div class="form-group">
+                        <label for="observationSubject">Subject *</label>
+                        <input type="text" id="observationSubject" class="form-input" placeholder="e.g., John_Doe@globalcoordination.johndoe.com" required>
+                        <small>The entity that the observation is about. For identities on a stated network, use format: Name@network.domain.com</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="observationProperty">Property *</label>
+                        <input type="text" id="observationProperty" class="form-input" placeholder="e.g., Is a member of" required>
+                        <small>The characteristic or attribute being observed</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="observationValue">Value *</label>
+                        <input type="text" id="observationValue" class="form-input" placeholder="e.g., Organisation XZY" required>
+                        <small>The observed value</small>
+                    </div>
+                `;
+                break;
         }
 
         typedFieldsContainer.innerHTML = fieldsHTML;
@@ -834,6 +856,18 @@ export class StatementEditor {
                 return buildPDFSigningContent({});
             }
 
+            case 'observation': {
+                const subject = (document.getElementById('observationSubject') as HTMLInputElement)?.value.trim();
+                const property = (document.getElementById('observationProperty') as HTMLInputElement)?.value.trim();
+                const value = (document.getElementById('observationValue') as HTMLInputElement)?.value.trim();
+
+                return buildObservationContent({
+                    subject,
+                    property,
+                    value
+                });
+            }
+
             default:
                 return '';
         }
@@ -1013,6 +1047,10 @@ export class StatementEditor {
                         case 'sign_pdf':
                             parsePDFSigning(parsed.content);
                             results.push('✓ PDF signing content is valid');
+                            break;
+                        case 'observation':
+                            parseObservation(parsed.content);
+                            results.push('✓ Observation content is valid');
                             break;
                     }
                 } catch (contentError: any) {
