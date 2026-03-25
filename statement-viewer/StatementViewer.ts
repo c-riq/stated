@@ -3,14 +3,10 @@ import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry, A
 import { sortStatementsByTime, escapeHtml, styleTypedStatementContent } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
 import {
-    parseStatementCompat,
-    parseOrganisationVerificationCompat,
-    parsePDFSigningCompat,
-    parseVoteCompat,
-    parseResponseContentCompat,
-    parseRatingCompat,
-    extractPdfHash,
-    extractProfilePicture
+    parseStatement,
+    getPdfHash,
+    getOrganizationLogo,
+    getPersonPicture
 } from './protocol-compat.js';
 
 export class StatementViewer {
@@ -223,12 +219,13 @@ export class StatementViewer {
             }
 
             const statements: ParsedStatement[] = statementTexts.map((statementText: string) => {
-                const parsed = parseStatementCompat({ statement: statementText });
+                const parsed = parseStatement(statementText);
+                // Convert FullyParsedStatement to ParsedStatement (time Date -> string)
                 return {
-                    raw: statementText,
                     ...parsed,
-                    time: parsed.time ? parsed.time.toISOString() : undefined
-                } as ParsedStatement;
+                    time: parsed.time.toISOString(),
+                    publicKey: parsed.signature?.publicKey
+                };
             });
             
             if (isPeer) {
@@ -318,10 +315,9 @@ export class StatementViewer {
         this.responsesByHash.clear();
         
         this.peerStatements.forEach((stmt: ParsedStatement) => {
-            if (stmt.type && stmt.type.toLowerCase() === 'response') {
+            if (stmt.type === 'response' && stmt.parsedContent?.type === 'response') {
                 try {
-                    const responseData = parseResponseContentCompat(stmt.content, stmt.formatVersion);
-                    const referencedHash = responseData.hash;
+                    const referencedHash = stmt.parsedContent.data.hash;
                     if (!this.responsesByHash.has(referencedHash)) {
                         this.responsesByHash.set(referencedHash, []);
                     }
@@ -339,9 +335,9 @@ export class StatementViewer {
         const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
         
         allStatements.forEach((stmt: ParsedStatement) => {
-            if (stmt.type && stmt.type.toLowerCase() === 'vote') {
+            if (stmt.type === 'vote' && stmt.parsedContent?.type === 'vote') {
                 try {
-                    const voteData = parseVoteCompat(stmt.content, stmt.formatVersion);
+                    const voteData = stmt.parsedContent.data;
                     const pollHash = voteData.pollHash;
                     const vote = voteData.vote;
                     
@@ -366,10 +362,10 @@ export class StatementViewer {
         const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
         
         allStatements.forEach((stmt: ParsedStatement) => {
-            if (stmt.type && stmt.type.toLowerCase() === 'sign_pdf') {
+            if (stmt.type === 'sign_pdf' && stmt.parsedContent?.type === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigningCompat(stmt.content, stmt.formatVersion);
-                    const pdfHash = extractPdfHash(pdfSigningData, stmt.attachments);
+                    const pdfHash = getPdfHash(stmt);
+                    const pdfSigningData = stmt.parsedContent.data;
                     
                     if (pdfHash && !this.signaturesByPdfHash.has(pdfHash)) {
                         this.signaturesByPdfHash.set(pdfHash, []);
@@ -394,9 +390,9 @@ export class StatementViewer {
         const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
         
         allStatements.forEach((stmt: ParsedStatement) => {
-            if (stmt.type && stmt.type.toLowerCase() === 'rating') {
+            if (stmt.type === 'rating' && stmt.parsedContent?.type === 'rating') {
                 try {
-                    const ratingData = parseRatingCompat(stmt.content, stmt.formatVersion);
+                    const ratingData = stmt.parsedContent.data;
                     const subjectName = ratingData.subjectName;
                     
                     if (!this.ratingsBySubject.has(subjectName)) {
@@ -440,16 +436,16 @@ export class StatementViewer {
         const allStatements = [...this.statements, ...this.peerStatements];
         
         allStatements.forEach((stmt: ParsedStatement) => {
-            if (stmt.type && stmt.type.toLowerCase() === 'organisation_verification') {
+            if (stmt.type === 'organisation_verification' && stmt.parsedContent?.type === 'organisation_verification') {
                 try {
-                    const verification = parseOrganisationVerificationCompat(stmt.content, stmt.formatVersion);
+                    const verification = stmt.parsedContent.data;
                     
                     // Check if this is a self-verification: the statement's publishing domain
                     // must match the domain being verified
                     const isSelfVerified = verification.domain && stmt.domain === verification.domain;
                     
                     if (isSelfVerified) {
-                        const profilePicture = extractProfilePicture(verification, stmt.attachments);
+                        const profilePicture = getOrganizationLogo(stmt);
                         
                         const identity: Identity = {
                             domain: verification.domain,
@@ -473,16 +469,11 @@ export class StatementViewer {
         this.statements.forEach((stmt: ParsedStatement) => {
             if (stmt.signature && stmt.domain) {
                 try {
-                    const parsed = parseSignedStatement(stmt.raw);
-                    if (parsed) {
-                        stmt.publicKey = parsed.publicKey;
-                        
-                        // Check if this public key matches a known identity
-                        const identity = this.identities.get(stmt.domain);
-                        if (identity && identity.publicKey === parsed.publicKey) {
-                            // Signature matches the established identity
-                            stmt.signatureVerified = stmt.signatureVerified && true;
-                        }
+                    // Check if this public key matches a known identity
+                    const identity = this.identities.get(stmt.domain);
+                    if (identity && identity.publicKey === stmt.signature.publicKey) {
+                        // Signature matches the established identity
+                        stmt.signatureVerified = stmt.signatureVerified && true;
                     }
                 } catch (error: any) {
                     console.error('Error linking signature to identity:', error);
@@ -490,19 +481,7 @@ export class StatementViewer {
             }
         });
         
-        // Also link peer statements
-        this.peerStatements.forEach((stmt: ParsedStatement) => {
-            if (stmt.signature && stmt.domain) {
-                try {
-                    const parsed = parseSignedStatement(stmt.raw);
-                    if (parsed) {
-                        stmt.publicKey = parsed.publicKey;
-                    }
-                } catch (error: any) {
-                    console.error('Error linking peer signature to identity:', error);
-                }
-            }
-        });
+        // Peer statements already have signature info from parseStatement
     }
 
 
@@ -590,7 +569,7 @@ export class StatementViewer {
         const aggregatedRatingHashes = new Set<string>();
         
         allStatements.forEach((statement: ParsedStatement) => {
-            if (statement.type && statement.type.toLowerCase() === 'poll') {
+            if (statement.type === 'poll') {
                 const statementHash = sha256(statement.raw);
                 const votes = this.votesByPollHash.get(statementHash);
                 if (votes && votes.length > 0) {
@@ -602,10 +581,9 @@ export class StatementViewer {
             }
             
             // Track PDF signing statements - only the first one will render the PDF with all signatures
-            if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
+            if (statement.type === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
-                    const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                    const pdfHash = getPdfHash(statement);
                     const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                     if (signatures && signatures.length > 0) {
                         // Mark all but the first signature as aggregated (to hide them)
@@ -622,7 +600,7 @@ export class StatementViewer {
             }
             
             // Mark ALL rating statements as aggregated - they will be displayed separately
-            if (statement.type && statement.type.toLowerCase() === 'rating') {
+            if (statement.type === 'rating') {
                 const statementHash = sha256(statement.raw);
                 aggregatedRatingHashes.add(statementHash);
             }
@@ -633,15 +611,15 @@ export class StatementViewer {
         sortedStatements.forEach((statement: ParsedStatement) => {
             const statementHash = sha256(statement.raw);
             
-            if (statement.type && statement.type.toLowerCase() === 'vote' && aggregatedVoteHashes.has(statementHash)) {
+            if (statement.type === 'vote' && aggregatedVoteHashes.has(statementHash)) {
                 return;
             }
             
-            if (statement.type && statement.type.toLowerCase() === 'sign_pdf' && aggregatedPdfSignatureHashes.has(statementHash)) {
+            if (statement.type === 'sign_pdf' && aggregatedPdfSignatureHashes.has(statementHash)) {
                 return;
             }
             
-            if (statement.type && statement.type.toLowerCase() === 'rating' && aggregatedRatingHashes.has(statementHash)) {
+            if (statement.type === 'rating' && aggregatedRatingHashes.has(statementHash)) {
                 return;
             }
             
@@ -649,7 +627,7 @@ export class StatementViewer {
             const card = createStatementCard(statement, this.baseUrl, identity, (stmt) => this.showStatementDetails(stmt));
             container.appendChild(card);
             
-            if (statement.type && statement.type.toLowerCase() === 'poll') {
+            if (statement.type === 'poll') {
                 const votes = this.votesByPollHash.get(statementHash);
                 if (votes && votes.length > 0) {
                     // Filter votes if showHostOnly is enabled
@@ -665,10 +643,10 @@ export class StatementViewer {
             }
             
             // Show PDF with signatures if this is a PDF signing statement (first one for each PDF)
-            if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
+            if (statement.type === 'sign_pdf') {
                 try {
-                    const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
-                    const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                    const compatParsed = parseStatement(statement.raw);
+                    const pdfHash = getPdfHash(compatParsed);
                     const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                     if (signatures && signatures.length > 0) {
                         // Filter signatures if showHostOnly is enabled
@@ -795,7 +773,7 @@ export class StatementViewer {
         container.appendChild(card);
         
         // Add aggregated votes if this is a poll
-        if (statement.type && statement.type.toLowerCase() === 'poll') {
+        if (statement.type === 'poll') {
             const votes = this.votesByPollHash.get(statementHash);
             if (votes && votes.length > 0) {
                 const filteredVotes = this.showHostOnly
@@ -810,10 +788,10 @@ export class StatementViewer {
         }
         
         // Add PDF signatures if this is a PDF signing statement
-        if (statement.type && statement.type.toLowerCase() === 'sign_pdf') {
+        if (statement.type === 'sign_pdf') {
             try {
-                const pdfSigningData = parsePDFSigningCompat(statement.content, statement.formatVersion);
-                const pdfHash = extractPdfHash(pdfSigningData, statement.attachments);
+                const compatParsed = parseStatement(statement.raw);
+                const pdfHash = getPdfHash(compatParsed);
                 const signatures = pdfHash ? this.signaturesByPdfHash.get(pdfHash) : undefined;
                 if (signatures && signatures.length > 0) {
                     const filteredSignatures = this.showHostOnly

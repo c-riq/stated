@@ -1,25 +1,17 @@
-import type { SupportedVersion } from './protocol-compat.js';
+import type { FullyParsedStatement } from './protocol-compat.js';
 
-export interface ParsedStatement {
-    raw: string;
-    domain?: string;
-    author?: string;
+// ParsedStatement extends FullyParsedStatement with viewer-specific fields
+export type ParsedStatement = Omit<FullyParsedStatement, 'time'> & {
+    // Convert time to string for easier handling in the viewer
     time?: string;
-    tags?: string[];
-    content: string;
-    type?: string;
-    signature?: string;
-    formatVersion: SupportedVersion;
-    attachments?: string[];
-    supersededStatement?: string;
+    // Additional fields used by StatementViewer
     supersededBy?: ParsedStatement;
-    translations?: Record<string, string>;
     signatureVerified?: boolean;
     hashMatches?: boolean;
     isPeer?: boolean;
     peerDomain?: string;
-    publicKey?: string;
-}
+    publicKey?: string; // Extracted from signature for convenience
+};
 
 export interface Identity {
     domain: string;

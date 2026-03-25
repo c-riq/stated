@@ -1,5 +1,4 @@
 import { sha256, verifySignature, parseSignedStatement } from './lib/index.js';
-import { parsePollCompat, parseResponseContentCompat } from './protocol-compat.js';
 import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry, AppConfig } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
@@ -182,8 +181,11 @@ export function createStatementCard(statement: ParsedStatement, baseUrl: string,
                 target.classList.add('active');
                 
                 // Update content
-                if (lang && statement.translations && statement.translations[lang]) {
-                    content.innerHTML = styleTypedStatementContent(statement.translations[lang], statement.type);
+                if (lang && statement.translations) {
+                    const translation = statement.translations[lang as keyof typeof statement.translations];
+                    if (translation) {
+                        content.innerHTML = styleTypedStatementContent(translation, statement.type);
+                    }
                 } else {
                     content.innerHTML = styleTypedStatementContent(statement.content, statement.type);
                 }
@@ -702,9 +704,11 @@ export function createVotesContainer(pollStatement: ParsedStatement, votes: Vote
     let options: string[] = [];
     
     try {
-        const pollData = parsePollCompat(pollStatement.content, pollStatement.formatVersion);
-        pollQuestion = pollData.poll;
-        options = pollData.options || [];
+        if (pollStatement.parsedContent?.type === 'poll') {
+            const pollData = pollStatement.parsedContent.data;
+            pollQuestion = pollData.poll;
+            options = pollData.options || [];
+        }
     } catch (error: any) {
         console.error('Error parsing poll:', error);
     }
@@ -1093,8 +1097,9 @@ export function createResponseCard(statement: ParsedStatement, onShowDetails: (s
     
     let responseText = statement.content;
     try {
-        const responseData = parseResponseContentCompat(statement.content, statement.formatVersion);
-        responseText = responseData.response;
+        if (statement.parsedContent?.type === 'response') {
+            responseText = statement.parsedContent.data.response;
+        }
     } catch (error: any) {
         console.error('Error parsing response text:', error);
     }
