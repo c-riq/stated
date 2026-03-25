@@ -859,7 +859,7 @@ export const buildObservationContent = ({ subject, property, value }: Observatio
   if (!subject) throw new Error('Subject is required');
   if (!property) throw new Error('Property is required');
   if (!value) throw new Error('Value is required');
-  
+
   const content =
     '    Type: Observation\n' +
     '    Subject: ' +

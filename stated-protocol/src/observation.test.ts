@@ -1,6 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { buildObservationContent, parseObservation, buildStatement, parseStatement } from './protocol';
+import {
+  buildObservationContent,
+  parseObservation,
+  buildStatement,
+  parseStatement,
+} from './protocol';
 
 describe('Observation', () => {
   it('should build observation content', () => {
@@ -11,10 +16,14 @@ describe('Observation', () => {
     };
 
     const content = buildObservationContent(observation);
-    
+
     assert.ok(content.includes('Type: Observation'));
     assert.ok(content.includes('Subject: John_Doe@globalcoordination.johndoe.com'));
-    assert.ok(content.includes('Property: Among the members of this network they are the most appropriate to represent'));
+    assert.ok(
+      content.includes(
+        'Property: Among the members of this network they are the most appropriate to represent'
+      )
+    );
     assert.ok(content.includes('Value: Germany'));
   });
 
@@ -28,7 +37,10 @@ describe('Observation', () => {
     const parsed = parseObservation(content);
 
     assert.strictEqual(parsed.subject, 'John_Doe@globalcoordination.johndoe.com');
-    assert.strictEqual(parsed.property, 'Among the members of this network they are the most appropriate to represent');
+    assert.strictEqual(
+      parsed.property,
+      'Among the members of this network they are the most appropriate to represent'
+    );
     assert.strictEqual(parsed.value, 'Germany');
   });
 
@@ -49,7 +61,7 @@ describe('Observation', () => {
 
     const parsed = parseStatement({ statement });
     assert.strictEqual(parsed.type, 'observation');
-    
+
     const parsedObservation = parseObservation(parsed.content);
     assert.strictEqual(parsedObservation.subject, observation.subject);
     assert.strictEqual(parsedObservation.property, observation.property);
