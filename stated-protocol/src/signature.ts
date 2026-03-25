@@ -150,9 +150,9 @@ export const verifySignedStatement = async (signedStatement: string): Promise<bo
  * @returns Base64 string
  */
 function bytesToBase64(bytes: Uint8Array): string {
-  // Use btoa if available (browser), otherwise use Buffer (Node.js)
   if (typeof btoa !== 'undefined') {
-    return btoa(String.fromCharCode(...Array.from(bytes)));
+    const binaryString = Array.from(bytes, byte => String.fromCharCode(byte)).join('');
+    return btoa(binaryString);
   } else {
     return Buffer.from(bytes).toString('base64');
   }
