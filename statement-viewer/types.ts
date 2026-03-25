@@ -40,6 +40,13 @@ export interface RatingEntry {
     ratingData: any;
 }
 
+export interface ObservationEntry {
+    statement: ParsedStatement;
+    subject: string;
+    property: string;
+    value: string;
+}
+
 export interface SignatureInfo {
     algorithm: string;
     publicKey: string;

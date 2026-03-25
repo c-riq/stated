@@ -10,6 +10,7 @@ import {
     buildResponseContent,
     buildSignedStatement,
     buildPDFSigningContent,
+    buildObservationContent,
     generateKeyPair,
     sha256,
     generateStatementsFile,
@@ -443,6 +444,98 @@ async function generateSampleStatements(paths: DeploymentPaths, deploymentName: 
     });
     const signedStatement7d = await buildSignedStatement(statement7d, countryE.privateKey!, countryE.publicKey!);
     statements.push(signedStatement7d);
+
+    // 7e. Observation statements about foreign ministries - memberships and international law
+    // Subject format: Name_With_Underscores@domain.com
+    const observationContent1 = buildObservationContent({
+        subject: `${countryB.author.replace(/ /g, '_')}@${countryB.domain}`,
+        property: 'Member of United Nations',
+        value: 'Yes',
+    });
+    const statement7e = buildStatement({
+        domain: countryA.domain,
+        author: countryA.author,
+        time: new Date('2024-06-22T10:00:00Z'),
+        tags: ['observation', 'membership', 'un'],
+        content: observationContent1,
+    });
+    const signedStatement7e = await buildSignedStatement(statement7e, countryA.privateKey!, countryA.publicKey!);
+    statements.push(signedStatement7e);
+    
+    const observationContent2 = buildObservationContent({
+        subject: `${countryC.author.replace(/ /g, '_')}@${countryC.domain}`,
+        property: 'Signatory of Geneva Conventions',
+        value: 'Yes',
+    });
+    const statement7f = buildStatement({
+        domain: countryA.domain,
+        author: countryA.author,
+        time: new Date('2024-06-22T11:30:00Z'),
+        tags: ['observation', 'international-law', 'geneva-conventions'],
+        content: observationContent2,
+    });
+    const signedStatement7f = await buildSignedStatement(statement7f, countryA.privateKey!, countryA.publicKey!);
+    statements.push(signedStatement7f);
+    
+    const observationContent3 = buildObservationContent({
+        subject: `${countryD.author.replace(/ /g, '_')}@${countryD.domain}`,
+        property: 'Compliance with Paris Climate Agreement',
+        value: 'Compliant',
+    });
+    const statement7g = buildStatement({
+        domain: countryB.domain,
+        author: countryB.author,
+        time: new Date('2024-06-22T14:00:00Z'),
+        tags: ['observation', 'climate', 'international-law'],
+        content: observationContent3,
+    });
+    const signedStatement7g = await buildSignedStatement(statement7g, countryB.privateKey!, countryB.publicKey!);
+    statements.push(signedStatement7g);
+    
+    const observationContent4 = buildObservationContent({
+        subject: `${countryE.author.replace(/ /g, '_')}@${countryE.domain}`,
+        property: 'Violation of International Maritime Law',
+        value: 'Alleged - Under Investigation',
+    });
+    const statement7h = buildStatement({
+        domain: countryC.domain,
+        author: countryC.author,
+        time: new Date('2024-06-23T09:00:00Z'),
+        tags: ['observation', 'violation', 'maritime-law'],
+        content: observationContent4,
+    });
+    const signedStatement7h = await buildSignedStatement(statement7h, countryC.privateKey!, countryC.publicKey!);
+    statements.push(signedStatement7h);
+    
+    const observationContent5 = buildObservationContent({
+        subject: `${countryB.author.replace(/ /g, '_')}@${countryB.domain}`,
+        property: 'Member of World Trade Organization',
+        value: 'Yes',
+    });
+    const statement7i = buildStatement({
+        domain: countryD.domain,
+        author: countryD.author,
+        time: new Date('2024-06-23T10:30:00Z'),
+        tags: ['observation', 'membership', 'wto'],
+        content: observationContent5,
+    });
+    const signedStatement7i = await buildSignedStatement(statement7i, countryD.privateKey!, countryD.publicKey!);
+    statements.push(signedStatement7i);
+    
+    const observationContent6 = buildObservationContent({
+        subject: `${countryC.author.replace(/ /g, '_')}@${countryC.domain}`,
+        property: 'Ratified International Criminal Court Statute',
+        value: 'Yes',
+    });
+    const statement7j = buildStatement({
+        domain: countryE.domain,
+        author: countryE.author,
+        time: new Date('2024-06-23T15:00:00Z'),
+        tags: ['observation', 'international-law', 'icc'],
+        content: observationContent6,
+    });
+    const signedStatement7j = await buildSignedStatement(statement7j, countryE.privateKey!, countryE.publicKey!);
+    statements.push(signedStatement7j);
 
     // 8. Statement superseding another - must reference the SIGNED statement hash
     const statement8 = buildStatement({

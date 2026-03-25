@@ -1446,6 +1446,109 @@ body.modal-open {
     }
 }
 
+/* Observations container */
+.observations-container {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.observations-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.observations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.observation-card {
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.observation-observer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.observation-profile-picture {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+}
+
+.observation-observer-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.observation-observer-text strong {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9375rem;
+}
+
+.observation-time {
+    font-size: 0.8125rem;
+    color: #666;
+}
+
+.observation-content {
+    padding-left: 42px;
+}
+
+.observation-property {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.observation-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0072BC;
+}
+
+.observation-details-btn {
+    align-self: flex-start;
+    margin-left: 42px;
+    background: transparent;
+    border: 1px solid #d0d0d0;
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.observation-details-btn:hover {
+    background: #f5f5f5;
+    border-color: #0072BC;
+    color: #0072BC;
+}
+
 /* View Mode Toggle */
 .view-mode-toggle {
     display: flex;

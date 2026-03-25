@@ -1,5 +1,5 @@
 import { sha256, verifySignature, parseSignedStatement } from './lib/index.js';
-import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry, AppConfig } from './types.js';
+import { ParsedStatement, VoteEntry, SignatureInfo, Identity, PDFSignatureEntry, RatingEntry, ObservationEntry, AppConfig } from './types.js';
 import { getTimeAgo, escapeHtml, styleTypedStatementContent } from './utils.js';
 
 export function createStatementCard(statement: ParsedStatement, baseUrl: string, identity: Identity | undefined, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
@@ -1333,6 +1333,87 @@ export function createRatingsContainer(subjectName: string, ratings: RatingEntry
     });
     
     container.appendChild(reviewsList);
+    
+    return container;
+}
+
+export function createObservationsContainer(subject: string, observations: ObservationEntry[], identities: Map<string, Identity>, baseUrl: string, onShowDetails: (stmt: ParsedStatement) => void): HTMLDivElement {
+    const container = document.createElement('div');
+    container.className = 'observations-container';
+    
+    const header = document.createElement('div');
+    header.className = 'observations-header';
+    // Replace spaces with underscores in display name
+    const displaySubject = subject.replace(/ /g, '_');
+    header.innerHTML = `<h3>Observations about ${escapeHtml(displaySubject)}</h3>`;
+    container.appendChild(header);
+    
+    const observationsList = document.createElement('div');
+    observationsList.className = 'observations-list';
+    
+    // Sort by time (newest first)
+    const sortedObservations = [...observations].sort((a, b) => {
+        const timeA = new Date(a.statement.time || 0);
+        const timeB = new Date(b.statement.time || 0);
+        return timeB.getTime() - timeA.getTime();
+    });
+    
+    sortedObservations.forEach(({ statement, property, value }) => {
+        const observationCard = document.createElement('div');
+        observationCard.className = 'observation-card';
+        
+        // Get identity for the observer
+        const identity = statement.domain ? identities.get(statement.domain) : undefined;
+        
+        const observerInfo = document.createElement('div');
+        observerInfo.className = 'observation-observer';
+        
+        // Add profile picture if available
+        if (identity && identity.profilePicture) {
+            const profilePic = document.createElement('img');
+            const profilePicPath = identity.verificationStatement?.isPeer && identity.verificationStatement?.peerDomain
+                ? `${baseUrl}peers/${identity.verificationStatement.peerDomain}/statements/attachments/${identity.profilePicture}`
+                : `${baseUrl}attachments/${identity.profilePicture}`;
+            profilePic.src = profilePicPath;
+            profilePic.alt = statement.author;
+            profilePic.className = 'observation-profile-picture';
+            profilePic.onerror = () => {
+                profilePic.style.display = 'none';
+            };
+            observerInfo.appendChild(profilePic);
+        }
+        
+        const observerText = document.createElement('div');
+        observerText.className = 'observation-observer-text';
+        observerText.innerHTML = `
+            <strong>${escapeHtml(statement.author || statement.domain || 'Unknown')}</strong>
+            ${identity && identity.isSelfVerified && statement.publicKey === identity.publicKey ? '<span class="identity-verified-badge"><img src="icons/check.svg" alt="" width="12" height="12"></span>' : ''}
+            <span class="observation-time">${getTimeAgo(new Date(statement.time || 0))}</span>
+        `;
+        observerInfo.appendChild(observerText);
+        observationCard.appendChild(observerInfo);
+        
+        const observationContent = document.createElement('div');
+        observationContent.className = 'observation-content';
+        observationContent.innerHTML = `
+            <div class="observation-property">${escapeHtml(property)}</div>
+            <div class="observation-value">${escapeHtml(value)}</div>
+        `;
+        observationCard.appendChild(observationContent);
+        
+        const detailsBtn = document.createElement('button');
+        detailsBtn.className = 'observation-details-btn';
+        detailsBtn.textContent = 'Details';
+        detailsBtn.addEventListener('click', (e: MouseEvent) => {
+            e.stopPropagation();
+            onShowDetails(statement);
+        });
+        observationCard.appendChild(detailsBtn);
+        
+        observationsList.appendChild(observationCard);
+    });
+    
+    container.appendChild(observationsList);
     
     return container;
 }

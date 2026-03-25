@@ -1,7 +1,7 @@
 import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol-v5.3';
-import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry, AppConfig } from './types.js';
+import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry, ObservationEntry, AppConfig } from './types.js';
 import { sortStatementsByTime, escapeHtml, styleTypedStatementContent } from './utils.js';
-import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';
+import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, createObservationsContainer, renderStatementDetails } from './renderers.js';
 import {
     parseStatement,
     getPdfHash,
@@ -18,6 +18,7 @@ export class StatementViewer {
     private votesByPollHash: Map<string, VoteEntry[]>;
     private signaturesByPdfHash: Map<string, PDFSignatureEntry[]>;
     private ratingsBySubject: Map<string, RatingEntry[]>;
+    private observationsBySubject: Map<string, ObservationEntry[]>;
     private identities: Map<string, Identity>;
     private showHostOnly: boolean;
     private showTechnicalDetails: boolean;
@@ -33,6 +34,7 @@ export class StatementViewer {
         this.votesByPollHash = new Map();
         this.signaturesByPdfHash = new Map();
         this.ratingsBySubject = new Map();
+        this.observationsBySubject = new Map();
         this.identities = new Map();
         this.showHostOnly = false;
         this.showTechnicalDetails = false;
@@ -138,6 +140,7 @@ export class StatementViewer {
         this.votesByPollHash.clear();
         this.signaturesByPdfHash.clear();
         this.ratingsBySubject.clear();
+        this.observationsBySubject.clear();
         this.identities.clear();
 
         this.showLoading(true);
@@ -242,6 +245,7 @@ export class StatementViewer {
                 this.buildVotesMap();
                 this.buildPdfSignaturesMap();
                 this.buildRatingsMap();
+                this.buildObservationsMap();
                 this.buildSupersedingMap();
                 
                 this.verifyAllSignatures().then(() => {
@@ -302,6 +306,7 @@ export class StatementViewer {
             this.buildVotesMap();
             this.buildPdfSignaturesMap();
             this.buildRatingsMap();
+            this.buildObservationsMap();
             this.buildSupersedingMap();
             this.renderStatements();
             // Check if URL has a statement parameter to open a specific statement
@@ -405,6 +410,33 @@ export class StatementViewer {
                     });
                 } catch (error: any) {
                     console.error('Error parsing rating:', error);
+                }
+            }
+        });
+    }
+    
+    private buildObservationsMap(): void {
+        this.observationsBySubject.clear();
+        
+        const allStatements: ParsedStatement[] = [...this.statements, ...this.peerStatements];
+        
+        allStatements.forEach((stmt: ParsedStatement) => {
+            if (stmt.type === 'observation' && stmt.parsedContent?.type === 'observation') {
+                try {
+                    const observationData = stmt.parsedContent.data;
+                    const subject = observationData.subject;
+                    
+                    if (!this.observationsBySubject.has(subject)) {
+                        this.observationsBySubject.set(subject, []);
+                    }
+                    this.observationsBySubject.get(subject)!.push({
+                        statement: stmt,
+                        subject: observationData.subject,
+                        property: observationData.property,
+                        value: observationData.value
+                    });
+                } catch (error: any) {
+                    console.error('Error parsing observation:', error);
                 }
             }
         });
@@ -567,6 +599,8 @@ export class StatementViewer {
         const aggregatedVoteHashes = new Set<string>();
         const aggregatedPdfSignatureHashes = new Set<string>();
         const aggregatedRatingHashes = new Set<string>();
+        const aggregatedObservationHashes = new Set<string>();
+        const aggregatedVerificationHashes = new Set<string>();
         
         allStatements.forEach((statement: ParsedStatement) => {
             if (statement.type === 'poll') {
@@ -604,6 +638,18 @@ export class StatementViewer {
                 const statementHash = sha256(statement.raw);
                 aggregatedRatingHashes.add(statementHash);
             }
+            
+            // Mark ALL observation statements as aggregated - they will be displayed with verification statements
+            if (statement.type === 'observation') {
+                const statementHash = sha256(statement.raw);
+                aggregatedObservationHashes.add(statementHash);
+            }
+            
+            // Mark ALL verification statements as aggregated - they will be displayed separately at the end
+            if (statement.type === 'organisation_verification' || statement.type === 'person_verification') {
+                const statementHash = sha256(statement.raw);
+                aggregatedVerificationHashes.add(statementHash);
+            }
         });
 
         const sortedStatements = sortStatementsByTime(allStatements);
@@ -620,6 +666,14 @@ export class StatementViewer {
             }
             
             if (statement.type === 'rating' && aggregatedRatingHashes.has(statementHash)) {
+                return;
+            }
+            
+            if (statement.type === 'observation' && aggregatedObservationHashes.has(statementHash)) {
+                return;
+            }
+            
+            if ((statement.type === 'organisation_verification' || statement.type === 'person_verification') && aggregatedVerificationHashes.has(statementHash)) {
                 return;
             }
             
@@ -702,6 +756,47 @@ export class StatementViewer {
                     (stmt) => this.showStatementDetails(stmt)
                 );
                 container.appendChild(ratingsContainer);
+            }
+        });
+        
+        // Display all verifications with their observations at the end
+        const verificationStatements = allStatements.filter(stmt =>
+            stmt.type === 'organisation_verification' || stmt.type === 'person_verification'
+        );
+        
+        verificationStatements.forEach((verificationStmt) => {
+            // Filter if showHostOnly is enabled
+            if (this.showHostOnly && verificationStmt.isPeer) {
+                return;
+            }
+            
+            // Create the identity subject format: Name_With_Underscores@domain
+            const identitySubject = `${verificationStmt.author.replace(/ /g, '_')}@${verificationStmt.domain}`;
+            const observations = this.observationsBySubject.get(identitySubject);
+            
+            // Only show if there are observations
+            if (observations && observations.length > 0) {
+                // Filter observations if showHostOnly is enabled
+                const filteredObservations = this.showHostOnly
+                    ? observations.filter(({ statement: obsStatement }) => !obsStatement.isPeer)
+                    : observations;
+                
+                if (filteredObservations.length > 0) {
+                    // Show the verification statement card
+                    const identity = verificationStmt.domain ? this.identities.get(verificationStmt.domain) : undefined;
+                    const verificationCard = createStatementCard(verificationStmt, this.baseUrl, identity, (stmt) => this.showStatementDetails(stmt));
+                    container.appendChild(verificationCard);
+                    
+                    // Show observations below it
+                    const observationsContainer = createObservationsContainer(
+                        identitySubject,
+                        filteredObservations,
+                        this.identities,
+                        this.baseUrl,
+                        (stmt) => this.showStatementDetails(stmt)
+                    );
+                    container.appendChild(observationsContainer);
+                }
             }
         });
     }
