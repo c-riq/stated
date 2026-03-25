@@ -18,7 +18,7 @@ describe('Poll building', () => {
       options,
       scopeDescription,
     });
-    const parsedPoll = parsePoll(pollContent, '5.2');
+    const parsedPoll = parsePoll(pollContent, '5.3');
     assert.strictEqual(parsedPoll.poll, poll);
     assert.strictEqual(parsedPoll.scopeDescription, scopeDescription);
     assert.strictEqual(parsedPoll.deadline?.toUTCString(), deadline.toUTCString());

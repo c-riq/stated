@@ -1,11 +1,11 @@
-Stated protocol version: 5.2
+Stated protocol version: 5.3
 Publishing domain: example.com
 Author: Example Organization
 Time: Thu, 15 Jun 2023 20:01:26 GMT
 Statement content:
     This is a cryptographically signed statement.
 ---
-Statement hash: 7FtiYx2RA_TrXHiwu7cOLny41Azey7Q6mBD1Iw7SLTU
-Public key: OBDbLnif4CGwBLrg6jAcoZwAv4P_c_JmFI86cQu1nNk
-Signature: CdSler23l-XiERbjsRGR1QIfJ7-v1zon-wEOzGya7HCsfZBPGCkqPxfZWNJydlC_cWHRP18V8ChjwmTuzyuLCA
+Statement hash: nocZRiNsqAzU-D-UEFOf700vMK5tYWIgk_dWLS4zmpI
+Public key: ICaE0Hm0NWID9CwN0rC7TH6HPkuX26kus_YVeRyisK0
+Signature: 83Kq-LNxf_fjtaaY5vvD_4h0_9s2vy1D5FpzgQ5omtmOOwk7aGZoyKU38-tcr5c-pwu9TbHYZaEZsm3nXwd3DQ
 Algorithm: Ed25519

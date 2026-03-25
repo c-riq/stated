@@ -18,7 +18,7 @@ import type {
 } from './types';
 import { isLegalForm, isPeopleCountBucket, isRatingValue } from './types';
 
-const VERSION = '5.2';
+const VERSION = '5.3';
 
 export * from './types';
 export * from './constants';
