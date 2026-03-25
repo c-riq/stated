@@ -1,4 +1,4 @@
-import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol';
+import { sha256, verifySignature, parseSignedStatement, splitStatements } from 'stated-protocol-v5.3';
 import { ParsedStatement, VoteEntry, Identity, PDFSignatureEntry, RatingEntry, AppConfig } from './types.js';
 import { sortStatementsByTime, escapeHtml, styleTypedStatementContent } from './utils.js';
 import { createStatementCard, createVotesContainer, createResponsesContainer, createPdfSignaturesContainer, createRatingsContainer, renderStatementDetails } from './renderers.js';

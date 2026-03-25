@@ -8,7 +8,8 @@
     "dev:c": "vite --mode companies",
     "gen": "tsx generate-samples.ts",
     "gen:c": "tsx generate-samples-companies.ts",
-    "build": "vite build"
+    "build": "vite build",
+    "test": "tsx --test '**/*.test.ts'"
   },
   "keywords": [
     "stated",
@@ -19,7 +20,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "stated-protocol": "^5.2.2",
+    "stated-protocol-v5.3": "npm:stated-protocol@~5.3.1",
+    "stated-protocol-v5.2": "npm:stated-protocol@~5.2.2",
     "stated-protocol-v5.1": "npm:stated-protocol@~5.1.0"
   },
   "devDependencies": {

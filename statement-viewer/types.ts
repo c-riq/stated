@@ -1,3 +1,5 @@
+import type { SupportedVersion } from './protocol-compat.js';
+
 export interface ParsedStatement {
     raw: string;
     domain?: string;
@@ -7,7 +9,7 @@ export interface ParsedStatement {
     content: string;
     type?: string;
     signature?: string;
-    formatVersion: string;
+    formatVersion: SupportedVersion;
     attachments?: string[];
     supersededStatement?: string;
     supersededBy?: ParsedStatement;

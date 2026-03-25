@@ -13,10 +13,10 @@ import {
     generateKeyPair,
     sha256,
     generateStatementsFile,
-    parseStatementsFile,
+    splitStatements,
     parseStatement,
     parseOrganisationVerification,
-} from 'stated-protocol';
+} from 'stated-protocol-v5.3';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -553,7 +553,7 @@ async function generatePeerReplications(
         const statementsFilePath = join(peerDir, 'statements.txt');
         try {
             const existingStatementsContent = await readFile(statementsFilePath, 'utf-8');
-            const existingStatements = parseStatementsFile(existingStatementsContent);
+            const existingStatements = splitStatements(existingStatementsContent);
             const allStatements = [...existingStatements, signedResponseStatement];
             await writeFile(statementsFilePath, generateStatementsFile(allStatements));
         } catch {

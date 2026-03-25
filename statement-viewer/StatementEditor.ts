@@ -27,7 +27,7 @@ import {
     type LegalForm,
     type RatingSubjectTypeValue,
     type PeopleCountBucket
-} from 'stated-protocol';
+} from 'stated-protocol-v5.3';
 import type { AppConfig } from './types.js';
 
 export interface StatementFormData {
