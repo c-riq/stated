@@ -1,0 +1,9 @@
+Stated protocol version: 5.3
+Publishing domain: example.com
+Author: Alice
+Time: Thu, 15 Jun 2023 10:00:00 GMT
+Statement content:
+    Type: Observation
+    Subject: John_Doe@globalcoordination.johndoe.com
+    Property: Among the members of this network they are the most appropriate to represent
+    Value: Germany

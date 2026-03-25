@@ -15,6 +15,7 @@ import {
   buildResponseContent,
   buildPDFSigningContent,
   buildRating,
+  buildObservationContent,
 } from './protocol';
 import { verifySignedStatement } from './signature';
 
@@ -119,6 +120,12 @@ function buildContentFromInput(contentObj: any): string {
         quality: contentObj.quality,
         comment: contentObj.comment,
       });
+    case 'observation':
+      return buildObservationContent({
+        subject: contentObj.subject,
+        property: contentObj.property,
+        value: contentObj.value,
+      });
     default:
       throw new Error(`Unknown content type: ${contentObj.type}`);
   }
@@ -199,7 +206,7 @@ describe('Fixture Validation', () => {
         assert.ok(parsed.domain);
         assert.ok(parsed.author);
         assert.ok(parsed.content);
-        assert.strictEqual(parsed.formatVersion, '5.2');
+        assert.strictEqual(parsed.formatVersion, '5.3');
       });
 
       it('round-trip: parse(output.txt) should match input.json structure', () => {

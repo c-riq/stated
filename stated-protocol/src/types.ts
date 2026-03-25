@@ -55,7 +55,8 @@ export type StatementTypeValue =
   | 'dispute_statement_content'
   | 'dispute_statement_authenticity'
   | 'rating'
-  | 'sign_pdf';
+  | 'sign_pdf'
+  | 'observation';
 
 export type Statement = {
   domain: string;
@@ -180,4 +181,10 @@ export type Bounty = {
   reward: string;
   judge: string;
   judgePay?: string;
+};
+
+export type Observation = {
+  subject: string;
+  property: string;
+  value: string;
 };

@@ -14,10 +14,11 @@ import type {
   PDFSigning,
   Rating,
   RatingSubjectTypeValue,
+  Observation,
 } from './types';
 import { isLegalForm, isPeopleCountBucket, isRatingValue } from './types';
 
-const VERSION = '5.2';
+const VERSION = '5.3';
 
 export * from './types';
 export * from './constants';
@@ -851,5 +852,49 @@ export const parseRating = (content: string): Rating => {
     quality,
     rating,
     comment,
+  };
+};
+
+export const buildObservationContent = ({ subject, property, value }: Observation) => {
+  if (!subject) throw new Error('Subject is required');
+  if (!property) throw new Error('Property is required');
+  if (!value) throw new Error('Value is required');
+
+  const content =
+    '    Type: Observation\n' +
+    '    Subject: ' +
+    subject +
+    '\n' +
+    '    Property: ' +
+    property +
+    '\n' +
+    '    Value: ' +
+    value +
+    '\n';
+  return content;
+};
+
+export const parseObservation = (content: string): Observation => {
+  const observationRegex = new RegExp(
+    '' +
+      /^    Type: Observation\n/.source +
+      /    Subject: (?<subject>[^\n]+?)\n/.source +
+      /    Property: (?<property>[^\n]+?)\n/.source +
+      /    Value: (?<value>[^\n]+?)\n/.source +
+      /$/.source
+  );
+  const match = content.match(observationRegex);
+  if (!match || !match.groups) throw new Error('Invalid observation format: ' + content);
+
+  const { subject, property, value } = match.groups;
+
+  if (!subject) throw new Error('Missing subject');
+  if (!property) throw new Error('Missing property');
+  if (!value) throw new Error('Missing value');
+
+  return {
+    subject,
+    property,
+    value,
   };
 };
