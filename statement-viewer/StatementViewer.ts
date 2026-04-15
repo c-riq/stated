@@ -770,11 +770,16 @@ export class StatementViewer {
                 return;
             }
             
+            // Show the verification statement card
+            const identity = verificationStmt.domain ? this.identities.get(verificationStmt.domain) : undefined;
+            const verificationCard = createStatementCard(verificationStmt, this.baseUrl, identity, (stmt) => this.showStatementDetails(stmt));
+            container.appendChild(verificationCard);
+            
             // Create the identity subject format: Name_With_Underscores@domain
             const identitySubject = `${verificationStmt.author.replace(/ /g, '_')}@${verificationStmt.domain}`;
             const observations = this.observationsBySubject.get(identitySubject);
             
-            // Only show if there are observations
+            // Show observations if they exist
             if (observations && observations.length > 0) {
                 // Filter observations if showHostOnly is enabled
                 const filteredObservations = this.showHostOnly
@@ -782,12 +787,7 @@ export class StatementViewer {
                     : observations;
                 
                 if (filteredObservations.length > 0) {
-                    // Show the verification statement card
-                    const identity = verificationStmt.domain ? this.identities.get(verificationStmt.domain) : undefined;
-                    const verificationCard = createStatementCard(verificationStmt, this.baseUrl, identity, (stmt) => this.showStatementDetails(stmt));
-                    container.appendChild(verificationCard);
-                    
-                    // Show observations below it
+                    // Show observations below the verification
                     const observationsContainer = createObservationsContainer(
                         identitySubject,
                         filteredObservations,

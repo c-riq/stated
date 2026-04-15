@@ -2,6 +2,7 @@ import {
     buildStatement,
     generateKeyPair,
     buildSignedStatement,
+    getPublicKey,
     buildPollContent,
     buildVoteContent,
     buildResponseContent,
@@ -980,12 +981,41 @@ export class StatementEditor {
                 const privateKeyInput = document.getElementById('privateKey') as HTMLInputElement;
                 const publicKeyInput = document.getElementById('publicKey') as HTMLInputElement;
 
-                this.privateKey = privateKeyInput.value.trim();
-                this.publicKey = publicKeyInput.value.trim();
-
-                if (!this.privateKey || !this.publicKey) {
-                    this.showMessage('Please generate or enter key pair for signing', 'error');
+                if (!privateKeyInput) {
+                    this.showMessage('Error: Could not find private key input field.', 'error');
                     return;
+                }
+
+                this.privateKey = privateKeyInput.value.trim();
+
+                if (!this.privateKey) {
+                    this.showMessage('Please enter a private key for signing', 'error');
+                    return;
+                }
+
+                // Derive public key from private key if not provided
+                if (publicKeyInput) {
+                    const publicKeyValue = publicKeyInput.value.trim();
+                    if (publicKeyValue) {
+                        this.publicKey = publicKeyValue;
+                    } else {
+                        // Derive public key from private key
+                        try {
+                            this.publicKey = await getPublicKey(this.privateKey);
+                            publicKeyInput.value = this.publicKey;
+                        } catch (error: any) {
+                            this.showMessage(`Error deriving public key: ${error.message}`, 'error');
+                            return;
+                        }
+                    }
+                } else {
+                    // Derive public key from private key
+                    try {
+                        this.publicKey = await getPublicKey(this.privateKey);
+                    } catch (error: any) {
+                        this.showMessage(`Error deriving public key: ${error.message}`, 'error');
+                        return;
+                    }
                 }
 
                 this.generatedStatement = await buildSignedStatement(statement, this.privateKey, this.publicKey);
@@ -1331,7 +1361,7 @@ export class StatementEditor {
         const hash = sha256(this.generatedStatement);
         const filename = `${hash}.txt`;
         
-        const blob = new Blob([this.generatedStatement], { type: 'text/plain' });
+        const blob = new Blob([this.generatedStatement], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
